@@ -19,4 +19,6 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     - name: Test with Maven
-      run: ./backend/pinklifeline/mvn test
+      run: |
+        cd backend/pinklifeline
+        mvn test
