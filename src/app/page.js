@@ -144,35 +144,41 @@ export default function Home() {
         <div id="features" className="w-full bg-gray-200 bg-opacity-75 flex flex-col flex-shrink p-5 justify-evenly items-center text-center min-h-80">
           <h1 className="relative text-5xl font-sans font-bold py-4 after:content-[''] after:absolute after:w-2/3 after:h-1 after:bg-pink-500 after:left-1/2 after:bottom-0 after:transform after:-translate-x-1/2">Features</h1>
           <div className="flex flex-row flex-shrink flex-wrap justify-evenly items-center w-full p-5 mt-5">
-            <div className="flex flex-col flex-wrap flex-shrink justify-center items-center">
+            <div className="flex max-w-72 flex-col shadow-md border-black flex-wrap bg-indigo-200 flex-shrink justify-center items-center p-5 rounded m-3 m  h-72">
               <div className={featureIconCSS}>
                 <ForumIcon fontSize="large" />
               </div>
               <h2 className={featureTextCSS}>Forum of people</h2>
+              <p>
+                Ask questions, discuss topics, share experiences and help each other.
+              </p>
             </div>
-            <div className="flex flex-col flex-wrap flex-shrink justify-center items-center">
+            <div className="flex max-w-72 flex-col shadow-md border-black flex-wrap bg-indigo-200 flex-shrink justify-center items-center p-5 rounded m-3 m  h-72">
               <div className={featureIconCSS}>
                 <BorderColorSharpIcon fontSize="large" />
               </div>
               <h2 className={featureTextCSS}>Blog posts from experts</h2>
+              <p>
+                Read blog posts from experts in the field.
+              </p>
             </div>
-            <div className="flex flex-col flex-wrap flex-shrink justify-center items-center">
+            <div className="flex max-w-72 flex-col shadow-md border-black flex-wrap bg-indigo-200 flex-shrink justify-center items-center p-5 rounded m-3 m  h-72">
               <div className={featureIconCSS}>
                 <DomainAddSharpIcon fontSize="large" />
               </div>
               <h2 className={featureTextCSS}>Hospitals for treatment</h2>
+              <p>
+                Find hospitals for your treatment. Get information about hospitals.
+              </p>
             </div>
-            <div className="flex flex-col flex-wrap flex-shrink justify-center items-center">
+            <div className="flex max-w-72 flex-col shadow-md border-black flex-wrap bg-indigo-200 flex-shrink justify-center items-center p-5 rounded m-3 m  h-72">
               <div className={featureIconCSS}>
                 <VaccinesSharpIcon fontSize="large" />
               </div>
               <h2 className={featureTextCSS}>Doctor&apos;s here for help</h2>
-            </div>
-            <div className="flex flex-col flex-wrap flex-shrink justify-center items-center">
-              <div className={featureIconCSS}>
-                <DescriptionIcon fontSize="large" />
-              </div>
-              <h2 className={featureTextCSS}>Manage your treatment papers</h2>
+              <p>
+                Find doctors for your treatment. See reviews and other informatios.
+              </p>
             </div>
           </div>
         </div>
