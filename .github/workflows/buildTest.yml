@@ -38,7 +38,8 @@ jobs:
         cache: 'maven'
     - name: Test with Maven
       run: |
-        cd backend/pinklifeline
+        cd ./backend/pinklifeline
+        pwd
         mvn test
 
   build_deploy:
