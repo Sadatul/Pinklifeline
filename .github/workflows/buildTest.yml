@@ -8,7 +8,7 @@ on:
 
 jobs:
   check_files:
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     outputs:
       backend_changes: ${{ steps.backend_changes.outputs.backend_changes }}
     steps:
