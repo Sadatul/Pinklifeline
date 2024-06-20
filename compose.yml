@@ -1,0 +1,56 @@
+name: pinklifeline
+
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=pinklifeline
+      - MYSQL_USER=pinklifeline
+      - MYSQL_PASSWORD=pinklifeline
+      - MYSQL_DATABASE=pinklifeline
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pinklifeline_network
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pinklifeline_network
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    build:
+      context: ./backend/pinklifeline
+    container_name: backend
+    environment:
+      - DB_URL=mysql:3306/pinklifeline
+      - DB_USERNAME=pinklifeline
+      - DB_PASSWORD=pinklifeline
+      - REDIS_HOST=redis-stack
+      - REDIS_PORT=6379
+    ports:
+      - "8080:8080"
+    networks:
+      - pinklifeline_network
+networks:
+  pinklifeline_network:
