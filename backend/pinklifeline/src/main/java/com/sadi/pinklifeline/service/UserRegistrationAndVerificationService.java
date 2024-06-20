@@ -62,8 +62,9 @@ public class UserRegistrationAndVerificationService {
     }
 
     public void sendVerificationEmail(String username, String otp) {
+        int minutes = Integer.parseInt(optExpiration.toString()) / 60;
         emailService.sendSimpleEmail(username, verificationEmailSubject,
-                String.format(verificationEmailMessage, otp));
+                String.format(verificationEmailMessage, otp, minutes));
     }
 
     public String getOtp(){
