@@ -120,17 +120,17 @@ export default function Home() {
           <Link href="#contact" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Contact Us</Link>
         </div>
         <div className="flex flex-shrink flex-row justify-center items-center w-2/12">
-          <button className="h-12 scale-90 hover:underline rounded-2xl border-4 py-1 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</button>
+          <Link href={'/reglogin'} prefetch={true} id="reglogin" className="h-12 scale-90 hover:underline rounded-2xl border-4 py-1 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</Link>
         </div>
       </nav>
       <motion.div className="relative w-full h-[800px] flex flex-col justify-center items-center bg-cover bg-center" style={{ backgroundImage: `url(${bg.src})` }}
         variants={{
-          hidden: { opacity: 0, scale: 0.5},
-          visible: { opacity: 1, scale: 1}
+          hidden: { opacity: 0, scale: 0.5 },
+          visible: { opacity: 1, scale: 1 }
         }}
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.5, delay: 0.15}}
+        transition={{ duration: 0.5, delay: 0.15 }}
       >
         <h1 className="text-7xl font-mono font-bold" style={{ WebkitTextStroke: '1px pink', color: 'black' }}>
           Pink Life Line
@@ -279,14 +279,14 @@ export default function Home() {
             <div className="flex flex-col flex-wrap flex-shrink w-1/2 justify-evenly items-center">
               <Image src={sadiProfile.src} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
               <h1 className="text-2xl font-serif font-semibold mt-5">Sadatul Islam Sadi</h1>
-              <Link href="https://www.facebook.com/profile.php?id=100075469924262" className="m-5">
+              <Link prefetch={true} href="https://www.facebook.com/profile.php?id=100075469924262" className="m-5">
                 <Image src={facebookLogo.src} width={30} height={30} alt="facebooklink" />
               </Link>
             </div>
             <div className="flex flex-col flex-wrap flex-shrink w-1/2 justify-evenly items-center">
               <Image src={adilProfile.src} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
               <h1 className="text-2xl font-serif font-semibold mt-5">MD. Hasnaen Adil</h1>
-              <Link href="https://www.facebook.com/hasnainadil.13" className="m-5">
+              <Link prefetch={true} href="https://www.facebook.com/hasnainadil.13" className="m-5">
                 <Image src={facebookLogo.src} width={30} height={30} alt="facebooklink" />
               </Link>
             </div>
