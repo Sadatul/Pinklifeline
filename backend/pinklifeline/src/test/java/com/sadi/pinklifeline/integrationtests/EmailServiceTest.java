@@ -25,11 +25,11 @@ public class EmailServiceTest extends AbstractBaseIntegrationTest {
     private String verificationEmailMessage;
 
     @Value("${verification.email.timeout}")
-    private Long optExpiration;
+    private int optExpiration;
 
     @Test
     public void sendSimpleEmailTest() throws InterruptedException {
-        int minutes = Integer.parseInt(optExpiration.toString()) / 60;
+        int minutes = optExpiration / 60;
         String otp = "1234";
         String message = String.format(verificationEmailMessage, otp, minutes);
         userRegVerService.sendVerificationEmail("pinklife@example.com", otp);
