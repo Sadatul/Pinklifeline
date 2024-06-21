@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 public class JwtTokenService {
     private final JwtEncoder jwtEncoder;
 
-    @Value("#{${auth.jwt.audiences}}")
-    private List<String> audiences;
+    @Value("${auth.jwt.audiences}")
+    private String[] audiences;
 
     @Value("${auth.jwt.timeout}")
     private int timeout;
@@ -36,7 +36,7 @@ public class JwtTokenService {
         var claims = JwtClaimsSet.builder()
                                 .issuer(issuer)
                                 .issuedAt(Instant.now())
-                                .audience(audiences)
+                                .audience(List.of(audiences))
                                 .expiresAt(Instant.now().plusSeconds(timeout))
                                 .subject(authentication.getName())
                                 .claim("scope", scope)
