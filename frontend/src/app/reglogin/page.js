@@ -4,11 +4,13 @@ import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import axios from "axios"
-
+import { useRouter } from "next/navigation"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export default function LoginRegister() {
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [currentSection, setCurrentSection] = useState("Login")
+    const router = useRouter()
     useEffect(() => {
         if (currentSection === "Login") {
             document.getElementById("loginsection").classList.add("text-purple-500")
@@ -23,13 +25,11 @@ export default function LoginRegister() {
     const submitForm = async (data) => {
         console.log(data)
         if (currentSection === "Login") {
-            const sentData = { email: data.email, password: data.password }
-            axios.post("/api/auth/login", sentData).then((res) => {
-                if (res.data.success) {
-                    toast.success(res.data.message)
-                }
-                else {
-                    toast.error(res.data.message)
+            const sentData = { username: data.email, password: data.password }
+            axios.post("http://localhost:8080/v1/auth", sentData).then((res) => {
+                if(res.status === 200){
+                    toast.success("Login successful")
+                    console.log(res.data)
                 }
             }).catch((err) => {
                 toast.error("An error occured")
@@ -45,21 +45,28 @@ export default function LoginRegister() {
                 return
             }
             else {
-                const sentData = { email: data.email, password: data.password, type: data.Type }
+                const sentData = { username: data.email, password: data.password, role: data.Type }
                 document.getElementById("confirm_password").classList.remove("border-red-500")
                 document.getElementById("confirm_password").classList.add("border-black")
                 document.getElementById("confirm_password").classList.add("border-2")
                 document.getElementById("password_mismatch_label").hidden = true
-                axios.post("/api/auth/register", sentData).then((res) => {
-                    if (res.data.success) {
-                        toast.success(res.data.message)
-                    }
-                    else {
-                        toast.error(res.data.message)
-                    }
-                }).catch((err) => {
-                    toast.error("An error occured")
-                })
+                router.push(`/verifyotp?email=${data.email}`)
+                // axios.post("http://localhost:8080/v1/auth/register", sentData).then((res) => {
+                //     console.log("Response")
+                //     console.log(res)
+                //     if (res.status === 200) {
+                //         toast.success("Registration successful going to OTP verification")
+                //         router.push(`/verifyotp?email=${data.email}`)
+                //     }
+                //     else {
+                //         toast.error("Registration failed")
+                //     }
+                // }).catch((err) => {
+                //     console.log(err)
+                //     toast.error("An error occured. Registration failed",{
+                //         description: "A user with this email already exists. Please login or use another email"
+                //     })
+                // })
             }
         }
     }
@@ -76,23 +83,34 @@ export default function LoginRegister() {
                 <Separator className="bg-purple-400 m-2 w-80" />
                 <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input type="email" placeholder="Email" className="border-2 border-black rounded-md p-2" {...register("email", { required: true, maxLength: 32 })} />
+                    <input type="email" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2" {...register("email", { required: true, maxLength: 32 })} />
                     {errors.email?.type === "required" && <span className="text-red-500">This field is required</span>}
                     {errors.email?.type === "maxLength" && <span className="text-red-500">Max length is 32</span>}
                     <label className="text-xl font-bold mt-5">Password</label>
-                    <input type="password" placeholder="Password" className="border-2 border-black rounded-md p-2 mt-2" {...register("password", { required: true, maxLength: 64 })} />
+                    <input id="password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("password", { required: true, maxLength: 64 })} />
                     {errors.password?.type === "required" && <span className="text-red-500">This field is required</span>}
                     {errors.password?.type === "maxLength" && <span className="text-red-500">Max length is 64</span>}
+                    <div className="flex flex-row items-center justify-center mt-1">
+                    <Checkbox defaultChecked={false} id="show_pass" onCheckedChange={(checked)=>{
+                        if(checked){
+                            document.getElementById("password").type = "text"
+                        }
+                        else{
+                            document.getElementById("password").type = "password"
+                        }
+                    }} />
+                    <label htmlFor="show_pass" className="text-sm font-bold ml-2">Show Password</label>
+                    </div>
                     {currentSection === "Register" && (
                         <>
                             <label className="text-xl font-bold mt-5">Confirm Password</label>
-                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-black rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
+                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
                             <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
                             <select className="w-32 mt-5 h-9 rounded p-2" {...register("Type", { required: true })}>
-                                <option className="w-full m-3" value="General">General</option>
-                                <option className="w-full m-3" value=" Doctor"> Doctor</option>
-                                <option className="w-full m-3" value=" Nurse"> Nurse</option>
-                                <option className="w-full m-3" value=" Hospital"> Hospital</option>
+                                <option className="w-full m-3" value="ROLE_PATIENT">PATIENT</option>
+                                <option className="w-full m-3" value="ROLE_DOCTOR">DOCTOR</option>
+                                <option className="w-full m-3" value="ROLE_NURSE">NURSE</option>
+                                <option className="w-full m-3" value="ROLE_ADMIN">ADMIN</option>
                             </select>
                         </>
                     )
