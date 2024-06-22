@@ -29,7 +29,7 @@ public class UserRegistrationAndVerificationService {
     private String verificationEmailSubject;
 
     @Value("${verification.email.timeout}")
-    private Long optExpiration;
+    private int optExpiration;
 
     private final Logger logger = LoggerFactory.getLogger(AuthControllerV1.class);
     private final PasswordEncoder passwordEncoder;
@@ -63,7 +63,7 @@ public class UserRegistrationAndVerificationService {
 
     public void sendVerificationEmail(String username, String otp) {
         emailService.sendSimpleEmail(username, verificationEmailSubject,
-                String.format(verificationEmailMessage, otp));
+                String.format(verificationEmailMessage, otp, (optExpiration / 60)));
     }
 
     public String getOtp(){

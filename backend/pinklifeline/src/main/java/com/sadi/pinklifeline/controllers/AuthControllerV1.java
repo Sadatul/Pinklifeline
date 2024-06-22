@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -31,14 +32,15 @@ public class AuthControllerV1 {
     }
 
     @PostMapping
-    public ResponseEntity<JwtTokenResponse> generateToken(@RequestBody JwtTokenRequest tokenRequest) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(tokenRequest.username(), tokenRequest.password());
+    public ResponseEntity<JwtTokenResponse> generateToken(@Valid @RequestBody JwtTokenRequest tokenRequest) {
+        var authenticationToken = new UsernamePasswordAuthenticationToken(tokenRequest.getUsername(), tokenRequest.getPassword());
         var authentication = authenticationManager.authenticate(authenticationToken);
         var token = jwtTokenService.generateToken(authentication);
         return ResponseEntity.ok(new JwtTokenResponse(token));
     }
 
     @PostMapping("/register")
+    @PreAuthorize("#registrationRequest.role.toString() != 'ROLE_ADMIN'")
     public ResponseEntity<Void> register(@Valid @RequestBody RegistrationRequest registrationRequest) throws JsonProcessingException {
         userRegVerService.checkIfUserExists(registrationRequest.getUsername());
         logger.debug(String.format("Registered user with email=%s", registrationRequest.getUsername()));

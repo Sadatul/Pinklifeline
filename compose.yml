@@ -51,6 +51,8 @@ services:
       - DB_PASSWORD=pinklifeline
       - REDIS_HOST=redis-stack
       - REDIS_PORT=6379
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=pinklifeline
     ports:
       - "8080:8080"
     networks:

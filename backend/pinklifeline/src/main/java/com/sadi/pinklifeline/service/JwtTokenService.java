@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -15,6 +16,15 @@ import java.util.stream.Collectors;
 public class JwtTokenService {
     private final JwtEncoder jwtEncoder;
 
+    @Value("${auth.jwt.audiences}")
+    private String[] audiences;
+
+    @Value("${auth.jwt.timeout}")
+    private int timeout;
+
+    @Value("${auth.jwt.issuer}")
+    private String issuer;
+
     public JwtTokenService(JwtEncoder jwtEncoder) {
         this.jwtEncoder = jwtEncoder;
     }
@@ -24,10 +34,10 @@ public class JwtTokenService {
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(" "));
         var claims = JwtClaimsSet.builder()
-                                .issuer("self")
+                                .issuer(issuer)
                                 .issuedAt(Instant.now())
-                                .audience(List.of("pinklifeline"))
-                                .expiresAt(Instant.now().plusSeconds(3600))
+                                .audience(List.of(audiences))
+                                .expiresAt(Instant.now().plusSeconds(timeout))
                                 .subject(authentication.getName())
                                 .claim("scope", scope)
                                 .build();
