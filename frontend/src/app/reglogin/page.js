@@ -6,11 +6,18 @@ import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useContext } from "react"
+import { AuthContext, AuthContextDispatch } from "../components/authContexts"
 
 export default function LoginRegister() {
+    const authInfo = useContext(AuthContext)
+    const router = useRouter()
+    if (authInfo?.isAuth || authInfo?.token) {
+        router.push("/dashboard")
+    }
+    const setAuthInfo = useContext(AuthContextDispatch)
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [currentSection, setCurrentSection] = useState("Login")
-    const router = useRouter()
     useEffect(() => {
         if (currentSection === "Login") {
             document.getElementById("loginsection").classList.add("text-purple-500")
@@ -26,14 +33,17 @@ export default function LoginRegister() {
         console.log(data)
         if (currentSection === "Login") {
             const sentData = { username: data.email, password: data.password }
-            axios.post("http://localhost:8080/v1/auth", sentData).then((res) => {
-                if(res.status === 200){
-                    toast.success("Login successful")
-                    console.log(res.data)
-                }
-            }).catch((err) => {
-                toast.error("An error occured")
-            })
+            // axios.post("http://localhost:8080/v1/auth", sentData).then((res) => {
+            //     if(res.status === 200){
+            //         toast.success("Login successful")
+            //         console.log(res.data)
+            //     }
+            // }).catch((err) => {
+            //     toast.error("An error occured")
+            // })
+            setAuthInfo({ isAuth: true, token: "sample jwt token" })
+            router.push("/dashboard")
+
         }
         else if (currentSection === "Register") {
             if (data.password !== data.confirm_password) {
@@ -91,15 +101,15 @@ export default function LoginRegister() {
                     {errors.password?.type === "required" && <span className="text-red-500">This field is required</span>}
                     {errors.password?.type === "maxLength" && <span className="text-red-500">Max length is 64</span>}
                     <div className="flex flex-row items-center justify-center mt-1">
-                    <Checkbox defaultChecked={false} id="show_pass" onCheckedChange={(checked)=>{
-                        if(checked){
-                            document.getElementById("password").type = "text"
-                        }
-                        else{
-                            document.getElementById("password").type = "password"
-                        }
-                    }} />
-                    <label htmlFor="show_pass" className="text-sm font-bold ml-2">Show Password</label>
+                        <Checkbox defaultChecked={false} id="show_pass" onCheckedChange={(checked) => {
+                            if (checked) {
+                                document.getElementById("password").type = "text"
+                            }
+                            else {
+                                document.getElementById("password").type = "password"
+                            }
+                        }} />
+                        <label htmlFor="show_pass" className="text-sm font-bold ml-2">Show Password</label>
                     </div>
                     {currentSection === "Register" && (
                         <>

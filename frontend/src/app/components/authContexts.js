@@ -5,7 +5,7 @@ const AuthContext = createContext()
 const AuthContextDispatch = createContext()
 
 function AuthContextProvider({ children }) {
-    const [auth, setAuth] = useState({ isAuth: false, token: "" })
+    const [auth, setAuth] = useState({ isAuth: false, token: null })
     return (
         <AuthContext.Provider value={auth}>
             <AuthContextDispatch.Provider value={setAuth}>

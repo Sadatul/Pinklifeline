@@ -1,5 +1,7 @@
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
+import { AuthContextProvider } from "./components/authContexts";
+import { AuthContext } from "./components/authContexts";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -13,7 +15,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        {children}
+        <AuthContextProvider>
+          {children}
+        </AuthContextProvider>
         <Toaster richColors closeButton />
       </body>
     </html>
