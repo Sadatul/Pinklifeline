@@ -13,14 +13,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Table(name = "basic_users")
-public class BasicUser {
+@Table(name = "basic_users_details")
+public class BasicUserDetails {
     @Id
     private Long userId;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "userId")
+    @ToString.Exclude
     private User user;
 
     @Column(name = "full_name", nullable = false)
@@ -32,7 +33,7 @@ public class BasicUser {
     @Column(nullable = false)
     private Double height;
 
-    public BasicUser(LocalDateTime lastPeriodDate, String fullName,
+    public BasicUserDetails(LocalDateTime lastPeriodDate, String fullName,
                      Double weight, Double height, String address,
                      YesNo cancerHistory, int avgCycleLength) {
         this.lastPeriodDate = lastPeriodDate;

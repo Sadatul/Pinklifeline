@@ -52,5 +52,5 @@ public class User {
     private String profilePicture;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private BasicUser basicUser;
+    private BasicUserDetails basicUser;
 }
