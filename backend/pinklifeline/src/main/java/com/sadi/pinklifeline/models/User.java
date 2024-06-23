@@ -13,6 +13,10 @@ import java.util.List;
 @Setter
 @ToString
 @Table(name="users")
+@SecondaryTable(
+        name = "profile_pictures",
+        pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id")
+)
 public class User {
 
     @Id
@@ -36,4 +40,17 @@ public class User {
         this.password = password;
         this.roles = roles;
     }
+
+    public User(Long id, String username, String password, List<Roles> roles) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+    }
+
+    @Column(table = "profile_pictures", name = "profile_picture", nullable = false)
+    private String profilePicture;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private BasicUser basicUser;
 }
