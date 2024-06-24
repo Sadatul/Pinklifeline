@@ -78,7 +78,9 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
                   }
                  """));
 
-        String response = resultActions.andExpect(status().isOk()).andExpect(jsonPath("$.token").exists())
+        String response = resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.userId").exists())
                 .andReturn().getResponse().getContentAsString();
 
         TypeReference<Map<String, String>> typeRef = new TypeReference<>() {};

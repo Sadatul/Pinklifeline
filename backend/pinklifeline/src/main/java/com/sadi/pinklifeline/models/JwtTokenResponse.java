@@ -1,4 +1,4 @@
 package com.sadi.pinklifeline.models;
 
-public record JwtTokenResponse(String token) {
+public record JwtTokenResponse(String token, String userId) {
 }

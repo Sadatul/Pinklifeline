@@ -35,8 +35,8 @@ public class AuthControllerV1 {
     public ResponseEntity<JwtTokenResponse> generateToken(@Valid @RequestBody JwtTokenRequest tokenRequest) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(tokenRequest.getUsername(), tokenRequest.getPassword());
         var authentication = authenticationManager.authenticate(authenticationToken);
-        var token = jwtTokenService.generateToken(authentication);
-        return ResponseEntity.ok(new JwtTokenResponse(token));
+        var tokenResponse = jwtTokenService.generateToken(authentication);
+        return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/register")

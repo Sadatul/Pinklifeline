@@ -3,6 +3,7 @@ package com.sadi.pinklifeline.advices;
 import com.sadi.pinklifeline.exceptions.OtpMismatchException;
 import com.sadi.pinklifeline.exceptions.OtpTimedOutException;
 import com.sadi.pinklifeline.exceptions.UserAlreadyExistsException;
+import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
 import com.sadi.pinklifeline.models.ErrorDetails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler({UserRegistrationAlreadyCompleteException.class})
+    public final ResponseEntity<ErrorDetails> handleForbiddenException(Exception ex, WebRequest request) throws Exception{
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
 
     @ExceptionHandler({OtpTimedOutException.class})
     public final ResponseEntity<ErrorDetails> handleTimeOutExceptions(Exception ex, WebRequest request) throws Exception{

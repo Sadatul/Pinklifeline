@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @Embeddable
+@EqualsAndHashCode
 public class Medication {
     @Column(nullable = false)
     private String name;

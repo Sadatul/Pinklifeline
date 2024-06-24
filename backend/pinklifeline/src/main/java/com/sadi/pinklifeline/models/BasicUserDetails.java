@@ -4,7 +4,7 @@ import com.sadi.pinklifeline.enums.YesNo;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -20,12 +20,15 @@ public class BasicUserDetails {
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     @ToString.Exclude
     private User user;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    @Column(name = "dob", nullable = false)
+    private LocalDate dob;
 
     @Column(nullable = false)
     private Double weight;
@@ -33,20 +36,16 @@ public class BasicUserDetails {
     @Column(nullable = false)
     private Double height;
 
-    public BasicUserDetails(LocalDateTime lastPeriodDate, String fullName,
-                     Double weight, Double height, String address,
+    public BasicUserDetails(LocalDate lastPeriodDate, String fullName,
+                     Double weight, Double height,
                      YesNo cancerHistory, int avgCycleLength) {
         this.lastPeriodDate = lastPeriodDate;
         this.fullName = fullName;
         this.weight = weight;
         this.height = height;
-        this.address = address;
         this.cancerHistory = cancerHistory;
         this.avgCycleLength = avgCycleLength;
     }
-
-    @Column(nullable = false)
-    private String address;
 
     @Column(name = "cancer_history", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -58,7 +57,7 @@ public class BasicUserDetails {
     private List<String> cancerRelatives;
 
     @Column(nullable = false, name = "last_period_date")
-    private LocalDateTime lastPeriodDate;
+    private LocalDate lastPeriodDate;
 
     @Column(nullable = false, name = "avg_cycle_length")
     private int avgCycleLength;
@@ -70,19 +69,16 @@ public class BasicUserDetails {
     private List<String> periodIrregularities;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "alergies", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "alergy_name", nullable = false)
-    private List<String> alergies;
+    @CollectionTable(name = "allergies", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "allergy_name", nullable = false)
+    private List<String> allergies;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "organs_with_cronic_condition", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "organs_with_chronic_condition", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "organ", nullable = false)
-    private List<String> organsWithCronicCondition;
+    private List<String> organsWithChronicCondition;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "medications", joinColumns = @JoinColumn(name = "user_id"))
     private List<Medication> medications;
-
-
-
 }

@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.models;
 
 import com.sadi.pinklifeline.enums.Roles;
+import com.sadi.pinklifeline.enums.YesNo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,10 @@ public class User {
     @Column(nullable = false)
     private  String password;
 
+    @Column(name = "is_registration_complete", columnDefinition = "ENUM('Y', 'N') DEFAULT 'N'")
+    @Enumerated(EnumType.STRING)
+    private YesNo isRegistrationComplete;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -39,6 +44,7 @@ public class User {
         this.username = username;
         this.password = password;
         this.roles = roles;
+        this.isRegistrationComplete = YesNo.N;
     }
 
     public User(Long id, String username, String password, List<Roles> roles) {
@@ -46,6 +52,7 @@ public class User {
         this.username = username;
         this.password = password;
         this.roles = roles;
+        this.isRegistrationComplete = YesNo.N;
     }
 
     @Column(table = "profile_pictures", name = "profile_picture", nullable = false)
