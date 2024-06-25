@@ -2,9 +2,7 @@ package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
-import com.sadi.pinklifeline.models.BasicUserDetails;
-import com.sadi.pinklifeline.models.BasicUserInfoRegisterReq;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.*;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +20,7 @@ public class UserInfoHandlerService {
 
     Logger logger = LoggerFactory.getLogger(UserInfoHandlerService.class);
 
-    private static BasicUserDetails getBasicUserDetails(BasicUserInfoRegisterReq req, User user) {
+    private BasicUserDetails getBasicUserDetails(AbstractUserInfoRegisterReq req, User user) {
         BasicUserDetails basic = new BasicUserDetails();
         basic.setUser(user);
         basic.setHeight(req.getHeight());
@@ -41,6 +39,15 @@ public class UserInfoHandlerService {
         return basic;
     }
 
+    private PatientSpecificDetails getPatientSpecificDetails(PatientInfoRegisterReq req, User user) {
+        PatientSpecificDetails patientSpecificDetails = new PatientSpecificDetails();
+        patientSpecificDetails.setCancerStage(req.getCancerStage());
+        patientSpecificDetails.setLocation(req.getLocation());
+        patientSpecificDetails.setDiagnosisDate(req.getDiagnosisDate());
+        patientSpecificDetails.setUser(user);
+        patientSpecificDetails.setUserId(user.getId());
+        return patientSpecificDetails;
+    }
     public User getUserForInfoRegistration(Long id){
         User user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -60,7 +67,24 @@ public class UserInfoHandlerService {
             userRepository.save(user);
         }
         catch (UnsupportedOperationException e){
-            logger.info("This error is thrown {}",e.toString());
+            logger.info("This error is thrown basic registration {}",e.toString());
+        }
+    }
+
+    public void registerPatient(PatientInfoRegisterReq req, User user){
+        BasicUserDetails basic = getBasicUserDetails(req, user);
+        PatientSpecificDetails patientSpecific = getPatientSpecificDetails(req, user);
+        user.setProfilePicture(req.getProfilePicture());
+        logger.info("Got basic write");
+        user.setBasicUser(basic);
+        user.setPatientSpecificDetails(patientSpecific);
+        user.setIsRegistrationComplete(YesNo.Y);
+        logger.info("Got basic right: {}", user.toString());
+        try{
+            userRepository.save(user);
+        }
+        catch (UnsupportedOperationException e){
+            logger.info("This error is thrown patient registration {}",e.toString());
         }
     }
 
