@@ -48,7 +48,7 @@ public class JwtTokenService {
                                 .audience(List.of(audiences))
                                 .expiresAt(Instant.now().plusSeconds(timeout))
                                 .subject(userId)
-                                .claim("scope", scope)
+                                .claim("scp", scope)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         return new JwtTokenResponse(token, userId);

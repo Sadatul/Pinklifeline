@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.function.Consumer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -66,7 +65,7 @@ public class UserInfoRegisterTest extends AbstractBaseIntegrationTest{
                 	"dob": "2000-08-08",
                 	"cancerHistory": "Y",
                   	"cancerRelatives": ["Aunt", "Samiha"],
-                	"profilePicture": "aussieman",
+                	"profilePicture": "businessman",
                 	"lastPeriodDate": "2000-08-08",
                 	"avgCycleLength": 5,
                 	"periodIrregularities": ["Higher pain", "Longer than average cycles"],
@@ -82,7 +81,7 @@ public class UserInfoRegisterTest extends AbstractBaseIntegrationTest{
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
         User newUser = userRepository.findById(id).orElseThrow();
-        Assertions.assertThat(newUser.getProfilePicture()).isEqualTo("aussieman");
+        Assertions.assertThat(newUser.getProfilePicture()).isEqualTo("businessman");
         BasicUserDetails basic = user.getBasicUser();
         Assertions.assertThat(basic.getFullName()).isEqualTo("Sadi");
         Assertions.assertThat(basic.getWeight()).isEqualTo(58);
@@ -98,6 +97,7 @@ public class UserInfoRegisterTest extends AbstractBaseIntegrationTest{
         String[] allergies = {"Peanut"};
         Medication[] medications = {new Medication("Napa Extra", "3 times a day"),
                 new Medication("Napa Extra", "3 times a day")};
+
         assertArrayEquals(relatives, basic.getCancerRelatives().toArray());
         assertArrayEquals(medications, basic.getMedications().toArray());
         assertArrayEquals(organsWithChronicCondition, basic.getOrgansWithChronicCondition().toArray());

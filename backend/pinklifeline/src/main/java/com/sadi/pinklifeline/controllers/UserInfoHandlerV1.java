@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class UserInfoHandlerV1 {
     }
 
     @PostMapping("/ROLE_BASICUSER/register/{id}")
+    @PreAuthorize("(#id.toString() == authentication.name) and hasRole('BASICUSER')")
     public ResponseEntity<Void> registerBasicUserInfo(@PathVariable Long id,
                                                     @Valid @RequestBody BasicUserInfoRegisterReq req){
 

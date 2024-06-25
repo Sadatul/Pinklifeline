@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,35 +24,35 @@ import java.time.LocalDate;
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ErrorDetails> handleAllException(Exception ex, WebRequest request) throws Exception{
+    public final ResponseEntity<ErrorDetails> handleAllException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({UserAlreadyExistsException.class, OtpMismatchException.class})
-    public final ResponseEntity<ErrorDetails> handleBadRequestException(Exception ex, WebRequest request) throws Exception{
+    public final ResponseEntity<ErrorDetails> handleBadRequestException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({BadCredentialsException.class})
-    public final ResponseEntity<ErrorDetails> handleUnauthorizedException(Exception ex, WebRequest request) throws Exception{
+    public final ResponseEntity<ErrorDetails> handleUnauthorizedException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler({UserRegistrationAlreadyCompleteException.class})
-    public final ResponseEntity<ErrorDetails> handleForbiddenException(Exception ex, WebRequest request) throws Exception{
+    @ExceptionHandler({UserRegistrationAlreadyCompleteException.class, AuthorizationDeniedException.class})
+    public final ResponseEntity<ErrorDetails> handleForbiddenException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({OtpTimedOutException.class})
-    public final ResponseEntity<ErrorDetails> handleTimeOutExceptions(Exception ex, WebRequest request) throws Exception{
+    public final ResponseEntity<ErrorDetails> handleTimeOutExceptions(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.REQUEST_TIMEOUT);

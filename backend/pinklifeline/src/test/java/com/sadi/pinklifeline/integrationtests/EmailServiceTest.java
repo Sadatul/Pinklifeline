@@ -14,10 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class EmailServiceTest extends AbstractBaseIntegrationTest {
-
-    @Autowired
-    private EmailService emailService;
-
     @Autowired
     private UserRegistrationAndVerificationService userRegVerService;
 
