@@ -10,15 +10,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserInfoHandlerService {
+public class UserInfoRegistrationHandlerService {
 
     private final UserRepository userRepository;
 
-    public UserInfoHandlerService(UserRepository userRepository) {
+    public UserInfoRegistrationHandlerService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    Logger logger = LoggerFactory.getLogger(UserInfoHandlerService.class);
+    Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerService.class);
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoRegisterReq req, User user) {
         BasicUserDetails basic = new BasicUserDetails();

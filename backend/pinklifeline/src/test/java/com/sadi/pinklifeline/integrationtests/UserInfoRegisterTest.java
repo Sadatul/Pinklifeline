@@ -78,7 +78,7 @@ public class UserInfoRegisterTest extends AbstractBaseIntegrationTest{
                 """;
         String token = mint(id, List.of(Roles.ROLE_BASICUSER));
 
-        mockMvc.perform(post("/v1/ROLE_BASICUSER/register/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/register/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
         User newUser = userRepository.findById(id).orElseThrow();
@@ -134,7 +134,7 @@ public class UserInfoRegisterTest extends AbstractBaseIntegrationTest{
                 """;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
 
-        mockMvc.perform(post("/v1/ROLE_PATIENT/register/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/register/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
         User newUser = userRepository.findById(id).orElseThrow();
