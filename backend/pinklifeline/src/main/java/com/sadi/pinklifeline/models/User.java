@@ -30,7 +30,7 @@ public class User {
     @Column(nullable = false)
     private  String password;
 
-    @Column(name = "is_registration_complete", columnDefinition = "ENUM('Y', 'N') DEFAULT 'N'")
+    @Column(name = "is_registration_complete", columnDefinition = "ENUM('Y', 'N') DEFAULT 'N' NOT NULL")
     @Enumerated(EnumType.STRING)
     private YesNo isRegistrationComplete;
 
@@ -60,4 +60,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private BasicUserDetails basicUser;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PatientSpecificDetails patientSpecificDetails;
 }
