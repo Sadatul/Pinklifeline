@@ -40,6 +40,7 @@ public class UserInfoUpdateHandlerService {
         PatientSpecificDetails patientSpecificDetails = user.getPatientSpecificDetails();
         patientSpecificDetails.setCancerStage(req.getCancerStage());
         patientSpecificDetails.setDiagnosisDate(req.getDiagnosisDate());
+        patientSpecificDetails.setLocation(req.getLocation());
         return patientSpecificDetails;
     }
 

@@ -164,6 +164,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 	"allergies": ["Peanut"],
                 	"cancerStage": "STAGE_1",
                    	"diagnosisDate": "2000-09-08",
+                   	"location": "raul",
                 	"organsWithChronicCondition": ["Heart", "Throat", "Lung"],
                 	"medications": [{"name": "Napa Extra", "doseDescription": "3 times a day"},
                                     {"name": "Napa Extend", "doseDescription": "3 times a day"}]
@@ -174,6 +175,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 .content(updateBody)).andExpect(status().isNoContent());
 
         PatientInfoUpdateReq updateReq = objectMapper.readValue(updateBody, PatientInfoUpdateReq.class);
+//        logger.info(updateReq.toString());
         newUser = userRepository.findById(id).orElseThrow();
         assertThatBasicUpdateIsCorrect(updateReq, newUser);
         assertThatPatientUpdateIsCorrect(updateReq, newUser);
@@ -181,8 +183,6 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         // The rest of the data stays same Test
         assertEquals(req.getProfilePicture(), newUser.getProfilePicture());
         assertEquals(req.getDob(), newUser.getBasicUser().getDob());
-        assertEquals(req.getLocation(), newUser.getPatientSpecificDetails().getLocation());
-
     }
 
     private void assertThatBasicInfosAreCorrect(AbstractUserInfoRegisterReq req, User user){
@@ -226,6 +226,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         PatientSpecificDetails patient = user.getPatientSpecificDetails();
         Assertions.assertThat(patient.getCancerStage()).isEqualTo(req.getCancerStage());
         Assertions.assertThat(patient.getDiagnosisDate()).isEqualTo(req.getDiagnosisDate());
+        Assertions.assertThat(patient.getLocation()).isEqualTo(req.getLocation());
     }
 
     private String mint(Long id, List<Roles> roles){

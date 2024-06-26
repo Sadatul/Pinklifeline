@@ -12,6 +12,8 @@ public class PatientInfoUpdateReq extends AbstractUserInfoUpdateReq{
     @NotNull
     private LocalDate diagnosisDate;
 
+    @NotNull
+    private String location;
 
     public @NotNull CancerStages getCancerStage() {
         return cancerStage;
@@ -19,6 +21,10 @@ public class PatientInfoUpdateReq extends AbstractUserInfoUpdateReq{
 
     public @NotNull LocalDate getDiagnosisDate() {
         return diagnosisDate;
+    }
+
+    public @NotNull String getLocation() {
+        return location;
     }
 
     public void setCancerStage(@NotNull CancerStages cancerStage) {
@@ -29,12 +35,16 @@ public class PatientInfoUpdateReq extends AbstractUserInfoUpdateReq{
         this.diagnosisDate = diagnosisDate;
     }
 
+    public void setLocation(@NotNull String location) {
+        this.location = location;
+    }
     @Override
     public String toString() {
         return "PatientInfoRegisterReq{" +
                 super.toString()+
                 "cancerStage=" + cancerStage +
-                ", diagnosisDate=" + diagnosisDate + '\'' +
+                ", diagnosisDate=" + diagnosisDate +
+                ", location='" + location + '\'' +
                 '}';
     }
 }
