@@ -45,7 +45,7 @@ public class UserInfoUpdateTest extends AbstractBaseIntegrationTest{
     @Autowired
     private JwtEncoder jwtEncoder;
 
-    private final Logger logger = LoggerFactory.getLogger(UserInfoRegisterTest.class);
+    private final Logger logger = LoggerFactory.getLogger(UserInfoUpdateTest.class);
 
     @Test
     public void profilePictureUpdateTest() throws Exception {
