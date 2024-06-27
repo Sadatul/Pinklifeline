@@ -6,16 +6,12 @@ import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useContext } from "react"
-import { AuthContext, AuthContextDispatch } from "../components/authContexts"
 
 export default function LoginRegister() {
-    const authInfo = useContext(AuthContext)
     const router = useRouter()
-    if (authInfo?.isAuth || authInfo?.token) {
-        router.push("/dashboard")
-    }
-    const setAuthInfo = useContext(AuthContextDispatch)
+    // if (authInfo?.isAuth || authInfo?.token) {
+    //     router.push("/dashboard")
+    // }
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [currentSection, setCurrentSection] = useState("Login")
     useEffect(() => {
@@ -33,15 +29,14 @@ export default function LoginRegister() {
         console.log(data)
         if (currentSection === "Login") {
             const sentData = { username: data.email, password: data.password }
-            // axios.post("http://localhost:8080/v1/auth", sentData).then((res) => {
-            //     if(res.status === 200){
-            //         toast.success("Login successful")
-            //         console.log(res.data)
-            //     }
-            // }).catch((err) => {
-            //     toast.error("An error occured")
-            // })
-            setAuthInfo({ isAuth: true, token: "sample jwt token" })
+            axios.post("http://localhost:8080/v1/auth", sentData).then((res) => {
+                if(res.status === 200){
+                    toast.success("Login successful")
+                    console.log(res.data)
+                }
+            }).catch((err) => {
+                toast.error("An error occured")
+            })
             router.push("/dashboard")
 
         }
@@ -61,22 +56,22 @@ export default function LoginRegister() {
                 document.getElementById("confirm_password").classList.add("border-2")
                 document.getElementById("password_mismatch_label").hidden = true
                 router.push(`/verifyotp?email=${data.email}`)
-                // axios.post("http://localhost:8080/v1/auth/register", sentData).then((res) => {
-                //     console.log("Response")
-                //     console.log(res)
-                //     if (res.status === 200) {
-                //         toast.success("Registration successful going to OTP verification")
-                //         router.push(`/verifyotp?email=${data.email}`)
-                //     }
-                //     else {
-                //         toast.error("Registration failed")
-                //     }
-                // }).catch((err) => {
-                //     console.log(err)
-                //     toast.error("An error occured. Registration failed",{
-                //         description: "A user with this email already exists. Please login or use another email"
-                //     })
-                // })
+                axios.post("http://localhost:8080/v1/auth/register", sentData).then((res) => {
+                    console.log("Response")
+                    console.log(res)
+                    if (res.status === 200) {
+                        toast.success("Registration successful going to OTP verification")
+                        router.push(`/verifyotp?email=${data.email}`)
+                    }
+                    else {
+                        toast.error("Registration failed")
+                    }
+                }).catch((err) => {
+                    console.log(err)
+                    toast.error("An error occured. Registration failed",{
+                        description: "A user with this email already exists. Please login or use another email"
+                    })
+                })
             }
         }
     }

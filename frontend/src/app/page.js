@@ -91,10 +91,10 @@ export default function Home() {
 
   const checkScroll = () => {
     if (window.scrollY > 0) {
-      document.getElementById('navbar').classList.add('scale-90', 'shadow-md');
+      document.getElementById('navbar')?.classList.add('scale-90', 'shadow-md');
     }
     else {
-      document.getElementById('navbar').classList.remove('scale-90', 'shadow-md');
+      document.getElementById('navbar')?.classList.remove('scale-90', 'shadow-md');
     }
   }
 
