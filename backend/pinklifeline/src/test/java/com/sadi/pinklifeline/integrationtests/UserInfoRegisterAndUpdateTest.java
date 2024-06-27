@@ -2,9 +2,11 @@ package com.sadi.pinklifeline.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sadi.pinklifeline.enums.Roles;
-import com.sadi.pinklifeline.models.*;
+import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
+import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.reqeusts.*;
 import com.sadi.pinklifeline.repositories.UserRepository;
-import static org.junit.jupiter.api.Assertions.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,6 +22,9 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

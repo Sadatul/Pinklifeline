@@ -1,10 +1,11 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.reqeusts;
 
 import com.sadi.pinklifeline.enums.CancerStages;
 import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
-public class PatientInfoRegisterReq extends AbstractUserInfoRegisterReq{
+public class PatientInfoUpdateReq extends AbstractUserInfoUpdateReq {
     @NotNull
     private CancerStages cancerStage;
 
@@ -37,7 +38,6 @@ public class PatientInfoRegisterReq extends AbstractUserInfoRegisterReq{
     public void setLocation(@NotNull String location) {
         this.location = location;
     }
-
     @Override
     public String toString() {
         return "PatientInfoRegisterReq{" +

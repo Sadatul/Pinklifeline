@@ -1,6 +1,7 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.reqeusts;
 
 import com.sadi.pinklifeline.enums.YesNo;
+import com.sadi.pinklifeline.models.entities.Medication;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,12 +13,15 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public abstract class AbstractUserInfoUpdateReq {
+public abstract class AbstractUserInfoRegisterReq {
     @NotNull(message = "fullName field not provided")
     private String fullName;
 
     @NotNull(message = "weight field not provided")
     private Double weight;
+
+    @NotNull(message = "dob field not provided")
+    private LocalDate dob;
 
     @NotNull(message = "height field not provided")
     private Double height;
@@ -25,10 +29,10 @@ public abstract class AbstractUserInfoUpdateReq {
     @NotNull(message = "cancerHistory field not provided")
     private YesNo cancerHistory;
 
+
     private List<String> cancerRelatives;
 
-    @AssertTrue(message = "If your family has cancer history, y" +
-            "ou must send your relation with that relative && if they don't, cancerRelatives must be empty list")
+    @AssertTrue(message = "If your family has cancer history, you must send your relation with that relative")
     public boolean isCancerHistory() {
         if(cancerHistory == YesNo.Y)
         {
@@ -45,6 +49,8 @@ public abstract class AbstractUserInfoUpdateReq {
     @NotNull(message = "avgCycleLength field not provided")
     private int avgCycleLength;
 
+    private String profilePicture;
+
     private List<String> periodIrregularities;
 
     private List<String> allergies;
@@ -53,7 +59,7 @@ public abstract class AbstractUserInfoUpdateReq {
 
     private List<Medication> medications;
 
-    public AbstractUserInfoUpdateReq() {
+    public AbstractUserInfoRegisterReq() {
         cancerRelatives = new ArrayList<>();
         periodIrregularities = new ArrayList<>();
         organsWithChronicCondition = new ArrayList<>();

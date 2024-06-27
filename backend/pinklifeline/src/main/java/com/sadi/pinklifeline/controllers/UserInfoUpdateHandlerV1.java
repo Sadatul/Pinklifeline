@@ -1,6 +1,8 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.sadi.pinklifeline.models.*;
+import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
+import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.service.UserInfoUpdateHandlerService;
 import jakarta.validation.Valid;

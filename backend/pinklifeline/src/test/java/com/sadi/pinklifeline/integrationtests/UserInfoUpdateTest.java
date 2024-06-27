@@ -1,7 +1,7 @@
 package com.sadi.pinklifeline.integrationtests;
 
 import com.sadi.pinklifeline.enums.Roles;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

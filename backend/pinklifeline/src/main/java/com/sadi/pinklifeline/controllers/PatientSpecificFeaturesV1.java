@@ -1,6 +1,6 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.sadi.pinklifeline.models.NearbyUserRes;
+import com.sadi.pinklifeline.models.responses.NearbyUserRes;
 import com.sadi.pinklifeline.service.PatientSpecificFeaturesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

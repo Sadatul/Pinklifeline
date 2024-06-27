@@ -1,7 +1,7 @@
 package com.sadi.pinklifeline.advices;
 
 import com.sadi.pinklifeline.exceptions.*;
-import com.sadi.pinklifeline.models.ErrorDetails;
+import com.sadi.pinklifeline.models.responses.ErrorDetails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

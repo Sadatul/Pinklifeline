@@ -1,6 +1,7 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.dtos;
 
 import com.sadi.pinklifeline.enums.Roles;
+import com.sadi.pinklifeline.models.entities.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

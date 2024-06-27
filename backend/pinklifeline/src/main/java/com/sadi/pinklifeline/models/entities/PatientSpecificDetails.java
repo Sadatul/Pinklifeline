@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.entities;
 // The complete Patient details can be achieved by combining PatientSpecificDetails with BasicUserDetails
 
 import com.sadi.pinklifeline.enums.CancerStages;

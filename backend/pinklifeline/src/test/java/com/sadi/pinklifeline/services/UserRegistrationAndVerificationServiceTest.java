@@ -2,7 +2,7 @@ package com.sadi.pinklifeline.services;
 
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.exceptions.UserAlreadyExistsException;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.repositories.UserVerificationRepository;
 import com.sadi.pinklifeline.service.UserRegistrationAndVerificationService;

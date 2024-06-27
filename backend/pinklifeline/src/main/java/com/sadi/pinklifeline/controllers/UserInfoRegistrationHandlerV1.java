@@ -1,8 +1,8 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.sadi.pinklifeline.models.BasicUserInfoRegisterReq;
-import com.sadi.pinklifeline.models.PatientInfoRegisterReq;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.service.UserInfoRegistrationHandlerService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

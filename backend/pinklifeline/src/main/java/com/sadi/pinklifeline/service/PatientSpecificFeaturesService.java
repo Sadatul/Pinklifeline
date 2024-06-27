@@ -2,8 +2,8 @@ package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserInfoUnregisteredException;
-import com.sadi.pinklifeline.models.NearbyUserRes;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.responses.NearbyUserRes;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.uber.h3core.H3Core;
 import org.springframework.security.access.prepost.PreAuthorize;
