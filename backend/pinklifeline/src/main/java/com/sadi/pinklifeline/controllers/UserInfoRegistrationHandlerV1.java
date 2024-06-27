@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/register")
+@RequestMapping("/v1/infos")
 public class UserInfoRegistrationHandlerV1 {
     private final Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerV1.class);
 

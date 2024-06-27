@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/update")
+@RequestMapping("/v1/infos")
 public class UserInfoUpdateHandlerV1 {
     private final UserInfoUpdateHandlerService updateHandlerService;
 
@@ -25,13 +25,13 @@ public class UserInfoUpdateHandlerV1 {
         this.updateHandlerService = updateHandlerService;
     }
 
-    @PostMapping("/profile_picture/{id}")
+    @PutMapping("/profile_picture/{id}")
     public ResponseEntity<Void> updateProfilePicture(@PathVariable Long id, @Valid @RequestBody ProfilePictureUpdateReq req) {
         updateHandlerService.updateProfilePicture(id, req.getProfilePicture());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/ROLE_BASICUSER/{id}")
+    @PutMapping("/ROLE_BASICUSER/{id}")
     @PreAuthorize("(#id.toString() == authentication.name) and hasRole('BASICUSER')")
     public ResponseEntity<Void> updateBasicUserInfo(@PathVariable Long id,
                                                       @Valid @RequestBody BasicUserInfoUpdateReq req){
@@ -43,7 +43,7 @@ public class UserInfoUpdateHandlerV1 {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/ROLE_PATIENT/{id}")
+    @PutMapping("/ROLE_PATIENT/{id}")
     @PreAuthorize("(#id.toString() == authentication.name) and hasRole('PATIENT')")
     public ResponseEntity<Void> updatePatientUserInfo(@PathVariable Long id,
                                                         @Valid @RequestBody PatientInfoUpdateReq req){

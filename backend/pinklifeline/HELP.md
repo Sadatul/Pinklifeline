@@ -11,7 +11,7 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 ```
 
 ## Basic User Information Register
-``` Endpoint: POST /v1/register/ROLE_BASICUSER/{id}```
+``` Endpoint: POST /v1/infos/ROLE_BASICUSER/{id}```
 ### Sample Body
 ```
  {
@@ -33,7 +33,7 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 ```
 
 ## Patient Information Register
-``` Endpoint: POST /v1/register/ROLE_PATIENT/{id}```
+``` Endpoint: POST /v1/infos/ROLE_PATIENT/{id}```
 ### Sample Body
 ```
 {
@@ -57,7 +57,7 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
  }
 ```
 ## Update Profile Picture
-``` Endpoint: /v1/update/profile_picture/{id}```
+``` Endpoint: PUT /v1/infos/profile_picture/{id}```
 ### Sample Body
 ```
 {
@@ -65,7 +65,7 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 }
 ```
 ## Update Basic User Info
-``` Endpoint: /v1/update/ROLE_BASICUSER/{id}```
+``` Endpoint: PUT /v1/infos/ROLE_BASICUSER/{id}```
 ### Sample Body
 ```
 {
@@ -84,7 +84,7 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 }
 ```
 ## Update Patient Info
-``` Endpoint: /v1/update/ROLE_PATIENT/{id}```
+``` Endpoint: PUT /v1/infos/ROLE_PATIENT/{id}```
 ### Sample Body
 ```
 {

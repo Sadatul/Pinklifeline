@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -58,7 +58,7 @@ public class UserInfoUpdateTest extends AbstractBaseIntegrationTest{
                 """;
         String token = mint(id, List.of(Roles.ROLE_BASICUSER));
 
-        mockMvc.perform(post("/v1/update/profile_picture/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/v1/infos/profile_picture/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
 

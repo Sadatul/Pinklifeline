@@ -83,7 +83,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 """;
         String token = mint(id, List.of(Roles.ROLE_BASICUSER));
 
-        mockMvc.perform(post("/v1/register/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/infos/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
         BasicUserInfoRegisterReq req = objectMapper.readValue(requestBody, BasicUserInfoRegisterReq.class);
@@ -105,7 +105,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                                     {"name": "Napa Extend", "doseDescription": "3 times a day"}]
                 }
                 """;
-        mockMvc.perform(post("/v1/update/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/v1/infos/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(updateBody)).andExpect(status().isNoContent());
 
@@ -146,7 +146,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 }
                 """;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        mockMvc.perform(post("/v1/register/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/infos/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
 
@@ -175,7 +175,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                                     {"name": "Napa Extend", "doseDescription": "3 times a day"}]
                 }
                 """;
-        mockMvc.perform(post("/v1/update/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/v1/infos/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(updateBody)).andExpect(status().isNoContent());
 
