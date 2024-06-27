@@ -2,7 +2,12 @@ package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
-import com.sadi.pinklifeline.models.*;
+import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
+import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.reqeusts.AbstractUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

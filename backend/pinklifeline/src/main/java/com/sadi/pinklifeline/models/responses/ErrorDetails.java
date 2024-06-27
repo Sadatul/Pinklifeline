@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.responses;
 
 import lombok.*;
 

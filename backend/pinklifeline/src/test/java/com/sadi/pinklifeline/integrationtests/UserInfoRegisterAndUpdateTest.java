@@ -2,9 +2,11 @@ package com.sadi.pinklifeline.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sadi.pinklifeline.enums.Roles;
-import com.sadi.pinklifeline.models.*;
+import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
+import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.reqeusts.*;
 import com.sadi.pinklifeline.repositories.UserRepository;
-import static org.junit.jupiter.api.Assertions.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,6 +22,9 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -78,7 +83,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 """;
         String token = mint(id, List.of(Roles.ROLE_BASICUSER));
 
-        mockMvc.perform(post("/v1/register/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/infos/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
         BasicUserInfoRegisterReq req = objectMapper.readValue(requestBody, BasicUserInfoRegisterReq.class);
@@ -100,7 +105,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                                     {"name": "Napa Extend", "doseDescription": "3 times a day"}]
                 }
                 """;
-        mockMvc.perform(post("/v1/update/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/v1/infos/ROLE_BASICUSER/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(updateBody)).andExpect(status().isNoContent());
 
@@ -141,7 +146,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 }
                 """;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        mockMvc.perform(post("/v1/register/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/v1/infos/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(requestBody)).andExpect(status().isNoContent());
 
@@ -170,7 +175,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                                     {"name": "Napa Extend", "doseDescription": "3 times a day"}]
                 }
                 """;
-        mockMvc.perform(post("/v1/update/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/v1/infos/ROLE_PATIENT/{id}", id).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token))
                 .content(updateBody)).andExpect(status().isNoContent());
 

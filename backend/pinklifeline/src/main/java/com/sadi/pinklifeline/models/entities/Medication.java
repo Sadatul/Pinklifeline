@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

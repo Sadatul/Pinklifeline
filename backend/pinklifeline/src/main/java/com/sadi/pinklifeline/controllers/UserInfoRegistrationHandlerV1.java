@@ -1,8 +1,8 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.sadi.pinklifeline.models.BasicUserInfoRegisterReq;
-import com.sadi.pinklifeline.models.PatientInfoRegisterReq;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.service.UserInfoRegistrationHandlerService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/register")
+@RequestMapping("/v1/infos")
 public class UserInfoRegistrationHandlerV1 {
     private final Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerV1.class);
 

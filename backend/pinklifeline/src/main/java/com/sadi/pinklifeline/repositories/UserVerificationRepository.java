@@ -2,7 +2,7 @@ package com.sadi.pinklifeline.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sadi.pinklifeline.models.UnverifiedUser;
+import com.sadi.pinklifeline.models.dtos.UnverifiedUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

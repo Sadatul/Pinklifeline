@@ -1,5 +1,6 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.dtos;
 
+import com.sadi.pinklifeline.models.entities.User;
 import lombok.*;
 
 import java.io.Serializable;

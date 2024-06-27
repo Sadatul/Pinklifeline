@@ -1,6 +1,6 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.models.JwtTokenResponse;
+import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;

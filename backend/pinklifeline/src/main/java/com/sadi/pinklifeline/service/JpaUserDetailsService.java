@@ -1,6 +1,6 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.models.SecurityUser;
+import com.sadi.pinklifeline.models.dtos.SecurityUser;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

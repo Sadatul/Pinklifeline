@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.entities;
 
 import com.sadi.pinklifeline.enums.YesNo;
 import jakarta.persistence.*;
