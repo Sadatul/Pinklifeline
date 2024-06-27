@@ -18,19 +18,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/update")
 public class UserInfoUpdateHandlerV1 {
     private final UserInfoUpdateHandlerService updateHandlerService;
-    private final UserRepository userRepository;
 
     private final Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerV1.class);
 
     public UserInfoUpdateHandlerV1(UserInfoUpdateHandlerService updateHandlerService, UserRepository userRepository) {
         this.updateHandlerService = updateHandlerService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping("/profile_picture/{id}")
-    @PreAuthorize("(#id.toString() == authentication.name)")
     public ResponseEntity<Void> updateProfilePicture(@PathVariable Long id, @Valid @RequestBody ProfilePictureUpdateReq req) {
-        userRepository.updateProfilePictureById(id, req.getProfilePicture());
+        updateHandlerService.updateProfilePicture(id, req.getProfilePicture());
         return ResponseEntity.noContent().build();
     }
 
