@@ -6,6 +6,7 @@ import com.sadi.pinklifeline.models.responses.NearbyUserRes;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.uber.h3core.H3Core;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.List;
 public class PatientSpecificFeaturesService {
     private final UserRepository userRepository;
     private final H3Core h3;
+    @Value("${nearbypatients.h3.grid.size}")
+    private int gridSize;
 
     public PatientSpecificFeaturesService(UserRepository userRepository) throws IOException {
         this.userRepository = userRepository;
@@ -33,7 +36,7 @@ public class PatientSpecificFeaturesService {
     @PreAuthorize("#id.toString() == authentication.name and hasRole('PATIENT')")
     public List<NearbyUserRes> getNearbyUsers(Long id){
         User user = getUser(id);
-        List<String> nearByCells = h3.gridDisk(user.getPatientSpecificDetails().getLocation(), 1);
+        List<String> nearByCells = h3.gridDisk(user.getPatientSpecificDetails().getLocation(), gridSize);
         return userRepository.findNearbyUsers(nearByCells, id);
     }
 }
