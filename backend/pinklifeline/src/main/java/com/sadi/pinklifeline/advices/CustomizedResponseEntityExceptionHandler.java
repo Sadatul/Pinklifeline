@@ -35,7 +35,14 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    @ExceptionHandler({UsernameNotFoundException.class})
+    public final ResponseEntity<ErrorDetails> handleNotFoundException(Exception ex, WebRequest request){
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({BadCredentialsException.class})
     public final ResponseEntity<ErrorDetails> handleUnauthorizedException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));
