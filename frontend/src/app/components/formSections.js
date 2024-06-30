@@ -1,15 +1,14 @@
 'use client'
 
 import { useForm } from "react-hook-form"
-import styled from 'styled-components';
 import { Separator } from "@/components/ui/separator"
 import { FileUploader } from "react-drag-drop-files"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
 import { useGeolocated } from "react-geolocated"
 import MapView from "@/app/components/map"
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import AddIcon from '@mui/icons-material/Add';
 import { cn } from "@/lib/utils"
@@ -33,14 +32,32 @@ import ScrollableContainer from '@/app/components/StyledScrollbar';
 import { motion, AnimatePresence } from "framer-motion"
 import firebase_app from "@/utils/firebaseConfig";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { Progress } from "@/components/ui/progress"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
-export function UserInfoSection({ userData, setUserData, currentSection, setCurrentSection }) {
+export function UserInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const storage = getStorage(firebase_app);
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm()
+    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const onSubmit = (data) => {
-        console.log(data)
         setUserData({ ...userData, ...data })
+        if (currentSection < totalSections - 1) {
+            setCurrentSection(a => ((a + 1) % totalSections))
+        }
+        else {
+            setConfirmDialogOpen(true)
+        }
     }
     const getCurrentYear = () => new Date().getFullYear();
     const generateOptions = (start, end) => {
@@ -56,10 +73,8 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
     };
     const fileTypes = ["JPEG", "PNG"];
     const [imageFile, setImageFile] = useState(null)
-    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const handleFileChange = (file) => {
-        console.log("File changed")
-        console.log(file)
         setImageFile(file)
         setUserData({ ...userData, profilePicturePreview: URL.createObjectURL(file) })
     }
@@ -72,23 +87,32 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
             'state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress("progress", progress);
+                setUploadProgress(progress);
             },
             (error) => {
-                // Handle upload errors
-                console.error(error);
                 toast.error("Error uploading image", {
                     description: "Please try again later",
                 });
             },
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                console.log('Image uploaded successfully!', downloadURL);
-                // Use the downloadURL to display the image or store it for later retrieval
-                setUserData({ ...userData, profilePictureURL: downloadURL });
+                setValue("profilePictureUrl", downloadURL);
             }
         );
     }
+
+    const validateForm = async () => {
+        const result = await trigger();
+        if (result) {
+            if (currentSection < totalSections - 1) {
+                setCurrentSection(a => ((a + 1) % totalSections))
+            }
+            else {
+                setConfirmDialogOpen(true)
+            }
+        };
+    }
+
 
     return (
         <>
@@ -101,16 +125,16 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">User Details</h1>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold m-2">First Name
+                        <label className="text-md font-semibold m-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input type="text" placeholder="First Name" className="border-2 border-blue-500 rounded-md p-2" {...register("first_name", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.first_name && <span className="text-red-500">{errors.first_name?.message}</span>}
+                                <input defaultValue={userData?.fullName} type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md p-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
-                        <label className="text-md font-semibold m-2">Last Name(optional)
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Last Name" className="border-2 border-blue-500 rounded-md p-2" {...register("last_name", { maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.last_name && <span className="text-red-500">{errors.last_name?.message}</span>}
+                        <label className="text-md font-semibold m-2 ">Weight(kg)
+                            <div className="w-full  flex flex-col">
+                                <input defaultValue={userData?.weight} type="number" placeholder="Weight" className="border-2  rounded-md p-1 mt-2 border-blue-500" {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
+                                {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                         </label>
                     </div>
@@ -119,63 +143,55 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                             Date of Birth
                             <div className="flex gap-4 mt-2">
                                 <div>
-                                    <select defaultValue={"day"} {...register("day", { required: 'Day is required' })} className="p-2 border rounded-lg w-24 bg-white border-blue-500">
+                                    <select defaultValue={userData?.dobDay || "day"} {...register("dobDay", { required: 'Day is required', validate: value => value != "day" || 'Please select a day' })} className="p-2 border rounded-lg w-24 bg-white border-blue-500">
                                         <option value="day" disabled >
                                             Day
                                         </option>
                                         {generateOptions(1, 31)}
                                     </select>
-                                    {errors.day && <p className="text-red-500 text-sm">{errors.day?.message}</p>}
+                                    {errors.dobDay && <p className="text-red-500 text-sm">{errors.dobDay?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={"month"} {...register("month", { required: 'Month is required' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userData?.dobMonth || "month"} {...register("dobMonth", { required: 'Month is required', validate: value => value != "month" || 'Please select a month' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
                                         <option value="month" disabled  >
                                             Month
                                         </option>
                                         {generateOptions(1, 12)}
                                     </select>
-                                    {errors.month && <p className="text-red-500 text-sm">{errors.month?.message}</p>}
+                                    {errors.dobMonth && <p className="text-red-500 text-sm">{errors.dobMonth?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={"year"} {...register("year", { required: 'Year is required' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userData?.dobYear || "year"} {...register("dobYear", { required: 'Year is required', validate: value => value != "year" || 'Please select a year' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
                                         <option value="year" disabled >
                                             Year
                                         </option>
-                                        {generateOptions(1900, getCurrentYear())}
+                                        {generateOptions(1950, getCurrentYear())}
                                     </select>
-                                    {errors.year && <p className="text-red-500 text-sm">{errors.year?.message}</p>}
+                                    {errors.dobYear && <p className="text-red-500 text-sm">{errors.dobYear?.message}</p>}
                                 </div>
                             </div>
                         </label>
-                        <div className="flex">
-                            <label className="text-md font-semibold m-2 ">Weight(kg)
-                                <div className="w-full  flex flex-col">
-                                    <input type="number" placeholder="Weight" className="border-2 w-24 rounded-md p-1 mt-2 border-blue-500" {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
-                                    {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
-                                </div>
-                            </label>
-                        </div>
                         <div className="flex">
                             <label className="text-md font-semibold m-2 text-center">
                                 Height
                                 <div className="flex gap-4 mt-2">
                                     <div>
-                                        <select defaultValue={"feet"} {...register("height_feet", { required: 'Day is required' })} className="p-2 border rounded-lg w-20 bg-white border-blue-500">
+                                        <select defaultValue={userData?.heightFeet || "feet"} {...register("heightFeet", { required: 'Day is required', validate: value => value != "feet" || 'Please select a feet' })} className="p-2 border rounded-lg w-20 bg-white border-blue-500">
                                             <option value="feet" disabled >
                                                 Feet
                                             </option>
                                             {generateOptions(1, 10)}
                                         </select>
-                                        {errors.height_feet && <p className="text-red-500 text-sm">{errors.height_feet?.message}</p>}
+                                        {errors.heightFeet && <p className="text-red-500 text-sm">{errors.heightFeet?.message}</p>}
                                     </div>
                                     <div>
-                                        <select defaultValue={"inch"} {...register("height_inch", { required: 'Month is required' })} className="p-2 w-20 border rounded-lg bg-white border-blue-500">
+                                        <select defaultValue={userData?.heightInch || "inch"} {...register("heightInch", { required: 'Month is required', validate: value => value != "inch" || 'Please select a inch' })} className="p-2 w-20 border rounded-lg bg-white border-blue-500">
                                             <option value="inch" disabled  >
                                                 Inch
                                             </option>
                                             {generateOptions(1, 11)}
                                         </select>
-                                        {errors.height_inch && <p className="text-red-500 text-sm">{errors.height_inch?.message}</p>}
+                                        {errors.heightInch && <p className="text-red-500 text-sm">{errors.heightInch?.message}</p>}
                                     </div>
                                 </div>
                             </label>
@@ -196,6 +212,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                             <div className="flex flex-row items-center">
                                 <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 max-w-96">
                                     <Image width={300} objectFit='scale-down' height={300} src={userData?.profilePicturePreview} alt="Preview" className="w-full h-full rounded-lg" />
+                                    {uploadProgress && <Progress variant='secondary' value={uploadProgress} className="w-[60%] mt-3" />}
                                 </div>
                                 <button onClick={handleUpload} className="border-2 bg-purple-600 text-white border-black rounded-md px-2 h-8 text-center mt-2">Upload</button>
                             </div>
@@ -205,82 +222,44 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button onClick={console.log(userData)} type="button">Check</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Next</button>
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' onClick={handleSubmit(onSubmit)}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                </button>
+                {currentSection === (totalSections - 1) && (
+                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                        <AlertDialogTrigger asChild>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You can't change your full name and date of birth once you save the form.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={saveForm}>
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </>
     )
 }
 
-export function ImageUploadSection({ userData, setUserData, currentSection, setCurrentSection }) {
-    const fileTypes = ["JPEG", "PNG"];
-    const [imageFile, setImageFile] = useState(null)
-    const [imagePreview, setImagePreview] = useState(null)
-    const handleFileChange = (file) => {
-        console.log("File changed")
-        console.log(file)
-        setImageFile(file)
-        setUserData({ ...userData, profilePicture: file, profilePicturePreview: URL.createObjectURL(file) })
-        setImagePreview(URL.createObjectURL(file));
-    }
-    return (
-        <>
-            <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly"
-                    initial={{ opacity: 0, x: '100%' }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: '-100%' }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <h1 className="text-2xl font-bold m-4 text-pink-500">Upload Profile Picture</h1>
-                    <div className="flex flex-col items-center justify-evenly w-11/12">
-                        <FileUploader handleChange={handleFileChange}
-                            multiple={false}
-                            types={fileTypes}
-                            name="file"
-                            label={"Upload your profile picture. Only jpg or png files are allowed."}
-                            onTypeError={() => {
-                                toast.error("Invalid file type", {
-                                    description: "Only jpg or png files are allowed",
-                                })
-                            }}
-                        />
-                        <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-80 h-72">
-                            {!imagePreview && (
-                                <div className=" h-full flex flex-col justify-center items-center">
-                                    <p className="text-2xl text-gray-500 text-center">
-                                        Upload Image for Preview
-                                    </p>
-                                </div>
-                            )}
-                            {imagePreview && (
-                                <Image width={300} height={300} src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
-                            )}
-                            {/* <FileUploader handleChange={handleFileChange} name="file" types={fileTypes} /> */}
-                        </div>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
-            <div className="w-full flex flex-col justify-center items-center">
-                <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-                <div className="flex flex-row justify-between items-center w-full m-2">
-                    <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                    <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Save and Next</button>
-                </div>
-            </div>
-        </>
-    )
-}
 
-export function DoctorInfoSection({ userData, setUserData, currentSection, setCurrentSection }) {
+
+export function DoctorInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const fileTypes = ["JPEG", "PNG"];
     const handleFileChange = (file) => {
-        console.log("File changed")
-        console.log(file)
         setValue("doctorDocs", file)
         trigger("doctorDocs")
     }
@@ -289,8 +268,13 @@ export function DoctorInfoSection({ userData, setUserData, currentSection, setCu
     }, [register]);
 
     const onSubmit = (data) => {
-        console.log(data)
         setUserData({ ...userData, ...data })
+        if (currentSection < (totalSections - 1)) {
+            setCurrentSection(a => ((a + 1) % totalSections))
+        }
+        else {
+            setConfirmDialogOpen(true)
+        }
     }
     return (
         <>
@@ -303,24 +287,18 @@ export function DoctorInfoSection({ userData, setUserData, currentSection, setCu
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Doctor info</h1>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold mx-2">First Name
+                        <label className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input type="text" placeholder="First Name" className="border-2 border-blue-500 rounded-md px-2" {...register("first_name", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.first_name && <span className="text-red-500">{errors.first_name?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold mx-2">Last Name(optional)
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Last Name" className="border-2 border-blue-500 rounded-md p-2" {...register("last_name", { maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.last_name && <span className="text-red-500">{errors.last_name?.message}</span>}
+                                <input type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
                     </div>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
                         <p className="text-md font-semibold mx-2 p-2">Current Hospital</p>
                         <div className="w-full flex flex-col">
-                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("current_hospital", { maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.current_hospital && <span className="text-red-500">{errors.current_hospital?.message}</span>}
+                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
+                            {errors.currentHospital && <span className="text-red-500">{errors.currentHospital?.message}</span>}
                         </div>
                     </div>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
@@ -348,21 +326,42 @@ export function DoctorInfoSection({ userData, setUserData, currentSection, setCu
                 </div>
             </div>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Next</button>
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' onClick={handleSubmit(onSubmit)}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                </button>
+                {currentSection === (totalSections - 1) && (
+                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                        <AlertDialogTrigger asChild>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You can't change your full name and date of birth once you save the form.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={saveForm}>
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </>
     )
 }
 
-export function NurseInfoSection({ userData, setUserData, currentSection, setCurrentSection }) {
+export function NurseInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const fileTypes = ["JPEG", "PNG"];
     const handleFileChange = (file) => {
-        console.log("File changed")
-        console.log(file)
         setValue("nurseDocs", file)
         trigger("nurseDocs")
     }
@@ -371,8 +370,13 @@ export function NurseInfoSection({ userData, setUserData, currentSection, setCur
     }, [register]);
 
     const onSubmit = (data) => {
-        console.log(data)
         setUserData({ ...userData, ...data })
+        if (currentSection < totalSections - 1) {
+            setCurrentSection(a => ((a + 1) % totalSections))
+        }
+        else {
+            setConfirmDialogOpen(true)
+        }
     }
     return (
         <>
@@ -385,24 +389,18 @@ export function NurseInfoSection({ userData, setUserData, currentSection, setCur
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Nurse info</h1>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold mx-2">First Name
+                        <label className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input type="text" placeholder="First Name" className="border-2 border-blue-500 rounded-md px-2" {...register("first_name", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.first_name && <span className="text-red-500">{errors.first_name?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold m-2">Last Name(optional)
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Last Name" className="border-2 border-blue-500 rounded-md px-2" {...register("last_name", { maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.last_name && <span className="text-red-500">{errors.last_name?.message}</span>}
+                                <input type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
                     </div>
                     <div className="flex flex-row justify-evenly items-center w-11/12">
                         <p className="text-md font-semibold mx-2 p-2">Current Hospital</p>
                         <div className="w-full flex flex-col">
-                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("current_hospital", { maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.current_hospital && <span className="text-red-500">{errors.current_hospital?.message}</span>}
+                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
+                            {errors.currentHospital && <span className="text-red-500">{errors.currentHospital?.message}</span>}
                         </div>
                     </div>
                     <div className="flex flex-col justify-evenly items-center w-11/12">
@@ -423,28 +421,61 @@ export function NurseInfoSection({ userData, setUserData, currentSection, setCur
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Next</button>
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' onClick={handleSubmit(onSubmit)}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                </button>
+                {currentSection === (totalSections - 1) && (
+                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                        <AlertDialogTrigger asChild>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You can't change your full name and date of birth once you save the form.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={saveForm}>
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </>
     )
 }
 
-export function MedicalInfoSection({ userData, setUserData, currentSection, setCurrentSection }) {
-    const [date, setDate] = useState(new Date());
-    const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
-    const onSubmit = data => console.log(data);
+export function MedicalInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [date, setDate] = useState(userData?.lastPeriodDate ? new Date(userData?.lastPeriodDate) : null);
+    const [diagnosisDate, setDiagnosisDate] = useState(userData?.diagnosisDate ? new Date(userData?.diagnosisDate) : null);
+    const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm();
     const cancerHistory = watch('cancerHistory');
-    const [cancerRelatives, setCancerRelatives] = useState([]);
-    const [periodIrregularities, setPeriodIrregularities] = useState([]);
-    const [allergies, setAllergies] = useState([]);
-    const [organsWithChronicCondition, setOrgansWithChronicCondition] = useState([]);
-    const [medications, setMedications] = useState([]);
+    const [cancerRelatives, setCancerRelatives] = useState(userData?.cancerRelatives || []);
+    const [periodIrregularities, setPeriodIrregularities] = useState(userData?.periodIrregularities || []);
+    const [allergies, setAllergies] = useState(userData?.allergies || []);
+    const [organsWithChronicCondition, setOrgansWithChronicCondition] = useState(userData?.organsWithChronicCondition || []);
+    const [medications, setMedications] = useState(userData?.medications || []);
     useEffect(() => {
         register("lastPeriodDate", { required: "Last Period Date is required" });
+        if (role === "ROLE_PATIENT") register("diagnosisDate", { required: "Diagnosis Date is required" });
     }, [register]);
+    const onSubmit = (data) => {
+        setUserData({ ...userData, ...data, cancerRelatives: (cancerHistory == "Y" ? cancerRelatives : []), periodIrregularities: periodIrregularities, allergies: allergies, organsWithChronicCondition: organsWithChronicCondition, medications: medications })
+        if (currentSection < totalSections - 1) {
+            setCurrentSection(a => ((a + 1) % totalSections))
+        }
+        else {
+            setConfirmDialogOpen(true)
+        }
+    }
 
     return (
         <>
@@ -459,12 +490,12 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                     <div className="flex justify-between w-full px-5">
                         <div>
                             <label className="text-md font-semibold m-2 text-center">Cancer History:
-                                <select defaultValue={"N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
+                                <select defaultValue={userData?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
                                     <option value="N">No</option>
                                     <option value="Y">Yes</option>
                                 </select>
                             </label>
-                            {errors.cancerHistory && <span>{errors.cancerHistory?.message}</span>}
+                            {errors.cancerHistory && <span className="text-red-500 text-sm">{errors.cancerHistory?.message}</span>}
                         </div>
 
                         {cancerHistory === 'Y' && (
@@ -540,8 +571,8 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                     </div >
 
                     <div className="flex justify-between w-full items-center px-5">
-                        <div>
-                            <label className="text-md font-semibold m-2 text-center" >Last Period Date:
+                        <div className="flex flex-col">
+                            <label className="text-md m-2 font-semibold text-center" >Last Period Date:
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -565,23 +596,76 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                                 trigger("lastPeriodDate")
                                             }}
                                             disabled={(date) =>
-                                                date > new Date() || date < new Date("1900-01-01")
+                                                date > new Date() || date < new Date("1950-01-01")
                                             }
                                             initialFocus
                                         />
                                     </PopoverContent>
                                 </Popover>
                             </label>
-                            {errors.lastPeriodDate && <span>{errors.lastPeriodDate?.message}</span>}
+                            {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
                         </div>
 
                         <div className=" w-1/3">
                             <label className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
-                                <input className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" {...register('avgCycleLength', { required: "This field is required" })} />
+                                <input defaultValue={userData?.avgCycleLength} className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" {...register('avgCycleLength', { required: "This field is required" })} />
                             </label>
-                            {errors.avgCycleLength && <span>{errors.avgCycleLength?.message}</span>}
+                            {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                         </div>
                     </div>
+                    {role === "ROLE_PATIENT" &&
+                        <div className="flex justify-between w-full items-center px-5">
+                            <div className="flex flex-col">
+                                <label className="text-md m-2 font-semibold text-center" >Diagnose Date:
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-[160px] ml-3 justify-start text-left font-normal",
+                                                    !diagnosisDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {diagnosisDate ? format(diagnosisDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={diagnosisDate}
+                                                onSelect={(selectedDate) => {
+                                                    setDiagnosisDate(selectedDate)
+                                                    setValue("diagnosisDate", selectedDate)
+                                                    trigger("diagnosisDate")
+                                                }}
+                                                disabled={(date) =>
+                                                    date > new Date() || date < new Date("1950-01-01")
+                                                }
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </label>
+                                {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
+                            </div>
+
+                            <div className=" w-1/3">
+                                <label className="text-md font-semibold m-2 text-center">Current Stage:
+                                    <select defaultValue={userData?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                        <option value="cancerStage" disabled  >
+                                            Current Cancer Stage
+                                        </option>
+                                        <option value="Stage_1">Stage 1</option>
+                                        <option value="Stage_2">Stage 2</option>
+                                        <option value="Stage_3">Stage 3</option>
+                                        <option value="Stage_4">Stage 4</option>
+                                        <option value="Stage_5">Survivor</option>
+                                    </select>
+                                </label>
+                                {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
+                            </div>
+                        </div>}
 
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
@@ -815,7 +899,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                                     setMedications([...medications,
                                                     {
                                                         name: document.getElementById('medicineName').value,
-                                                        dose: document.getElementById('doseDescription').value
+                                                        doseDescription: document.getElementById('doseDescription').value
                                                     }
                                                     ])
                                                     document.getElementById('medicineName').value = ''
@@ -852,7 +936,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                             <div key={index} className="flex justify-between flex-wrap p-1 border-b border-gray-300 w-full">
                                                 <span>{medication.name}</span>
                                                 <Separator className="bg-pink-500  w-[2px] h-5 " orientation="vertical" />
-                                                <ScrollableContainer style={{ display: 'flex', flexWrap: 'wrap', width: '10rem' }}>{medication.dose}
+                                                <ScrollableContainer style={{ display: 'flex', flexWrap: 'wrap', width: '10rem' }}>{medication.doseDescription}
                                                 </ScrollableContainer>
                                                 <TooltipProvider delayDuration={400}>
                                                     <Tooltip>
@@ -883,16 +967,40 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Next</button>
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' onClick={handleSubmit(onSubmit)}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                </button>
+                {currentSection === (totalSections - 1) && (
+                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                        <AlertDialogTrigger asChild>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You can't change your full name and date of birth once you save the form.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={saveForm}>
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </>
     );
 }
 
-export function LocationSection({ userData, setUserData, currentSection, setCurrentSection }) {
+export function LocationSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, saveForm }) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const selectedCoords = useRef([0, 0])
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const { coords, isGeolocationAvailable, isGeolocationEnabled, getPosition } =
         useGeolocated({
@@ -903,62 +1011,24 @@ export function LocationSection({ userData, setUserData, currentSection, setCurr
             watchLocationPermissionChange: true,
         });
 
-    const onSubmit = (data) => {
-        if (coords) {
-            console.log(coords)
-            setUserData({ ...userData, coords: { lat: coords.latitude, long: coords } })
-        } else {
-            console.log(data)
-            setUserData({ ...userData, ...data })
+    const onSubmit = () => {
+        setUserData({ ...userData, location: selectedCoords.current })
+        if (currentSection < totalSections - 1) {
+            setCurrentSection(a => ((a + 1) % totalSections))
         }
+        else {
+            setConfirmDialogOpen(true)
+        }
+    }
+
+    if (coords) {
+        selectedCoords.current = [coords.latitude, coords.longitude]
     }
 
     return !coords ? (
         <>
-            <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly"
-                    initial={{ opacity: 0, x: '100%' }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: '-100%' }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <h1 className="text-2xl font-bold m-2 text-pink-500">Address</h1>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold m-2">Street Address
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Street Address" className="border-2 border-blue-500 rounded-md p-2" {...register("street_address", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.street_address && <span className="text-red-500">{errors.street_address?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold m-2">City
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="City" className="border-2 border-blue-500 rounded-md p-2" {...register("city", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.city && <span className="text-red-500">{errors.city?.message}</span>}
-                            </div>
-                        </label>
-                    </div>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold m-2">State
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="State" className="border-2 border-blue-500 rounded-md p-2" {...register("state", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.state && <span className="text-red-500">{errors.state?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold m-2">Country
-                            <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Country" className="border-2 border-blue-500 rounded-md p-2" {...register("country", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.country && <span className="text-red-500">{errors.country?.message}</span>}
-                            </div>
-                        </label>
-                    </div>
-                    <h1 className="text-red-800 text-md font-bold">**Location not available from your browser please provide Address**</h1>
-                </motion.div>
-            </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Save and Next</button>
+            <div className="flex flex-col items-center justify-center w-full text-red-500 text-2xl font-bold">
+                **You need to enable location services to continue**
             </div>
         </>
     ) : (
@@ -971,16 +1041,119 @@ export function LocationSection({ userData, setUserData, currentSection, setCurr
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Location</h1>
-                    <MapView initialPosition={[coords.latitude, coords.longitude]} />
-                    <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
+                    <MapView initialPosition={[coords.latitude, coords.longitude]} selectedCoords={selectedCoords} />
                 </motion.div>
             </AnimatePresence>
-            <div className="flex flex-row justify-between items-center w-full m-2">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={onSubmit} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Test</button>
-                <button type='button' disabled={!(currentSection < 5)} onClick={() => { setCurrentSection(a => ((a + 1) % 6)) }} className="text-lg font-bold text-center mx-16 border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Save and Next</button>
+            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' onClick={onSubmit}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                </button>
+                {currentSection === (totalSections - 1) && (
+                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                        <AlertDialogTrigger asChild>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You can't change your full name and date of birth once you save the form.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={saveForm}>
+                                    Continue
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </>
     )
 
 }
+
+
+// export function ImageUploadSection({ userData, setUserData, currentSection, setCurrentSection, totalSections }) {
+//     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+//     const fileTypes = ["JPEG", "PNG"];
+//     const [imageFile, setImageFile] = useState(null)
+//     const [imagePreview, setImagePreview] = useState(null)
+//     const handleFileChange = (file) => {
+//         console.log("File changed")
+//         console.log(file)
+//         setImageFile(file)
+//         setUserData({ ...userData, profilePicture: file, profilePicturePreview: URL.createObjectURL(file) })
+//         setImagePreview(URL.createObjectURL(file));
+//     }
+//     return (
+//         <>
+//             <AnimatePresence>
+//                 <motion.div className="flex flex-col items-center justify-evenly"
+//                     initial={{ opacity: 0, x: '100%' }}
+//                     animate={{ opacity: 1, x: 0 }}
+//                     exit={{ opacity: 0, x: '-100%' }}
+//                     transition={{ duration: 0.3 }}
+//                 >
+//                     <h1 className="text-2xl font-bold m-4 text-pink-500">Upload Profile Picture</h1>
+//                     <div className="flex flex-col items-center justify-evenly w-11/12">
+//                         <FileUploader handleChange={handleFileChange}
+//                             multiple={false}
+//                             types={fileTypes}
+//                             name="file"
+//                             label={"Upload your profile picture. Only jpg or png files are allowed."}
+//                             onTypeError={() => {
+//                                 toast.error("Invalid file type", {
+//                                     description: "Only jpg or png files are allowed",
+//                                 })
+//                             }}
+//                         />
+//                         <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-80 h-72">
+//                             {!imagePreview && (
+//                                 <div className=" h-full flex flex-col justify-center items-center">
+//                                     <p className="text-2xl text-gray-500 text-center">
+//                                         Upload Image for Preview
+//                                     </p>
+//                                 </div>
+//                             )}
+//                             {imagePreview && (
+//                                 <Image width={300} height={300} src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+//                             )}
+//                             {/* <FileUploader handleChange={handleFileChange} name="file" types={fileTypes} /> */}
+//                         </div>
+//                     </div>
+//                 </motion.div>
+//             </AnimatePresence>
+//             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
+//             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+//                 <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+//                 <button type='button' onClick={handleSubmit(onSubmit)}
+//                     className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+//                     {currentSection === totalSections - 1 ? "Save" : "Next"}
+//                 </button>
+//                 <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+//                     <AlertDialogTrigger asChild>
+//                     </AlertDialogTrigger>
+//                     <AlertDialogContent>
+//                         <AlertDialogHeader>
+//                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+//                             <AlertDialogDescription>
+//                                 You can't change your full name and date of birth once you save the form.
+//                             </AlertDialogDescription>
+//                         </AlertDialogHeader>
+//                         <AlertDialogFooter>
+//                             <AlertDialogCancel>Cancel</AlertDialogCancel>
+//                             <AlertDialogAction onClick={saveForm}>
+//                                 Continue
+//                             </AlertDialogAction>
+//                         </AlertDialogFooter>
+//                     </AlertDialogContent>
+//                 </AlertDialog>
+//             </div>
+//         </>
+//     )
+// }

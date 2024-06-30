@@ -9,9 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 export default function LoginRegister() {
     const router = useRouter()
-    // if (authInfo?.isAuth || authInfo?.token) {
-    //     router.push("/dashboard")
-    // }
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [currentSection, setCurrentSection] = useState("Login")
     useEffect(() => {

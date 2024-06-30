@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form"
 import formBgImage from '../../../../public/userdetails/form-bg.jpg'
 import { Separator } from "@/components/ui/separator"
 import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection } from '@/app/components/formSections'
-import Map from "@/app/components/map"
+import {latLngToCell} from 'h3-js'
+import React from 'react';
+import axios from "axios"
 
 
 
@@ -12,7 +14,8 @@ import Map from "@/app/components/map"
 
 
 export default function UserDetailsPage() {
-    const role = "ROLE_USER"
+    const role = "ROLE_PATIENT"
+    const locationResolution = 8
     const [userData, setUserData] = useState({})
     const [sections, setSections] = useState([{}])
     const [currentSection, setCurrentSection] = useState(0) // 0 for user details, 1 for image upload, 2 for medical history, 3 for doctor details, 4 for nurse details, 5 for location details
@@ -22,23 +25,23 @@ export default function UserDetailsPage() {
             const temp_sections = [
                 {
                     section_name: "User info",
-                    section_components: <UserInfoSection userData={userData} setUserData={setUserData} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+                    section_components: UserInfoSection
                 },
                 {
                     section_name: "Medical Info",
-                    section_components: <MedicalInfoSection userData={userData} setUserData={setUserData} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+                    section_components: MedicalInfoSection
                 },
                 {
                     section_name: "Doctor info",
-                    section_components: <DoctorInfoSection userData={userData} setUserData={setUserData} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+                    section_components: DoctorInfoSection
                 },
                 {
                     section_name: "Nurse info",
-                    section_components: <NurseInfoSection userData={userData} setUserData={setUserData} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+                    section_components: NurseInfoSection
                 },
                 {
                     section_name: "Location",
-                    section_components: <LocationSection userData={userData} setUserData={setUserData} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+                    section_components: LocationSection
                 }
             ]
             if (user_role === "ROLE_ALL") {      // this one for current testing phase will be removed after development
@@ -51,50 +54,83 @@ export default function UserDetailsPage() {
                 return [temp_sections[4], temp_sections[1]]
             }
             else if (user_role === "ROLE_USER") {
+                return [temp_sections[0], temp_sections[1]]
+            }
+            else if (user_role === "ROLE_PATIENT") {
                 return [temp_sections[0], temp_sections[1], temp_sections[4]]
             }
             console.log("Invalid role")
             return temp_sections
         }
         setSections(getSections(role))
-        console.log(currentSection)
-        // for (let i = 0; i < 6; i++) {
-        //     document.getElementById(`section-${i}`)?.classList.remove("text-pink-600")
-        //     document.getElementById(`section-${i}`)?.classList.add("text-white")
-        // }
-        // document.getElementById(`section-${currentSection}`)?.classList.remove("text-white")
-        // document.getElementById(`section-${currentSection}`)?.classList.add("text-pink-600")
 
     }, [currentSection, userData])
+
+    const saveForm = () => {
+        let form_data = {
+            fullName: userData?.fullName,
+            weight: userData?.weight,
+            height: (Number(userData?.heightFeet) * 12 + Number(userData?.heightInch)) * 2.54 || "undefined",
+            dob: `${userData?.dobYear}-${userData?.dobMonth}-${userData?.dobDay}`,
+            cancerHistory: userData?.cancerHistory,
+            cancerRelatives: userData?.cancerRelatives,
+            profilePicture: userData?.profilePictureUrl,
+            lastPeriodDate: userData?.lastPeriodDate,
+            avgCycleLength: userData?.avgCycleLength,
+            periodIrregularities: userData?.periodIrregularities,
+            allergies: userData?.allergies,
+            organsWithChronicCondition: userData?.organsWithChronicCondition,
+            medications: userData?.medications
+        }
+        if (role === "ROLE_PATIENT") {
+            form_data = {
+                ...form_data,
+                diagnosisDate: userData?.diagnosisDate,
+                cancerStage: userData?.cancerStage,
+                location: latLngToCell(userData?.location[0], userData?.location[1], locationResolution)
+            }
+        }
+        axios.post("/api/userForm", form_data).then((response) => {
+            console.log(response)
+        }
+        ).catch((error) => {
+            console.log(error)
+        })
+    }
 
     return (
         <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto" style={{ backgroundImage: `url(${formBgImage.src})`, minHeight: '649px' }}>
             <div className="w-full h-full justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)", minHeight: '649px' }}>
                 <div className="flex flex-row justify-evenly items-center w-5/6" >
                     {sections?.map((section, index) => (
-                        <div key={index} className="flex items-center">
-                            <h3 id={`section-${index}`} className={`text-2xl font-bold text-center ${index === currentSection ? "text-pink-500" : "text-white"}`}>{section?.section_name}</h3>
-                            <Separator id={`section-${index}`} hidden={index == (sections.length - 1)} className=" w-[2px] h-8 bg-purple-400 ml-2" orientation="vertical" />
-                        </div >
+                        <React.Fragment key={index}>
+                            <h3 id={`section-${index}`} className={`text-2xl font-bold text-center ${index === currentSection ? "text-pink-500" : "text-white"}`}>
+                                {section?.section_name}
+                            </h3>
+                            {index !== sections.length - 1 && (
+                                <Separator
+                                    id={`separator-${index}`}
+                                    className="w-[2px] h-8 bg-purple-400 ml-2"
+                                    orientation="vertical"
+                                />
+                            )}
+                        </React.Fragment>
+                    ))}
 
-                    ))
-                    }
-                    {/* <h3 id="section-0" className="text-2xl font-bold text-center text-white ">User Details</h3>
-                    <Separator className=" w-[3px] bg-purple-400" orientation="vertical" />
-                    <h3 id="section-1" className="text-2xl font-bold text-center text-white p-[1px]">Image upload</h3>
-                    <Separator className=" w-[3px] bg-purple-400" orientation="vertical" />
-                    <h3 id="section-2" className="text-2xl font-bold text-center text-white p-[1px]">Medical History</h3>
-                    <Separator className=" w-[3px] bg-purple-400" orientation="vertical" />
-                    <h3 id="section-3" className="text-2xl font-bold text-center text-white p-[1px]">Doctor details</h3>
-                    <Separator className=" w-[3px] bg-purple-400" orientation="vertical" />
-                    <h3 id="section-4" className="text-2xl font-bold text-center text-white p-[1px]">Nurse details</h3>
-                    <Separator className=" w-[3px] bg-purple-400" orientation="vertical" />
-                    <h3 id="section-5" className="text-2xl font-bold text-center text-white p-[1px]">Location details</h3> */}
                 </div>
                 <Separator className="bg-purple-400 m-2 max-w-[1200px] shrink " />
                 <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly">
-                    {sections[currentSection]?.section_components}
-                    
+                    {sections[currentSection] && sections[currentSection].section_components &&
+                        React.createElement(sections[currentSection].section_components, {
+                            userData: userData,
+                            setUserData: setUserData,
+                            setCurrentSection: setCurrentSection,
+                            currentSection: currentSection,
+                            totalSections: sections.length,
+                            role: role,
+                            saveForm: saveForm
+                        })
+                    }
                 </div>
             </div>
         </div>

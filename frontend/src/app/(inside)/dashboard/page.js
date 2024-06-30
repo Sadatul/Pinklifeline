@@ -1,12 +1,11 @@
 'use client'
-import MapView from "@/app/components/map"
+import socketIo from 'socket.io-client';
+const socket = socketIo.connect('http://localhost:5000');
 
-export default function Dashboard() {
-
-    return (
-        <div className="w-full h-[600px] flex flex-col justify-center items-center">
-            <h1 className="text-3xl">Map with open source</h1>
-            <MapView />
-        </div>
-    )
+export default function DashBoard() {
+  return (
+    <div>
+      <p>Hello World!</p>
+    </div>
+  );
 }
