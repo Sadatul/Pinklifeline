@@ -6,9 +6,10 @@ CREATE TABLE pinklifeline.user_roles
 
 CREATE TABLE pinklifeline.users
 (
-    id       BIGINT AUTO_INCREMENT NOT NULL,
-    username VARCHAR(255)          NOT NULL,
-    password VARCHAR(255)          NOT NULL,
+    id                       BIGINT AUTO_INCREMENT NOT NULL,
+    username                 VARCHAR(255)          NOT NULL,
+    password                 VARCHAR(255)          NOT NULL,
+    is_registration_complete ENUM ('Y', 'N') DEFAULT 'N' NOT NULL,
     CONSTRAINT pk_users PRIMARY KEY (id)
 );
 

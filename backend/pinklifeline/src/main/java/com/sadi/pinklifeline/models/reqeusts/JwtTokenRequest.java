@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.reqeusts;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

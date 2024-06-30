@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.sadi.pinklifeline.enums.Roles;
-import com.sadi.pinklifeline.models.UnverifiedUser;
-import com.sadi.pinklifeline.models.User;
+import com.sadi.pinklifeline.models.dtos.UnverifiedUser;
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.repositories.UserVerificationRepository;
 import jakarta.mail.internet.MimeMessage;
@@ -78,7 +78,9 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
                   }
                  """));
 
-        String response = resultActions.andExpect(status().isOk()).andExpect(jsonPath("$.token").exists())
+        String response = resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.userId").exists())
                 .andReturn().getResponse().getContentAsString();
 
         TypeReference<Map<String, String>> typeRef = new TypeReference<>() {};

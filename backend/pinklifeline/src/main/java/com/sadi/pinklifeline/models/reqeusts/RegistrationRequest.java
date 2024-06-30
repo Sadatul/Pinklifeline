@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.models;
+package com.sadi.pinklifeline.models.reqeusts;
 
 import com.sadi.pinklifeline.enums.Roles;
 import jakarta.validation.constraints.Email;

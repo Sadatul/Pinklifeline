@@ -1,7 +1,11 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sadi.pinklifeline.models.*;
+import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.reqeusts.JwtTokenRequest;
+import com.sadi.pinklifeline.models.reqeusts.RegistrationRequest;
+import com.sadi.pinklifeline.models.reqeusts.UserVerificationRequest;
+import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.service.JwtTokenService;
 import com.sadi.pinklifeline.service.UserRegistrationAndVerificationService;
 import jakarta.validation.Valid;
@@ -35,8 +39,8 @@ public class AuthControllerV1 {
     public ResponseEntity<JwtTokenResponse> generateToken(@Valid @RequestBody JwtTokenRequest tokenRequest) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(tokenRequest.getUsername(), tokenRequest.getPassword());
         var authentication = authenticationManager.authenticate(authenticationToken);
-        var token = jwtTokenService.generateToken(authentication);
-        return ResponseEntity.ok(new JwtTokenResponse(token));
+        var tokenResponse = jwtTokenService.generateToken(authentication);
+        return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/register")
