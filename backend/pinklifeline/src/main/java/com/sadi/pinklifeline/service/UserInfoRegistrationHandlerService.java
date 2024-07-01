@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 public class UserInfoRegistrationHandlerService {
 
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserInfoRegistrationHandlerService(UserRepository userRepository) {
+    public UserInfoRegistrationHandlerService(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerService.class);
@@ -52,15 +54,6 @@ public class UserInfoRegistrationHandlerService {
         patientSpecificDetails.setUser(user);
         patientSpecificDetails.setUserId(user.getId());
         return patientSpecificDetails;
-    }
-    public User getUserForInfoRegistration(Long id){
-        User user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        if(user.getIsRegistrationComplete().equals(YesNo.Y)){
-            throw new UserRegistrationAlreadyCompleteException("User Registration has been Completed before");
-        }
-
-        return user;
     }
 
     public void registerBasicUser(BasicUserInfoRegisterReq req, User user) {

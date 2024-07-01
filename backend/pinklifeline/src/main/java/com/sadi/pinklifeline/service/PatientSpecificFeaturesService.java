@@ -17,25 +17,20 @@ import java.util.List;
 @Service
 public class PatientSpecificFeaturesService {
     private final UserRepository userRepository;
+    private final UserService userService;
     private final H3Core h3;
     @Value("${nearbypatients.h3.grid.size}")
     private int gridSize;
 
-    public PatientSpecificFeaturesService(UserRepository userRepository) throws IOException {
+    public PatientSpecificFeaturesService(UserRepository userRepository, UserService userService) throws IOException {
         this.userRepository = userRepository;
+        this.userService = userService;
         h3 = H3Core.newInstance();
-    }
-    public User getUser(Long id){
-        User user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        if(user.getIsRegistrationComplete() == YesNo.N){
-            throw new UserInfoUnregisteredException("User needs to register his information first");
-        }
-        return user;
     }
 
     @PreAuthorize("#id.toString() == authentication.name and hasRole('PATIENT')")
     public List<NearbyUserRes> getNearbyUsers(Long id){
-        User user = getUser(id);
+        User user = userService.getUserIfRegistered(id);
         List<String> nearByCells = h3.gridDisk(user.getPatientSpecificDetails().getLocation(), gridSize);
         return userRepository.findNearbyUsers(nearByCells, id);
     }

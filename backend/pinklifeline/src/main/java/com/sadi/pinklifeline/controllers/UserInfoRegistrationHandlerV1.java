@@ -4,6 +4,7 @@ import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.service.UserInfoRegistrationHandlerService;
+import com.sadi.pinklifeline.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +18,11 @@ public class UserInfoRegistrationHandlerV1 {
     private final Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerV1.class);
 
     private final UserInfoRegistrationHandlerService userInfoHandlerService;
+    private final UserService userService;
 
-    public UserInfoRegistrationHandlerV1(UserInfoRegistrationHandlerService userInfoHandlerService) {
+    public UserInfoRegistrationHandlerV1(UserInfoRegistrationHandlerService userInfoHandlerService, UserService userService) {
         this.userInfoHandlerService = userInfoHandlerService;
+        this.userService = userService;
     }
 
     @PostMapping("/ROLE_BASICUSER/{id}")
@@ -28,7 +31,7 @@ public class UserInfoRegistrationHandlerV1 {
                                                     @Valid @RequestBody BasicUserInfoRegisterReq req){
 
         logger.info("works basic {}", req.toString());
-        User user = userInfoHandlerService.getUserForInfoRegistration(id);
+        User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerBasicUser(req,user);
 
         return ResponseEntity.noContent().build();
@@ -40,7 +43,7 @@ public class UserInfoRegistrationHandlerV1 {
                                                       @Valid @RequestBody PatientInfoRegisterReq req){
 
         logger.info("works patient {}", req.toString());
-        User user = userInfoHandlerService.getUserForInfoRegistration(id);
+        User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerPatient(req,user);
 
         return ResponseEntity.noContent().build();
