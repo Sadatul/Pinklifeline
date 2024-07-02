@@ -7,8 +7,6 @@ import com.sadi.pinklifeline.models.entities.ChatRoom;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.ChatMessageRepository;
 import com.sadi.pinklifeline.repositories.ChatRoomRepository;
-import com.sadi.pinklifeline.repositories.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,20 +14,18 @@ import java.util.Optional;
 @Service
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
-    private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final UserService userService;
 
-    public ChatRoomService(ChatRoomRepository chatRoomRepository, UserRepository userRepository, ChatMessageRepository chatMessageRepository) {
+    public ChatRoomService(ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, UserService userService) {
         this.chatRoomRepository = chatRoomRepository;
-        this.userRepository = userRepository;
         this.chatMessageRepository = chatMessageRepository;
+        this.userService = userService;
     }
 
     public ChatRoom getChatRoom(Long user1Id, Long user2Id, boolean createNewRoom){
-        User user1 = userRepository.findById(user1Id).orElseThrow(
-                () -> new UsernameNotFoundException("User not found"));
-        User user2 = userRepository.findById(user2Id).orElseThrow(
-                () -> new UsernameNotFoundException("User not found"));
+        User user1 = userService.getUserIfRegistered(user1Id);
+        User user2 = userService.getUserIfRegistered(user2Id);
         Optional<ChatRoom> chatRoom = chatRoomRepository.findChatroomByUserIds(user1, user2);
         if(chatRoom.isPresent()){
             return chatRoom.get();
@@ -41,16 +37,11 @@ public class ChatRoomService {
 
     }
 
-    public ChatMessage saveMessage(ChatMessageReq req, Long senderId, Long recipientId){
+    public void saveMessage(ChatMessageReq req, Long senderId, Long recipientId){
         ChatRoom chatRoom = getChatRoom(senderId, recipientId, true);
-        User sender = userRepository.findById(senderId).orElseThrow(
-                () -> new UsernameNotFoundException("User not found"));
+        User sender = userService.getUserIfRegistered(senderId);
         ChatMessage msg = new ChatMessage(chatRoom, req.getMessage(),
                 sender, req.getTimestamp(), req.getType());
-//        chatRoom.addMessage(msg);
         chatMessageRepository.save(msg);
-//        chatRoom.getMessages().add(msg);
-//        chatRoomRepository.save(chatRoom);
-        return msg;
     }
 }

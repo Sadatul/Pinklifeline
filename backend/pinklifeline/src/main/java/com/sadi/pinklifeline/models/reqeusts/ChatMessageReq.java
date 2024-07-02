@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.models.reqeusts;
 
 import com.sadi.pinklifeline.enums.MessageType;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,15 +14,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 public class ChatMessageReq {
-    private Long senderId;
+    @NotNull
     private Long receiverId;
+    @NotNull
     private String message;
+    @NotNull
     private LocalDateTime timestamp;
+    @NotNull
     private MessageType type;
 
-    public ChatMessageReq(Long senderId, Long receiverId,
+    public ChatMessageReq(Long receiverId,
                           String message, LocalDateTime timestamp, MessageType type) {
-        this.senderId = senderId;
         this.receiverId = receiverId;
         this.message = message;
         this.timestamp = timestamp;
