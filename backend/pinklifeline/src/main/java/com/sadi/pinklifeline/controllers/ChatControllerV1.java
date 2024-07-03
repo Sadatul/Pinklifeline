@@ -1,23 +1,25 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.models.reqeusts.ChatMessageReq;
+import com.sadi.pinklifeline.models.responses.ChatMessageRes;
+import com.sadi.pinklifeline.models.responses.ChatroomRes;
 import com.sadi.pinklifeline.models.responses.ErrorDetails;
 import com.sadi.pinklifeline.service.ChatRoomService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @RestController
@@ -26,7 +28,7 @@ public class ChatControllerV1 {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
 
-    public ChatControllerV1(SimpMessagingTemplate messagingTemplate, ChatRoomService chatRoomService, HttpSession httpSession) {
+    public ChatControllerV1(SimpMessagingTemplate messagingTemplate, ChatRoomService chatRoomService) {
         this.messagingTemplate = messagingTemplate;
         this.chatRoomService = chatRoomService;
     }
@@ -47,17 +49,29 @@ public class ChatControllerV1 {
         log.debug("Message sent to {}", req.getReceiverId());
     }
 
-    @MessageExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleError(MethodArgumentNotValidException e, StompHeaderAccessor accessor) {
-        log.info("DUDE IT WORKED {}", e.getMessage());
+    @MessageExceptionHandler(Exception.class)
+    public void handleError(Exception e, StompHeaderAccessor accessor) {
         Principal user = accessor.getUser();
         if(user == null){
-//            log.debug("User is null, cannot process message");
             return;
         }
         Long userId = Long.valueOf(user.getName());
-        sendErrorMessage(userId, e.getMessage(), "MethodArgumentNotValidException");
+        sendErrorMessage(userId, e.getMessage(), "Incorrect Message Payload");
     }
+
+    @GetMapping("/v1/chat/{id}")
+    public ResponseEntity<List<ChatroomRes>> getCharRooms(@PathVariable Long id){
+        return ResponseEntity.ok(chatRoomService.getAllChatRoomsOfUser(id));
+    }
+
+    @GetMapping("/v1/chat/messages/{roomId}")
+    public ResponseEntity<List<ChatMessageRes>> getChatMessages(@PathVariable Long roomId){
+        List<ChatMessageRes> res = chatRoomService.getChatMessagesByRoom(roomId).stream()
+                .map((message) -> new ChatMessageRes(message.getSender().getId(),
+                message.getMessage(), message.getSentAt(), message.getType())).toList();
+        return ResponseEntity.ok(res);
+    }
+
     public void sendErrorMessage(Long userId, String msg, String details){
         messagingTemplate.convertAndSendToUser(userId.toString(),
                 "/queue/errors", new ErrorDetails(
