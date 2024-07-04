@@ -20,10 +20,12 @@ import org.springframework.stereotype.Service;
 public class UserInfoUpdateHandlerService {
 
     private final UserRepository userRepository;
+    private final UserService userService;
     Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerService.class);
 
-    public UserInfoUpdateHandlerService(UserRepository userRepository) {
+    public UserInfoUpdateHandlerService(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoUpdateReq req, User user) {
@@ -48,16 +50,6 @@ public class UserInfoUpdateHandlerService {
         patientSpecificDetails.setDiagnosisDate(req.getDiagnosisDate());
         patientSpecificDetails.setLocation(req.getLocation());
         return patientSpecificDetails;
-    }
-
-    public User getUserForInfoUpdate(Long id){
-        User user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        if(user.getIsRegistrationComplete().equals(YesNo.N)){
-            throw new UserInfoUnregisteredException("User needs to complete registration");
-        }
-
-        return user;
     }
 
     public void updateBasicUser(BasicUserInfoUpdateReq req, User user) {

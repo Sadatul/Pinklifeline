@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.service.UserInfoUpdateHandlerService;
+import com.sadi.pinklifeline.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -18,11 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/infos")
 public class UserInfoUpdateHandlerV1 {
     private final UserInfoUpdateHandlerService updateHandlerService;
+    private final UserService userService;
 
     private final Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerV1.class);
 
-    public UserInfoUpdateHandlerV1(UserInfoUpdateHandlerService updateHandlerService, UserRepository userRepository) {
+    public UserInfoUpdateHandlerV1(UserInfoUpdateHandlerService updateHandlerService, UserRepository userRepository, UserService userService) {
         this.updateHandlerService = updateHandlerService;
+        this.userService = userService;
     }
 
     @PutMapping("/profile_picture/{id}")
@@ -37,7 +40,7 @@ public class UserInfoUpdateHandlerV1 {
                                                       @Valid @RequestBody BasicUserInfoUpdateReq req){
 
         logger.info("update basic {}", req.toString());
-        User user = updateHandlerService.getUserForInfoUpdate(id);
+        User user = userService.getUserIfRegistered(id);
         updateHandlerService.updateBasicUser(req,user);
 
         return ResponseEntity.noContent().build();
@@ -49,7 +52,7 @@ public class UserInfoUpdateHandlerV1 {
                                                         @Valid @RequestBody PatientInfoUpdateReq req){
 
         logger.info("update patient {}", req.toString());
-        User user = updateHandlerService.getUserForInfoUpdate(id);
+        User user = userService.getUserIfRegistered(id);
         updateHandlerService.updatePatient(req, user);
 
         return ResponseEntity.noContent().build();

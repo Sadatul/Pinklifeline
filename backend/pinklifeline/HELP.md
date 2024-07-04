@@ -122,3 +122,59 @@ need to be passed, then pass an empty list like this:
     {"id":3,"fullName":"Faria Islam","location":"883cf1760bfffff"}
 ]
 ```
+
+## Get Chat Rooms
+``` Endpoint: GET /v1/chat/{id}```
+### Sample Return Object
+```
+[
+    {
+        "roomId": 1,
+        "userId": 3,
+        "name": "Sadi"
+    }
+]
+```
+
+## Get Chat Messages
+``` Endpoint: GET /v1/chat/messages/{room_id}```
+### Sample Return Object
+```
+[
+    {
+        "sender": 3,
+        "message": "afzal king",
+        "timestamp": "2024-07-01T17:02:03",
+        "type": "TEXT"
+    },
+    {
+        "sender": 3,
+        "message": "afzal king",
+        "timestamp": "2024-07-01T17:02:46",
+        "type": "TEXT"
+    }
+]
+```
+**<span style="color:red">Notes:</span>**
+* First call get rooms endpoint
+* Then use the roomId from the first call to get the messages of the room
+
+## Chat
+```Socket Endpoint: /ws``` <br>
+```Message Subscription Endpoint: /user/{id}/queue/messages``` <br>
+```Error Subscription Endpoint: /user/{id}/queue/errors``` <br>
+```Chat Endpoint: /app/chat``` <br>
+### Sample Message Request Object
+```
+{
+    "receiverId": 3,
+    "message": "afzal king",
+    "timestamp": "2024-07-01T17:02:03",
+    "type": "TEXT"
+}
+```
+**<span style="color:red">Notes:</span>**
+* Remember we are using STOMP protocol, for js you must use @stomp/stompjs library
+* For authorization, we are using STOMP connect headers. So, when CONNECT request is sent you must also provide Authorization: Bearer {JWT_TOKEN} header with the connect headers, otherwise connection won't be established
+* During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS you can use this to set the timestamp new ```new Date().toISOString()```
+* If you are using JS use the reference javaScriptCode that was provided to you.
