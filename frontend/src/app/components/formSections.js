@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { Separator } from "@/components/ui/separator"
 import { FileUploader } from "react-drag-drop-files"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, use } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
 import { useGeolocated } from "react-geolocated"
@@ -46,12 +46,12 @@ import {
 } from "@/components/ui/alert-dialog"
 
 
-export function UserInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+export function UserInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const storage = getStorage(firebase_app);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const onSubmit = (data) => {
-        setUserData({ ...userData, ...data })
+        userDataRef.current = { ...userDataRef.current, ...data }
         if (currentSection < totalSections - 1) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -77,6 +77,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
     const handleFileChange = (file) => {
         setImageFile(file)
         setUserData({ ...userData, profilePicturePreview: URL.createObjectURL(file) })
+        userDataRef.current = { ...userDataRef.current, profilePicturePreview: URL.createObjectURL(file) }
     }
     const handleUpload = async () => {
         if (!imageFile) return;
@@ -127,13 +128,13 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                     <div className="flex flex-row justify-evenly items-center w-11/12">
                         <label className="text-md font-semibold m-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userData?.fullName} type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md p-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input defaultValue={userDataRef.current?.fullName} type="text" placeholder="Full Name" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
                         <label className="text-md font-semibold m-2 ">Weight(kg)
-                            <div className="w-full  flex flex-col">
-                                <input defaultValue={userData?.weight} type="number" placeholder="Weight" className="border-2  rounded-md p-1 mt-2 border-blue-500" {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
+                            <div className="w-full flex flex-col">
+                                <input defaultValue={userDataRef.current?.weight} type="number" placeholder="Weight" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                         </label>
@@ -143,7 +144,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                             Date of Birth
                             <div className="flex gap-4 mt-2">
                                 <div>
-                                    <select defaultValue={userData?.dobDay || "day"} {...register("dobDay", { required: 'Day is required', validate: value => value != "day" || 'Please select a day' })} className="p-2 border rounded-lg w-24 bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobDay || "day"} {...register("dobDay", { required: 'Day is required', validate: value => value != "day" || 'Please select a day' })} className="p-2 border rounded-lg w-24 bg-white border-blue-500">
                                         <option value="day" disabled >
                                             Day
                                         </option>
@@ -152,7 +153,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                                     {errors.dobDay && <p className="text-red-500 text-sm">{errors.dobDay?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={userData?.dobMonth || "month"} {...register("dobMonth", { required: 'Month is required', validate: value => value != "month" || 'Please select a month' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobMonth || "month"} {...register("dobMonth", { required: 'Month is required', validate: value => value != "month" || 'Please select a month' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
                                         <option value="month" disabled  >
                                             Month
                                         </option>
@@ -161,7 +162,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                                     {errors.dobMonth && <p className="text-red-500 text-sm">{errors.dobMonth?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={userData?.dobYear || "year"} {...register("dobYear", { required: 'Year is required', validate: value => value != "year" || 'Please select a year' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobYear || "year"} {...register("dobYear", { required: 'Year is required', validate: value => value != "year" || 'Please select a year' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
                                         <option value="year" disabled >
                                             Year
                                         </option>
@@ -176,7 +177,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                                 Height
                                 <div className="flex gap-4 mt-2">
                                     <div>
-                                        <select defaultValue={userData?.heightFeet || "feet"} {...register("heightFeet", { required: 'Day is required', validate: value => value != "feet" || 'Please select a feet' })} className="p-2 border rounded-lg w-20 bg-white border-blue-500">
+                                        <select defaultValue={userDataRef.current?.heightFeet || "feet"} {...register("heightFeet", { required: 'Day is required', validate: value => value != "feet" || 'Please select a feet' })} className="p-2 border rounded-lg w-20 bg-white border-blue-500">
                                             <option value="feet" disabled >
                                                 Feet
                                             </option>
@@ -185,7 +186,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                                         {errors.heightFeet && <p className="text-red-500 text-sm">{errors.heightFeet?.message}</p>}
                                     </div>
                                     <div>
-                                        <select defaultValue={userData?.heightInch || "inch"} {...register("heightInch", { required: 'Month is required', validate: value => value != "inch" || 'Please select a inch' })} className="p-2 w-20 border rounded-lg bg-white border-blue-500">
+                                        <select defaultValue={userDataRef.current?.heightInch || "inch"} {...register("heightInch", { required: 'Month is required', validate: value => value != "inch" || 'Please select a inch' })} className="p-2 w-20 border rounded-lg bg-white border-blue-500">
                                             <option value="inch" disabled  >
                                                 Inch
                                             </option>
@@ -208,10 +209,10 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
                                 })
                             }}
                         />
-                        {userData?.profilePicturePreview && (
+                        {userDataRef.current?.profilePicturePreview && (
                             <div className="flex flex-row items-center">
                                 <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 max-w-96">
-                                    <Image width={300} objectFit='scale-down' height={300} src={userData?.profilePicturePreview} alt="Preview" className="w-full h-full rounded-lg" />
+                                    <Image width={300} objectFit='scale-down' height={300} src={userDataRef.current?.profilePicturePreview} alt="Preview" className="w-full h-full rounded-lg" />
                                     {uploadProgress && <Progress variant='secondary' value={uploadProgress} className="w-[60%] mt-3" />}
                                 </div>
                                 <button onClick={handleUpload} className="border-2 bg-purple-600 text-white border-black rounded-md px-2 h-8 text-center mt-2">Upload</button>
@@ -223,7 +224,15 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' disabled={!(currentSection > 0)}
+                    onClick={() => {
+                        userDataRef.current = { ...userDataRef.current, ...data }
+                        setCurrentSection(a => ((a - 1) % totalSections))
+                    }}
+                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
+                >
+                    Previous
+                </button>
                 <button type='button' onClick={handleSubmit(onSubmit)}
                     className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
                     {currentSection === totalSections - 1 ? "Save" : "Next"}
@@ -255,7 +264,7 @@ export function UserInfoSection({ userData, setUserData, currentSection, setCurr
 
 
 
-export function DoctorInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const fileTypes = ["JPEG", "PNG"];
@@ -268,7 +277,7 @@ export function DoctorInfoSection({ userData, setUserData, currentSection, setCu
     }, [register]);
 
     const onSubmit = (data) => {
-        setUserData({ ...userData, ...data })
+        userDataRef.current = { ...userDataRef.current, ...data }
         if (currentSection < (totalSections - 1)) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -357,7 +366,7 @@ export function DoctorInfoSection({ userData, setUserData, currentSection, setCu
     )
 }
 
-export function NurseInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+export function NurseInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
     const fileTypes = ["JPEG", "PNG"];
@@ -370,7 +379,7 @@ export function NurseInfoSection({ userData, setUserData, currentSection, setCur
     }, [register]);
 
     const onSubmit = (data) => {
-        setUserData({ ...userData, ...data })
+        userDataRef.current = { ...userDataRef.current, ...data }
         if (currentSection < totalSections - 1) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -452,23 +461,32 @@ export function NurseInfoSection({ userData, setUserData, currentSection, setCur
     )
 }
 
-export function MedicalInfoSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const [date, setDate] = useState(userData?.lastPeriodDate ? new Date(userData?.lastPeriodDate) : null);
-    const [diagnosisDate, setDiagnosisDate] = useState(userData?.diagnosisDate ? new Date(userData?.diagnosisDate) : null);
+    const [date, setDate] = useState(userDataRef.current?.lastPeriodDate ? new Date(userDataRef.current?.lastPeriodDate) : null);
+    const [diagnosisDate, setDiagnosisDate] = useState(userDataRef.current?.diagnosisDate ? new Date(userDataRef.current?.diagnosisDate) : null);
     const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm();
     const cancerHistory = watch('cancerHistory');
-    const [cancerRelatives, setCancerRelatives] = useState(userData?.cancerRelatives || []);
-    const [periodIrregularities, setPeriodIrregularities] = useState(userData?.periodIrregularities || []);
-    const [allergies, setAllergies] = useState(userData?.allergies || []);
-    const [organsWithChronicCondition, setOrgansWithChronicCondition] = useState(userData?.organsWithChronicCondition || []);
-    const [medications, setMedications] = useState(userData?.medications || []);
+    const [cancerRelatives, setCancerRelatives] = useState(userDataRef.current?.cancerRelatives || []);
+    const [periodIrregularities, setPeriodIrregularities] = useState(userDataRef.current?.periodIrregularities || []);
+    const [allergies, setAllergies] = useState(userDataRef.current?.allergies || []);
+    const [organsWithChronicCondition, setOrgansWithChronicCondition] = useState(userDataRef.current?.organsWithChronicCondition || []);
+    const [medications, setMedications] = useState(userDataRef.current?.medications || []);
     useEffect(() => {
         register("lastPeriodDate", { required: "Last Period Date is required" });
         if (role === "ROLE_PATIENT") register("diagnosisDate", { required: "Diagnosis Date is required" });
+        if (userDataRef.current?.lastPeriodDate) {
+            setValue("lastPeriodDate", userDataRef.current?.lastPeriodDate)
+            trigger("lastPeriodDate")
+        }
+        if (userDataRef.current?.diagnosisDate) {
+            setValue("diagnosisDate", userDataRef.current?.diagnosisDate)
+            trigger("diagnosisDate")
+        }
     }, [register]);
     const onSubmit = (data) => {
-        setUserData({ ...userData, ...data, cancerRelatives: (cancerHistory == "Y" ? cancerRelatives : []), periodIrregularities: periodIrregularities, allergies: allergies, organsWithChronicCondition: organsWithChronicCondition, medications: medications })
+        userDataRef.current = { ...userDataRef.current, ...data, cancerRelatives: (cancerHistory == "Y" ? cancerRelatives : []), periodIrregularities: periodIrregularities, allergies: allergies, organsWithChronicCondition: organsWithChronicCondition, medications: medications }
+        console.log("user data ref in medical info", userDataRef.current)
         if (currentSection < totalSections - 1) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -490,7 +508,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                     <div className="flex justify-between w-full px-5">
                         <div>
                             <label className="text-md font-semibold m-2 text-center">Cancer History:
-                                <select defaultValue={userData?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
+                                <select defaultValue={userDataRef.current?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
                                     <option value="N">No</option>
                                     <option value="Y">Yes</option>
                                 </select>
@@ -599,6 +617,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                                 date > new Date() || date < new Date("1950-01-01")
                                             }
                                             initialFocus
+                                            defaultValue={userDataRef.current?.lastPeriodDate}
                                         />
                                     </PopoverContent>
                                 </Popover>
@@ -608,7 +627,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
 
                         <div className=" w-1/3">
                             <label className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
-                                <input defaultValue={userData?.avgCycleLength} className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" {...register('avgCycleLength', { required: "This field is required" })} />
+                                <input defaultValue={userDataRef.current?.avgCycleLength} className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" {...register('avgCycleLength', { required: "This field is required", min:{value: 0, message: "Avg Cycle can not be negative"} })} />
                             </label>
                             {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                         </div>
@@ -643,6 +662,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                                     date > new Date() || date < new Date("1950-01-01")
                                                 }
                                                 initialFocus
+                                                defaultValue={userDataRef.current?.diagnosisDate}
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -652,7 +672,7 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
 
                             <div className=" w-1/3">
                                 <label className="text-md font-semibold m-2 text-center">Current Stage:
-                                    <select defaultValue={userData?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-28 ml-1 border rounded-lg bg-white border-blue-500 text-sm">
                                         <option value="cancerStage" disabled  >
                                             Current Cancer Stage
                                         </option>
@@ -660,12 +680,13 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
                                         <option value="Stage_2">Stage 2</option>
                                         <option value="Stage_3">Stage 3</option>
                                         <option value="Stage_4">Stage 4</option>
-                                        <option value="Stage_5">Survivor</option>
+                                        <option value="SURVIVOR">Survivor</option>
                                     </select>
                                 </label>
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
                             </div>
-                        </div>}
+                        </div>
+                    }
 
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
@@ -968,7 +989,15 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' disabled={!(currentSection > 0)}
+                    onClick={() => {
+                        userDataRef.current = { ...userDataRef.current, ...data }
+                        setCurrentSection(a => ((a - 1) % totalSections))
+                    }}
+                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
+                >
+                    Previous
+                </button>
                 <button type='button' onClick={handleSubmit(onSubmit)}
                     className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
                     {currentSection === totalSections - 1 ? "Save" : "Next"}
@@ -998,10 +1027,9 @@ export function MedicalInfoSection({ userData, setUserData, currentSection, setC
     );
 }
 
-export function LocationSection({ userData, setUserData, currentSection, setCurrentSection, totalSections, saveForm }) {
+export function LocationSection({ userDataRef, currentSection, setCurrentSection, totalSections, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const selectedCoords = useRef([0, 0])
-    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
+    const [position, setPosition] = useState(userDataRef.current?.location || null)
     const { coords, isGeolocationAvailable, isGeolocationEnabled, getPosition } =
         useGeolocated({
             positionOptions: {
@@ -1012,7 +1040,7 @@ export function LocationSection({ userData, setUserData, currentSection, setCurr
         });
 
     const onSubmit = () => {
-        setUserData({ ...userData, location: selectedCoords.current })
+        userDataRef.current = { ...userDataRef.current, location: position }
         if (currentSection < totalSections - 1) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -1021,9 +1049,13 @@ export function LocationSection({ userData, setUserData, currentSection, setCurr
         }
     }
 
-    if (coords) {
-        selectedCoords.current = [coords.latitude, coords.longitude]
-    }
+    // useEffect(() => {
+    //     console.log("coords", coords)
+    //     if (coords) setPosition({
+    //         lat: coords.latitude,
+    //         lng: coords.longitude,
+    //     })
+    // }, [coords])
 
     return !coords ? (
         <>
@@ -1041,12 +1073,20 @@ export function LocationSection({ userData, setUserData, currentSection, setCurr
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Location</h1>
-                    <MapView initialPosition={[coords.latitude, coords.longitude]} selectedCoords={selectedCoords} />
+                    <MapView position={position} setPosition={setPosition} />
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
+                <button type='button' disabled={!(currentSection > 0)}
+                    onClick={() => {
+                        userDataRef.current = { ...userDataRef.current, ...data }
+                        setCurrentSection(a => ((a - 1) % totalSections))
+                    }}
+                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
+                >
+                    Previous
+                </button>
                 <button type='button' onClick={onSubmit}
                     className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
                     {currentSection === totalSections - 1 ? "Save" : "Next"}

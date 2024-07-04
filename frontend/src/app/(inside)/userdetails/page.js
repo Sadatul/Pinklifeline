@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import formBgImage from '../../../../public/userdetails/form-bg.jpg'
 import { Separator } from "@/components/ui/separator"
 import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection } from '@/app/components/formSections'
-import {latLngToCell} from 'h3-js'
+import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axios from "axios"
 
@@ -16,7 +16,7 @@ import axios from "axios"
 export default function UserDetailsPage() {
     const role = "ROLE_PATIENT"
     const locationResolution = 8
-    const [userData, setUserData] = useState({})
+    const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
     const [currentSection, setCurrentSection] = useState(0) // 0 for user details, 1 for image upload, 2 for medical history, 3 for doctor details, 4 for nurse details, 5 for location details
 
@@ -59,14 +59,20 @@ export default function UserDetailsPage() {
             else if (user_role === "ROLE_PATIENT") {
                 return [temp_sections[0], temp_sections[1], temp_sections[4]]
             }
+            else if (user_role === "ROLE_TEST") {
+                return [temp_sections[1], temp_sections[4]]
+            }
             console.log("Invalid role")
             return temp_sections
         }
         setSections(getSections(role))
 
-    }, [currentSection, userData])
+    }, [currentSection])
 
     const saveForm = () => {
+        console.log("user data ref from parent", userDataRef.current)
+        const userData = userDataRef.current
+        const tempPeriodDate = new Date(userData?.lastPeriodDate)
         let form_data = {
             fullName: userData?.fullName,
             weight: userData?.weight,
@@ -75,7 +81,7 @@ export default function UserDetailsPage() {
             cancerHistory: userData?.cancerHistory,
             cancerRelatives: userData?.cancerRelatives,
             profilePicture: userData?.profilePictureUrl,
-            lastPeriodDate: userData?.lastPeriodDate,
+            lastPeriodDate: `${tempPeriodDate.getFullYear()}-${tempPeriodDate.getMonth() + 1}-${tempPeriodDate.getDate()}`,
             avgCycleLength: userData?.avgCycleLength,
             periodIrregularities: userData?.periodIrregularities,
             allergies: userData?.allergies,
@@ -83,14 +89,21 @@ export default function UserDetailsPage() {
             medications: userData?.medications
         }
         if (role === "ROLE_PATIENT") {
+            console.log("location from parent")
+            console.log(userData?.location.lat,)
+            const tempDiagnosisDate = new Date(userData?.diagnosisDate)
             form_data = {
                 ...form_data,
-                diagnosisDate: userData?.diagnosisDate,
+                diagnosisDate: `${tempDiagnosisDate.getFullYear()}-${tempDiagnosisDate.getMonth() + 1}-${tempDiagnosisDate.getDate()}`,
                 cancerStage: userData?.cancerStage,
-                location: latLngToCell(userData?.location[0], userData?.location[1], locationResolution)
+                location: latLngToCell(Number(userData?.location.lat), Number(userData?.location.lng), locationResolution)
             }
         }
-        axios.post("/api/userForm", form_data).then((response) => {
+        axios.post("/api/userForm", form_data, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            }
+        }).then((response) => {
             console.log(response)
         }
         ).catch((error) => {
@@ -122,8 +135,7 @@ export default function UserDetailsPage() {
                 <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly">
                     {sections[currentSection] && sections[currentSection].section_components &&
                         React.createElement(sections[currentSection].section_components, {
-                            userData: userData,
-                            setUserData: setUserData,
+                            userDataRef: userDataRef,
                             setCurrentSection: setCurrentSection,
                             currentSection: currentSection,
                             totalSections: sections.length,

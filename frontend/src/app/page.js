@@ -22,6 +22,7 @@ import SlideAnimate from "./components/slideAnimate";
 import { motion } from "framer-motion";
 import blogDemoImage from '../../public/blog_demo.jpg';
 import forumPostDemoImage from '../../public/forumPostDemo.jpg';
+import { pagePaths } from "@/utils/constants";
 
 
 export default function Home() {
@@ -120,7 +121,7 @@ export default function Home() {
           <Link href="#contact" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Contact Us</Link>
         </div>
         <div className="flex flex-shrink flex-row justify-center items-center w-2/12">
-          <Link href={'/reglogin'} prefetch={true} id="reglogin" className="h-12 scale-90 hover:underline rounded-2xl border-4 py-1 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</Link>
+          <Link href={pagePaths.register} prefetch={true} id="reglogin" className="h-12 scale-90 rounded-2xl border-4 py-2 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</Link>
         </div>
       </nav>
       <motion.div className="relative w-full h-[800px] flex flex-col justify-center items-center bg-cover bg-center" style={{ backgroundImage: `url(${bg.src})` }}

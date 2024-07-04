@@ -1,11 +1,12 @@
 'use client'
 import { Suspense } from "react"
-import LoginRegister from "./otp"
+import OTPVerify from "./otp"
+import Loading from "../components/loading"
 
 export default function VerifyOTP() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <LoginRegister />
+        <Suspense fallback={<Loading />}>
+            <OTPVerify />
         </Suspense>
     )
 }

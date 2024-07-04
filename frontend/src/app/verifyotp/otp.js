@@ -11,38 +11,46 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { otpUrlReq, pagePaths } from "@/utils/constants"
 
 
-export default function LoginRegister() {
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm()
+export default function OTPVerify() {
+    const { register, handleSubmit, setValue, formState: { errors }, trigger } = useForm()
     const params = useSearchParams()
     const router = useRouter()
 
     const handleOtpChange = (opt) => {
-        console.log(opt)
-        if (opt.length === 6) {
-            setValue("otp", opt)
-        }
+        setValue("otp", opt)
         return
     }
 
     const submitForm = async (data) => {
-        console.log(data)
+        if (!(await trigger())) return
         const sentData = { username: data.email, otp: data.otp }
         console.log("Sent data")
         console.log(sentData)
-        // axios.post("http://localhost:8080/v1/auth/verify", sentData).then((res) => {
-        //     if (res.status === 200) {
-        //         toast.success("OTP verified")
-        //         console.log(res.data)
-        //     }
-        // }).catch((err) => {
-        //     toast.error("An error occured", {
-        //         description: "Please check your OTP and try again"
-        //     })
-        // })
-
+        axios.post(otpUrlReq, sentData).then((res) => {
+            if (res.status === 200) {
+                toast.success("OTP verified")
+                console.log(res.data)
+                router.push(pagePaths.login)
+            }
+        }).catch((err) => {
+            console.log(err)
+            toast.error("An error occured", {
+                description: err.response.data?.message
+            })
+        })
     }
+
+    useEffect(() => {
+        register("otp", {
+            required: "OTP field is required",
+            validate: (value) => {
+                return value.length === 6 || "OTP must be 6 characters"
+            }
+        })
+    }, [])
 
 
     return (
@@ -54,13 +62,11 @@ export default function LoginRegister() {
                 <Separator className="bg-purple-400 m-2 w-80" />
                 <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input type="email" placeholder="Email" className="border-2 border-black rounded-md p-2" defaultValue={params.get('email')} {...register("email", { required: true, maxLength: 32 })} />
+                    <input type="email" placeholder="Email" className="border-2 border-black rounded-md p-2" defaultValue={params.get('email')} {...register("email", { required: true, maxLength: 64 })} />
                     {errors.email?.type === "required" && <span className="text-red-500">This field is required</span>}
-                    {errors.email?.type === "maxLength" && <span className="text-red-500">Max length is 32</span>}
+                    {errors.email?.type === "maxLength" && <span className="text-red-500">Max length is 64</span>}
                     <label className="text-xl font-bold mt-5">OTP</label>
-                    {/* <input type="otp" placeholder="OTP" className="border-2 border-black rounded-md p-2 mt-2" {...register("otp", { required: true, maxLength: 6 })} />
-                    {errors.password?.type === "required" && <span className="text-red-500">This field is required</span>}
-                    {errors.password?.type === "maxLength" && <span className="text-red-500">Max length is 64</span>} */}
+
                     <InputOTP maxLength={6} onChange={handleOtpChange} >
                         <InputOTPGroup >
                             <InputOTPSlot index={0} className="bg-white" />
@@ -71,7 +77,7 @@ export default function LoginRegister() {
                             <InputOTPSlot index={5} className="bg-white" />
                         </InputOTPGroup>
                     </InputOTP>
-                    {!errors.otp && <span className="text-red-500">This field is required</span>}
+                    {errors.otp && <span className="text-red-500">{errors.otp?.message}</span>}
                     <button type="submit" className="bg-pink-500 text-white p-2 m-4 w-1/2 rounded-md hover:scale-105 hover:bg-pink-100 hover:text-pink-950 hover:border-double hover:border-pink-900 hover:border-2 transition ease-out duration-300">Verify</button>
                 </form>
             </div>

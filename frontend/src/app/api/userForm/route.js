@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function POST(request) {
     try {
+        console.log("Register form",request)
         const body = await request.json()
         console.log("Register form",body)
         return NextResponse.json({
