@@ -1,4 +1,43 @@
-export function getMessages(){
+export function getMessages(roomId){
+    return [
+            {
+                "sender": 3,
+                "message": "afzal king",
+                "timestamp": "2024-07-01T17:02:03",
+                "type": "TEXT"
+            },
+            {
+                "sender": 3,
+                "message": "afzal king",
+                "timestamp": "2024-07-01T17:02:46",
+                "type": "TEXT"
+            },
+            {
+                "sender": 2,
+                "message": "afzal king",
+                "timestamp": "2024-07-01T17:02:03",
+                "type": "TEXT"
+            },
+            {
+                "sender": 2,
+                "message": "afzal king",
+                "timestamp": "2024-07-01T17:02:46",
+                "type": "TEXT"
+            },
+            {
+                "sender": 3,
+                "message": "afzal king",
+                "timestamp": "2024-07-01T17:02:03",
+                "type": "TEXT"
+            },
+            {
+                "sender": 2,
+                "message": "Last Message",
+                "timestamp": "2024-07-01T17:02:46",
+                "type": "TEXT"
+            },
+
+        ];
 
 }
 
@@ -47,106 +86,6 @@ export function getChats(){
         {
             "roomId": 9,
             "userId": 11,
-            "name": "Shad"
-        },
-        {
-            "roomId": 10,
-            "userId": 12,
-            "name": "Shad"
-        },
-        {
-            "roomId": 11,
-            "userId": 13,
-            "name": "Shad"
-        },
-        {
-            "roomId": 12,
-            "userId": 14,
-            "name": "Shad"
-        },
-        {
-            "roomId": 13,
-            "userId": 15,
-            "name": "Shad"
-        },
-        {
-            "roomId": 14,
-            "userId": 16,
-            "name": "Shad"
-        },
-        {
-            "roomId": 15,
-            "userId": 17,
-            "name": "Shad"
-        },
-        {
-            "roomId": 16,
-            "userId": 18,
-            "name": "Shad"
-        },
-        {
-            "roomId": 17,
-            "userId": 19,
-            "name": "Shad"
-        },
-        {
-            "roomId": 18,
-            "userId": 20,
-            "name": "Shad"
-        },
-        {
-            "roomId": 19,
-            "userId": 21,
-            "name": "Shad"
-        },
-        {
-            "roomId": 20,
-            "userId": 22,
-            "name": "Shad"
-        },
-        {
-            "roomId": 21,
-            "userId": 23,
-            "name": "Shad"
-        },
-        {
-            "roomId": 22,
-            "userId": 24,
-            "name": "Shad"
-        },
-        {
-            "roomId": 23,
-            "userId": 25,
-            "name": "Shad"
-        },
-        {
-            "roomId": 24,
-            "userId": 26,
-            "name": "Shad"
-        },
-        {
-            "roomId": 25,
-            "userId": 27,
-            "name": "Shad"
-        },
-        {
-            "roomId": 26,
-            "userId": 28,
-            "name": "Shad"
-        },
-        {
-            "roomId": 27,
-            "userId": 29,
-            "name": "Shad"
-        },
-        {
-            "roomId": 28,
-            "userId": 30,
-            "name": "Shad"
-        },
-        {
-            "roomId": 29,
-            "userId": 31,
             "name": "Shad"
         }
     ]
