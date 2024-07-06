@@ -61,7 +61,7 @@ export default function LoginRegister() {
                 return
             }
             else {
-                const sentData = { username: data.email, password: data.password, role: data.Type }
+                const sentData = { username: data.email, password: data.password, role: data.role }
                 document.getElementById("confirm_password").classList.remove("border-red-500")
                 document.getElementById("confirm_password").classList.add("border-black")
                 document.getElementById("confirm_password").classList.add("border-2")
@@ -124,7 +124,7 @@ export default function LoginRegister() {
                             <label className="text-xl font-bold mt-5">Confirm Password</label>
                             <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
                             <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
-                            <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("Type")}>
+                            <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("role")}>
                                 <option className="w-full m-3" value={roles.basicUser}>Basic User</option>
                                 <option className="w-full m-3" value={roles.patient}>Patient</option>
                                 <option className="w-full m-3" value={roles.doctor}>Doctor</option>

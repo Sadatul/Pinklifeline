@@ -5,12 +5,15 @@ const ScrollableContainer = styled.div`
 
   /* Customizing the scrollbar */
   &::-webkit-scrollbar {
-    height: 6px; /* Adjust the height of the horizontal scrollbar */
+    height: 4px; /* Adjust the height of the horizontal scrollbar */
+  }
+  &::-webkit-scrollbar {
+    width: 8px; /* Adjust the height of the horizontal scrollbar */
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #888; /* Color of the scrollbar thumb */
-    border-radius: 10px; /* Rounded corners */
+    background: #D3D3D3; /* Color of the scrollbar thumb */
+    border-radius: 15px; /* Rounded corners */
   }
 
   &::-webkit-scrollbar-thumb:hover {

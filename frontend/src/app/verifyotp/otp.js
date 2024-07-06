@@ -50,7 +50,7 @@ export default function OTPVerify() {
                 return value.length === 6 || "OTP must be 6 characters"
             }
         })
-    }, [])
+    }, [register])
 
 
     return (

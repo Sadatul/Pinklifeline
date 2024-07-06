@@ -7,6 +7,9 @@ import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSectio
 import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axios from "axios"
+import { roles, userInfoRegUrlReq } from "@/utils/constants"
+import { toast } from "sonner"
+
 
 
 
@@ -77,11 +80,11 @@ export default function UserDetailsPage() {
             fullName: userData?.fullName,
             weight: userData?.weight,
             height: (Number(userData?.heightFeet) * 12 + Number(userData?.heightInch)) * 2.54 || "undefined",
-            dob: `${userData?.dobYear}-${userData?.dobMonth}-${userData?.dobDay}`,
+            dob: `${userData?.dobYear}-${(userData?.dobMonth) < 10 ? `0${userData?.dobMonth}` : `${userData?.dobMonth}`}-${userData?.dobDay}`,
             cancerHistory: userData?.cancerHistory,
             cancerRelatives: userData?.cancerRelatives,
             profilePicture: userData?.profilePictureUrl,
-            lastPeriodDate: `${tempPeriodDate.getFullYear()}-${tempPeriodDate.getMonth() + 1}-${tempPeriodDate.getDate()}`,
+            lastPeriodDate: `${tempPeriodDate.getFullYear()}-${(tempPeriodDate.getMonth() + 1) < 10 ? `0${tempPeriodDate.getMonth() + 1}` : `${tempPeriodDate.getMonth() + 1}`}-${(tempPeriodDate.getDate()) < 10 ? `0${tempPeriodDate.getDate()}` : `${tempPeriodDate.getDate()}`}`,
             avgCycleLength: userData?.avgCycleLength,
             periodIrregularities: userData?.periodIrregularities,
             allergies: userData?.allergies,
@@ -94,25 +97,40 @@ export default function UserDetailsPage() {
             const tempDiagnosisDate = new Date(userData?.diagnosisDate)
             form_data = {
                 ...form_data,
-                diagnosisDate: `${tempDiagnosisDate.getFullYear()}-${tempDiagnosisDate.getMonth() + 1}-${tempDiagnosisDate.getDate()}`,
+                diagnosisDate: `${tempDiagnosisDate.getFullYear()}-${(tempDiagnosisDate.getMonth() + 1) < 10 ? `0${tempDiagnosisDate.getMonth() + 1}` : `${tempDiagnosisDate.getMonth() + 1}`}-${(tempDiagnosisDate.getDate()) < 10 ? `0${tempDiagnosisDate.getDate()}` : `${tempDiagnosisDate.getDate()}`}`,
                 cancerStage: userData?.cancerStage,
                 location: latLngToCell(Number(userData?.location.lat), Number(userData?.location.lng), locationResolution)
             }
         }
-        axios.post("/api/userForm", form_data, {
+        const tempToken = localStorage.getItem("token")
+        const tempId = localStorage.getItem("userId")
+        if (!tempToken || !tempId) {
+            toast.error("Token not found", {
+                description: "You need to login to continue",
+            })
+            return
+        }
+        console.log("form data", form_data)
+        axios.post(userInfoRegUrlReq(tempId, roles.patient), form_data, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem("token")}`
+                'Authorization': `Bearer ${tempToken}`
             }
         }).then((response) => {
             console.log(response)
         }
         ).catch((error) => {
             console.log(error)
+            // save the error log in file log.txt
+            axios.post('/api/logging', error).then((response) => {
+                console.log(response)
+            }).catch((error) => {
+                console.log(error)
+            })
         })
     }
 
     return (
-        <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto" style={{ backgroundImage: `url(${formBgImage.src})`, minHeight: '649px' }}>
+        <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto" style={{ backgroundImage: `url(${formBgImage.src})` }}>
             <div className="w-full h-full justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)", minHeight: '649px' }}>
                 <div className="flex flex-row justify-evenly items-center w-5/6" >
                     {sections?.map((section, index) => (

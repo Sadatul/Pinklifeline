@@ -20,7 +20,7 @@ export default function MapComponent({ position, setPosition }) {
                 lat: coords.latitude,
                 lng: coords.longitude,
             })
-    }, [coords])
+    }, [coords, position, setPosition])
 
     const MakrerUrl = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png';
     const customIcon = L.icon({

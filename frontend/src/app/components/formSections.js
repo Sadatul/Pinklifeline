@@ -48,7 +48,7 @@ import {
 
 export function UserInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const storage = getStorage(firebase_app);
-    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
+    const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const onSubmit = (data) => {
         userDataRef.current = { ...userDataRef.current, ...data }
@@ -118,7 +118,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     return (
         <>
             <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly"
+                <motion.div className="flex flex-col items-center justify-evenly h-full"
                     initial={{ opacity: 0, x: '100%' }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: '-100%' }}
@@ -134,7 +134,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                         </label>
                         <label className="text-md font-semibold m-2 ">Weight(kg)
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.weight} type="number" placeholder="Weight" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
+                                <input defaultValue={userDataRef.current?.weight} type="number" placeholder="Weight" className="border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                         </label>
@@ -209,6 +209,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                 })
                             }}
                         />
+                        <input hidden id="file"></input>
                         {userDataRef.current?.profilePicturePreview && (
                             <div className="flex flex-row items-center">
                                 <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 max-w-96">
@@ -226,7 +227,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, ...data }
+                        userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
                     className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
@@ -245,7 +246,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can't change your full name and date of birth once you save the form.
+                                    You can&apos;t change your full name and date of birth once you save the form.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -349,7 +350,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can't change your full name and date of birth once you save the form.
+                                    You can&apos;t change your full name and date of birth once you save the form.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -444,7 +445,7 @@ export function NurseInfoSection({ userDataRef, currentSection, setCurrentSectio
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can't change your full name and date of birth once you save the form.
+                                    You can&apos;t change your full name and date of birth once you save the form.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -465,14 +466,15 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [date, setDate] = useState(userDataRef.current?.lastPeriodDate ? new Date(userDataRef.current?.lastPeriodDate) : null);
     const [diagnosisDate, setDiagnosisDate] = useState(userDataRef.current?.diagnosisDate ? new Date(userDataRef.current?.diagnosisDate) : null);
-    const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm();
+    const { register, handleSubmit, watch, formState: { errors }, setValue, trigger, getValues } = useForm();
     const cancerHistory = watch('cancerHistory');
     const [cancerRelatives, setCancerRelatives] = useState(userDataRef.current?.cancerRelatives || []);
     const [periodIrregularities, setPeriodIrregularities] = useState(userDataRef.current?.periodIrregularities || []);
     const [allergies, setAllergies] = useState(userDataRef.current?.allergies || []);
     const [organsWithChronicCondition, setOrgansWithChronicCondition] = useState(userDataRef.current?.organsWithChronicCondition || []);
     const [medications, setMedications] = useState(userDataRef.current?.medications || []);
-    useEffect(() => {
+    const isInitialised = useRef(false);
+    if (!isInitialised.current) {
         register("lastPeriodDate", { required: "Last Period Date is required" });
         if (role === "ROLE_PATIENT") register("diagnosisDate", { required: "Diagnosis Date is required" });
         if (userDataRef.current?.lastPeriodDate) {
@@ -483,7 +485,9 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
             setValue("diagnosisDate", userDataRef.current?.diagnosisDate)
             trigger("diagnosisDate")
         }
-    }, [register]);
+        isInitialised.current = true;
+    }
+
     const onSubmit = (data) => {
         userDataRef.current = { ...userDataRef.current, ...data, cancerRelatives: (cancerHistory == "Y" ? cancerRelatives : []), periodIrregularities: periodIrregularities, allergies: allergies, organsWithChronicCondition: organsWithChronicCondition, medications: medications }
         console.log("user data ref in medical info", userDataRef.current)
@@ -627,7 +631,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
 
                         <div className=" w-1/3">
                             <label className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
-                                <input defaultValue={userDataRef.current?.avgCycleLength} className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" {...register('avgCycleLength', { required: "This field is required", min:{value: 0, message: "Avg Cycle can not be negative"} })} />
+                                <input defaultValue={userDataRef.current?.avgCycleLength} className="border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
                             </label>
                             {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                         </div>
@@ -667,7 +671,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         </PopoverContent>
                                     </Popover>
                                 </label>
-                                {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
+                                {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
                             </div>
 
                             <div className=" w-1/3">
@@ -991,7 +995,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, ...data }
+                        userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
                     className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
@@ -1010,7 +1014,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can't change your full name and date of birth once you save the form.
+                                    You can&apos;t change your full name and date of birth once you save the form.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1040,6 +1044,8 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
         });
 
     const onSubmit = () => {
+        if (!position) return toast.error("Location is required")
+
         userDataRef.current = { ...userDataRef.current, location: position }
         if (currentSection < totalSections - 1) {
             setCurrentSection(a => ((a + 1) % totalSections))
@@ -1048,14 +1054,6 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
             setConfirmDialogOpen(true)
         }
     }
-
-    // useEffect(() => {
-    //     console.log("coords", coords)
-    //     if (coords) setPosition({
-    //         lat: coords.latitude,
-    //         lng: coords.longitude,
-    //     })
-    // }, [coords])
 
     return !coords ? (
         <>
@@ -1080,7 +1078,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, ...data }
+                        userDataRef.current = { ...userDataRef.current, location: position }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
                     className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
@@ -1099,7 +1097,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can't change your full name and date of birth once you save the form.
+                                    You can&apos;t change your full name and date of birth once you save the form.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
