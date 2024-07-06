@@ -14,7 +14,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import React from "react";
 import { Separator } from "@/components/ui/separator";
 import { Ripple } from "primereact/ripple";
-import { ArrowLeft, ArrowRight, EllipsisVertical } from 'lucide-react';
+import { ArrowLeft, ArrowRight, EllipsisVertical, ImageUp, Paperclip } from 'lucide-react';
 import {
     Popover,
     PopoverContent,
@@ -26,6 +26,10 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { SmileIcon } from "lucide-react";
+import Picker from '@emoji-mart/react';
+import data from "@emoji-mart/data"
+
 
 export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -93,8 +97,7 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedC
                                 setOpenedChat((openedChat?.roomId === chat.roomId) ? null : chat);
                             }}
                             onKeyDown={(e) => {
-                                if(e.key === "Escape")
-                                {
+                                if (e.key === "Escape") {
                                     setOpenedChat(null);
                                 }
                             }}
@@ -141,18 +144,51 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedC
 
 export function ChatWindow({ messages = null, userId = null, openedChat }) {
     const scrollAreaRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const imageFileInputRef = useRef(null);
+    const [file, setFile] = useState(null);
+    const [imageFile, setImageFile] = useState(null);
+
     const [chatMessages, setChatMessages] = useState(["Hello", "Hi", "How are you?", "I am fine", "What about you?", "I am also fine", "Good to hear that", "Yes, it is good", "Bye", "Goodbye", "Hello", "Hi", "How are you?", "I am fine", "What about you?", "I am also fine", "Good to hear that", "Yes, it is good", "Bye", "Goodbye", "Hello", "Hi", "How are you?", "I am fine", "What about you?", "I am also fine", "Good to hear that", "Yes, it is good", "Bye", "Goodbye", "This is the bottom of the chat"]);
 
     useEffect(() => {
-        // Scroll to bottom of the scroll area
         if (scrollAreaRef.current) {
-            console.log("scrolling to bottom");
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-            console.log(scrollAreaRef.current.scrollHeight); //I'm getting 537 here
-            console.log(scrollAreaRef.current.scrollTop); //I'm getting 0 here
         }
     }, [chatMessages, openedChat]);
 
+    const handleFileUploadClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            console.log("File uploaded:", file);
+            setImageFile(file);
+        }
+    };
+    const handleImageFileUploadClick = () => {
+        if (imageFileInputRef.current) {
+            imageFileInputRef.current.click();
+        }
+    };
+
+    const handleImageFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            console.log("File uploaded:", file);
+            setImageFile(file);
+        }
+    };
+
+    const sendMessage = (event) => {
+        event.preventDefault();
+        const message = event.target[0].value;
+        console.log("Message sent:", message);
+    }
 
     if (!openedChat) {
         return (
@@ -203,28 +239,79 @@ export function ChatWindow({ messages = null, userId = null, openedChat }) {
                     </ScrollableContainer>
 
                     {/* Chat Input Section */}
-                    <div className="flex-none p-3 bg-gray-200">
-                        <div className="flex items-center space-x-2">
+                    <div className="flex-none p-3 border rounded-md bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100">
+                        <form onSubmit={sendMessage} className="flex flex-row items-center space-x-2" 
+                            
+                        >
+                            <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                    <TooltipTrigger >
+                                        <div type="button" onClick={handleFileUploadClick} className="p-2 rounded-md border border-gray-300">
+                                            <Paperclip size={24} />
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent side={'top'}>
+                                        <p>
+                                            Attach a file
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                    <TooltipTrigger >
+                                        <div type="button" onClick={handleImageFileUploadClick} className="p-2 rounded-md border border-gray-300">
+                                            <ImageUp size={24} />
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={imageFileInputRef}
+                                            onChange={handleFileChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent side={'top'}>
+                                        <p>
+                                            Upload Image
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <input
                                 type="text"
                                 placeholder="Type your message..."
-                                className="w-full p-2 rounded-md border border-gray-300"
+                                className="p-2 rounded-md border border-gray-300 flex-1"
+                                id="message-input"
                             />
-                            {/* Add emoji picker and other elements here */}
-                            <button onClick={()=>{
-                                console.log("scrolling to top")
-                                console.log(document.getElementById('chat-scroll'))
-                                console.log(document.getElementById('chat-scroll'))
-                                // if(document.getElementById('chat-scroll').scrollTop === 0){
-                                //     document.getElementById('chat-scroll').scrollTop = document.getElementById('chat-scroll').scrollHeight
-                                // }
-                                // else{
-                                //     document.getElementById('chat-scroll').scrollTop = 0
-                                // }
-                            }}> top/bottom</button>
-                        </div>
+                            <Popover>
+                                <PopoverTrigger>
+                                    <SmileIcon className="h-5 w-5 text-muted-foreground hover:text-foreground transition" />
+                                </PopoverTrigger>
+                                <PopoverContent
+                                    className="w-full">
+                                    <Picker
+                                        emojiSize={18}
+                                        theme="light"
+                                        data={data}
+                                        maxFrequentRows={1}
+                                        onEmojiSelect={(emoji) => {
+                                            const messageInput = document.getElementById("message-input");
+                                            if (messageInput) {
+                                                messageInput.value += emoji.native;
+                                            }
+                                        }}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </form>
                     </div>
-                </div>
+                </div >
             </>
         )
     }
