@@ -14,6 +14,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@google/generative-ai": "^0.14.1",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -25,6 +26,9 @@
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.1",
+    "@tensorflow-models/qna": "^1.0.2",
+    "@tensorflow/tfjs-backend-cpu": "^4.20.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.20.0",
     "@types/socket.io": "^3.0.2",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
@@ -55,7 +59,8 @@
     "sonner": "^1.5.0",
     "styled-components": "^6.1.11",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^8",
