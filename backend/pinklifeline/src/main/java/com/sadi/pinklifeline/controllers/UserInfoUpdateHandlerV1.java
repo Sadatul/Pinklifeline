@@ -2,8 +2,8 @@ package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
+import com.sadi.pinklifeline.models.reqeusts.DocInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
-import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.service.UserInfoUpdateHandlerService;
 import com.sadi.pinklifeline.service.UserService;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class UserInfoUpdateHandlerV1 {
 
     private final Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerV1.class);
 
-    public UserInfoUpdateHandlerV1(UserInfoUpdateHandlerService updateHandlerService, UserRepository userRepository, UserService userService) {
+    public UserInfoUpdateHandlerV1(UserInfoUpdateHandlerService updateHandlerService, UserService userService) {
         this.updateHandlerService = updateHandlerService;
         this.userService = userService;
     }
@@ -39,7 +39,7 @@ public class UserInfoUpdateHandlerV1 {
     public ResponseEntity<Void> updateBasicUserInfo(@PathVariable Long id,
                                                       @Valid @RequestBody BasicUserInfoUpdateReq req){
 
-        logger.info("update basic {}", req.toString());
+        logger.debug("update basic {}", req.toString());
         User user = userService.getUserIfRegistered(id);
         updateHandlerService.updateBasicUser(req,user);
 
@@ -51,9 +51,21 @@ public class UserInfoUpdateHandlerV1 {
     public ResponseEntity<Void> updatePatientUserInfo(@PathVariable Long id,
                                                         @Valid @RequestBody PatientInfoUpdateReq req){
 
-        logger.info("update patient {}", req.toString());
+        logger.debug("update patient {}", req.toString());
         User user = userService.getUserIfRegistered(id);
         updateHandlerService.updatePatient(req, user);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/ROLE_DOCTOR/{id}")
+    @PreAuthorize("(#id.toString() == authentication.name) and hasRole('DOCTOR')")
+    public ResponseEntity<Void> updateDoctorInfo(@PathVariable Long id,
+                                                      @Valid @RequestBody DocInfoUpdateReq req){
+
+        logger.debug("update doctor {}", req.toString());
+        User user = userService.getUserIfRegistered(id);
+        updateHandlerService.updateDoctorInfo(req, user);
 
         return ResponseEntity.noContent().build();
     }

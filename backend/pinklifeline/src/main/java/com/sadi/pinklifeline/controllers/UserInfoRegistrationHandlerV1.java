@@ -31,7 +31,7 @@ public class UserInfoRegistrationHandlerV1 {
     public ResponseEntity<Void> registerBasicUserInfo(@PathVariable Long id,
                                                     @Valid @RequestBody BasicUserInfoRegisterReq req){
 
-        logger.info("works basic {}", req.toString());
+        logger.debug("works basic {}", req.toString());
         User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerBasicUser(req,user);
 
@@ -43,7 +43,7 @@ public class UserInfoRegistrationHandlerV1 {
     public ResponseEntity<Void> registerPatientUserInfo(@PathVariable Long id,
                                                       @Valid @RequestBody PatientInfoRegisterReq req){
 
-        logger.info("works patient {}", req.toString());
+        logger.debug("works patient {}", req.toString());
         User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerPatient(req,user);
 
@@ -55,7 +55,7 @@ public class UserInfoRegistrationHandlerV1 {
     public ResponseEntity<Void> registerDoctorInfo(@PathVariable Long id,
                                                         @Valid @RequestBody DocInfoRegReq req){
 
-        logger.info("Doctor Registration {}", req.toString());
+        logger.debug("Doctor Registration {}", req.toString());
         User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerDoctor(req, user);
 

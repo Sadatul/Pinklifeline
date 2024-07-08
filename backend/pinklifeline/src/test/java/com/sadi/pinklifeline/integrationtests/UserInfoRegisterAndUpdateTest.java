@@ -215,7 +215,44 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 .content(requestBody)).andExpect(status().isNoContent());
         DocInfoRegReq req = objectMapper.readValue(requestBody, DocInfoRegReq.class);
         User newUser = userRepository.findById(id).orElseThrow();
+
+        logger.info("Doctor Register Req: {}", req);
+        logger.info("Doctor After Register: {}", newUser);
         assertThatDocInfosAreCorrect(req, newUser);
+
+        String updateBody = """
+                {
+                	"fullName": "Dr. Adila",
+                  	"qualifications": ["CPS"],
+                  	"workplace": "Kushtia Medical College",
+                  	"department": "Koma",
+                  	"designation": "Consultant",
+                  	"contactNumber": "01730445554"
+                }
+                """;
+        mockMvc.perform(put("/v1/infos/ROLE_DOCTOR/{id}", id).contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", token))
+                .content(updateBody)).andExpect(status().isNoContent());
+
+        DocInfoUpdateReq updateReq = objectMapper.readValue(updateBody, DocInfoUpdateReq.class);
+        logger.info("Doctor Update Req: {}", updateReq);
+        newUser = userRepository.findById(id).orElseThrow();
+        logger.info("Doctor after update: {}", newUser);
+        assertThatDocInfoUpdateIsCorrect(updateReq, newUser);
+
+        // The rest of the data stays same Test
+        assertEquals(req.getProfilePicture(), newUser.getProfilePicture());
+        assertEquals(req.getRegistrationNumber(), newUser.getDoctorDetails().getRegistrationNumber());
+    }
+
+    private void assertThatDocInfoUpdateIsCorrect(DocInfoUpdateReq req, User user) {
+        DoctorDetails doc = user.getDoctorDetails();
+        Assertions.assertThat(doc.getFullName()).isEqualTo(req.getFullName());
+        assertArrayEquals(req.getQualifications().toArray(), doc.getQualifications().toArray());
+        Assertions.assertThat(doc.getWorkplace()).isEqualTo(req.getWorkplace());
+        Assertions.assertThat(doc.getDepartment()).isEqualTo(req.getDepartment());
+        Assertions.assertThat(doc.getDesignation()).isEqualTo(req.getDesignation());
+        Assertions.assertThat(doc.getContactNumber()).isEqualTo(req.getContactNumber());
     }
 
     private void assertThatDocInfosAreCorrect(DocInfoRegReq req, User user) {

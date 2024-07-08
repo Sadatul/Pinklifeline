@@ -70,11 +70,10 @@ public class UserInfoRegistrationHandlerService {
         BasicUserDetails basic = getBasicUserDetails(req, user);
         PatientSpecificDetails patientSpecific = getPatientSpecificDetails(req, user);
         user.setProfilePicture(req.getProfilePicture());
-        logger.info("Got basic write");
         user.setBasicUser(basic);
         user.setPatientSpecificDetails(patientSpecific);
         user.setIsRegistrationComplete(YesNo.Y);
-        logger.info("Got basic right: {}", user);
+        logger.debug("PatientSpecificDetails and BasicUser of User bean has been updated: {}", user);
         try{
             userRepository.save(user);
         }
@@ -84,16 +83,7 @@ public class UserInfoRegistrationHandlerService {
     }
 
     public void registerDoctor(DocInfoRegReq req, User user){
-        DoctorDetails doctorDetails = new DoctorDetails();
-        doctorDetails.setUser(user);
-        doctorDetails.setUserId(user.getId());
-        doctorDetails.setFullName(req.getFullName());
-        doctorDetails.setDepartment(req.getDepartment());
-        doctorDetails.setDesignation(req.getDesignation());
-        doctorDetails.setQualifications(req.getQualifications());
-        doctorDetails.setWorkplace(req.getWorkplace());
-        doctorDetails.setContactNumber(req.getContactNumber());
-        doctorDetails.setRegistrationNumber(req.getRegistrationNumber());
+        DoctorDetails doctorDetails = getDoctorDetails(req, user);
         user.setIsRegistrationComplete(YesNo.Y);
         user.setProfilePicture(req.getProfilePicture());
         user.setDoctorDetails(doctorDetails);
@@ -105,6 +95,20 @@ public class UserInfoRegistrationHandlerService {
         catch (UnsupportedOperationException e){
             logger.info("This error is thrown during doctor registration {}",e.toString());
         }
+    }
+
+    private DoctorDetails getDoctorDetails(DocInfoRegReq req, User user) {
+        DoctorDetails doctorDetails = new DoctorDetails();
+        doctorDetails.setUser(user);
+        doctorDetails.setUserId(user.getId());
+        doctorDetails.setFullName(req.getFullName());
+        doctorDetails.setDepartment(req.getDepartment());
+        doctorDetails.setDesignation(req.getDesignation());
+        doctorDetails.setQualifications(req.getQualifications());
+        doctorDetails.setWorkplace(req.getWorkplace());
+        doctorDetails.setContactNumber(req.getContactNumber());
+        doctorDetails.setRegistrationNumber(req.getRegistrationNumber());
+        return doctorDetails;
     }
 
 }

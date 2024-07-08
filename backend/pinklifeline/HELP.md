@@ -180,5 +180,34 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * Remember we are using STOMP protocol, for js you must use @stomp/stompjs library
 * For authorization, we are using STOMP connect headers. So, when CONNECT request is sent you must also provide Authorization: Bearer {JWT_TOKEN} header with the connect headers, otherwise connection won't be established
-* During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS you can use this to set the timestamp new ```new Date().toISOString()```
+* During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS, you can use this to set the timestamp new ```new Date().toISOString()```
 * If you are using JS use the reference javaScriptCode that was provided to you.
+
+## Doctor Information Register
+``` Endpoint: POST /v1/infos/ROLE_DOCTOR/{id}```
+### Sample Body
+```
+ {
+	"fullName": "Dr. Adil",
+  	"qualifications": ["MBBS", "DO"],
+  	"workplace": "Khulna Medical College",
+  	"department": "Cancer",
+  	"designation": "Head",
+  	"contactNumber": "01730445524",
+  	"registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+  	"profilePicture": "Nana"
+}
+```
+## Update Doctor Info
+``` Endpoint: PUT /v1/infos/ROLE_DOCTOR/{id}```
+### Sample Body
+```
+{
+	"fullName": "Dr. Adila",
+  	"qualifications": ["MBBS", "FCPS"],
+  	"workplace": "Comilla Medical College",
+  	"department": "Cancer",
+  	"designation": "Head",
+  	"contactNumber": "01730445524"
+}
+```
