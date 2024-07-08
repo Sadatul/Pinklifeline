@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.DocInfoRegReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.service.UserInfoRegistrationHandlerService;
@@ -45,6 +46,18 @@ public class UserInfoRegistrationHandlerV1 {
         logger.info("works patient {}", req.toString());
         User user = userService.getUserIfUnregistered(id);
         userInfoHandlerService.registerPatient(req,user);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/ROLE_DOCTOR/{id}")
+    @PreAuthorize("(#id.toString() == authentication.name) and hasRole('DOCTOR')")
+    public ResponseEntity<Void> registerDoctorInfo(@PathVariable Long id,
+                                                        @Valid @RequestBody DocInfoRegReq req){
+
+        logger.info("Doctor Registration {}", req.toString());
+        User user = userService.getUserIfUnregistered(id);
+        userInfoHandlerService.registerDoctor(req, user);
 
         return ResponseEntity.noContent().build();
     }

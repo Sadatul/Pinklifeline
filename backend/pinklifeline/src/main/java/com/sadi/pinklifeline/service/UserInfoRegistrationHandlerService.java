@@ -1,28 +1,25 @@
 package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.YesNo;
-import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
 import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.AbstractUserInfoRegisterReq;
 import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoRegisterReq;
+import com.sadi.pinklifeline.models.reqeusts.DocInfoRegReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoRegisterReq;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserInfoRegistrationHandlerService {
 
     private final UserRepository userRepository;
-    private final UserService userService;
-
-    public UserInfoRegistrationHandlerService(UserRepository userRepository, UserService userService) {
+    public UserInfoRegistrationHandlerService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userService = userService;
     }
 
     Logger logger = LoggerFactory.getLogger(UserInfoRegistrationHandlerService.class);
@@ -77,12 +74,36 @@ public class UserInfoRegistrationHandlerService {
         user.setBasicUser(basic);
         user.setPatientSpecificDetails(patientSpecific);
         user.setIsRegistrationComplete(YesNo.Y);
-        logger.info("Got basic right: {}", user.toString());
+        logger.info("Got basic right: {}", user);
         try{
             userRepository.save(user);
         }
         catch (UnsupportedOperationException e){
             logger.info("This error is thrown patient registration {}",e.toString());
+        }
+    }
+
+    public void registerDoctor(DocInfoRegReq req, User user){
+        DoctorDetails doctorDetails = new DoctorDetails();
+        doctorDetails.setUser(user);
+        doctorDetails.setUserId(user.getId());
+        doctorDetails.setFullName(req.getFullName());
+        doctorDetails.setDepartment(req.getDepartment());
+        doctorDetails.setDesignation(req.getDesignation());
+        doctorDetails.setQualifications(req.getQualifications());
+        doctorDetails.setWorkplace(req.getWorkplace());
+        doctorDetails.setContactNumber(req.getContactNumber());
+        doctorDetails.setRegistrationNumber(req.getRegistrationNumber());
+        user.setIsRegistrationComplete(YesNo.Y);
+        user.setProfilePicture(req.getProfilePicture());
+        user.setDoctorDetails(doctorDetails);
+
+        logger.debug("Got this far {}", doctorDetails);
+        try{
+            userRepository.save(user);
+        }
+        catch (UnsupportedOperationException e){
+            logger.info("This error is thrown during doctor registration {}",e.toString());
         }
     }
 

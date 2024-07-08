@@ -9,7 +9,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @ToString
 @Table(name = "doctor_details")
 public class DoctorDetails {
@@ -48,4 +47,8 @@ public class DoctorDetails {
     @Column(name = "is_verified", columnDefinition = "ENUM('Y', 'N') DEFAULT 'N' NOT NULL")
     @Enumerated(EnumType.STRING)
     private YesNo isVerified;
+
+    public DoctorDetails() {
+        this.isVerified = YesNo.N;
+    }
 }
