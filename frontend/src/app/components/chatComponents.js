@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getChats, getMessages } from "@/utils/dataRepository";
 import Avatar from "./avatar";
-import { testingAvatar } from "@/utils/constants";
+import { getChatsUrl, getMessagesUrl, messageSendUrl, pagePaths, testingAvatar } from "@/utils/constants";
 import ScrollableContainer from "./StyledScrollbar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import React from "react";
@@ -41,19 +41,80 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useStompContext } from "../context/stompContext";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
 
 
 
 export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const chats = getChats()
-    const [openedChat, setOpenedChat] = useState(null);
+    const router = useRouter();
+    const params = useParams();
+    const openedChat = useRef(params.chatId ? JSON.parse(params.chatId) : null);
+    const stompContext = useStompContext();
+
+    useEffect(() => {
+        const id = localStorage.getItem('userId')
+        const token = localStorage.getItem('token')
+        if (!token || !id) {
+            console.error('Token not found')
+            toast.error('Token not found', {
+                description: 'You need to login to continue'
+            })
+            router.push('/login')
+        }
+        const headers = { 'Authorization': `Bearer ${token}` }
+        axios.get(getChatsUrl(), {
+            headers: headers
+        }).then((response) => {
+            stompContext.chatManager.current.addChats(response.data)
+            stompContext.setChats(response.data)
+        }).catch((error) => {
+            console.error(error)
+        })
+    }, [])
+
+    useEffect(() => {
+        if (openedChat.current && stompContext.chats.length > 0) {
+            for (const chat of stompContext.chats) {
+                if (chat.roomId === openedChat.current.roomId) {
+                    const id = localStorage.getItem('userId')
+                    const token = localStorage.getItem('token')
+                    if (!token || !id) {
+                        console.error('Token not found')
+                        toast.error('Token not found', {
+                            description: 'You need to login to continue'
+                        })
+                        router.push('/login')
+                    }
+                    const headers = { 'Authorization': `Bearer ${token}` }
+                    axios.get(getMessagesUrl(openedChat.current.roomId), {
+                        headers: headers
+                    }).then((response) => {
+                        stompContext.setMessages(response.data)
+                    }).catch((error) => {
+                        console.error(error)
+                    })
+                    break;
+                }
+            }
+        }
+
+        return () => {
+            console.log("ChatLayout cleanup")
+            stompContext.chatManager.current.removeAllChats()
+            stompContext.setChats([])
+            stompContext.setMessages([])
+        }
+    }, [stompContext.chats, openedChat.current])
 
     return (
         <ResizablePanelGroup direction="horizontal"
             onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                    setOpenedChat(null);
+                    router.push(pagePaths.inbox)
                 }
             }}
         >
@@ -74,7 +135,7 @@ export function ChatLayout() {
                     isCollapsed && "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out", "flex-grow overflow-auto"
                 )}
             >
-                <ChatSideBar isCollapsed={isCollapsed} chats={chats} openedChat={openedChat} setOpenedChat={setOpenedChat} />
+                <ChatSideBar isCollapsed={isCollapsed} chats={chats} openedChat={openedChat} />
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel
@@ -82,8 +143,8 @@ export function ChatLayout() {
                 minSize={70}
                 className="flex-grow overflow-auto"
             >
-                {openedChat ? (
-                    <ChatWindow openedChat={openedChat} userId={2} setOpenedChat={setOpenedChat} />
+                {stompContext.messages ? (
+                    <ChatWindow stompContext={stompContext} />
                 ) : (
                     <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-zinc-100 via-slate-200 to-gray-300">
                     </div>
@@ -93,7 +154,7 @@ export function ChatLayout() {
     )
 }
 
-export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedChat }) {
+export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
     return (
         <>
             <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">
@@ -115,11 +176,8 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedC
                 <ScrollBar className="" />
                 {chats?.map((chat, index) => (
                     <React.Fragment key={index}>
-                        <button
+                        <Link href={openedChat.current?.roomId === chat.roomId ? pagePaths.inbox : pagePaths.inboxChat(JSON.stringify(chat))}
                             className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group"
-                            onClick={() => {
-                                setOpenedChat((openedChat?.roomId === chat.roomId) ? null : chat);
-                            }}
                         >
                             <Ripple
                                 pt={{
@@ -147,12 +205,12 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedC
                                             {chat.name}
                                         </h1>
                                         <span className="ml-4 transform transition-transform duration-500 ease-in-out opacity-0 translate-x-[-5px] group-hover:opacity-100 group-hover:translate-x-0">
-                                            {(openedChat?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
+                                            {(openedChat.current?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
                                         </span>
                                     </div>
                                 </>
                             )}
-                        </button>
+                        </Link>
                         <Separator className="bg-gray-300" />
                     </React.Fragment>
                 ))}
@@ -161,7 +219,7 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat, setOpenedC
     )
 }
 
-export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
+export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
     const scrollAreaRef = useRef(null);
     const fileInputRef = useRef(null);
     const imageFileInputRef = useRef(null);
@@ -174,21 +232,10 @@ export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
-    }, [chatMessages, openedChat]);
+    }, [stompContext.messages, openedChat.current]);
 
-    const handleFileUploadClick = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            console.log("File uploaded:", file);
-            setImageFile(file);
-        }
-    };
+
     const handleImageFileUploadClick = () => {
         if (imageFileInputRef.current) {
             imageFileInputRef.current.click();
@@ -204,7 +251,31 @@ export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
     };
 
     const sendMesssage = (message) => {
-        setChatMessages([...chatMessages, message]);
+        const messageObject = {
+            receiverId: message.receiverId,
+            message: message.message,
+            timestamp: message.timestamp,
+            type: message.type
+        }
+        console.log('Sending message')
+        console.log(messageObject)
+        stompContext.stompClientRef.current.publish(
+            {
+                destination: messageSendUrl,
+                body: JSON.stringify(messageObject),
+            }
+        );
+        const newChatMessage = {
+            sender: message.sender,
+            message: message.message,
+            timestamp: message.timestamp,
+            type: message.type
+        }
+        stompContext.setMessages([...stompContext.messages, newChatMessage]);
+        if (stompContext.chatManager.current.exists(message.receiverId)) {
+            stompContext.chatManager.current.moveToHead(message.receiverId)
+            stompContext.setChats([...stompContext.chatManager.current.getChatsInOrder()])
+        }
         document.getElementById("message-input").value = "";
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -215,9 +286,18 @@ export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
         event.preventDefault();
         const message = document.getElementById("message-input")?.value;
         console.log("Message sent:", message);
-        if (message) {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            console.error('User not found')
+            toast.error('User not found', {
+                description: 'You need to login to continue'
+            })
+            router.push('/login')
+        }
+        if (message !== '') {
             const messageObject = {
                 sender: userId,
+                receiverId: openedChat.userId,
                 message: message,
                 timestamp: new Date().toISOString(),
                 type: "TEXT",
@@ -273,7 +353,7 @@ export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
                             }
                         }}
                     >
-                        {chatMessages.toReversed().map((message, index) => (
+                        {stompContext.messages.toReversed().map((message, index) => (
                             <div key={index} className={cn('flex flex-col my-4', message.sender === userId ? "items-end" : "items-start")}>
                                 <div className={cn('flex flex-row', message.sender === userId ? "justify-end" : "justify-start")}>
                                     <div className={cn('flex flex-row items-center', message.sender === userId ? "flex-row-reverse" : "flex-row")}>
@@ -312,7 +392,7 @@ export function ChatWindow({ userId = null, openedChat, setOpenedChat }) {
                                     <input
                                         type="file"
                                         ref={imageFileInputRef}
-                                        onChange={handleFileChange}
+                                        onChange={handleImageFileChange}
                                         style={{ display: 'none' }}
                                     />
                                 </TooltipTrigger>

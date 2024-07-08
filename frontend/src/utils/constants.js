@@ -7,6 +7,8 @@ export const stompBrokerUrl = `ws://localhost:8080/ws`
 export const subscribeMessageUrl = (id) => { return `/user/${id}/queue/messages` }
 export const subscribeErrorUrl = (id) => { return `/user/${id}/queue/errors` }
 export const messageSendUrl = `/app/chat`
+export const getChatsUrl = (id) => { return `${baseUrl}/v1/chat/${id}` }
+export const getMessagesUrl = (room_id) => { return `${baseUrl}/v1/chat/messages/${room_id}` }
 
 export const testingAvatar = "https://github.com/shadcn.png"
 
@@ -27,6 +29,8 @@ export const pagePaths = {
         return "/verifyotp"
     },
     userdetails: "/userdetails",
+    inbox : "/inbox",
+    inboxChat: (chatId) => { return `/inbox/${chatId}` },
 }
 
 //formats used in different places

@@ -5,8 +5,9 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Client } from '@stomp/stompjs';
 import { usePathname } from "next/navigation";
-import { stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
+import { getChatsUrl, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
 import { useParams } from "next/navigation";
+import axios from "axios";
 
 export function SocketInitializer() {
     const stompContext = useStompContext();
@@ -42,14 +43,41 @@ export function SocketInitializer() {
                 stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(id), (response) => {
                     console.log(response)
                     const message = JSON.parse(response.body)
+                    const senderId = message.message.split('?FROM=')[1];
                     if (!pathname.startsWith('/inbox')) {
-                        const senderId = message.message.split('?FROM=')[1];
                         if (message.type === 'TEXT') {
                             toast.message("New message from" + senderId)
                         }
                     }
-                    else if (pathname.startsWith('/inbox')){
-                        stompContext.setMessages([...stompContext.messages, message])
+                    else if (pathname.startsWith('/inbox')) {
+                        console.log("in stompInitializer pathname matched")
+                        const openedChat = JSON.parse(params.chatId)
+                        if (openedChat.userId === senderId){
+                            console.log("in stompInitializer/subscriber/ifroute")
+                            stompContext.setMessages([...stompContext.messages, message])
+                            stompContext.chatManager.current.moveToHead(senderId)
+                            stompContext.setChats([...stompContext.chatManager.current.getChatsInOrder()])
+                        }
+                        else if(stompContext.chatManager.current.exists(senderId)){
+                            console.log("in stompInitializer/subscriber/elseifroute")
+                            stompContext.chatManager.current.moveToHead(senderId)
+                            stompContext.setChats([...stompContext.chatManager.current.getChatsInOrder()])
+                        }
+                        else{
+                            stompContext.chatManager.current.removeAllChats()
+                            axios.get(getChatsUrl(id), {
+                                headers: headers
+                            }).then((response) => {
+                                console.log("in stompInitializer/subscriber/elseroute")
+                                console.log(response)
+                                stompContext.chatManager.current.addChats(response.data)
+                                stompContext.chatManager.current.moveToHead(senderId)
+                                stompContext.setChats([...stompContext.chatManager.current.getChatsInOrder()])
+
+                            }).catch((error) => {
+                                console.error(error)
+                            })
+                        }
                     }
                 })
                 stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(id), (error) => {
