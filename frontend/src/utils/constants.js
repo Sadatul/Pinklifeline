@@ -4,8 +4,9 @@ export const registerUrlReq = `${baseUrl}/v1/auth/register`;
 export const otpUrlReq = `${baseUrl}/v1/auth/verify`;
 export const userInfoRegUrlReq = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` };
 export const stompBrokerUrl = `ws://localhost:8080/ws`
-export const subscribeMessageUrl = (id) => { return `${stompBrokerUrl}/user/${id}/queue/messages` }
-export const subscribeErrorUrl = (id) => { return `${stompBrokerUrl}/user/${id}/queue/errors` }
+export const subscribeMessageUrl = (id) => { return `/user/${id}/queue/messages` }
+export const subscribeErrorUrl = (id) => { return `/user/${id}/queue/errors` }
+export const messageSendUrl = `/app/chat`
 
 export const testingAvatar = "https://github.com/shadcn.png"
 
@@ -27,3 +28,7 @@ export const pagePaths = {
     },
     userdetails: "/userdetails",
 }
+
+//formats used in different places
+//message format added `?FROM={senderID}` to the message
+// chat room link format `{roomid}chat{senderID}`

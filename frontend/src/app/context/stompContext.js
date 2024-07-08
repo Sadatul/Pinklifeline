@@ -6,16 +6,16 @@ import { stompBrokerUrl, headers, subscribeMessageUrl, subscribeErrorUrl } from 
 const stompContext = createContext()
 
 export function StompContextProvider({ children }) {
-    const [stompClient, setStompClient] = useState()
     const [messages, setMessages] = useState([])
+    const [chats , setChats] = useState([])
     const stompClientRef = useRef(null)
 
     return (
         <stompContext.Provider value={{
-            stompClient,
-            setStompClient,
             messages,
             setMessages,
+            chats,
+            setChats,
             stompClientRef
         }}>
             {children}
