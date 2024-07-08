@@ -131,10 +131,14 @@ need to be passed, then pass an empty list like this:
     {
         "roomId": 1,
         "userId": 3,
-        "name": "Sadi"
+        "name": "Sadi",
+        "profilePicture": "kaka"
     }
 ]
+
 ```
+**<span style="color:red">Notes:</span>**
+* if profile picture doesn't exist then ```"profilePicture": null```
 
 ## Get Chat Messages
 ``` Endpoint: GET /v1/chat/messages/{room_id}```

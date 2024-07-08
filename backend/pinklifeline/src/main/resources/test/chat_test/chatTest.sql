@@ -4,6 +4,7 @@ INSERT INTO pinklifeline.basic_users_details VALUES (2, 'Sadatul Islam', '2000-0
 INSERT INTO pinklifeline.patient_specific_details VALUES (2, 'SURVIVOR', '2024-05-28', '883cf1760bfffff');
 
 INSERT INTO users VALUES (3, 'jakafasfjsldf@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y');
+INSERT INTO pinklifeline.profile_pictures VALUES (3, 'someprofilepicture');
 INSERT INTO pinklifeline.user_roles VALUES (3, 'ROLE_PATIENT');
 INSERT INTO pinklifeline.basic_users_details VALUES (3, 'Faria Islam', '2000-08-28', '55', '50', 'N', '2024-05-28', 7);
 INSERT INTO pinklifeline.patient_specific_details VALUES (3, 'STAGE_0', '2024-05-28', '883cf1760bfffff');
