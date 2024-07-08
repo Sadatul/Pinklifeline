@@ -1,3 +1,4 @@
+'use client'
 import {
     ResizableHandle,
     ResizablePanel,
@@ -40,6 +41,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import 
 
 
 export function ChatLayout() {

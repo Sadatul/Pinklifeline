@@ -68,6 +68,8 @@ export default function LoginRegister() {
                 document.getElementById("password_mismatch_label").hidden = true
                 document.getElementById("submit-button-text").hidden = true
                 document.getElementById("submit-button-loading-state").hidden = false
+                console.log("Sent data")
+                console.log(sentData)
                 axios.post(registerUrlReq, sentData).then((res) => {
                     console.log("Response")
                     console.log(res)
@@ -106,11 +108,15 @@ export default function LoginRegister() {
                 <Separator className="bg-purple-400 m-2 w-80" />
                 <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input type="email" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2" {...register("email", { required: "Email is required", maxLength: {value:64, message:"Maximum length allowed is 64"} })} />
-                    {errors.email?.type === "required" && <span className="text-red-500">{errors.email?.message}</span>}
+                    <input type="email" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
+                        {...register("email", {
+                            required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" },
+                            validate: (value) => { return /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com)$/.test(value) || 'Use @gmail.com or @yahoo.com' }
+                        })} />
+                    {errors.email && <span className="text-red-500">{errors.email?.message}</span>}
 
                     <label className="text-xl font-bold mt-5">Password</label>
-                    <input id="password" type={showPassword?"text":"password"} placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("password", { required: "Password is required", maxLength: {value:64, message:"Maximum length 64 characters"} })} />
+                    <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} />
                     {errors.password?.type === "required" && <span className="text-red-500">{errors.password?.message}</span>}
 
                     <div className="flex flex-row items-center justify-center mt-1">

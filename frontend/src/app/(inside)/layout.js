@@ -10,16 +10,16 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { testingAvatar } from "@/utils/constants";
-import { getChats } from "@/utils/dataRepository";
-import { useState } from "react";
+import { pagePaths, testingAvatar } from "@/utils/constants";
 import { PrimeReactProvider } from 'primereact/api';
+import { StompContextProvider } from "@/app/context/stompContext";
+import { useCallback } from "react";
+
+import { SocketInitializer } from "../components/stompInitializer";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
-    const value = {
-        ripple: true
-    }
+
     const checkScroll = () => {
         if (window.scrollY > 0) {
             document.getElementById('navbar').classList.add('scale-90', 'shadow-md');
@@ -33,37 +33,41 @@ export default function Layout({ children }) {
         window.addEventListener('scroll', checkScroll);
     }, []);
 
+
     return (
-        <PrimeReactProvider value={value}>
-            <div className="w-screen h-screen flex flex-col">
-                <nav
-                    id="navbar" className="bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink shadow"
-                >
-                    <Link href={"/"} className=" pt-3 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
-                        <Image loading="lazy" className="hidden md:block mr-5 shrink animate-bounce delay-700" src={logoIcon.src} alt="logo" width={40} height={40} />
-                        <Image loading='lazy' className="shrink hidden md:block" src={logoText.src} alt="logo-text" width={200} height={75} />
-                    </Link >
-                    <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
-                        <Link href="#features" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
-                        <Link href="#blog" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
-                        <Link href="#forum" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
-                    </div>
-                    <div className="flex flex-shrink flex-row justify-center items-center mr-28">
-                        <Popover>
-                            <PopoverTrigger >
-                                <Avatar avatarImgScr={testingAvatar} size={56} />
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <div className="w-32 rounded-md py-2 flex flex-col justify-between items-center">
-                                    <Link className="text-center p-1 m-1 text-black hover:scale-105 transition ease-in w-full" href="/profile">Profile</Link>
-                                    <Link className="text-center p-1 m-1 font-semibold hover:scale-105 transition ease-in w-5/6 rounded bg-red-300 text-black" href="/logout">Logout</Link>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </nav>
-                {children}
-            </div>
+        <PrimeReactProvider value={{ ripple: true }}>
+            <StompContextProvider>
+                <div className="w-screen h-screen flex flex-col">
+                    <nav
+                        id="navbar" className="bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink shadow"
+                    >
+                        <Link href={"/"} className=" pt-3 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
+                            <Image loading="lazy" className="hidden md:block mr-5 shrink animate-bounce delay-700" src={logoIcon.src} alt="logo" width={40} height={40} />
+                            <Image loading='lazy' className="shrink hidden md:block" src={logoText.src} alt="logo-text" width={200} height={75} />
+                        </Link >
+                        <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
+                            <Link href="#features" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
+                            <Link href="#blog" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
+                            <Link href="#forum" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
+                        </div>
+                        <div className="flex flex-shrink flex-row justify-center items-center mr-28">
+                            <Popover>
+                                <PopoverTrigger >
+                                    <Avatar avatarImgScr={testingAvatar} size={56} />
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <div className="w-32 rounded-md py-2 flex flex-col justify-between items-center">
+                                        <Link className="text-center p-1 m-1 text-black hover:scale-105 transition ease-in w-full" href="/profile">Profile</Link>
+                                        <Link className="text-center p-1 m-1 font-semibold hover:scale-105 transition ease-in w-5/6 rounded bg-red-300 text-black" href={pagePaths.login}>Logout</Link>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </nav>
+                    <SocketInitializer />
+                    {children}
+                </div>
+            </StompContextProvider>
         </PrimeReactProvider>
     )
 }

@@ -7,9 +7,9 @@ import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSectio
 import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axios from "axios"
-import { roles, userInfoRegUrlReq } from "@/utils/constants"
+import { pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
 import { toast } from "sonner"
-
+import { useRouter } from "next/navigation"
 
 
 
@@ -17,7 +17,8 @@ import { toast } from "sonner"
 
 
 export default function UserDetailsPage() {
-    const role = "ROLE_PATIENT"
+    const router = useRouter()
+    const role = "ROLE_BASICUSER"
     const locationResolution = 8
     const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
@@ -56,7 +57,7 @@ export default function UserDetailsPage() {
             else if (user_role === "ROLE_NURSE") {
                 return [temp_sections[4], temp_sections[1]]
             }
-            else if (user_role === "ROLE_USER") {
+            else if (user_role === "ROLE_BASICUSER") {
                 return [temp_sections[0], temp_sections[1]]
             }
             else if (user_role === "ROLE_PATIENT") {
@@ -80,7 +81,7 @@ export default function UserDetailsPage() {
             fullName: userData?.fullName,
             weight: userData?.weight,
             height: (Number(userData?.heightFeet) * 12 + Number(userData?.heightInch)) * 2.54 || "undefined",
-            dob: `${userData?.dobYear}-${(userData?.dobMonth) < 10 ? `0${userData?.dobMonth}` : `${userData?.dobMonth}`}-${userData?.dobDay}`,
+            dob: `${userData?.dobYear}-${(userData?.dobMonth) < 10 ? `0${userData?.dobMonth}` : `${userData?.dobMonth}`}-${(userData?.dobDay) < 10 ? `0${userData?.dobDay}` : `${userData?.dobDay}`}`,
             cancerHistory: userData?.cancerHistory,
             cancerRelatives: userData?.cancerRelatives,
             profilePicture: userData?.profilePictureUrl,
@@ -108,23 +109,23 @@ export default function UserDetailsPage() {
             toast.error("Token not found", {
                 description: "You need to login to continue",
             })
+            router.push(pagePaths.login)
             return
         }
+        const headers = {
+            'Authorization': `Bearer ${tempToken}`
+        }
         console.log("form data", form_data)
-        axios.post(userInfoRegUrlReq(tempId, roles.patient), form_data, {
-            headers: {
-                'Authorization': `Bearer ${tempToken}`
-            }
+        axios.post(userInfoRegUrlReq(tempId, roles.basicUser), form_data, {
+            headers: headers
         }).then((response) => {
             console.log(response)
+            toast.success("Information saved successfully")
         }
         ).catch((error) => {
             console.log(error)
-            // save the error log in file log.txt
-            axios.post('/api/logging', error).then((response) => {
-                console.log(response)
-            }).catch((error) => {
-                console.log(error)
+            toast.error("An error occured", {
+                description: error.response.data?.message
             })
         })
     }

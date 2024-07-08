@@ -31,7 +31,9 @@ export default function OTPVerify() {
         console.log(sentData)
         axios.post(otpUrlReq, sentData).then((res) => {
             if (res.status === 200) {
-                toast.success("OTP verified")
+                toast.success("OTP verified",{
+                    description: "You can now login"
+                })
                 console.log(res.data)
                 router.push(pagePaths.login)
             }
