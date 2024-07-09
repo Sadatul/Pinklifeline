@@ -1,9 +1,8 @@
 'use client'
+import { ChatLayout } from '@/app/components/chatComponents';
 
-export default function Chat() {
-    return (
-        <div>
-            <h1>Chat</h1>
-        </div>
-    )
+export default function DashBoard() {
+  return (
+      <ChatLayout />
+  );
 }

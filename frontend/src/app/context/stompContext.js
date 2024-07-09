@@ -11,6 +11,7 @@ export function StompContextProvider({ children }) {
     const [chats , setChats] = useState([])
     const stompClientRef = useRef(null)
     const chatManager = useRef(new ChatManager())
+    const [openedChat, setOpenedChat] = useState(null)
 
     return (
         <stompContext.Provider value={{

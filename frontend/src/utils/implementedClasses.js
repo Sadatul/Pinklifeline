@@ -121,5 +121,13 @@ export class ChatManager {
         return this.map.has(userId);
     }
 
+    toJSON() {
+        return {
+            chats: this.getChatsInOrder(),
+        };
+    }
+
 }
+
+
 

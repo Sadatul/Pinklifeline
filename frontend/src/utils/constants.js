@@ -33,6 +33,11 @@ export const pagePaths = {
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
 }
 
+
+export function getSearchParams(){
+    
+}
+
 //formats used in different places
 //message format added `?FROM={senderID}` to the message
 // chat room link format `{roomid}chat{senderID}`

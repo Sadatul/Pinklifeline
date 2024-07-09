@@ -52,7 +52,7 @@ export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const router = useRouter();
     const params = useParams();
-    const openedChat = useRef(params.chatId ? JSON.parse(params.chatId) : null);
+    const [openedChat, setOpenedChat] = useState(null);
     const stompContext = useStompContext();
 
     useEffect(() => {
@@ -66,9 +66,10 @@ export function ChatLayout() {
             router.push('/login')
         }
         const headers = { 'Authorization': `Bearer ${token}` }
-        axios.get(getChatsUrl(), {
+        axios.get(getChatsUrl(id), {
             headers: headers
         }).then((response) => {
+            console.log("Chats fetched")
             stompContext.chatManager.current.addChats(response.data)
             stompContext.setChats(response.data)
         }).catch((error) => {
@@ -77,9 +78,9 @@ export function ChatLayout() {
     }, [])
 
     useEffect(() => {
-        if (openedChat.current && stompContext.chats.length > 0) {
+        if (openedChat && stompContext.chats.length > 0) {
             for (const chat of stompContext.chats) {
-                if (chat.roomId === openedChat.current.roomId) {
+                if (chat.roomId === openedChat.roomId) {
                     const id = localStorage.getItem('userId')
                     const token = localStorage.getItem('token')
                     if (!token || !id) {
@@ -90,7 +91,7 @@ export function ChatLayout() {
                         router.push('/login')
                     }
                     const headers = { 'Authorization': `Bearer ${token}` }
-                    axios.get(getMessagesUrl(openedChat.current.roomId), {
+                    axios.get(getMessagesUrl(openedChat.roomId), {
                         headers: headers
                     }).then((response) => {
                         stompContext.setMessages(response.data)
@@ -101,14 +102,7 @@ export function ChatLayout() {
                 }
             }
         }
-
-        return () => {
-            console.log("ChatLayout cleanup")
-            stompContext.chatManager.current.removeAllChats()
-            stompContext.setChats([])
-            stompContext.setMessages([])
-        }
-    }, [stompContext.chats, openedChat.current])
+    }, [stompContext.chats, openedChat])
 
     return (
         <ResizablePanelGroup direction="horizontal"
@@ -135,7 +129,7 @@ export function ChatLayout() {
                     isCollapsed && "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out", "flex-grow overflow-auto"
                 )}
             >
-                <ChatSideBar isCollapsed={isCollapsed} chats={chats} openedChat={openedChat} />
+                <ChatSideBar isCollapsed={isCollapsed} chats={stompContext.chats} openedChat={openedChat} />
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel
@@ -143,8 +137,8 @@ export function ChatLayout() {
                 minSize={70}
                 className="flex-grow overflow-auto"
             >
-                {stompContext.messages ? (
-                    <ChatWindow stompContext={stompContext} />
+                {stompContext.messages.length > 0 ? (
+                    <ChatWindow stompContext={stompContext} router={router} openedChat={openedChat} />
                 ) : (
                     <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-zinc-100 via-slate-200 to-gray-300">
                     </div>
@@ -176,8 +170,12 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
                 <ScrollBar className="" />
                 {chats?.map((chat, index) => (
                     <React.Fragment key={index}>
-                        <Link href={openedChat.current?.roomId === chat.roomId ? pagePaths.inbox : pagePaths.inboxChat(JSON.stringify(chat))}
+                        <Link href={openedChat?.roomId === chat.roomId ? pagePaths.inbox : pagePaths.inboxChat(`chat?roomId=${chat.roomId}&userId=${chat.userId}&name=${chat.name}&profilePicture=${chat.profilePicture}`)}
                             className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group"
+                            onClick={() => {
+                                console.log("Chat clicked")
+                                console.log(JSON.stringify(chat))
+                            }}
                         >
                             <Ripple
                                 pt={{
@@ -205,7 +203,7 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
                                             {chat.name}
                                         </h1>
                                         <span className="ml-4 transform transition-transform duration-500 ease-in-out opacity-0 translate-x-[-5px] group-hover:opacity-100 group-hover:translate-x-0">
-                                            {(openedChat.current?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
+                                            {(openedChat?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
                                         </span>
                                     </div>
                                 </>
@@ -219,20 +217,18 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
     )
 }
 
-export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
+export function ChatWindow({ openedChat, router, stompContext }) {
     const scrollAreaRef = useRef(null);
     const fileInputRef = useRef(null);
     const imageFileInputRef = useRef(null);
     const [file, setFile] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
-    const [chatMessages, setChatMessages] = useState(getMessages(openedChat.roomId));
-
     useEffect(() => {
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
-    }, [stompContext.messages, openedChat.current]);
+    }, [stompContext.messages, openedChat]);
 
 
 
@@ -251,18 +247,11 @@ export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
     };
 
     const sendMesssage = (message) => {
-        const messageObject = {
-            receiverId: message.receiverId,
-            message: message.message,
-            timestamp: message.timestamp,
-            type: message.type
-        }
         console.log('Sending message')
-        console.log(messageObject)
-        stompContext.stompClientRef.current.publish(
-            {
+        console.log(message)
+        stompContext.stompClientRef.current.publish({
                 destination: messageSendUrl,
-                body: JSON.stringify(messageObject),
+                body: JSON.stringify(message),
             }
         );
         const newChatMessage = {
@@ -311,7 +300,7 @@ export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
             <div className="flex flex-col h-full w-full"
                 onKeyDown={(e) => {
                     if (e.key === "Escape") {
-                        setOpenedChat(null);
+                        router.push(pagePaths.inbox)
                     }
                 }}
             >
@@ -349,7 +338,7 @@ export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
                     <div className="flex flex-col-reverse"
                         onKeyDown={(e) => {
                             if (e.key === "Escape") {
-                                setOpenedChat(null);
+                                router.push(pagePaths.inbox)
                             }
                         }}
                     >
@@ -379,7 +368,7 @@ export function ChatWindow({ openedChat, setOpenedChat, stompContext }) {
                     <form onSubmit={handleMessageInput} className="flex flex-row items-center space-x-2"
                         onKeyDown={(e) => {
                             if (e.key === "Escape") {
-                                setOpenedChat(null);
+                                router.push(pagePaths.inbox)
                             }
                         }}
                     >
