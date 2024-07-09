@@ -35,7 +35,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({UsernameNotFoundException.class, ChatRoomNotFoundException.class})
+    @ExceptionHandler({UsernameNotFoundException.class, ChatRoomNotFoundException.class, ResourceNotFoundException.class})
     public final ResponseEntity<ErrorDetails> handleNotFoundException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));

@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,6 +45,7 @@ public class ChatControllerV1 {
         log.debug("Request Received {} from UserID: {}", req, userId);
         chatRoomService.saveMessage(req, userId, req.getReceiverId());
         log.debug("Message Saved");
+        req.setSender(userId);
         messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
                 "/queue/messages", req);
         log.debug("Message sent to {}", req.getReceiverId());
@@ -60,6 +62,7 @@ public class ChatControllerV1 {
     }
 
     @GetMapping("/v1/chat/{id}")
+    @PreAuthorize("(#id.toString() == authentication.name)")
     public ResponseEntity<List<ChatroomRes>> getCharRooms(@PathVariable Long id){
         return ResponseEntity.ok(chatRoomService.getAllChatRoomsOfUser(id));
     }

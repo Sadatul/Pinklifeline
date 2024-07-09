@@ -3,6 +3,7 @@ package com.sadi.pinklifeline.integrationtests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.*;
@@ -188,6 +189,82 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         // The rest of the data stays same Test
         assertEquals(req.getProfilePicture(), newUser.getProfilePicture());
         assertEquals(req.getDob(), newUser.getBasicUser().getDob());
+    }
+
+    @Test
+    public void doctorInfoRegisterThenUpdateTest() throws Exception {
+        User user = new User("pinklife@example.com",passwordEncoder.encode("12345"), List.of(Roles.ROLE_DOCTOR));
+        Long id = userRepository.save(user).getId();
+        // Register Request
+        String requestBody = """
+                {
+                	"fullName": "Dr. Adil",
+                  	"qualifications": ["MBBS", "DO"],
+                  	"workplace": "Khulna Medical College",
+                  	"department": "Cancer",
+                  	"designation": "Head",
+                  	"contactNumber": "01730445524",
+                  	"registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+                  	"profilePicture": "Nana"
+                }
+                """;
+        String token = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        mockMvc.perform(post("/v1/infos/ROLE_DOCTOR/{id}", id).contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", token))
+                .content(requestBody)).andExpect(status().isNoContent());
+        DocInfoRegReq req = objectMapper.readValue(requestBody, DocInfoRegReq.class);
+        User newUser = userRepository.findById(id).orElseThrow();
+
+        logger.info("Doctor Register Req: {}", req);
+        logger.info("Doctor After Register: {}", newUser);
+        assertThatDocInfosAreCorrect(req, newUser);
+
+        String updateBody = """
+                {
+                	"fullName": "Dr. Adila",
+                  	"qualifications": ["CPS"],
+                  	"workplace": "Kushtia Medical College",
+                  	"department": "Koma",
+                  	"designation": "Consultant",
+                  	"contactNumber": "01730445554"
+                }
+                """;
+        mockMvc.perform(put("/v1/infos/ROLE_DOCTOR/{id}", id).contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", token))
+                .content(updateBody)).andExpect(status().isNoContent());
+
+        DocInfoUpdateReq updateReq = objectMapper.readValue(updateBody, DocInfoUpdateReq.class);
+        logger.info("Doctor Update Req: {}", updateReq);
+        newUser = userRepository.findById(id).orElseThrow();
+        logger.info("Doctor after update: {}", newUser);
+        assertThatDocInfoUpdateIsCorrect(updateReq, newUser);
+
+        // The rest of the data stays same Test
+        assertEquals(req.getProfilePicture(), newUser.getProfilePicture());
+        assertEquals(req.getRegistrationNumber(), newUser.getDoctorDetails().getRegistrationNumber());
+    }
+
+    private void assertThatDocInfoUpdateIsCorrect(DocInfoUpdateReq req, User user) {
+        DoctorDetails doc = user.getDoctorDetails();
+        Assertions.assertThat(doc.getFullName()).isEqualTo(req.getFullName());
+        assertArrayEquals(req.getQualifications().toArray(), doc.getQualifications().toArray());
+        Assertions.assertThat(doc.getWorkplace()).isEqualTo(req.getWorkplace());
+        Assertions.assertThat(doc.getDepartment()).isEqualTo(req.getDepartment());
+        Assertions.assertThat(doc.getDesignation()).isEqualTo(req.getDesignation());
+        Assertions.assertThat(doc.getContactNumber()).isEqualTo(req.getContactNumber());
+    }
+
+    private void assertThatDocInfosAreCorrect(DocInfoRegReq req, User user) {
+        Assertions.assertThat(user.getProfilePicture()).isEqualTo(req.getProfilePicture());
+        DoctorDetails doc = user.getDoctorDetails();
+        Assertions.assertThat(doc.getFullName()).isEqualTo(req.getFullName());
+        Assertions.assertThat(doc.getRegistrationNumber()).isEqualTo(req.getRegistrationNumber());
+        assertArrayEquals(req.getQualifications().toArray(), doc.getQualifications().toArray());
+        Assertions.assertThat(doc.getWorkplace()).isEqualTo(req.getWorkplace());
+        Assertions.assertThat(doc.getDepartment()).isEqualTo(req.getDepartment());
+        Assertions.assertThat(doc.getDesignation()).isEqualTo(req.getDesignation());
+        Assertions.assertThat(doc.getContactNumber()).isEqualTo(req.getContactNumber());
     }
 
     private void assertThatBasicInfosAreCorrect(AbstractUserInfoRegisterReq req, User user){
