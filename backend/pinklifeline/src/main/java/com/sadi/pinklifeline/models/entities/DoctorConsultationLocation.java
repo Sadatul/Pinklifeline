@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @ToString
 @Table(name = "doctor_consultation_locations")
-public class DoctorConsultationLocations {
+public class DoctorConsultationLocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,4 +34,13 @@ public class DoctorConsultationLocations {
 
     @Column(nullable = false)
     private String workdays;
+
+    public DoctorConsultationLocation(String location, LocalTime start, LocalTime end,
+                                      String workdays, DoctorDetails doctorDetails) {
+        this.location = location;
+        this.start = start;
+        this.end = end;
+        this.workdays = workdays;
+        this.doctorDetails = doctorDetails;
+    }
 }
