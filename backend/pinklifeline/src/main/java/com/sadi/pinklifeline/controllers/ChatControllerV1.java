@@ -45,6 +45,7 @@ public class ChatControllerV1 {
         log.debug("Request Received {} from UserID: {}", req, userId);
         chatRoomService.saveMessage(req, userId, req.getReceiverId());
         log.debug("Message Saved");
+        req.setSender(userId);
         messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
                 "/queue/messages", req);
         log.debug("Message sent to {}", req.getReceiverId());
