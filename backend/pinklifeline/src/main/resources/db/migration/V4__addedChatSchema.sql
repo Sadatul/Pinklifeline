@@ -5,7 +5,7 @@ CREATE TABLE chat_message
     message   VARCHAR(255)          NOT NULL,
     sender_id BIGINT                NOT NULL,
     sent_at   datetime              NOT NULL,
-    type      ENUM('TEXT')          NOT NULL,
+    type      VARCHAR(255)         NOT NULL,
     CONSTRAINT pk_chat_message PRIMARY KEY (id)
 );
 
