@@ -169,7 +169,7 @@ public class ChatTest extends AbstractBaseIntegrationTest{
         });
 
 
-        ChatMessageReq req1 = new ChatMessageReq(3L, "RECEIVED1", LocalDateTime.now(), MessageType.TEXT);
+        ChatMessageReq req1 = new ChatMessageReq(3L, "RECEIVED1", LocalDateTime.now(), MessageType.IMAGE);
         stompSession1.send("/app/chat", req1);
 
         ChatMessageReq req2 = new ChatMessageReq(2L, "RECEIVED2", LocalDateTime.now(), MessageType.TEXT);
