@@ -1,18 +1,17 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.enums.YesNo;
-import com.sadi.pinklifeline.exceptions.UserInfoUnregisteredException;
 import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.AbstractUserInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
+import com.sadi.pinklifeline.models.reqeusts.DocInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
@@ -20,12 +19,10 @@ import org.springframework.stereotype.Service;
 public class UserInfoUpdateHandlerService {
 
     private final UserRepository userRepository;
-    private final UserService userService;
     Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerService.class);
 
-    public UserInfoUpdateHandlerService(UserRepository userRepository, UserService userService) {
+    public UserInfoUpdateHandlerService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userService = userService;
     }
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoUpdateReq req, User user) {
@@ -79,5 +76,27 @@ public class UserInfoUpdateHandlerService {
     @PreAuthorize("(#id.toString() == authentication.name)")
     public void updateProfilePicture(Long id, String profilePicture){
         userRepository.updateProfilePictureById(id, profilePicture);
+    }
+
+    public void updateDoctorInfo(DocInfoUpdateReq req, User user) {
+        DoctorDetails doctorDetails = user.getDoctorDetails();
+
+        doctorDetails.setFullName(req.getFullName());
+        doctorDetails.setDepartment(req.getDepartment());
+        doctorDetails.setDesignation(req.getDesignation());
+        doctorDetails.setQualifications(req.getQualifications());
+        doctorDetails.setWorkplace(req.getWorkplace());
+        doctorDetails.setContactNumber(req.getContactNumber());
+
+        user.setDoctorDetails(doctorDetails);
+
+        logger.debug("Updated doctorDetails of User Bean far {}", doctorDetails);
+
+        try{
+            userRepository.save(user);
+        }
+        catch (UnsupportedOperationException e){
+            logger.info("This error is thrown during doctor info update {}",e.toString());
+        }
     }
 }

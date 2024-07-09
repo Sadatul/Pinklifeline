@@ -131,10 +131,14 @@ need to be passed, then pass an empty list like this:
     {
         "roomId": 1,
         "userId": 3,
-        "name": "Sadi"
+        "name": "Sadi",
+        "profilePicture": "kaka"
     }
 ]
+
 ```
+**<span style="color:red">Notes:</span>**
+* if profile picture doesn't exist then ```"profilePicture": null```
 
 ## Get Chat Messages
 ``` Endpoint: GET /v1/chat/messages/{room_id}```
@@ -176,5 +180,76 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * Remember we are using STOMP protocol, for js you must use @stomp/stompjs library
 * For authorization, we are using STOMP connect headers. So, when CONNECT request is sent you must also provide Authorization: Bearer {JWT_TOKEN} header with the connect headers, otherwise connection won't be established
-* During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS you can use this to set the timestamp new ```new Date().toISOString()```
+* During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS, you can use this to set the timestamp new ```new Date().toISOString()```
 * If you are using JS use the reference javaScriptCode that was provided to you.
+
+## Doctor Information Register
+``` Endpoint: POST /v1/infos/ROLE_DOCTOR/{id}```
+### Sample Body
+```
+ {
+	"fullName": "Dr. Adil",
+  	"qualifications": ["MBBS", "DO"],
+  	"workplace": "Khulna Medical College",
+  	"department": "Cancer",
+  	"designation": "Head",
+  	"contactNumber": "01730445524",
+  	"registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+  	"profilePicture": "Nana"
+}
+```
+## Update Doctor Info
+``` Endpoint: PUT /v1/infos/ROLE_DOCTOR/{id}```
+### Sample Body
+```
+{
+	"fullName": "Dr. Adila",
+  	"qualifications": ["MBBS", "FCPS"],
+  	"workplace": "Comilla Medical College",
+  	"department": "Cancer",
+  	"designation": "Head",
+  	"contactNumber": "01730445524"
+}
+```
+## Add Doctor Consultation Location
+``` Endpoint: POST /v1/ROLE_DOCTOR/{id}/locations```
+### Sample Body
+```
+{
+    "location":"sonadanga 2nd phase, Khulna",
+    "start":"07:43:23",
+    "end":"16:43:23",
+    "workdays":"1111110",
+    "fees": 500
+}
+```
+**<span style="color:red">Notes:</span>**
+* The format of time should be HH:mm:ss, it is 24 hours format. Remember each HH or mm or ss must have two digits. Otherwise, the request will fail
+* End time must be after the start time
+* workdays must have length of 7 and can only contain 0 and 1
+* Each of the field must be present, can't be null
+* If any of these criteria fails, then the request will return a 400 Bad Request
+* The response will send you a Location header of the resource created. *You won't be able to perform get request on this but. DELETE and PUT request will be allowed for deleting and updating*
+
+## Update Doctor Consultation Location
+``` Endpoint: PUT /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
+### Sample Body
+```
+{
+    "location":"sonadanga 2nd phase, Khulna",
+    "start":"07:43:23",
+    "end":"16:43:23",
+    "workdays":"1111110",
+    "fees": 500
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* The format of time should be HH:mm:ss, it is 24 hours format. Remember each HH or mm or ss must have two digits. Otherwise, the request will fail
+* End time must be after the start time
+* workdays must have length of 7 and can only contain 0 and 1
+* Each of the field must be present, can't be null
+* If any of these criteria fails, then the request will return a 400 Bad Request
+
+## Delete Doctor Consultation Location
+``` Endpoint: DELETE /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```

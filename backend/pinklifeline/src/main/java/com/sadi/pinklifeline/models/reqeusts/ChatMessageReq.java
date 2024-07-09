@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 public class ChatMessageReq {
     @NotNull
     private Long receiverId;
+
+    private Long sender;
+
     @NotNull
     private String message;
     @NotNull

@@ -77,15 +77,16 @@ public class ChatTest extends AbstractBaseIntegrationTest{
     public void whenUserId_getChatRooms() throws Exception {
         Long id = 2L;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        mockMvc.perform(get("/v1/chat/{id}", id)
+        String res = mockMvc.perform(get("/v1/chat/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", String.format("Bearer %s", token)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.*", hasSize(3)))
                         .andExpect(jsonPath("$[0].roomId").value(2))
                         .andExpect(jsonPath("$[1].roomId").value(1))
-                        .andExpect(jsonPath("$[2].roomId").value(3));
-
+                        .andExpect(jsonPath("$[2].roomId").value(3))
+                        .andReturn().getResponse().getContentAsString();
+        log.info("whenUserId_getChatRooms response: {}", res);
     }
 
     @Test
@@ -95,12 +96,13 @@ public class ChatTest extends AbstractBaseIntegrationTest{
         Long roomId = 2L;
 
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        mockMvc.perform(get("/v1/chat/messages/{id}", roomId)
+        String res = mockMvc.perform(get("/v1/chat/messages/{id}", roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", String.format("Bearer %s", token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(1)));
+                .andExpect(jsonPath("$.*", hasSize(1))).andReturn().getResponse().getContentAsString();
 
+        log.info("whenRoomId_getChatMessages response: {}", res);
     }
 
     @Test
