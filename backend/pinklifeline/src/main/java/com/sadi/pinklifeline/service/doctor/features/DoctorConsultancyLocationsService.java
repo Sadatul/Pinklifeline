@@ -32,7 +32,7 @@ public class DoctorConsultancyLocationsService {
     public Long addLocation(DoctorLocationReq req, Long docId){
         DoctorDetails doc = doctorsInfoService.getDoctor(docId);
         DoctorConsultationLocation location = new DoctorConsultationLocation(req.getLocation(), req.getStart(),
-                req.getEnd(), req.getWorkdays(), doc);
+                req.getEnd(), req.getWorkdays(), doc, req.getFees());
         return locationsRepository.save(location).getId();
     }
 
@@ -51,6 +51,7 @@ public class DoctorConsultancyLocationsService {
         location.setStart(req.getStart());
         location.setEnd(req.getEnd());
         location.setWorkdays(req.getWorkdays());
+        location.setFees(req.getFees());
         locationsRepository.save(location);
     }
 

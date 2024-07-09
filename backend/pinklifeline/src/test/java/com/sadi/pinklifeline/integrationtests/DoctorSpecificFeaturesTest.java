@@ -66,7 +66,8 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
                   "location":"sonadanga 2nd phase, Khulna",
                   "start":"07:43:23",
                   "end":"16:43:23",
-                  "workdays":"1111110"
+                  "workdays":"1111110",
+                  "fees": 500
                 }
                 """;
 
@@ -88,6 +89,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         assertEquals(req.getEnd(), loc.get().getEnd());
         assertEquals(req.getWorkdays(), loc.get().getWorkdays());
         assertEquals(id, loc.get().getDoctorDetails().getUserId());
+        assertEquals(req.getFees(), loc.get().getFees());
 
         String updateToken = mint(id, List.of(Roles.ROLE_DOCTOR));
 
@@ -96,7 +98,8 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
                   "location":"Rohan 3rd phase, Khulna",
                   "start":"08:43:23",
                   "end":"12:43:23",
-                  "workdays":"1110110"
+                  "workdays":"1110110",
+                  "fees": 700
                 }
                 """;
         mockMvc.perform(put("/v1/ROLE_DOCTOR/{id}/locations/{newLocationId}", id, newLocationId)
@@ -117,6 +120,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         assertEquals(updateReq.getStart(), updatedLoc.get().getStart());
         assertEquals(updateReq.getEnd(), updatedLoc.get().getEnd());
         assertEquals(updateReq.getWorkdays(), updatedLoc.get().getWorkdays());
+        assertEquals(updateReq.getFees(), updatedLoc.get().getFees());
 
         String deleteToken = mint(id, List.of(Roles.ROLE_DOCTOR));
 

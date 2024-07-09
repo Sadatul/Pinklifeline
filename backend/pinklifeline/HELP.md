@@ -219,7 +219,8 @@ need to be passed, then pass an empty list like this:
     "location":"sonadanga 2nd phase, Khulna",
     "start":"07:43:23",
     "end":"16:43:23",
-    "workdays":"1111110"
+    "workdays":"1111110",
+    "fees": 500
 }
 ```
 **<span style="color:red">Notes:</span>**
@@ -238,7 +239,8 @@ need to be passed, then pass an empty list like this:
     "location":"sonadanga 2nd phase, Khulna",
     "start":"07:43:23",
     "end":"16:43:23",
-    "workdays":"1111110"
+    "workdays":"1111110",
+    "fees": 500
 }
 ```
 

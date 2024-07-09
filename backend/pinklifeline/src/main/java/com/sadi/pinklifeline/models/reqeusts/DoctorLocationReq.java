@@ -28,6 +28,9 @@ public class DoctorLocationReq {
     @Pattern(regexp = "^[01]{7}$", message = "'workdays' can only consists of 0 and 1. workdays must have a length of 7")
     private String workdays;
 
+    @NotNull(message = "Must provide fees")
+    private Integer fees;
+
     @AssertTrue(message = "Ending time must be after the starting time")
     public boolean isEndTimeAfterStartTime() {
         return end.isAfter(start);

@@ -25,6 +25,7 @@ CREATE TABLE pinklifeline.doctor_consultation_locations
     start    time                  NOT NULL,
     end      time                  NOT NULL,
     workdays VARCHAR(255)          NOT NULL,
+    fees     INT                   NOT NULL,
     CONSTRAINT pk_doctor_consultation_locations PRIMARY KEY (id)
 );
 
