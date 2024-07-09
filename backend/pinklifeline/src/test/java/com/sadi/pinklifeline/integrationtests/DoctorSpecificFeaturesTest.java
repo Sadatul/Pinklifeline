@@ -26,7 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -56,7 +56,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
 
     @Test
     @Sql("/test/doctor_specific_features_test/add2Doctors.sql")
-    public void addingNewDoctorConsultancyLocationTest() throws Exception {
+    public void doctorConsultancyLocationAddUpdateDeleteTest() throws Exception {
         Long id = 2L;
         Long newLocationId = 1L;
         String token = mint(id, List.of(Roles.ROLE_DOCTOR));
@@ -88,6 +88,45 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         assertEquals(req.getEnd(), loc.get().getEnd());
         assertEquals(req.getWorkdays(), loc.get().getWorkdays());
         assertEquals(id, loc.get().getDoctorDetails().getUserId());
+
+        String updateToken = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        String updateBody = """
+                {
+                  "location":"Rohan 3rd phase, Khulna",
+                  "start":"08:43:23",
+                  "end":"12:43:23",
+                  "workdays":"1110110"
+                }
+                """;
+        mockMvc.perform(put("/v1/ROLE_DOCTOR/{id}/locations/{newLocationId}", id, newLocationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", String.format("Bearer %s", updateToken))
+                        .content(updateBody))
+                        .andExpect(status().isNoContent());
+
+        DoctorLocationReq updateReq = objectMapper.readValue(updateBody, DoctorLocationReq.class);
+        log.info("Doctor location Req: {}", updateReq);
+        Optional<DoctorConsultationLocation> updatedLoc = locationsRepository.findById(newLocationId);
+        if(updatedLoc.isEmpty()) {
+            fail("Updated Doctor got removed");
+        }
+        log.info("Newly added doctor location: {}", updatedLoc.get());
+
+        assertEquals(updateReq.getLocation(), updatedLoc.get().getLocation());
+        assertEquals(updateReq.getStart(), updatedLoc.get().getStart());
+        assertEquals(updateReq.getEnd(), updatedLoc.get().getEnd());
+        assertEquals(updateReq.getWorkdays(), updatedLoc.get().getWorkdays());
+
+        String deleteToken = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        mockMvc.perform(delete("/v1/ROLE_DOCTOR/{id}/locations/{newLocationId}", id, newLocationId)
+                        .header("Authorization", String.format("Bearer %s", deleteToken)))
+                        .andExpect(status().isNoContent());
+        Optional<DoctorConsultationLocation> deletedLoc = locationsRepository.findById(newLocationId);
+        if(deletedLoc.isPresent()) {
+            fail("Deleted Doctor was not removed");
+        }
     }
 
     private String mint(Long id, List<Roles> roles){

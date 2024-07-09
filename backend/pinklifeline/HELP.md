@@ -229,3 +229,25 @@ need to be passed, then pass an empty list like this:
 * Each of the field must be present, can't be null
 * If any of these criteria fails, then the request will return a 400 Bad Request
 * The response will send you a Location header of the resource created. *You won't be able to perform get request on this but. DELETE and PUT request will be allowed for deleting and updating*
+
+## Update Doctor Consultation Location
+``` Endpoint: PUT /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
+### Sample Body
+```
+{
+    "location":"sonadanga 2nd phase, Khulna",
+    "start":"07:43:23",
+    "end":"16:43:23",
+    "workdays":"1111110"
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* The format of time should be HH:mm:ss, it is 24 hours format. Remember each HH or mm or ss must have two digits. Otherwise, the request will fail
+* End time must be after the start time
+* workdays must have length of 7 and can only contain 0 and 1
+* Each of the field must be present, can't be null
+* If any of these criteria fails, then the request will return a 400 Bad Request
+
+## Delete Doctor Consultation Location
+``` Endpoint: DELETE /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
