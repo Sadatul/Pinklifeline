@@ -10,7 +10,7 @@ export const messageSendUrl = `/app/chat`
 export const getChatsUrl = (id) => { return `${baseUrl}/v1/chat/${id}` }
 export const getMessagesUrl = (room_id) => { return `${baseUrl}/v1/chat/messages/${room_id}` }
 
-export const testingAvatar = "https://github.com/shadcn.png"
+export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 
 export const roles = {
     basicUser: "ROLE_BASICUSER",
@@ -35,7 +35,7 @@ export const pagePaths = {
 
 
 export function getSearchParams(){
-    
+
 }
 
 //formats used in different places

@@ -50,10 +50,74 @@ import axios from "axios";
 
 export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const router = useRouter();
-    const params = useParams();
-    const [openedChat, setOpenedChat] = useState(null);
     const stompContext = useStompContext();
+    const router = useRouter();
+
+    useEffect(() => {
+        console.log('Opened chat changed')
+        console.log(stompContext.openedChat)
+        if (stompContext.openedChat) {
+            const id = localStorage.getItem('userId')
+            const token = localStorage.getItem('token')
+            if (!token || !id) {
+                console.error('Token not found')
+                toast.error('Token not found', {
+                    description: 'You need to login to continue'
+                })
+                router.push('/login')
+            }
+            const headers = { 'Authorization': `Bearer ${token}` }
+            axios.get(getMessagesUrl(stompContext.openedChat.roomId), {
+                headers: headers
+            }).then((response) => {
+                console.log("Messages fetched")
+                console.log(response.data)
+                stompContext.setMessages(response.data)
+            }).catch((error) => {
+                console.error(error)
+            })
+        }
+    }, [stompContext.openedChat])
+
+    return (
+        <ResizablePanelGroup direction="horizontal" >
+            <ResizablePanel
+                defaultSize={24}
+                collapsedSize={8}
+                maxSize={24}
+                collapsible={true}
+                minSize={16}
+                // maxSize={24}
+                onCollapse={() => {
+                    setIsCollapsed(true);
+                }}
+                onExpand={() => {
+                    setIsCollapsed(false);
+                }}
+                className={cn(
+                    isCollapsed && "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out", "flex-grow overflow-auto"
+                )}
+            >
+                <ChatSideBar isCollapsed={isCollapsed} stompContext={stompContext} router={router} />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel
+                defaultSize={70}
+                minSize={70}
+                className="flex-grow overflow-auto"
+            >
+                {stompContext.messages.length > 0 && stompContext.openedChat ? (
+                    <ChatWindow stompContext={stompContext} router={router} />
+                ) : (
+                    <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-zinc-100 via-slate-200 to-gray-300">
+                    </div>
+                )}
+            </ResizablePanel>
+        </ResizablePanelGroup>
+    )
+}
+
+export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
 
     useEffect(() => {
         const id = localStorage.getItem('userId')
@@ -76,79 +140,6 @@ export function ChatLayout() {
             console.error(error)
         })
     }, [])
-
-    useEffect(() => {
-        if (openedChat && stompContext.chats.length > 0) {
-            for (const chat of stompContext.chats) {
-                if (chat.roomId === openedChat.roomId) {
-                    const id = localStorage.getItem('userId')
-                    const token = localStorage.getItem('token')
-                    if (!token || !id) {
-                        console.error('Token not found')
-                        toast.error('Token not found', {
-                            description: 'You need to login to continue'
-                        })
-                        router.push('/login')
-                    }
-                    const headers = { 'Authorization': `Bearer ${token}` }
-                    axios.get(getMessagesUrl(openedChat.roomId), {
-                        headers: headers
-                    }).then((response) => {
-                        stompContext.setMessages(response.data)
-                    }).catch((error) => {
-                        console.error(error)
-                    })
-                    break;
-                }
-            }
-        }
-    }, [stompContext.chats, openedChat])
-
-    return (
-        <ResizablePanelGroup direction="horizontal"
-            onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                    router.push(pagePaths.inbox)
-                }
-            }}
-        >
-            <ResizablePanel
-                defaultSize={24}
-                collapsedSize={8}
-                maxSize={24}
-                collapsible={true}
-                minSize={16}
-                // maxSize={24}
-                onCollapse={() => {
-                    setIsCollapsed(true);
-                }}
-                onExpand={() => {
-                    setIsCollapsed(false);
-                }}
-                className={cn(
-                    isCollapsed && "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out", "flex-grow overflow-auto"
-                )}
-            >
-                <ChatSideBar isCollapsed={isCollapsed} chats={stompContext.chats} openedChat={openedChat} />
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel
-                defaultSize={70}
-                minSize={70}
-                className="flex-grow overflow-auto"
-            >
-                {stompContext.messages.length > 0 ? (
-                    <ChatWindow stompContext={stompContext} router={router} openedChat={openedChat} />
-                ) : (
-                    <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-zinc-100 via-slate-200 to-gray-300">
-                    </div>
-                )}
-            </ResizablePanel>
-        </ResizablePanelGroup>
-    )
-}
-
-export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
     return (
         <>
             <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">
@@ -168,13 +159,14 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
             </div>
             <ScrollArea className="h-full px-4">
                 <ScrollBar className="" />
-                {chats?.map((chat, index) => (
+                {stompContext.chats?.map((chat, index) => (
                     <React.Fragment key={index}>
-                        <Link href={openedChat?.roomId === chat.roomId ? pagePaths.inbox : pagePaths.inboxChat(`chat?roomId=${chat.roomId}&userId=${chat.userId}&name=${chat.name}&profilePicture=${chat.profilePicture}`)}
+                        <button
                             className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group"
                             onClick={() => {
                                 console.log("Chat clicked")
                                 console.log(JSON.stringify(chat))
+                                stompContext.setOpenedChat(stompContext.openedChat?.roomId === chat.roomId ? null : chat)
                             }}
                         >
                             <Ripple
@@ -186,7 +178,7 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
                                 <TooltipProvider delayDuration={100}>
                                     <Tooltip>
                                         <TooltipTrigger >
-                                            <Avatar avatarImgScr={testingAvatar} size={44} />
+                                            <Avatar avatarImgScr={chat.profilePicture || testingAvatar} size={44} />
                                         </TooltipTrigger>
                                         <TooltipContent side={'right'}>
                                             <p>
@@ -203,12 +195,12 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
                                             {chat.name}
                                         </h1>
                                         <span className="ml-4 transform transition-transform duration-500 ease-in-out opacity-0 translate-x-[-5px] group-hover:opacity-100 group-hover:translate-x-0">
-                                            {(openedChat?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
+                                            {(stompContext.openedChat?.roomId === chat.roomId) ? <ArrowLeft size={24} color="rgb(255,0,0,0.5)" /> : <ArrowRight color="rgb(255,20,147,0.5)" size={24} />}
                                         </span>
                                     </div>
                                 </>
                             )}
-                        </Link>
+                        </button>
                         <Separator className="bg-gray-300" />
                     </React.Fragment>
                 ))}
@@ -217,18 +209,16 @@ export function ChatSideBar({ isCollapsed = false, chats, openedChat }) {
     )
 }
 
-export function ChatWindow({ openedChat, router, stompContext }) {
+export function ChatWindow({ stompContext, router }) {
     const scrollAreaRef = useRef(null);
-    const fileInputRef = useRef(null);
     const imageFileInputRef = useRef(null);
-    const [file, setFile] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
-    }, [stompContext.messages, openedChat]);
+    }, [stompContext.messages, stompContext.openedChat]);
 
 
 
@@ -250,12 +240,12 @@ export function ChatWindow({ openedChat, router, stompContext }) {
         console.log('Sending message')
         console.log(message)
         stompContext.stompClientRef.current.publish({
-                destination: messageSendUrl,
-                body: JSON.stringify(message),
-            }
+            destination: messageSendUrl,
+            body: JSON.stringify(message),
+        }
         );
         const newChatMessage = {
-            sender: message.sender,
+            sender: String(message.sender),
             message: message.message,
             timestamp: message.timestamp,
             type: message.type
@@ -275,18 +265,10 @@ export function ChatWindow({ openedChat, router, stompContext }) {
         event.preventDefault();
         const message = document.getElementById("message-input")?.value;
         console.log("Message sent:", message);
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            console.error('User not found')
-            toast.error('User not found', {
-                description: 'You need to login to continue'
-            })
-            router.push('/login')
-        }
         if (message !== '') {
             const messageObject = {
-                sender: userId,
-                receiverId: openedChat.userId,
+                sender: (stompContext.userId || localStorage.getItem('userId')),
+                receiverId: stompContext.openedChat?.userId,
                 message: message,
                 timestamp: new Date().toISOString(),
                 type: "TEXT",
@@ -297,18 +279,12 @@ export function ChatWindow({ openedChat, router, stompContext }) {
 
     return (
         <>
-            <div className="flex flex-col h-full w-full"
-                onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                        router.push(pagePaths.inbox)
-                    }
-                }}
-            >
+            <div className="flex flex-col h-full w-full" >
                 {/* Chat Top Bar */}
                 <div className="flex flex-row items-center p-3 justify-between shadow">
                     <div className="flex flex-row items-center ml-3">
                         <Avatar avatarImgScr={testingAvatar} size={44} />
-                        <h1 className="text-3xl font-bold text-zinc-700 font-mono ml-5">{openedChat.name}</h1>
+                        <h1 className="text-3xl font-bold text-zinc-700 font-mono ml-5">{stompContext.openedChat.name}</h1>
                     </div>
                     <div className="flex flex-row items-center">
                         <Popover>
@@ -335,26 +311,20 @@ export function ChatWindow({ openedChat, router, stompContext }) {
 
                 {/* Scrollable Chat Area */}
                 <ScrollableContainer id="chat-scroll" className="flex-1 p-4 overflow-y-auto" ref={scrollAreaRef}>
-                    <div className="flex flex-col-reverse"
-                        onKeyDown={(e) => {
-                            if (e.key === "Escape") {
-                                router.push(pagePaths.inbox)
-                            }
-                        }}
-                    >
+                    <div className="flex flex-col-reverse" >
                         {stompContext.messages.toReversed().map((message, index) => (
-                            <div key={index} className={cn('flex flex-col my-4', message.sender === userId ? "items-end" : "items-start")}>
-                                <div className={cn('flex flex-row', message.sender === userId ? "justify-end" : "justify-start")}>
-                                    <div className={cn('flex flex-row items-center', message.sender === userId ? "flex-row-reverse" : "flex-row")}>
+                            <div key={index} className={cn('flex flex-col my-4', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "items-end" : "items-start")}>
+                                <div className={cn('flex flex-row', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "justify-end" : "justify-start")}>
+                                    <div className={cn('flex flex-row items-center', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "flex-row-reverse" : "flex-row")}>
                                         <Avatar avatarImgScr={testingAvatar} size={32} />
-                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.sender === userId ? "bg-gradient-to-br from-pink-600 via-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800")}>
+                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800")}>
                                             {message.type === "TEXT" && <p>{message.message}</p>}
                                             {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} />}
                                         </div>
                                     </div>
                                 </div>
-                                <div className={cn('flex flex-row mx-5', message.sender === userId ? "justify-end" : "justify-start")}>
-                                    <p className={cn('text-xs text-gray-500', message.sender === userId ? "text-right" : "text-left")}>
+                                <div className={cn('flex flex-row mx-5', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "justify-end" : "justify-start")}>
+                                    <p className={cn('text-xs text-gray-500', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "text-right" : "text-left")}>
                                         {message.timestamp}
                                     </p>
                                 </div>
@@ -365,13 +335,7 @@ export function ChatWindow({ openedChat, router, stompContext }) {
 
                 {/* Chat Input Section */}
                 <div className="flex-none p-3 border rounded-md bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100">
-                    <form onSubmit={handleMessageInput} className="flex flex-row items-center space-x-2"
-                        onKeyDown={(e) => {
-                            if (e.key === "Escape") {
-                                router.push(pagePaths.inbox)
-                            }
-                        }}
-                    >
+                    <form onSubmit={handleMessageInput} className="flex flex-row items-center space-x-2" >
                         <TooltipProvider delayDuration={200}>
                             <Tooltip>
                                 <TooltipTrigger >
@@ -397,7 +361,7 @@ export function ChatWindow({ openedChat, router, stompContext }) {
                                 placeholder="Type your message..."
                                 className="p-2 rounded-md border border-gray-300 w-full pr-10"
                                 id="message-input"
-                                autocomplete="off"
+                                autoComplete="off"
                             />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                                 <Popover>
@@ -427,6 +391,15 @@ export function ChatWindow({ openedChat, router, stompContext }) {
                             <Send size={24} color="white" />
                             <Ripple />
                         </button>
+                        {/* <button type="submit" className="border bg-pink-600 rounded-full p-[10px] p-ripple"
+                            onClick={() => {
+                                console.log('User id')
+                                console.log(localStorage.getItem('userId'))
+                            }}
+                        >
+                            see userId
+                            <Ripple />
+                        </button> */}
                     </form>
                 </div>
             </div >

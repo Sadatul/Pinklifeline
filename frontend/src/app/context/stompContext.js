@@ -8,10 +8,11 @@ const stompContext = createContext()
 
 export function StompContextProvider({ children }) {
     const [messages, setMessages] = useState([])
-    const [chats , setChats] = useState([])
+    const [chats, setChats] = useState([])
     const stompClientRef = useRef(null)
     const chatManager = useRef(new ChatManager())
     const [openedChat, setOpenedChat] = useState(null)
+    const [userId, setUserId] = useState(null)
 
     return (
         <stompContext.Provider value={{
@@ -20,7 +21,11 @@ export function StompContextProvider({ children }) {
             chats,
             setChats,
             stompClientRef,
-            chatManager
+            chatManager,
+            openedChat,
+            setOpenedChat,
+            userId,
+            setUserId
         }}>
             {children}
         </stompContext.Provider>
