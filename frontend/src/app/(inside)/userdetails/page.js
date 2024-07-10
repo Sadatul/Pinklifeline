@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import formBgImage from '../../../../public/userdetails/form-bg.jpg'
 import { Separator } from "@/components/ui/separator"
-import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection } from '@/app/components/formSections'
+import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection, DoctorChamberLocationSection } from '@/app/components/formSections'
 import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axios from "axios"
@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 
 export default function UserDetailsPage() {
     const router = useRouter()
-    const role = "ROLE_DOCTOR"
+    const role = roles.doctor
     const locationResolution = 8
     const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
@@ -42,13 +42,17 @@ export default function UserDetailsPage() {
                 {
                     section_name: "Location",
                     section_components: LocationSection
+                },
+                {
+                    section_name: "Doctor Chamber Locations",
+                    section_components: DoctorChamberLocationSection
                 }
             ]
             if (user_role === "ROLE_ALL") {      // this one for current testing phase will be removed after development
                 return temp_sections
             }
             else if (user_role === "ROLE_DOCTOR") {
-                return [temp_sections[2]]
+                return [ temp_sections[5]]
             }
             else if (user_role === "ROLE_NURSE") {
                 return [temp_sections[4], temp_sections[1]]
@@ -147,7 +151,7 @@ export default function UserDetailsPage() {
 
                 </div>
                 <Separator className="bg-purple-400 m-2 max-w-[1200px] shrink " />
-                <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly">
+                <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly py-5">
                     {sections[currentSection] && sections[currentSection].section_components &&
                         React.createElement(sections[currentSection].section_components, {
                             userDataRef: userDataRef,

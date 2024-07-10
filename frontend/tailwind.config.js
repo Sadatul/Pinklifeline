@@ -78,5 +78,18 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [
+    require("tailwindcss-animate"),
+    function ({ addUtilities }) {
+      addUtilities({
+        '.number-input::-webkit-outer-spin-button, .number-input::-webkit-inner-spin-button': {
+          '-webkit-appearance': 'none',
+          margin: '0',
+        },
+        '.number-input[type="number"]': {
+          '-moz-appearance': 'textfield',
+        },
+      });
+    },
+  ],
+};
