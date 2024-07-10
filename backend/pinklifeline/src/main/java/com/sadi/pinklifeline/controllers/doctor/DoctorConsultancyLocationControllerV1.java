@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.controllers;
+package com.sadi.pinklifeline.controllers.doctor;
 
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
 import com.sadi.pinklifeline.service.doctor.features.DoctorConsultancyLocationsService;
@@ -14,10 +14,10 @@ import java.net.URI;
 @RestController
 @RequestMapping("/v1/ROLE_DOCTOR")
 @Slf4j
-public class DoctorSpecificFeaturesV1 {
+public class DoctorConsultancyLocationControllerV1 {
     private final DoctorConsultancyLocationsService locationService;
 
-    public DoctorSpecificFeaturesV1(DoctorConsultancyLocationsService locationService) {
+    public DoctorConsultancyLocationControllerV1(DoctorConsultancyLocationsService locationService) {
         this.locationService = locationService;
     }
 
@@ -33,7 +33,6 @@ public class DoctorSpecificFeaturesV1 {
     }
 
     @PutMapping("{doc_id}/locations/{location_id}")
-    @PreAuthorize("(#docId.toString() == authentication.name)")
     public ResponseEntity<Void> updateLocation(
             @PathVariable(name = "doc_id") Long docId,
             @PathVariable(name = "location_id") Long locationId,
@@ -44,7 +43,6 @@ public class DoctorSpecificFeaturesV1 {
     }
 
     @DeleteMapping("{doc_id}/locations/{location_id}")
-    @PreAuthorize("(#docId.toString() == authentication.name)")
     public ResponseEntity<Void> deleteLocation(
             @PathVariable(name = "doc_id") Long docId,
             @PathVariable(name = "location_id") Long locationId) {

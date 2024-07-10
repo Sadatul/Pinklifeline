@@ -44,6 +44,7 @@ public class DoctorConsultancyLocationsService {
         }
     }
 
+    @PreAuthorize("(#docId.toString() == authentication.name and hasRole('DOCTOR'))")
     public void updateLocation(DoctorLocationReq req, Long locId, Long docId) {
         DoctorConsultationLocation location = getLocation(locId);
         verifyLocationAccess(location, docId);
@@ -55,6 +56,7 @@ public class DoctorConsultancyLocationsService {
         locationsRepository.save(location);
     }
 
+    @PreAuthorize("(#docId.toString() == authentication.name and hasRole('DOCTOR'))")
     public void deleteLocation(Long locId, Long docId) {
         DoctorConsultationLocation location = getLocation(locId);
         verifyLocationAccess(location, docId);
