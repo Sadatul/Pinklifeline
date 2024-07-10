@@ -28,7 +28,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({UserAlreadyExistsException.class, OtpMismatchException.class})
+    @ExceptionHandler({UserAlreadyExistsException.class, OtpMismatchException.class, UnverifiedResourceException.class})
     public final ResponseEntity<ErrorDetails> handleBadRequestException(Exception ex, WebRequest request){
         ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), ex.getMessage(),
                 request.getDescription(false));

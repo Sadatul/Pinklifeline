@@ -31,11 +31,19 @@ CREATE TABLE pinklifeline.doctor_consultation_locations
 
 CREATE TABLE pinklifeline.doctor_reviews
 (
-    id      BIGINT AUTO_INCREMENT NOT NULL,
-    user_id BIGINT                NOT NULL,
-    rating  INT                   NOT NULL,
-    review  VARCHAR(255)          NULL,
+    id          BIGINT AUTO_INCREMENT NOT NULL,
+    user_id     BIGINT                NOT NULL,
+    reviewer_id BIGINT                NOT NULL,
+    rating      INT                   NOT NULL,
+    timestamp   datetime              NOT NULL,
     CONSTRAINT pk_doctor_reviews PRIMARY KEY (id)
+);
+
+CREATE TABLE pinklifeline.doctor_reviews_comments
+(
+    review_id       BIGINT       NOT NULL,
+    comment         VARCHAR(255) NOT NULL,
+    CONSTRAINT pk_doctor_reviews_comments PRIMARY KEY (review_id)
 );
 
 ALTER TABLE pinklifeline.doctor_details
@@ -49,3 +57,9 @@ ALTER TABLE pinklifeline.doctor_consultation_locations
 
 ALTER TABLE pinklifeline.doctor_reviews
     ADD CONSTRAINT FK_DOCTOR_REVIEWS_ON_USER FOREIGN KEY (user_id) REFERENCES pinklifeline.doctor_details (user_id);
+
+ALTER TABLE pinklifeline.doctor_reviews
+    ADD CONSTRAINT FK_DOCTOR_REVIEWS_ON_REVIEWER FOREIGN KEY (reviewer_id) REFERENCES pinklifeline.users (id);
+
+ALTER TABLE pinklifeline.doctor_reviews_comments
+    ADD CONSTRAINT FK_DOCTOR_REVIEWS_COMMENTS_ON_REVIEW_ID FOREIGN KEY (review_id) REFERENCES pinklifeline.doctor_reviews (id);
