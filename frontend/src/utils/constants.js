@@ -9,8 +9,11 @@ export const subscribeErrorUrl = (id) => { return `/user/${id}/queue/errors` }
 export const messageSendUrl = `/app/chat`
 export const getChatsUrl = (id) => { return `${baseUrl}/v1/chat/${id}` }
 export const getMessagesUrl = (room_id) => { return `${baseUrl}/v1/chat/messages/${room_id}` }
+export const updateProfilePictureUrl = (id) => { return `${baseUrl}/v1/infos/profile_picture/${id}` }
 
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
+
+export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
 
 export const roles = {
     basicUser: "ROLE_BASICUSER",
@@ -29,14 +32,11 @@ export const pagePaths = {
         return "/verifyotp"
     },
     userdetails: "/userdetails",
-    inbox : "/inbox",
+    inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
 }
 
 
-export function getSearchParams(){
-
-}
 
 //formats used in different places
 //message format added `?FROM={senderID}` to the message

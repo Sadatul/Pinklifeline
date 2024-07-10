@@ -12,13 +12,9 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 
-
-// this form is centered in the page and will have  fields name, age, gender selection from two options, weight scale, height, present location and a submit button
-
-
 export default function UserDetailsPage() {
     const router = useRouter()
-    const role = "ROLE_BASICUSER"
+    const role = "ROLE_DOCTOR"
     const locationResolution = 8
     const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
@@ -52,7 +48,7 @@ export default function UserDetailsPage() {
                 return temp_sections
             }
             else if (user_role === "ROLE_DOCTOR") {
-                return [temp_sections[3], temp_sections[1]]
+                return [temp_sections[2]]
             }
             else if (user_role === "ROLE_NURSE") {
                 return [temp_sections[4], temp_sections[1]]
@@ -131,8 +127,8 @@ export default function UserDetailsPage() {
     }
 
     return (
-        <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto" style={{ backgroundImage: `url(${formBgImage.src})` }}>
-            <div className="w-full h-full justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)", minHeight: '649px' }}>
+        <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto flex-grow" style={{ backgroundImage: `url(${formBgImage.src})` }}>
+            <div className="w-full flex-grow justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)" }}>
                 <div className="flex flex-row justify-evenly items-center w-5/6" >
                     {sections?.map((section, index) => (
                         <React.Fragment key={index}>

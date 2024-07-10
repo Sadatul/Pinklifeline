@@ -44,10 +44,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useStompContext } from "../context/stompContext"
 
 
 export function UserInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
-    const storage = getStorage(firebase_app);
+    const storage = getStorage(firebase_app)
+    const fileTypes = ["JPEG", "PNG", "JPG"];
+    const [imageFile, setImageFile] = useState(null)
+    const [uploadProgress, setUploadProgress] = useState(null);
+    const stompContext = useStompContext();
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const onSubmit = (data) => {
@@ -71,17 +76,17 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
         }
         return options;
     };
-    const fileTypes = ["JPEG", "PNG"];
-    const [imageFile, setImageFile] = useState(null)
-    const [uploadProgress, setUploadProgress] = useState(null);
     const handleFileChange = (file) => {
+        if (!file) return;
         setImageFile(file)
-        setUserData({ ...userData, profilePicturePreview: URL.createObjectURL(file) })
         userDataRef.current = { ...userDataRef.current, profilePicturePreview: URL.createObjectURL(file) }
     }
     const handleUpload = async () => {
         if (!imageFile) return;
-        const filePath = `profileImages/${new Date().getTime()}/${imageFile.name}`;
+        const uploadingToast = toast.loading("Uploading image", {
+            duration: Infinity
+        })
+        const filePath = `profileImages/${localStorage.getItem('userId') || new Date().toString()}/${imageFile.name}`;
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
         uploadTask.on(
@@ -97,10 +102,13 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
             },
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                setValue("profilePictureUrl", downloadURL);
+                userDataRef.current = { ...userDataRef.current, profilePictureUrl: downloadURL }
+                toast.dismiss(uploadingToast)
+                toast.success("Image uploaded successfully")
             }
         );
     }
+
 
     const validateForm = async () => {
         const result = await trigger();
@@ -198,29 +206,47 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                             </label>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center justify-evenly w-11/12">
-                        <FileUploader handleChange={handleFileChange}
-                            multiple={false}
-                            types={fileTypes}
-                            name="file"
-                            onTypeError={() => {
-                                toast.error("Invalid file type", {
-                                    description: "Only jpg or png files are allowed",
-                                })
-                            }}
-                        />
-                        <input hidden id="file"></input>
-                        {userDataRef.current?.profilePicturePreview && (
-                            <div className="flex flex-row items-center">
-                                <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 max-w-96">
-                                    <Image width={300} objectFit='scale-down' height={300} src={userDataRef.current?.profilePicturePreview} alt="Preview" className="w-full h-full rounded-lg" />
-                                    {uploadProgress && <Progress variant='secondary' value={uploadProgress} className="w-[60%] mt-3" />}
-                                </div>
-                                <button onClick={handleUpload} className="border-2 bg-purple-600 text-white border-black rounded-md px-2 h-8 text-center mt-2">Upload</button>
-                            </div>
-                        )}
-                        {/* <FileUploader handleChange={handleFileChange} name="file" types={fileTypes} /> */}
-                    </div>
+                    <AlertDialog >
+                        <AlertDialogTrigger asChild>
+                            <Button className="px-2 py-1">Add Profile Picture</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Upload Profile Picture</AlertDialogTitle>
+                                <AlertDialogDescription asChild>
+                                    <div className="flex flex-col items-center justify-evenly flex-1">
+                                        <div className="h-96 w-96 border rounded-lg border-purple-500">
+                                            {userDataRef.current.profilePicturePreview && (
+                                                <div className="flex flex-col justify-center items-center">
+                                                    <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-full">
+                                                        <Image width={250} objectFit='scale-down' height={250} src={userDataRef.current.profilePicturePreview} alt="Preview" className="rounded-lg" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <FileUploader handleChange={handleFileChange}
+                                                multiple={false}
+                                                types={fileTypes}
+                                                name="file"
+                                                onTypeError={() => {
+                                                    toast.error("Invalid file type", {
+                                                        description: "Only jpg or png files are allowed",
+                                                    })
+                                                }}
+                                            />
+                                            <input hidden id="file"></input>
+                                        </div>
+                                    </div>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="m-2">
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleUpload}>
+                                    Upload
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
@@ -263,16 +289,33 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     )
 }
 
+// location, start, end, workdays, fees
+export function DoctorChamberLocationSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
 
+    return (
+        <>
+            <AnimatePresence>
+                <motion.div className="flex flex-col items-center justify-evenly h-full"
+                    initial={{ opacity: 0, x: '100%' }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: '-100%' }}
+                    transition={{ duration: 0.3 }}
+                >
+                    
+                </motion.div>
+            </AnimatePresence>
+        </>
+    )
+}
 
 export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
-    const fileTypes = ["JPEG", "PNG"];
-    const handleFileChange = (file) => {
-        setValue("doctorDocs", file)
-        trigger("doctorDocs")
-    }
+    const storage = getStorage(firebase_app)
+    const fileTypes = ["JPEG", "PNG", "JPG"];
+    const [imageFile, setImageFile] = useState(null)
+
     useEffect(() => {
         register("doctorDocs", { required: "Document is required" });
     }, [register]);
@@ -286,55 +329,146 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
             setConfirmDialogOpen(true)
         }
     }
+    const handleFileChange = (file) => {
+        if (!file) return;
+        setImageFile(file)
+        userDataRef.current = { ...userDataRef.current, profilePicturePreview: URL.createObjectURL(file) }
+    }
+    const handleUpload = async () => {
+        if (!imageFile) return;
+        const uploadingToast = toast.loading("Uploading image", {
+            duration: Infinity
+        })
+        const filePath = `profileImages/${localStorage.getItem('userId') || new Date().toString()}/${imageFile.name}`;
+        const storageRef = ref(storage, filePath);
+        const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            },
+            (error) => {
+                toast.error("Error uploading image", {
+                    description: "Please try again later",
+                });
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                userDataRef.current = { ...userDataRef.current, profilePictureUrl: downloadURL }
+                toast.dismiss(uploadingToast)
+                toast.success("Image uploaded successfully")
+            }
+        );
+    }
+
     return (
         <>
             <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly"
+                <motion.div className="flex flex-col items-center justify-evenly w-full space-y-2"
                     initial={{ opacity: 0, x: '100%' }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: '-100%' }}
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Doctor info</h1>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
+                    <div className="flex flex-row justify-between items-end w-11/12">
                         <label className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
                                 <input type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
+                        <AlertDialog >
+                            <AlertDialogTrigger asChild>
+                                <button className="px-2 border bg-gray-700 text-white rounded-lg h-8">Add Profile Picture</button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Upload Profile Picture</AlertDialogTitle>
+                                    <AlertDialogDescription asChild>
+                                        <div className="flex flex-col items-center justify-evenly flex-1">
+                                            <div className="h-96 w-96 border rounded-lg border-purple-500">
+                                                {userDataRef.current.profilePicturePreview && (
+                                                    <div className="flex flex-col justify-center items-center">
+                                                        <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-full">
+                                                            <Image width={250} objectFit='scale-down' height={250} src={userDataRef.current.profilePicturePreview} alt="Preview" className="rounded-lg" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <FileUploader handleChange={handleFileChange}
+                                                    multiple={false}
+                                                    types={fileTypes}
+                                                    name="file"
+                                                    onTypeError={() => {
+                                                        toast.error("Invalid file type", {
+                                                            description: "Only jpg or png files are allowed",
+                                                        })
+                                                    }}
+                                                />
+                                                <input hidden id="file"></input>
+                                            </div>
+                                        </div>
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="m-2">
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleUpload}>
+                                        Upload
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        <label className="text-md font-semibold mx-2">Registration Number
+                            <div className="w-full flex flex-col">
+                                <input type="text" placeholder="Registration Number" className="border-2 border-blue-500 rounded-md px-2" {...register("registrationNumber", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.registrationNumber && <span className="text-red-500">{errors.registrationNumber?.message}</span>}
+                            </div>
+                        </label>
                     </div>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold mx-2 p-2">Current Hospital</p>
-                        <div className="w-full flex flex-col">
-                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.currentHospital && <span className="text-red-500">{errors.currentHospital?.message}</span>}
-                        </div>
+                    <div className="flex flex-row justify-evenly items-strech w-11/12">
+                        <label className="text-md font-semibold mx-2 w-7/12">Qualifications
+                            <div className="w-full flex flex-col">
+                                <input type="text" placeholder="Add Qualifications" className="border-2 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.qualifications && <span className="text-red-500">{errors.qualifications?.message}</span>}
+                                <span className="text-sm text-gray-500">Add your qualifications separated by commas. Eg: MBBS, MD, DM</span>
+                            </div>
+                        </label>
+                        <label className="text-md font-semibold mx-2 w-5/12">Work Place
+                            <div className="w-full flex flex-col">
+                                <input type="text" placeholder="Workplace" className="border-2 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.workplace && <span className="text-red-500">{errors.workplace?.message}</span>}
+                            </div>
+                        </label>
                     </div>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold m-2 p-2">Specialization</p>
-                        <div className="w-full flex flex-col">
-                            <input type="text" placeholder="Add Your Specialization Fields" className="border-2 border-blue-500 rounded-md p-2" {...register("specialization", { maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.specialization && <span className="text-red-500">{errors.specialization?.message}</span>}
-                        </div>
-                    </div>
-                    <div className="flex flex-col justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold m-2 p-2">Degree and Other description(optional)</p>
-                        <div className="w-full flex flex-col">
-                            <textarea {...register("description", { maxLength: { value: 200, message: "Max length 200" } })} className="w-3/4 m-auto min-h-24 p-2 rounded-xl border-2 border-gray-100" placeholder="Add any description"></textarea>
-                            {errors.description && <span className="text-red-500">{errors.description?.message}</span>}
-                        </div>
+                    <div className="flex flex-row justify-evenly items-strech w-11/12">
+                        <label className="text-md font-semibold mx-2 w-7/12">Department
+                            <div className="w-full flex flex-col">
+                                <input type="text" placeholder="Department" className="border-2 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.department && <span className="text-red-500">{errors.department?.message}</span>}
+                            </div>
+                        </label>
+                        <label className="text-md font-semibold mx-2 w-5/12">Designation
+                            <div className="w-full flex flex-col">
+                                <input type="text" placeholder="Designation" className="border-2 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.designation && <span className="text-red-500">{errors.designation?.message}</span>}
+                            </div>
+                        </label>
+                        <label className="text-md font-semibold mx-2 w-5/12">Contact Number
+                            <div className="w-full flex flex-col">
+                                <input type="tel" placeholder="Contact Number" className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
+                                    required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
+                                    validate: (value) => {
+                                        return (value.length === 11 || /^\d+$/.test(value)) || "Invalid contact number"
+                                    }
+                                })} />
+                                {errors.contactNumber && <span className="text-red-500">{errors.contactNumber?.message}</span>}
+                                <span className="text-sm text-gray-500">Contact number for patients</span>
+                            </div>
+                        </label>
                     </div>
                 </motion.div>
             </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-evenly items-center w-11/12">
-                <p className="text-md font-semibold m-2 p-2">Upload Documents(multiple if needed) as image for verification</p>
-                <div className="w-full flex flex-col">
-                    <FileUploader multiple={true} handleChange={handleFileChange} name="doctorDocs" types={fileTypes} required={true} />
-                    {errors.doctorDocs && <span className="text-red-500">{errors.doctorDocs?.message}</span>}
-                </div>
-            </div>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>

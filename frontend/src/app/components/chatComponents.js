@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getChats, getMessages } from "@/utils/dataRepository";
 import Avatar from "./avatar";
-import { getChatsUrl, getMessagesUrl, messageSendUrl, pagePaths, testingAvatar } from "@/utils/constants";
+import { getChatsUrl, getMessagesUrl, messageImageUploaPath, messageSendUrl, pagePaths, testingAvatar } from "@/utils/constants";
 import ScrollableContainer from "./StyledScrollbar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import React from "react";
@@ -45,6 +45,11 @@ import { useStompContext } from "../context/stompContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
+import { set } from "date-fns";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import firebase_app from "@/utils/firebaseConfig";
+import { Progress } from "@/components/ui/progress";
+import { FileUploader } from "react-drag-drop-files";
 
 
 
@@ -106,7 +111,7 @@ export function ChatLayout() {
                 minSize={70}
                 className="flex-grow overflow-auto"
             >
-                {stompContext.messages.length > 0 && stompContext.openedChat ? (
+                {stompContext.openedChat ? (
                     <ChatWindow stompContext={stompContext} router={router} />
                 ) : (
                     <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-zinc-100 via-slate-200 to-gray-300">
@@ -178,7 +183,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                 <TooltipProvider delayDuration={100}>
                                     <Tooltip>
                                         <TooltipTrigger >
-                                            <Avatar avatarImgScr={chat.profilePicture || testingAvatar} size={44} />
+                                            <Avatar avatarImgScr={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
                                         </TooltipTrigger>
                                         <TooltipContent side={'right'}>
                                             <p>
@@ -189,7 +194,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                 </TooltipProvider>
                             ) : (
                                 <>
-                                    <Avatar avatarImgScr={testingAvatar} size={44} />
+                                    <Avatar avatarImgScr={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
                                     <div className="flex flex-row items-center">
                                         <h1 className="text-xl font-bold text-zinc-700 font-mono flex items-center transform transition-transform duration-300 ease-in-out translate-x-5 group-hover:translate-x-0 mr-4">
                                             {chat.name}
@@ -213,6 +218,10 @@ export function ChatWindow({ stompContext, router }) {
     const scrollAreaRef = useRef(null);
     const imageFileInputRef = useRef(null);
     const [imageFile, setImageFile] = useState(null);
+    const [imageFilePreview, setImageFilePreview] = useState(null);
+    const storage = getStorage(firebase_app);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [openImageUploadDialog, setOpenImageUploadDialog] = useState(false);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -223,16 +232,17 @@ export function ChatWindow({ stompContext, router }) {
 
 
     const handleImageFileUploadClick = () => {
-        if (imageFileInputRef.current) {
-            imageFileInputRef.current.click();
-        }
+        setOpenImageUploadDialog(true);
     };
 
-    const handleImageFileChange = (event) => {
-        const file = event.target.files[0];
+    const handleImageFileChange = (file) => {
+        console.log("Image file selected");
         if (file) {
             console.log("File uploaded:", file);
             setImageFile(file);
+            const preview = URL.createObjectURL(file);
+            console.log("File preview:", preview);
+            setImageFilePreview(preview);
         }
     };
 
@@ -255,7 +265,6 @@ export function ChatWindow({ stompContext, router }) {
             stompContext.chatManager.current.moveToHead(message.receiverId)
             stompContext.setChats([...stompContext.chatManager.current.getChatsInOrder()])
         }
-        document.getElementById("message-input").value = "";
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
         }
@@ -274,7 +283,43 @@ export function ChatWindow({ stompContext, router }) {
                 type: "TEXT",
             }
             sendMesssage(messageObject);
+            document.getElementById("message-input").value = "";
         }
+    }
+
+    const sendImageMessage = () => {
+        if (!imageFile) return;
+        const filePath = messageImageUploaPath(stompContext.openedChat?.roomId, stompContext.userId, imageFile.name);
+        const storageRef = ref(storage, filePath);
+        const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            },
+            (error) => {
+                toast.error("Error uploading image", {
+                    description: "Please try again later",
+                });
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log('File available at', downloadURL);
+                const messageObject = {
+                    sender: (stompContext.userId || localStorage.getItem('userId')),
+                    receiverId: stompContext.openedChat.userId,
+                    message: downloadURL,
+                    timestamp: new Date().toISOString(),
+                    type: "IMAGE",
+                }
+                sendMesssage(messageObject);
+                setImageFile(null);
+                setImageFilePreview(null);
+                setOpenImageUploadDialog(false);
+                setUploadProgress(null);
+            }
+        );
     }
 
     return (
@@ -283,7 +328,7 @@ export function ChatWindow({ stompContext, router }) {
                 {/* Chat Top Bar */}
                 <div className="flex flex-row items-center p-3 justify-between shadow">
                     <div className="flex flex-row items-center ml-3">
-                        <Avatar avatarImgScr={testingAvatar} size={44} />
+                        <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={44} />
                         <h1 className="text-3xl font-bold text-zinc-700 font-mono ml-5">{stompContext.openedChat.name}</h1>
                     </div>
                     <div className="flex flex-row items-center">
@@ -316,10 +361,10 @@ export function ChatWindow({ stompContext, router }) {
                             <div key={index} className={cn('flex flex-col my-4', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "items-end" : "items-start")}>
                                 <div className={cn('flex flex-row', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "justify-end" : "justify-start")}>
                                     <div className={cn('flex flex-row items-center', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "flex-row-reverse" : "flex-row")}>
-                                        <Avatar avatarImgScr={testingAvatar} size={32} />
-                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800")}>
+                                        <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
+                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : (String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
                                             {message.type === "TEXT" && <p>{message.message}</p>}
-                                            {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} />}
+                                            {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
                                         </div>
                                     </div>
                                 </div>
@@ -340,14 +385,8 @@ export function ChatWindow({ stompContext, router }) {
                             <Tooltip>
                                 <TooltipTrigger >
                                     <div type="button" onClick={handleImageFileUploadClick} className="p-2 rounded-md border border-gray-300">
-                                        <ImageUp size={24} />
+                                        <ImageUp size={24} color="rgb(190, 24, 93, 1)" />
                                     </div>
-                                    <input
-                                        type="file"
-                                        ref={imageFileInputRef}
-                                        onChange={handleImageFileChange}
-                                        style={{ display: 'none' }}
-                                    />
                                 </TooltipTrigger>
                                 <TooltipContent side={'top'}>
                                     <p>
@@ -387,7 +426,7 @@ export function ChatWindow({ stompContext, router }) {
                                 </Popover>
                             </div>
                         </div>
-                        <button type="submit" className="border bg-pink-600 rounded-full p-[10px] p-ripple">
+                        <button type="submit" className="border bg-pink-500 rounded-full p-[10px] p-ripple">
                             <Send size={24} color="white" />
                             <Ripple />
                         </button>
@@ -402,6 +441,49 @@ export function ChatWindow({ stompContext, router }) {
                         </button> */}
                     </form>
                 </div>
+                <AlertDialog open={openImageUploadDialog} >
+                    <AlertDialogTrigger asChild>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Image preview</AlertDialogTitle>
+                            <AlertDialogDescription asChild>
+                                <div className="flex flex-col items-center justify-evenly w-11/12">
+                                    {imageFilePreview && (
+                                        <div className="flex flex-col justify-center items-center ">
+                                            <Image width={200} objectFit='scale-down' height={300} src={imageFilePreview} alt="Preview" className=" rounded-lg" />
+                                            {uploadProgress !== null ? <Progress variant='secondary' value={uploadProgress} className="w-[80%] my-4" /> : <></>}
+                                        </div>
+                                    )}
+                                    <FileUploader handleChange={handleImageFileChange}
+                                        multiple={false}
+                                        types={["JPEG", "PNG", "JPG"]}
+                                        name="file"
+                                        onTypeError={() => {
+                                            toast.error("Invalid file type", {
+                                                description: "Only jpg or png files are allowed",
+                                            })
+                                        }}
+                                    />
+                                    <input hidden id="file"></input>
+                                    {/* <FileUploader handleChange={handleFileChange} name="file" types={fileTypes} /> */}
+                                </div>
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => {
+                                setImageFile(null)
+                                setImageFilePreview(null)
+                                setOpenImageUploadDialog(false)
+                            }}>
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction asChild >
+                                <button onClick={sendImageMessage} >Send</button>
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div >
         </>
     )
