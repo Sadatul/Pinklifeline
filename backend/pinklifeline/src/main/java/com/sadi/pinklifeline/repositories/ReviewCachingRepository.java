@@ -1,16 +1,11 @@
 package com.sadi.pinklifeline.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sadi.pinklifeline.models.dtos.RatingAvgAndRatingCountPair;
-import com.sadi.pinklifeline.models.dtos.RatingCountPair;
-import com.sadi.pinklifeline.models.dtos.UnverifiedUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -31,27 +26,11 @@ public class ReviewCachingRepository {
         this.objectMapper = objectMapper;
     }
 
-    public void putRatingAvgData(Long id, RatingAvgAndRatingCountPair value, String type) throws JsonProcessingException {
-        String prefix = getReviewPrefix(type);
-        userRedisTemplate.opsForValue().set(prefix + id + ":avg",
-                objectMapper.writeValueAsString(value),
-                cacheExpirationDays, TimeUnit.DAYS);
-    }
-
     public void putRatingCount(Long id, Long[] ratingCount, String type) throws JsonProcessingException {
         String prefix = getReviewPrefix(type);
         userRedisTemplate.opsForValue().set(prefix + id + ":ratingCount",
                 objectMapper.writeValueAsString(ratingCount),
                 cacheExpirationDays, TimeUnit.DAYS);
-    }
-
-    public Optional<RatingAvgAndRatingCountPair> getRatingAvgData(Long id, String type) throws JsonProcessingException {
-        String prefix = getReviewPrefix(type);
-        String data = userRedisTemplate.opsForValue().get(prefix + id + ":avg");
-        if (data == null) {
-            return Optional.empty();
-        }
-        return Optional.of(objectMapper.readValue(data, RatingAvgAndRatingCountPair.class));
     }
 
     public Optional<Long[]> getRatingCount(Long id, String type) throws JsonProcessingException {
@@ -68,5 +47,42 @@ public class ReviewCachingRepository {
             return cachePrefixDoctor;
         }
         return "cache:default";
+    }
+
+    public Optional<Long[]> addReviewRatingCountPairUpdate(Integer rating, Long id, String type)
+            throws JsonProcessingException {
+        Optional<Long[]> data = getRatingCount(id, type);
+        if(data.isEmpty()){
+            return Optional.empty();
+        }
+        Long[] lst = data.get();
+        lst[rating - 1] += 1;
+        putRatingCount(id, lst, type);
+        return Optional.of(lst);
+    }
+
+    public Optional<Long[]> deleteReviewRatingCountPairUpdate(Integer rating, Long id, String type)
+            throws JsonProcessingException {
+        Optional<Long[]> data = getRatingCount(id, type);
+        if(data.isEmpty()){
+            return Optional.empty();
+        }
+        Long[] lst = data.get();
+        lst[rating - 1] -= 1;
+        putRatingCount(id, lst, type);
+        return Optional.of(lst);
+    }
+
+    public Optional<Long[]> updateReviewRatingCountPairUpdate(Integer newRating, Long id, Integer prevRating, String type)
+            throws JsonProcessingException {
+        Optional<Long[]> data = getRatingCount(id, type);
+        if(data.isEmpty()){
+            return Optional.empty();
+        }
+        Long[] lst = data.get();
+        lst[prevRating - 1] -= 1;
+        lst[newRating - 1] += 1;
+        putRatingCount(id, lst, type);
+        return Optional.of(lst);
     }
 }

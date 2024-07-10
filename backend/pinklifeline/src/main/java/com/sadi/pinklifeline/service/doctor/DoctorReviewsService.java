@@ -2,7 +2,6 @@ package com.sadi.pinklifeline.service.doctor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
-import com.sadi.pinklifeline.models.dtos.RatingAvgAndRatingCountPair;
 import com.sadi.pinklifeline.models.dtos.RatingCountPair;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.DoctorReview;
@@ -20,8 +19,9 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -36,20 +36,6 @@ public class DoctorReviewsService {
         this.userService = userService;
         this.reviewsRepository = reviewsRepository;
         this.reviewCachingRepository = reviewCachingRepository;
-    }
-
-    @PreAuthorize("#userId.toString() == authentication.name")
-    public Pair<Long, ReviewSummaryRes> addReview(DoctorReviewReq req, Long userId) throws JsonProcessingException {
-        User reviewer = userService.getUserIfRegistered(userId);
-        DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getId());
-        DoctorReview review = new DoctorReview(doctorDetails, reviewer, req.getRating(), LocalDateTime.now());
-        review.setComment(req.getComment());
-
-        Long id = reviewsRepository.save(review).getId();
-        RatingAvgAndRatingCountPair pair = updateRatingAvgAndCountCache(req.getRating(), 1L, doctorDetails.getUserId(), 0);
-        Long[] lst = addReviewRatingCountPairUpdate(req.getRating(), doctorDetails.getUserId());
-
-        return Pair.of(id, new ReviewSummaryRes(pair.getCount(), pair.getAvg(), lst));
     }
 
     public DoctorReview getReview(Long reviewId) {
@@ -67,6 +53,19 @@ public class DoctorReviewsService {
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
+    public Pair<Long, ReviewSummaryRes> addReview(DoctorReviewReq req, Long userId) throws JsonProcessingException {
+        User reviewer = userService.getUserIfRegistered(userId);
+        DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getId());
+        DoctorReview review = new DoctorReview(doctorDetails, reviewer, req.getRating(), LocalDateTime.now());
+        review.setComment(req.getComment());
+
+        Long id = reviewsRepository.save(review).getId();
+        Long[] lst = addReviewRatingCountPairUpdate(req.getRating(),
+                doctorDetails.getUserId(), "doctor");
+        return Pair.of(id, getReviewSummaryRes(lst));
+    }
+
+    @PreAuthorize("#userId.toString() == authentication.name")
     public ReviewSummaryRes updateReview(ReviewUpdateReq req, Long userId, Long reviewId) throws JsonProcessingException {
         DoctorReview review = getReview(reviewId);
         Integer prevRating = review.getRating();
@@ -76,10 +75,18 @@ public class DoctorReviewsService {
         review.setTimestamp(LocalDateTime.now());
         reviewsRepository.save(review);
 
-        RatingAvgAndRatingCountPair pair = updateRatingAvgAndCountCache(req.getRating(), 0L,review.getDoctorDetails().getUserId(), prevRating);
-        Long[] lst = updateReviewRatingCountPairUpdate(req.getRating(), review.getDoctorDetails().getUserId(), prevRating);
+        Long[] lst = updateReviewRatingCountPairUpdate(req.getRating(), review.getDoctorDetails().getUserId(),
+                prevRating, "doctor");
+        return getReviewSummaryRes(lst);
+    }
 
-        return new ReviewSummaryRes(pair.getCount(), pair.getAvg(), lst);
+    private ReviewSummaryRes getReviewSummaryRes(Long[] lst) {
+        long count = Arrays.stream(lst).mapToLong(Long::longValue).sum();
+        double avg = 0.0;
+        if(count != 0){
+            avg = IntStream.range(0, 5).mapToLong(i -> (i + 1) * lst[i]).sum() / (double) count;
+        }
+        return new ReviewSummaryRes(count, avg, lst);
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
@@ -89,67 +96,34 @@ public class DoctorReviewsService {
         verifyReviewAccess(review, userId);
         reviewsRepository.delete(review);
 
-        RatingAvgAndRatingCountPair pair = updateRatingAvgAndCountCache(0, -1L,review.getDoctorDetails().getUserId(), prevRating);
-        Long[] lst = deleteReviewRatingCountPairUpdate(prevRating, review.getDoctorDetails().getUserId());
-
-        return new ReviewSummaryRes(pair.getCount(), pair.getAvg(), lst);
+        Long[] lst = deleteReviewRatingCountPairUpdate(prevRating, review.getDoctorDetails().getUserId(), "doctor");
+        return getReviewSummaryRes(lst);
     }
 
-    public Long[] addReviewRatingCountPairUpdate(Integer rating, Long id) throws JsonProcessingException {
-        Optional<Long[]> data = reviewCachingRepository.getRatingCount(id, "doctor");
-        if(data.isPresent()){
-            Long[] lst = data.get();
-            lst[rating - 1] += 1;
-            reviewCachingRepository.putRatingCount(id, lst, "doctor");
-            return lst;
-        }
+    public Long[] addReviewRatingCountPairUpdate(Integer rating, Long id, String type) throws JsonProcessingException {
+       return reviewCachingRepository.addReviewRatingCountPairUpdate(rating, id, type)
+               .orElseGet(() -> refreshRatingCountPairCache(id, type));
+    }
+
+    public Long[] deleteReviewRatingCountPairUpdate(Integer rating, Long id, String type) throws JsonProcessingException {
+        return reviewCachingRepository.deleteReviewRatingCountPairUpdate(rating, id, type)
+                .orElseGet(() -> refreshRatingCountPairCache(id, type));
+    }
+
+    public Long[] updateReviewRatingCountPairUpdate(Integer newRating, Long id, Integer prevRating, String type)
+            throws JsonProcessingException {
+        return reviewCachingRepository.updateReviewRatingCountPairUpdate(newRating, id, prevRating, type)
+                .orElseGet(() -> refreshRatingCountPairCache(id, type));
+
+    }
+
+    public Long[] refreshRatingCountPairCache(Long id, String type) {
         Long[] lst = RatingCountPair.ListRatingCountPairToLongArr(reviewsRepository.getRatingByDoctorId(id));
-        reviewCachingRepository.putRatingCount(id, lst, "doctor");
-        return lst;
-    }
-
-    public Long[] deleteReviewRatingCountPairUpdate(Integer rating, Long id) throws JsonProcessingException {
-        Optional<Long[]> data = reviewCachingRepository.getRatingCount(id, "doctor");
-        if(data.isPresent()){
-            Long[] lst = data.get();
-            lst[rating - 1] -= 1;
-            reviewCachingRepository.putRatingCount(id, lst, "doctor");
-            return lst;
+        try {
+            reviewCachingRepository.putRatingCount(id, lst, type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        Long[] lst = RatingCountPair.ListRatingCountPairToLongArr(reviewsRepository.getRatingByDoctorId(id));
-        reviewCachingRepository.putRatingCount(id, lst, "doctor");
         return lst;
-    }
-
-    public Long[] updateReviewRatingCountPairUpdate(Integer newRating, Long id, Integer prevRating) throws JsonProcessingException {
-        Optional<Long[]> data = reviewCachingRepository.getRatingCount(id, "doctor");
-        if(data.isPresent()){
-            Long[] lst = data.get();
-            lst[prevRating - 1] -= 1;
-            lst[newRating - 1] += 1;
-            reviewCachingRepository.putRatingCount(id, lst, "doctor");
-            return lst;
-        }
-        Long[] lst = RatingCountPair.ListRatingCountPairToLongArr(reviewsRepository.getRatingByDoctorId(id));
-        reviewCachingRepository.putRatingCount(id, lst, "doctor");
-        return lst;
-    }
-
-    public RatingAvgAndRatingCountPair updateRatingAvgAndCountCache(Integer rating,  Long countChange, Long id, Integer prevRating) throws JsonProcessingException {
-        Optional<RatingAvgAndRatingCountPair> data = reviewCachingRepository.getRatingAvgData(id, "doctor");
-        if(data.isPresent()){
-            RatingAvgAndRatingCountPair pair = data.get();
-            Long  count = pair.getCount();
-            Double total = pair.getAvg() * count;
-            pair.setCount(count + countChange);
-            pair.setAvg((total + rating - prevRating) / pair.getCount());
-            reviewCachingRepository.putRatingAvgData(id, pair, "doctor");
-            return pair;
-        }
-        Long count = reviewsRepository.getReviewCountByDoctorId(id);
-        Double avg = reviewsRepository.getAvgRatingByDoctorID(id);
-        RatingAvgAndRatingCountPair pair = new RatingAvgAndRatingCountPair(avg, count);
-        reviewCachingRepository.putRatingAvgData(id, pair, "doctor");
-        return pair;
     }
 }
