@@ -9,13 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DoctorReviewsRepository extends JpaRepository<DoctorReview, Long> {
-    @Query("select new com.sadi.pinklifeline.models.dtos.RatingCountPair(r.rating, count(r.id)) from DoctorReview r where r.doctorDetails.userId = :doctorId group by r.rating order by r.rating")
-    List<RatingCountPair> getRatingByDoctorId(Long doctorId);
-
-    @Query("select avg(r.rating) from DoctorReview r where r.doctorDetails.userId = :doctorId")
-    Double getAvgRatingByDoctorID(Long doctorId);
-
-    @Query("select count(r.id) from DoctorReview r where r.doctorDetails.userId = :doctorId")
-    Long getReviewCountByDoctorId(Long doctorId);
+public interface DoctorReviewsRepository extends JpaRepository<DoctorReview, Long>{
+    @Query("select new com.sadi.pinklifeline.models.dtos.RatingCountPair(r.rating, count(r.id)) from DoctorReview r where r.doctorDetails.userId = :id group by r.rating order by r.rating")
+    List<RatingCountPair> getRatingByResourceId(Long id);
 }

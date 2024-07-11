@@ -253,3 +253,99 @@ need to be passed, then pass an empty list like this:
 
 ## Delete Doctor Consultation Location
 ``` Endpoint: DELETE /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
+
+## Add Doctor Review
+``` Endpoint: POST /v1/reviews/doctor/{id}``` \
+
+**Note: Here id means the user who is providing the review**
+### Sample Body
+```
+{
+  "id":4,
+  "rating":3,
+  "comment": "A very good doctor"
+}
+```
+**<span style="color:red">Notes:</span>**
+* In the body "id" refers to the id of the resource that is being reviewed
+* rating can be a value between 1(inclusive) and 5(inclusive).
+* comments can be maximum 255 chars long.
+* Here you must provide an id and rating but comment can be null
+* The response will send you a Location header of the resource created. *You won't be able to perform get request on this but. DELETE and PUT request will be allowed for deleting and updating*
+
+### Response Body
+```
+{
+    count": 3,
+    "averageRating": 2.6666666666666665,
+    "ratingCount":[
+        1,
+        0,
+        1,
+        1,
+        0
+    ]
+}
+```
+**<span style="color:red">Notes:</span>**
+* count -> total number of reviews for the doctor to which the review was added
+* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+* This response will be also returned for each review update and delete, the info will be the latest info after performing the update.
+
+## Update Doctor Review
+``` Endpoint: PUT /v1/reviews/doctor/{id}/{review_id}``` \
+
+**Note: Here id means the user who is providing the review**
+### Sample Body
+```
+{
+  "rating":3,
+  "comment": "A very good doctor"
+}
+```
+**<span style="color:red">Notes:</span>**
+* rating can be a value between 1(inclusive) and 5(inclusive).
+* comments can be maximum 255 chars long.
+* Here you must provide rating but comment can be null
+
+### Response Body
+```
+{
+    count": 3,
+    "averageRating": 2.6666666666666665,
+    "ratingCount":[
+        1,
+        0,
+        1,
+        1,
+        0
+    ]
+}
+```
+**<span style="color:red">Notes:</span>**
+* count -> total number of reviews for the doctor to which the review was added
+* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+
+## Delete Doctor Review
+``` Endpoint: DELETE /v1/reviews/doctor/{id}/{review_id}``` \
+
+### Response Body
+```
+{
+    count": 3,
+    "averageRating": 2.6666666666666665,
+    "ratingCount":[
+        1,
+        0,
+        1,
+        1,
+        0
+    ]
+}
+```
+**<span style="color:red">Notes:</span>**
+* count -> total number of reviews for the doctor to which the review was added
+* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.

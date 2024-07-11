@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
         name = "doctor_reviews_comments",
         pkJoinColumns = @PrimaryKeyJoinColumn(name = "review_id")
 )
-public class DoctorReview {
+public class DoctorReview implements Review{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,5 +45,15 @@ public class DoctorReview {
         this.reviewer = reviewer;
         this.rating = rating;
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public Long getReviewerId() {
+        return reviewer.getId();
+    }
+
+    @Override
+    public Long getResourceId() {
+        return doctorDetails.getUserId();
     }
 }
