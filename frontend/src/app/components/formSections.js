@@ -290,10 +290,20 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
 }
 
 // location, start, end, workdays, fees
-export function DoctorChamberLocationSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
+export function DoctorChamberLocationSection({ }) {
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
+    const userDataRef = useRef({})
+    const [isOnline, setIsOnline] = useState(false)
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const workdays = useRef([{ day: "sat", on: false }, { day: "sun", on: false }, { day: "mon", on: false }, { day: "tue", on: false }, { day: "wed", on: false }, { day: "thu", on: false }, { day: "fri", on: false }])
+    const workdays = useRef([
+        { day: "sat", on: false },
+        { day: "sun", on: false },
+        { day: "mon", on: false },
+        { day: "tue", on: false },
+        { day: "wed", on: false },
+        { day: "thu", on: false },
+        { day: "fri", on: false }])
+
     const daySequence = ["sat", "sun", "mon", "tue", "wed", "thu", "fri"]
 
     const workdaysToBinaryString = (workdays) => {
@@ -313,12 +323,20 @@ export function DoctorChamberLocationSection({ userDataRef, currentSection, setC
         userDataRef.current = { ...userDataRef.current, ...data }
         userDataRef.current = { ...userDataRef.current, workdaysString: workdaysToBinaryString(userDataRef.current.workdays) }
         console.log("user data: ", userDataRef.current)
-        if (currentSection < (totalSections - 1)) {
-            setCurrentSection(a => ((a + 1) % totalSections))
+        setConfirmDialogOpen(true)
+    }
+
+    const saveLocation = () => {
+        console.log("saving location")
+        const loacationForm = {
+            location: userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity,
+            start: userDataRef.current.startTime,
+            end: userDataRef.current.endTime,
+            workdays: userDataRef.current.workdaysString,
+            fees: userDataRef.current.fees
         }
-        else {
-            setConfirmDialogOpen(true)
-        }
+        console.log("location form: ", loacationForm)
+        setConfirmDialogOpen(false)
     }
 
     useEffect(() => {
@@ -410,40 +428,28 @@ export function DoctorChamberLocationSection({ userDataRef, currentSection, setC
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)}
-                    onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, ...getValues() }
-                        setCurrentSection(a => ((a - 1) % totalSections))
-                    }}
-                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
-                >
-                    Previous
+            <div className="flex flex-row justify-center items-center w-full m-2 px-8">
+                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                    Save
                 </button>
-                <button type='button' onClick={handleSubmit(onSubmit)}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
-                </button>
-                {currentSection === (totalSections - 1) && (
-                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
-                        <AlertDialogTrigger asChild>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={saveForm}>
-                                    Continue
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
+                <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                    <AlertDialogTrigger asChild>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                You can&apos;t change your full name and date of birth once you save the form.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={saveLocation}>
+                                Add
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </>
     )
@@ -599,7 +605,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                                 <input type="tel" defaultValue={userDataRef.current?.contactNumber} placeholder="Contact Number" className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
                                     required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
                                     validate: (value) => {
-                                        return (value.length === 11 || /^\d+$/.test(value)) || "Invalid contact number"
+                                        return (value.length === 11 && /^\d+$/.test(value) && String(value).startsWith("01")) || "Invalid contact number"
                                     }
                                 })} />
                                 {errors.contactNumber && <span className="text-red-500">{errors.contactNumber?.message}</span>}

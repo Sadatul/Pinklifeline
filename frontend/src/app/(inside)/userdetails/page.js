@@ -42,25 +42,21 @@ export default function UserDetailsPage() {
                 {
                     section_name: "Location",
                     section_components: LocationSection
-                },
-                {
-                    section_name: "Doctor Chamber Locations",
-                    section_components: DoctorChamberLocationSection
                 }
             ]
             if (user_role === "ROLE_ALL") {      // this one for current testing phase will be removed after development
                 return temp_sections
             }
-            else if (user_role === "ROLE_DOCTOR") {
-                return [ temp_sections[5]]
+            else if (user_role === roles.doctor) {
+                return [temp_sections[2]]
             }
-            else if (user_role === "ROLE_NURSE") {
+            else if (user_role === roles.nurse) {
                 return [temp_sections[4], temp_sections[1]]
             }
-            else if (user_role === "ROLE_BASICUSER") {
+            else if (user_role === roles.basicUser) {
                 return [temp_sections[0], temp_sections[1]]
             }
-            else if (user_role === "ROLE_PATIENT") {
+            else if (user_role === roles.patient) {
                 return [temp_sections[0], temp_sections[1], temp_sections[4]]
             }
             else if (user_role === "ROLE_TEST") {
@@ -73,36 +69,18 @@ export default function UserDetailsPage() {
 
     }, [currentSection])
 
+    // {
+    //     "fullName": "Dr. Adil",
+    //       "qualifications": ["MBBS", "DO"],
+    //       "workplace": "Khulna Medical College",
+    //       "department": "Cancer",
+    //       "designation": "Head",
+    //       "contactNumber": "01730445524",
+    //       "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+    //       "profilePicture": "Nana"
+    // }
     const saveForm = () => {
         console.log("user data ref from parent", userDataRef.current)
-        const userData = userDataRef.current
-        const tempPeriodDate = new Date(userData?.lastPeriodDate)
-        let form_data = {
-            fullName: userData?.fullName,
-            weight: userData?.weight,
-            height: (Number(userData?.heightFeet) * 12 + Number(userData?.heightInch)) * 2.54 || "undefined",
-            dob: `${userData?.dobYear}-${(userData?.dobMonth) < 10 ? `0${userData?.dobMonth}` : `${userData?.dobMonth}`}-${(userData?.dobDay) < 10 ? `0${userData?.dobDay}` : `${userData?.dobDay}`}`,
-            cancerHistory: userData?.cancerHistory,
-            cancerRelatives: userData?.cancerRelatives,
-            profilePicture: userData?.profilePictureUrl,
-            lastPeriodDate: `${tempPeriodDate.getFullYear()}-${(tempPeriodDate.getMonth() + 1) < 10 ? `0${tempPeriodDate.getMonth() + 1}` : `${tempPeriodDate.getMonth() + 1}`}-${(tempPeriodDate.getDate()) < 10 ? `0${tempPeriodDate.getDate()}` : `${tempPeriodDate.getDate()}`}`,
-            avgCycleLength: userData?.avgCycleLength,
-            periodIrregularities: userData?.periodIrregularities,
-            allergies: userData?.allergies,
-            organsWithChronicCondition: userData?.organsWithChronicCondition,
-            medications: userData?.medications
-        }
-        if (role === "ROLE_PATIENT") {
-            console.log("location from parent")
-            console.log(userData?.location.lat,)
-            const tempDiagnosisDate = new Date(userData?.diagnosisDate)
-            form_data = {
-                ...form_data,
-                diagnosisDate: `${tempDiagnosisDate.getFullYear()}-${(tempDiagnosisDate.getMonth() + 1) < 10 ? `0${tempDiagnosisDate.getMonth() + 1}` : `${tempDiagnosisDate.getMonth() + 1}`}-${(tempDiagnosisDate.getDate()) < 10 ? `0${tempDiagnosisDate.getDate()}` : `${tempDiagnosisDate.getDate()}`}`,
-                cancerStage: userData?.cancerStage,
-                location: latLngToCell(Number(userData?.location.lat), Number(userData?.location.lng), locationResolution)
-            }
-        }
         const tempToken = localStorage.getItem("token")
         const tempId = localStorage.getItem("userId")
         if (!tempToken || !tempId) {
@@ -115,19 +93,63 @@ export default function UserDetailsPage() {
         const headers = {
             'Authorization': `Bearer ${tempToken}`
         }
-        console.log("form data", form_data)
-        axios.post(userInfoRegUrlReq(tempId, roles.basicUser), form_data, {
-            headers: headers
-        }).then((response) => {
-            console.log(response)
-            toast.success("Information saved successfully")
+        const userData = userDataRef.current
+        let form_data;
+        if (role === roles.doctor) {
+            form_data = {
+                fullName: userData?.fullName,
+                qualifications: userData?.qualifications.split(",").map((qualification) => qualification.trim()),
+                workplace: userData?.workplace,
+                department: userData?.department,
+                designation: userData?.designation,
+                contactNumber: userData?.contactNumber,
+                registrationNumber: userData?.registrationNumber,
+                profilePicture: userData?.profilePictureUrl
+
+            }
         }
-        ).catch((error) => {
-            console.log(error)
-            toast.error("An error occured", {
-                description: error.response.data?.message
-            })
-        })
+        else if (role === roles.basicUser || role === roles.patient) {
+            const tempPeriodDate = new Date(userData?.lastPeriodDate)
+            form_data = {
+                fullName: userData?.fullName,
+                weight: userData?.weight,
+                height: (Number(userData?.heightFeet) * 12 + Number(userData?.heightInch)) * 2.54 || "undefined",
+                dob: `${userData?.dobYear}-${(userData?.dobMonth) < 10 ? `0${userData?.dobMonth}` : `${userData?.dobMonth}`}-${(userData?.dobDay) < 10 ? `0${userData?.dobDay}` : `${userData?.dobDay}`}`,
+                cancerHistory: userData?.cancerHistory,
+                cancerRelatives: userData?.cancerRelatives,
+                profilePicture: userData?.profilePictureUrl,
+                lastPeriodDate: `${tempPeriodDate.getFullYear()}-${(tempPeriodDate.getMonth() + 1) < 10 ? `0${tempPeriodDate.getMonth() + 1}` : `${tempPeriodDate.getMonth() + 1}`}-${(tempPeriodDate.getDate()) < 10 ? `0${tempPeriodDate.getDate()}` : `${tempPeriodDate.getDate()}`}`,
+                avgCycleLength: userData?.avgCycleLength,
+                periodIrregularities: userData?.periodIrregularities,
+                allergies: userData?.allergies,
+                organsWithChronicCondition: userData?.organsWithChronicCondition,
+                medications: userData?.medications
+            }
+            if (role === roles.patient) {
+                console.log("location from parent")
+                console.log(userData?.location.lat,)
+                const tempDiagnosisDate = new Date(userData?.diagnosisDate)
+                form_data = {
+                    ...form_data,
+                    diagnosisDate: `${tempDiagnosisDate.getFullYear()}-${(tempDiagnosisDate.getMonth() + 1) < 10 ? `0${tempDiagnosisDate.getMonth() + 1}` : `${tempDiagnosisDate.getMonth() + 1}`}-${(tempDiagnosisDate.getDate()) < 10 ? `0${tempDiagnosisDate.getDate()}` : `${tempDiagnosisDate.getDate()}`}`,
+                    cancerStage: userData?.cancerStage,
+                    location: latLngToCell(Number(userData?.location.lat), Number(userData?.location.lng), locationResolution)
+                }
+            }
+        }
+        console.log("form data", form_data)
+        // axios.post(userInfoRegUrlReq(tempId, role), form_data, {
+        //     headers: headers
+        // }).then((response) => {
+        //     console.log(response)
+        //     toast.success("Information saved successfully")
+        // }
+        // ).catch((error) => {
+        //     console.log(error)
+        //     toast.error("An error occured", {
+        //         description: error.response.data?.message
+        //     })
+        // })
     }
 
     return (
