@@ -3,8 +3,6 @@ package com.sadi.pinklifeline.configs;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +20,6 @@ public class Startup {
     @Value("${ADMIN_PASSWORD}")
     private String adminPassword;
 
-    private final Logger logger = LoggerFactory.getLogger(Startup.class);
 
     @Bean
     public CommandLineRunner commandLineRunner(UserRepository userRepository,

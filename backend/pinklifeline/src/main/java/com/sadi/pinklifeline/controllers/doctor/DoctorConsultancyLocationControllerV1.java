@@ -1,11 +1,10 @@
 package com.sadi.pinklifeline.controllers.doctor;
 
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
-import com.sadi.pinklifeline.service.doctor.features.DoctorConsultancyLocationsService;
+import com.sadi.pinklifeline.service.doctor.DoctorConsultancyLocationsService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 

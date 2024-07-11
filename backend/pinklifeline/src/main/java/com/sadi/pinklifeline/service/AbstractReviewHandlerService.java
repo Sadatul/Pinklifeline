@@ -3,7 +3,7 @@ package com.sadi.pinklifeline.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.models.dtos.RatingCountPair;
 import com.sadi.pinklifeline.models.entities.Review;
-import com.sadi.pinklifeline.models.reqeusts.DoctorReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
 import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
 import com.sadi.pinklifeline.models.responses.ReviewSummaryRes;
 import com.sadi.pinklifeline.repositories.ReviewCachingRepository;
@@ -27,7 +27,7 @@ public abstract class AbstractReviewHandlerService {
     public abstract Review saveReview(Review review);
     public abstract void deleteReview(Review review);
     public abstract Review getReview(Long reviewId);
-    public abstract Review getNewReview(Long reviewerId, DoctorReviewReq req);
+    public abstract Review getNewReview(Long reviewerId, RegisterReviewReq req);
     public abstract List<RatingCountPair> getReviewRatingCountPairList(Long reviewId);
 
     public void verifyReviewAccess(Review review, Long userId){
@@ -39,7 +39,7 @@ public abstract class AbstractReviewHandlerService {
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
-    public Pair<Long, ReviewSummaryRes> addReview(DoctorReviewReq req, Long userId) throws JsonProcessingException {
+    public Pair<Long, ReviewSummaryRes> addReview(RegisterReviewReq req, Long userId) throws JsonProcessingException {
         Review review = getNewReview(userId, req);
         Long id = saveReview(review).getId();
         Long[] lst = addReviewRatingCountPairUpdate(req.getRating(),

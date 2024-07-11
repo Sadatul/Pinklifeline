@@ -1,11 +1,10 @@
-package com.sadi.pinklifeline.service.doctor.features;
+package com.sadi.pinklifeline.service.doctor;
 
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
 import com.sadi.pinklifeline.repositories.DoctorConsultancyLocationsRepository;
-import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;

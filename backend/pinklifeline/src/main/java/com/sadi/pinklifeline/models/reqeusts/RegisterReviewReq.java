@@ -3,7 +3,7 @@ package com.sadi.pinklifeline.models.reqeusts;
 import jakarta.validation.constraints.*;
 
 
-public class DoctorReviewReq extends AbstractReviewReq{
+public class RegisterReviewReq extends AbstractReviewReq{
     @NotNull(message = "Must provide id of the resource")
     private Long id;
 

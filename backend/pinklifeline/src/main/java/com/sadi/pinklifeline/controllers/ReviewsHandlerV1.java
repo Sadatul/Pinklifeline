@@ -2,7 +2,7 @@ package com.sadi.pinklifeline.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
-import com.sadi.pinklifeline.models.reqeusts.DoctorReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
 import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
 import com.sadi.pinklifeline.models.responses.ReviewSummaryRes;
 import com.sadi.pinklifeline.service.AbstractReviewHandlerService;
@@ -31,7 +31,7 @@ public class ReviewsHandlerV1 {
     public ResponseEntity<ReviewSummaryRes> addReview(
             @PathVariable(name = "type") String type,
             @PathVariable(name = "user_id") Long userId,
-            @Valid @RequestBody DoctorReviewReq req) throws JsonProcessingException {
+            @Valid @RequestBody RegisterReviewReq req) throws JsonProcessingException {
         log.debug("Post request on doctor review received: {}", req);
         AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
         Pair<Long, ReviewSummaryRes> pair = reviewsService.addReview(req, userId);

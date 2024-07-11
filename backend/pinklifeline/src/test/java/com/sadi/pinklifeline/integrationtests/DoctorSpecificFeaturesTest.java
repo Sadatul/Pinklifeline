@@ -5,7 +5,8 @@ import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
 import com.sadi.pinklifeline.models.entities.DoctorReview;
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
-import com.sadi.pinklifeline.models.reqeusts.DoctorReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
 import com.sadi.pinklifeline.repositories.DoctorConsultancyLocationsRepository;
 import com.sadi.pinklifeline.repositories.reviews.DoctorReviewsRepository;
 import com.sadi.pinklifeline.utils.DbCleaner;
@@ -165,7 +166,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         matchReviewSummary(resultActions, Arrays.array(0, 0, 0, 0, 1), 5.0, 1);
 
         log.info("Added Doctor Review URI: {}", review);
-        DoctorReviewReq req = objectMapper.readValue(requestBody, DoctorReviewReq.class);
+        RegisterReviewReq req = objectMapper.readValue(requestBody, RegisterReviewReq.class);
         log.info("Doctor review Req: {}", req);
         Optional<DoctorReview> rev = reviewsRepository.findById(reviewId);
         if(rev.isEmpty()) {
@@ -193,7 +194,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         resultActions.andExpect(status().isOk());
         matchReviewSummary(resultActions, Arrays.array(0, 0, 1, 0, 0), 3.0, 1);
 
-        DoctorReviewReq updateReq = objectMapper.readValue(updateBody, DoctorReviewReq.class);
+        ReviewUpdateReq updateReq = objectMapper.readValue(updateBody, ReviewUpdateReq.class);
         log.info("Doctor review Update Req: {}", updateReq);
         rev = reviewsRepository.findById(reviewId);
         if(rev.isEmpty()) {

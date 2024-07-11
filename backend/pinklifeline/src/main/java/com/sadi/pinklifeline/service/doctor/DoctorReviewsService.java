@@ -6,7 +6,7 @@ import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.DoctorReview;
 import com.sadi.pinklifeline.models.entities.Review;
 import com.sadi.pinklifeline.models.entities.User;
-import com.sadi.pinklifeline.models.reqeusts.DoctorReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
 import com.sadi.pinklifeline.repositories.ReviewCachingRepository;
 import com.sadi.pinklifeline.repositories.reviews.DoctorReviewsRepository;
 import com.sadi.pinklifeline.service.AbstractReviewHandlerService;
@@ -42,7 +42,7 @@ public class DoctorReviewsService extends AbstractReviewHandlerService {
     }
 
     @Override
-    public Review getNewReview(Long reviewerId, DoctorReviewReq req) {
+    public Review getNewReview(Long reviewerId, RegisterReviewReq req) {
         User reviewer = userService.getUserIfRegistered(reviewerId);
         DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getId());
         DoctorReview review = new DoctorReview(doctorDetails, reviewer, req.getRating(), LocalDateTime.now());
