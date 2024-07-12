@@ -10,6 +10,9 @@ export const messageSendUrl = `/app/chat`
 export const getChatsUrl = (id) => { return `${baseUrl}/v1/chat/${id}` }
 export const getMessagesUrl = (room_id) => { return `${baseUrl}/v1/chat/messages/${room_id}` }
 export const updateProfilePictureUrl = (id) => { return `${baseUrl}/v1/infos/profile_picture/${id}` }
+export const addConsultationLocationUrl = (id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${id}/locations` }
+// export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
+export const locationOnline = "ONLINE"
 
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 
@@ -20,6 +23,7 @@ export const roles = {
     patient: "ROLE_PATIENT",
     doctor: "ROLE_DOCTOR",
     nurse: "ROLE_NURSE",
+    doctorProfile: "doctor"
 }
 
 export const pagePaths = {

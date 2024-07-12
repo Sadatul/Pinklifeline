@@ -21,6 +21,8 @@ export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
 
     const checkScroll = () => {
+        console.log("scrolling")
+        console.log(window.scrollY)
         if (window.scrollY > 0) {
             document.getElementById('navbar').classList.add('scale-90', 'shadow-md');
         }
@@ -46,7 +48,7 @@ export default function Layout({ children }) {
                             <Image loading='lazy' className="shrink hidden md:block mb-3" src={logoText.src} alt="logo-text" width={170} height={75} />
                         </Link >
                         <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
-                            <Link href="#features" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
+                            <Link href={pagePaths.inbox} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
                             <Link href="#blog" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
                             <Link href="#forum" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
                         </div>

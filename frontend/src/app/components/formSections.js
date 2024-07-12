@@ -45,6 +45,10 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useStompContext } from "../context/stompContext"
+import { useRouter } from "next/navigation"
+import { addConsultationLocationUrl, locationOnline, pagePaths } from "@/utils/constants"
+import axios from "axios"
+import { Checkbox } from "@/components/ui/checkbox"
 
 
 export function UserInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
@@ -295,6 +299,7 @@ export function DoctorChamberLocationSection({ }) {
     const userDataRef = useRef({})
     const [isOnline, setIsOnline] = useState(false)
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const router = useRouter()
     const workdays = useRef([
         { day: "sat", on: false },
         { day: "sun", on: false },
@@ -328,20 +333,45 @@ export function DoctorChamberLocationSection({ }) {
 
     const saveLocation = () => {
         console.log("saving location")
+        const savingLocationToast = toast.loading("Saving location")
         const loacationForm = {
-            location: userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity,
-            start: userDataRef.current.startTime,
-            end: userDataRef.current.endTime,
+            location: isOnline ? locationOnline : userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity,
+            start: userDataRef.current.startTime + ":00",
+            end: userDataRef.current.endTime + ":00",
             workdays: userDataRef.current.workdaysString,
             fees: userDataRef.current.fees
         }
         console.log("location form: ", loacationForm)
-        setConfirmDialogOpen(false)
+        const id = localStorage.getItem('userId')
+        const token = localStorage.getItem('token')
+        if (!id || !token) {
+            toast.error("Login required")
+            router.push(pagePaths.login)
+        }
+        const headers = {
+            'Authorization': `Bearer ${token}`
+        }
+        axios.post(addConsultationLocationUrl(id), loacationForm, { headers: headers }).then((response) => {
+            console.log(response.data)
+            toast.dismiss(savingLocationToast)
+            toast.success("Location added successfully")
+            setConfirmDialogOpen(false)
+        }).catch((error) => {
+            toast.dismiss()
+            console.log(error)
+            toast.error("Error adding location", {
+                description: error.response.data.message
+            })
+        })
     }
 
     useEffect(() => {
         register("workdays", { validate: value => value?.some(day => day.on) || "Please select at least one workday" })
     }, [register])
+
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     return (
         <>
@@ -357,21 +387,24 @@ export function DoctorChamberLocationSection({ }) {
                         <h1 className="text-center text-2xl font-semibold">Location and Fees</h1>
                         <div className="flex flex-row justify-evenly items-center w-11/12">
                             <label className="text-md font-semibold mx-2">City
-                                <div className="w-full flex flex-col mt-2">
-                                    <input defaultValue={userDataRef.current?.chamberCity} type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("chamberCity", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                    {errors.chamberCity && <span className="text-red-500">{errors.chamberCity?.message}</span>}
+                                <div className="w-full flex flex-col mt-2 relative">
+                                    <input disabled={isOnline} defaultValue={userDataRef.current?.chamberCity} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("chamberCity", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                    {errors.chamberCity && <span className="text-red-500 mt-7 absolute">{errors.chamberCity?.message}</span>}
                                 </div>
                             </label>
                             <label className="text-md font-semibold mx-2">Address
-                                <div className="w-full flex flex-col mt-2">
-                                    <input defaultValue={userDataRef.current?.chamberStreetAdress} type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("chamberStreetAdress", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                    {errors.chamberStreetAdress && <span className="text-red-500">{errors.chamberStreetAdress?.message}</span>}
+                                <div className="w-full flex flex-col mt-2 relative">
+                                    <input disabled={isOnline} defaultValue={userDataRef.current?.chamberStreetAdress} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("chamberStreetAdress", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                    {errors.chamberStreetAdress && <span className="text-red-500 mt-7 absolute">{errors.chamberStreetAdress?.message}</span>}
                                 </div>
                             </label>
+                            <label className="text-md font-semibold mx-2 mt-4">Online
+                                <Checkbox checked={isOnline} onCheckedChange={() => setIsOnline(!isOnline)} className="border-2" />
+                            </label>
                             <label className="text-md font-semibold mx-2">Fees
-                                <div className="w-full flex flex-col mt-2">
-                                    <input defaultValue={userDataRef.current?.fees} type="number" min={0} className="number-input border-2 border-blue-500 rounded-md px-2 w-32" {...register("fees", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                    {errors.fees && <span className="text-red-500">{errors.fees?.message}</span>}
+                                <div className="w-full flex flex-col mt-2 relative">
+                                    <input defaultValue={userDataRef.current?.fees} type="number" min={0} className={cn("number-input border-2 border-blue-500 rounded-md px-2 w-32")} {...register("fees", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                    {errors.fees && <span className="text-red-500 mt-7 absolute">{errors.fees?.message}</span>}
                                 </div>
                             </label>
                         </div>
@@ -429,21 +462,31 @@ export function DoctorChamberLocationSection({ }) {
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-center items-center w-full m-2 px-8">
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
+                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg px-5 font-bold text-center text-white  border hover:shadow-md bg-gradient-to-br from-gray-700 via-gray-600 to-gray-700 rounded-2xl hover:scale-105 transition ease-out" >
                     Save
                 </button>
-                <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                <AlertDialog open={confirmDialogOpen}  >
                     <AlertDialogTrigger asChild>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                You can&apos;t change your full name and date of birth once you save the form.
+                            <AlertDialogTitle>Check your location information</AlertDialogTitle>
+                            <AlertDialogDescription asChild>
+                                <div className="flex flex-col items-center justify-evenly flex-1">
+                                    <div className="flex flex-row w-full justify-between items-center">
+                                        <p className="text-lg text-black ">Location: {userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity}</p>
+                                        <p className="text-lg text-black">Fees: {userDataRef.current.fees}</p>
+                                    </div>
+                                    <div className="flex flex-row w-full justify-between items-center">
+                                        <p className="text-lg text-black">Start Time: {userDataRef.current.startTime}</p>
+                                        <p className="text-lg text-black">End Time: {userDataRef.current.endTime}</p>
+                                    </div>
+                                    <p className="text-lg text-black">Workdays: {userDataRef.current.workdays?.map((day, index) => capitalizeFirstLetter(day.on ? day.day + " " : ""))}</p>
+                                </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel onClick={() => { setConfirmDialogOpen(false) }}>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={saveLocation}>
                                 Add
                             </AlertDialogAction>
