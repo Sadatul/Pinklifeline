@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.utils;
 
 import java.security.SecureRandom;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CodeGenerator {
 
@@ -17,4 +18,11 @@ public class CodeGenerator {
         }
         return code.toString();
     }
+
+    public static String transactionIdGenerator(){
+        long timestamp = System.currentTimeMillis();
+        int randomNumber = ThreadLocalRandom.current().nextInt(1000, 9999); // 4 digit random number
+        return String.valueOf(timestamp) + randomNumber;
+    }
+
 }
