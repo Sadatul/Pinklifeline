@@ -55,6 +55,11 @@ public class User {
         this.isRegistrationComplete = YesNo.N;
     }
 
+    public User(Long id, YesNo isRegistrationComplete){
+        this.id = id;
+        this.isRegistrationComplete = isRegistrationComplete;
+    }
+
     @Column(table = "profile_pictures", name = "profile_picture", nullable = false)
     private String profilePicture;
 

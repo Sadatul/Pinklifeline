@@ -25,4 +25,7 @@ public interface UserRepository extends JpaRepository<User, String> {
             "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id")
     List<NearbyUserRes> findNearbyUsers(List<String> locations, Long id);
 
+    @Query("select new User(u.id, u.isRegistrationComplete) from User u where u.id = :id")
+    Optional<User> findByIdWithIsRegistrationComplete(Long id);
+
 }

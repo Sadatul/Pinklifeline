@@ -19,9 +19,20 @@ public class UserService {
     public User getUser(Long id){
         return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
+    public User getUserWithIdAndRegistrationStatus(Long id){
+        return userRepository.findByIdWithIsRegistrationComplete(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 
     public User getUserIfRegistered(Long id){
         User user = getUser(id);
+        if(user.getIsRegistrationComplete() == YesNo.N){
+            throw new UserInfoUnregisteredException("User needs to register his information first");
+        }
+        return user;
+    }
+
+    public User getUserIfRegisteredOnlyId(Long id){
+        User user = getUserWithIdAndRegistrationStatus(id);
         if(user.getIsRegistrationComplete() == YesNo.N){
             throw new UserInfoUnregisteredException("User needs to register his information first");
         }
