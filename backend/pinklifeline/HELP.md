@@ -349,3 +349,48 @@ need to be passed, then pass an empty list like this:
 * count -> total number of reviews for the doctor to which the review was added
 * averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
 * ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+
+## Add Doctor Appointment
+``` Endpoint: POST /v1/appointments```
+### Sample Body
+```
+{
+    "patientId": 2,
+    "doctorId": 4,
+    "patientContactNumber": "01730445524",
+    "locationId": 1,
+    "date": "2024-08-08",
+    "isOnline": true
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* Add appointment request can be sent by any role
+* None of the above fields can be null. Must provide each one.
+* isOnline is not a string rather a boolean value.
+
+##  Doctor Accept Appointment
+``` Endpoint: PUT /v1/appointments/{appointment_id}/accept```
+### Sample Body
+```
+{
+    "time": "07:43:22"
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* Only doctors can use this endpoint
+* Must provide with a time
+
+##  Doctor Decline Appointment
+``` Endpoint: DELETE /v1/appointments/{appointment_id}/decline```
+
+**<span style="color:red">Notes:</span>**
+* Only doctors can use this endpoint
+* Doctor can only decline appointments that are at REQUESTED status or at ACCEPTED status
+
+##  Patient Cancel Appointment
+``` Endpoint: DELETE /v1/appointments/{appointment_id}/cancel```
+
+**<span style="color:red">Notes:</span>**
+* Patient can only cancel appointments that are at REQUESTED status or at ACCEPTED status

@@ -1,6 +1,8 @@
 package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.AppointmentStatus;
+import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
+import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.entities.Appointment;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
@@ -10,7 +12,12 @@ import com.sadi.pinklifeline.repositories.AppointmentRepository;
 import com.sadi.pinklifeline.service.doctor.DoctorConsultancyLocationsService;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalTime;
+import java.util.Objects;
 
 @Service
 public class AppointmentService {
@@ -25,6 +32,14 @@ public class AppointmentService {
         this.doctorsInfoService = doctorsInfoService;
         this.locationsService = locationsService;
     }
+
+    public Appointment getAppointment(Long id){
+        return appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Appointment with id %s not found", id)
+                ));
+    }
+
 
     @PreAuthorize("#req.patientId.toString() == authentication.name")
     public Long addAppointment(RegisterAppointmentReq req) {
@@ -43,5 +58,60 @@ public class AppointmentService {
         appointment.setIsOnline(req.getIsOnline());
 
         return appointmentRepository.save(appointment).getId();
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public void acceptAppointment(Long id, LocalTime time) {
+        String owner = SecurityContextHolder.getContext().getAuthentication().getName();
+        Appointment appointment = getAppointment(id);
+        verifyAppointmentDoctorAccess(appointment, Long.valueOf(owner));
+        if(appointment.getStatus() != AppointmentStatus.REQUESTED){
+            throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be accepted", appointment.getStatus()));
+        }
+        appointment.setTime(time);
+        appointment.setStatus(AppointmentStatus.ACCEPTED);
+        appointmentRepository.save(appointment);
+    }
+
+    public void verifyAppointmentDoctorAccess(Appointment appointment, Long docId) {
+        if(!Objects.equals(appointment.getDoctor().getUserId(), docId)){
+            throw new AuthorizationDeniedException(
+                    String.format("User with id:%d doesn't have access to the appointment: %d"
+                            , docId, appointment.getId()),
+                    () -> false);
+        }
+    }
+
+    public void verifyAppointmentPatientAccess(Appointment appointment, Long patientId) {
+        if(!Objects.equals(appointment.getUser().getId(), patientId)){
+            throw new AuthorizationDeniedException(
+                    String.format("User with id:%d doesn't have access to the appointment: %d"
+                            , patientId, appointment.getId()),
+                    () -> false);
+        }
+    }
+
+    public void cancelAppointment(Long id) {
+        String owner = SecurityContextHolder.getContext().getAuthentication().getName();
+        Appointment appointment = getAppointment(id);
+        verifyAppointmentPatientAccess(appointment, Long.valueOf(owner));
+        if(appointment.getStatus() != AppointmentStatus.REQUESTED && appointment.getStatus() != AppointmentStatus.ACCEPTED){
+            throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be cancelled", appointment.getStatus()));
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public void declineAppointment(Long id) {
+        String owner = SecurityContextHolder.getContext().getAuthentication().getName();
+        Appointment appointment = getAppointment(id);
+        verifyAppointmentDoctorAccess(appointment, Long.valueOf(owner));
+        if(appointment.getStatus() != AppointmentStatus.REQUESTED && appointment.getStatus() != AppointmentStatus.ACCEPTED){
+            throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be cancelled", appointment.getStatus()));
+        }
+        appointment.setStatus(AppointmentStatus.DECLINED);
+        appointmentRepository.save(appointment);
     }
 }

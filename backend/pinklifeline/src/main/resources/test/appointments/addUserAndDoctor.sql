@@ -9,3 +9,5 @@ INSERT INTO pinklifeline.user_roles VALUES (2, 'ROLE_DOCTOR');
 INSERT INTO pinklifeline.doctor_details VALUES (2, 'Kaka Vai', 'sdfasdfsdfsdf', 'Dhaka Medical College', 'Cancer', 'Head', '01231435512', 'Y');
 
 INSERT INTO pinklifeline.doctor_consultation_locations VALUES(1, 2, '252/1 Sonadanga, Khulna', '09:00:00', '12:00:00', '0011111', 1000);
+
+INSERT INTO pinklifeline.appointments VALUES(1, 3, 2, '0123123123', '2024-05-28', null, 1, false, false, '2024-07-13 11:03:33', 'REQUESTED');

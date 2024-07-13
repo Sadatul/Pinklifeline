@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.sadi.pinklifeline.controllers.AppointmentsHandlerV1.AcceptAppointmentReq;
 import com.sadi.pinklifeline.enums.AppointmentStatus;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.entities.Appointment;
@@ -29,7 +30,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -64,9 +65,9 @@ public class AppointmentIntegrationTest extends AbstractBaseIntegrationTest{
 
     @Test
     @Sql(value = "/test/appointments/addUserAndDoctor.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    public void registerNewAppointmentTest() throws Exception {
+    public void registerNewAppointmentThenAcceptThenCancelThenDeclineTest() throws Exception {
         Long userId = 3L;
-//        Long doctorId = 2L;
+        Long doctorId = 2L;
 
         String registerRequest = """
                 {
@@ -87,7 +88,7 @@ public class AppointmentIntegrationTest extends AbstractBaseIntegrationTest{
 
         log.info("New resources is created at: {}", location);
 
-        Optional<Appointment> app = appointmentRepository.findById(1L);
+        Optional<Appointment> app = appointmentRepository.findById(2L);
 
         if(app.isEmpty()){
             fail("Appointment was not created");
@@ -107,6 +108,52 @@ public class AppointmentIntegrationTest extends AbstractBaseIntegrationTest{
 
         assertEquals(AppointmentStatus.REQUESTED, app.get().getStatus());
         assertEquals(false, app.get().getIsPaymentComplete());
+
+        String doctorToken = mint(doctorId, List.of(Roles.ROLE_DOCTOR));
+
+        String acceptRequest = """
+                {
+                    "time": "07:43:22"
+                }
+                """;
+
+        mockMvc.perform(put("/v1/appointments/2/accept")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", doctorToken))
+                .content(acceptRequest)).andExpect(status().isNoContent());
+
+        Optional<Appointment> updateApp = appointmentRepository.findById(2L);
+        AcceptAppointmentReq acceptReq = objectMapper.readValue(acceptRequest, AcceptAppointmentReq.class);
+        if(updateApp.isEmpty()){
+            fail("Appointment was somehow deleted");
+        }
+        log.info("New accepted appointment: {}", updateApp.get());
+        assertEquals(acceptReq.getTime(), updateApp.get().getTime());
+        assertEquals(AppointmentStatus.ACCEPTED, updateApp.get().getStatus());
+
+        mockMvc.perform(delete("/v1/appointments/2/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", token)))
+                .andExpect(status().isNoContent());
+
+        Optional<Appointment> cancelledApp = appointmentRepository.findById(2L);
+        if(cancelledApp.isEmpty()){
+            fail("Appointment was somehow deleted");
+        }
+        log.info("New cancelled appointment: {}", cancelledApp.get());
+        assertEquals(AppointmentStatus.CANCELLED, cancelledApp.get().getStatus());
+
+        mockMvc.perform(delete("/v1/appointments/1/decline")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", String.format("Bearer %s", doctorToken)))
+                .andExpect(status().isNoContent());
+
+        Optional<Appointment> declinedApp = appointmentRepository.findById(1L);
+        if(declinedApp.isEmpty()){
+            fail("Appointment was somehow deleted");
+        }
+        log.info("New declined appointment: {}", declinedApp.get());
+        assertEquals(AppointmentStatus.DECLINED, declinedApp.get().getStatus());
     }
 
     private String mint(Long id, List<Roles> roles){
