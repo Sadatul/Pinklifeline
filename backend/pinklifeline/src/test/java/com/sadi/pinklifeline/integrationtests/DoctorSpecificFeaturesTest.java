@@ -131,6 +131,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         assertEquals(updateReq.getEnd(), updatedLoc.get().getEnd());
         assertEquals(updateReq.getWorkdays(), updatedLoc.get().getWorkdays());
         assertEquals(updateReq.getFees(), updatedLoc.get().getFees());
+        assertEquals(id, updatedLoc.get().getDoctorDetails().getUserId());
 
         String deleteToken = mint(id, List.of(Roles.ROLE_DOCTOR));
 

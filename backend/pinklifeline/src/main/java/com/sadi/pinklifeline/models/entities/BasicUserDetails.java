@@ -51,7 +51,7 @@ public class BasicUserDetails {
     @Enumerated(EnumType.STRING)
     private YesNo cancerHistory;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "cancer_relatives", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "relative", nullable = false)
     private List<String> cancerRelatives;
@@ -62,7 +62,7 @@ public class BasicUserDetails {
     @Column(nullable = false, name = "avg_cycle_length")
     private int avgCycleLength;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "period_irregularities",
             joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "irregularity", nullable = false)
