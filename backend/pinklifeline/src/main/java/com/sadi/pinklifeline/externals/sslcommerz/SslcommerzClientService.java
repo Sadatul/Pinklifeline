@@ -96,7 +96,7 @@ public class SslcommerzClientService {
         if(res == null){
             throw new InternalServerErrorException("Server failed to validate request");
         }
-        if(res.getStatus().equals("VALID") || res.getStatus().equals("VALIDATED")){
+        if(!res.getStatus().equals("PENDING")){
                 sessionKeyRepository.deleteUserSessionKeyByTransId(tranId);
         }
         return res;

@@ -276,7 +276,7 @@ need to be passed, then pass an empty list like this:
 ### Response Body
 ```
 {
-    count": 3,
+    "count": 3,
     "averageRating": 2.6666666666666665,
     "ratingCount":[
         1,
@@ -290,7 +290,7 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * count -> total number of reviews for the doctor to which the review was added
 * averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
-* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+* ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 * This response will be also returned for each review update and delete, the info will be the latest info after performing the update.
 
 ## Update Doctor Review
@@ -312,7 +312,7 @@ need to be passed, then pass an empty list like this:
 ### Response Body
 ```
 {
-    count": 3,
+    "count": 3,
     "averageRating": 2.6666666666666665,
     "ratingCount":[
         1,
@@ -326,7 +326,7 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * count -> total number of reviews for the doctor to which the review was added
 * averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
-* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+* ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Delete Doctor Review
 ``` Endpoint: DELETE /v1/reviews/doctor/{id}/{review_id}``` \
@@ -334,7 +334,7 @@ need to be passed, then pass an empty list like this:
 ### Response Body
 ```
 {
-    count": 3,
+    "count": 3,
     "averageRating": 2.6666666666666665,
     "ratingCount":[
         1,
@@ -348,7 +348,7 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * count -> total number of reviews for the doctor to which the review was added
 * averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
-* ratingCount -> 0th index refers to the number of 1 star reviews, 1st index refers to the number of 2 star reviews and so on.
+* ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Add Doctor Appointment
 ``` Endpoint: POST /v1/appointments```
@@ -394,3 +394,43 @@ need to be passed, then pass an empty list like this:
 
 **<span style="color:red">Notes:</span>**
 * Patient can only cancel appointments that are at REQUESTED status or at ACCEPTED status
+
+## Payment for Doctor Appointment
+``` Endpoint: POST /v1/payment/appointment/{appointment_id}/initiate```
+### Sample Body
+```
+{
+  "customerName": "Sadatul Islam Sadi",
+  "customerEmail": "sadatulislamsadi@gmail.com",
+  "customerPhone": "0171231213"
+}
+```
+**<span style="color:red">Notes:</span>**
+* Each of the field must be provided
+* customerEmail must be a valid email
+
+### Response Body
+```
+{
+    "transactionId": "17208953344777288",
+    "gatewayUrl": "https://sandbox.sslcommerz.com/EasyCheckOut/testcdebca74f4c2f037c2e974a06d9dac94c4a"
+}
+
+```
+**<span style="color:red">Notes:</span>**
+* This only initiates the payment request. To complete payment, the transaction must be validated. To validate the transaction you will need the transactionId
+* "gatewayUrl" is a the url to the sslcommerz gateway, where you will find different options to pay.
+
+## Validate Payment for Doctor Appointment
+``` Endpoint: GET /v1/payment/appointment/{appointment_id}/validate```
+### Query Parameters
+```
+transId=17208953344777288
+```
+**<span style="color:red">Notes:</span>**
+* Note this is a get request. You don't need to send a body but need to send a query parameter named transId
+* "transId" is the transactionId that we got when we initiated the payment
+* From the get request you will get three different HttpStatus codes
+  * **400** : means transaction has failed user needs to retry by initiating the payment again
+  * **202** : transaction is still pending. User hasn't made any payment via the gateway
+  * **200** : payment has been completed. Nice
