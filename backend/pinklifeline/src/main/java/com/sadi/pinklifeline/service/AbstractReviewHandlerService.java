@@ -29,6 +29,7 @@ public abstract class AbstractReviewHandlerService {
     public abstract Review getReview(Long reviewId);
     public abstract Review getNewReview(Long reviewerId, RegisterReviewReq req);
     public abstract List<RatingCountPair> getReviewRatingCountPairList(Long reviewId);
+    public abstract void validateIfReviewExists(Long reviewerId, Long resourceId);
 
     public void verifyReviewAccess(Review review, Long userId){
         if(!Objects.equals(review.getReviewerId(), userId)){
@@ -40,6 +41,7 @@ public abstract class AbstractReviewHandlerService {
 
     @PreAuthorize("#userId.toString() == authentication.name")
     public Pair<Long, ReviewSummaryRes> addReview(RegisterReviewReq req, Long userId) throws JsonProcessingException {
+        validateIfReviewExists(userId, req.getId());
         Review review = getNewReview(userId, req);
         Long id = saveReview(review).getId();
         Long[] lst = addReviewRatingCountPairUpdate(req.getRating(),

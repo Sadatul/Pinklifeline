@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 
 
 public class RegisterReviewReq extends AbstractReviewReq{
+    // Resource Id
     @NotNull(message = "Must provide id of the resource")
     private Long id;
 
@@ -17,7 +18,7 @@ public class RegisterReviewReq extends AbstractReviewReq{
 
     @Override
     public String toString() {
-        return "DoctorReviewReq{" +
+        return "RegisterReviewReq{" +
                 "id=" + id +
                 "rating=" + getRating() +
                 "comment=" + getComment() +

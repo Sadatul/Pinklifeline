@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service.doctor;
 
+import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.dtos.RatingCountPair;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -42,8 +44,17 @@ public class DoctorReviewsService extends AbstractReviewHandlerService {
     }
 
     @Override
+    public void validateIfReviewExists(Long reviewerId, Long resourceId){
+        Optional<Long> id = reviewsRepository.findReviewIdByReviewerIdAndDoctorId(reviewerId, resourceId);
+        if(id.isPresent()){
+            throw new BadRequestFromUserException(
+                    String.format("Review for doctor with id: %d from user: %d already exists", resourceId, reviewerId));
+        }
+    }
+
+    @Override
     public Review getNewReview(Long reviewerId, RegisterReviewReq req) {
-        User reviewer = userService.getUserIfRegistered(reviewerId);
+        User reviewer = userService.getUserIfRegisteredOnlyId(reviewerId);
         DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getId());
         DoctorReview review = new DoctorReview(doctorDetails, reviewer, req.getRating(), LocalDateTime.now());
         review.setComment(req.getComment());

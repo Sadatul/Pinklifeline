@@ -25,7 +25,7 @@ public class Startup {
     public CommandLineRunner commandLineRunner(UserRepository userRepository,
                                                PasswordEncoder passwordEncoder) {
         return args -> {
-            Optional<User> user = userRepository.findByUsername(adminUsername);
+            Optional<Long> user = userRepository.findByUsernameOnlyId(adminUsername);
             if(user.isEmpty()){
                 userRepository.save(new User(adminUsername, passwordEncoder.encode(adminPassword),
                         List.of(Roles.ROLE_ADMIN)));

@@ -53,6 +53,8 @@ services:
       - REDIS_PORT=6379
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=pinklifeline
+      - SSLCOMMERZ_STORE_ID=dsfas668fae4f6b7f1
+      - SSLCOMMERZ_STORE_PASSWD=dsfas668fae4f6b7f1@ssl
     ports:
       - "8080:8080"
     networks:

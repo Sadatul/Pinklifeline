@@ -28,4 +28,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("select new User(u.id, u.isRegistrationComplete) from User u where u.id = :id")
     Optional<User> findByIdWithIsRegistrationComplete(Long id);
 
+    @Query("select u.id from User u where u.username = :username")
+    Optional<Long> findByUsernameOnlyId(String username);
 }
