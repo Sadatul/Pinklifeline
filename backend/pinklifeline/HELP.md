@@ -434,3 +434,12 @@ transId=17208953344777288
   * **400** : means transaction has failed user needs to retry by initiating the payment again
   * **202** : transaction is still pending. User hasn't made any payment via the gateway
   * **200** : payment has been completed. Nice
+
+## Get getStream user token
+``` Endpoint: GET /v1/meeting/user/token```
+### Response Body
+```
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTcyMTAzOTgxMCwiaWF0IjoxNzIwOTUzNDEwfQ.4XOYbXjt4-vBDIiErqmf-4sp9_SuvhLKRUgAord8rPY"
+}
+```
