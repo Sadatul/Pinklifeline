@@ -67,7 +67,7 @@ export default function UserDetailsPage() {
         }
         setSections(getSections(role))
 
-    }, [currentSection])
+    }, [currentSection, role])
 
     // {
     //     "fullName": "Dr. Adil",

@@ -82,7 +82,7 @@ export function ChatLayout() {
                 console.error(error)
             })
         }
-    }, [stompContext.openedChat])
+    }, [stompContext.openedChat, router])
 
     return (
         <ResizablePanelGroup direction="horizontal" >
@@ -144,7 +144,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
         }).catch((error) => {
             console.error(error)
         })
-    }, [])
+    }, [router])
     return (
         <>
             <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">

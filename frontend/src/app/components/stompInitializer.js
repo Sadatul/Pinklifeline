@@ -17,7 +17,6 @@ export function SocketInitializer() {
     const [messageQueue, setMessageQueue] = useState([])
 
     useEffect(() => {
-        console.log('path', pathname)
         const token = localStorage.getItem('token')
         const id = localStorage.getItem('userId')
         stompContext.setUserId(id)
@@ -133,7 +132,7 @@ export function SocketInitializer() {
 
     return (
         <>
-            <button onClick={seeContext} className="border-2 p-3">See contexts values</button>
+            {/* <button onClick={seeContext} className="border-2 p-3">See contexts values</button> */}
         </>
     )
 }
