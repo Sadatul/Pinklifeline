@@ -8,7 +8,7 @@ const ScrollableContainer = styled.div`
     height: 4px; /* Adjust the height of the horizontal scrollbar */
   }
   &::-webkit-scrollbar {
-    width: 8px; /* Adjust the height of the horizontal scrollbar */
+    width: 6px; /* Adjust the height of the horizontal scrollbar */
   }
 
   &::-webkit-scrollbar-thumb {

@@ -15,6 +15,7 @@ export const addConsultationLocationUrl = (id) => { return `${baseUrl}/v1/ROLE_D
 export const locationOnline = "ONLINE"
 
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
+export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
 
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
 

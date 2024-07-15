@@ -4,7 +4,9 @@ import StreamVideoProvider from '@/app/providers/StreamVideoProvider';
 const HomeLayout = ({ children }) => {
   return (
     <>
-      <StreamVideoProvider>{children}</StreamVideoProvider>
+      {/* <StreamVideoProvider> */}
+      {children}
+      {/* </StreamVideoProvider> */}
     </>
   );
 };

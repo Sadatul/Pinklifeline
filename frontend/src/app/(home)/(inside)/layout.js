@@ -66,7 +66,7 @@ export default function Layout({ children }) {
                                 </Popover>
                             </div>
                         </nav>
-                        <SocketInitializer />
+                        {/* <SocketInitializer /> */}
                         {children}
                     </div>
             </StompContextProvider>
