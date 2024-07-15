@@ -25,4 +25,8 @@ public class CodeGenerator {
         return String.valueOf(timestamp) + randomNumber;
     }
 
+    public static String callIdGenerator(Long userId, Long doctorId){
+        return String.format("%d%d%s", userId, doctorId, transactionIdGenerator());
+    }
+
 }

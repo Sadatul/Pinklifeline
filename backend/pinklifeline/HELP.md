@@ -443,3 +443,38 @@ transId=17208953344777288
   "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTcyMTAzOTgxMCwiaWF0IjoxNzIwOTUzNDEwfQ.4XOYbXjt4-vBDIiErqmf-4sp9_SuvhLKRUgAord8rPY"
 }
 ```
+
+## Create a online meeting
+``` Endpoint: POST /v1/online-meeting/start```
+<br><br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "appointmentId": 2
+}
+```
+**<span style="color:red">Notes:</span>**
+* Appointment id must be provided and appointment must be in ACCEPTED status.
+* Appoint also has tobe online and payment should be complete
+### Response Body
+```
+status: create(201)
+{
+    "callId": 21324141412
+}
+```
+## Join a online meeting
+``` Endpoint: GET /v1/online-meeting/join```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+    "callId": 21324141412
+}
+```
+## Close a online meeting
+``` Endpoint: DELETE /v1/online-meeting/close```
+<br><br>
+```Response status: noContent(204)```

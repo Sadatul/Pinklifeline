@@ -108,6 +108,10 @@ public class AppointmentService extends AbstractPaymentService{
         appointmentRepository.save(appointment);
     }
 
+    public void saveAppointment(Appointment appointment) {
+        appointmentRepository.save(appointment);
+    }
+
     @PreAuthorize("hasRole('DOCTOR')")
     public void declineAppointment(Long id) {
         Long owner = SecurityUtils.getOwnerID();
