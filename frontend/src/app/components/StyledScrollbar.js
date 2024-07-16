@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 const ScrollableContainer = styled.div`
-  overflow-x: auto;
 
   /* Customizing the scrollbar */
   &::-webkit-scrollbar {

@@ -1364,7 +1364,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
 
 export function LocationSection({ userDataRef, currentSection, setCurrentSection, totalSections, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const [position, setPosition] = useState(userDataRef.current?.location || null)
+    const [position, setPosition] = useState(null)
     const { coords, isGeolocationAvailable, isGeolocationEnabled, getPosition } =
         useGeolocated({
             positionOptions: {

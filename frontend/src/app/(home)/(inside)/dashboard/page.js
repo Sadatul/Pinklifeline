@@ -1,26 +1,27 @@
 'use client'
 
-import Avatar from "@/app/components/avatar"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
+import { AppointmentsPage } from "@/app/components/AppointmentsPage"
+import { locationOnline } from "@/utils/constants"
+import { use, useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { avatarAang } from "@/utils/constants"
-import { name } from "@stream-io/video-react-sdk"
-import { set } from "date-fns"
-import { Banknote, MapPinned } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { FaUserDoctor } from "react-icons/fa6";
+import { createWorker } from 'tesseract.js';
+
+import { HardDriveUploadIcon, Pencil } from "lucide-react"
+import { ChambersPage } from "@/app/components/ChambersPage"
+import { useGeolocated } from "react-geolocated"
+import { cellToLatLng } from "h3-js"
+import MapView from "@/app/components/map"
+import { LocationPage } from "@/app/components/nearByLocationPage"
+import { FileUploader } from "react-drag-drop-files"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { toast } from "sonner"
+import Image from "next/image"
+import { Progress } from "@/components/ui/progress"
+import { CircularProgress } from "@mui/material"
+import { AlertDialog, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialogContent } from "@radix-ui/react-alert-dialog"
+
 
 export default function DashboardPage() {
     return (
@@ -41,172 +42,121 @@ export default function DashboardPage() {
                 </div>
             </div>
             <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto over ml-[2px] rounded-l-lg">
-                <Appointments />
+                <PrescriptionPage />
             </ScrollableContainer>
         </div>
     )
 }
 
-function Appointments() {
-    const [pastAppointments, setPastAppointments] = useState([{ name: "Dr. John Doe", speciality: "Dentist", date: "01/01/2022", time: "10:00 AM - 11:00 AM" }])
-    const [currentAppointments, setCurrentAppointments] = useState([
-        { name: "Dr. John Doe", speciality: "Dentist", date: "01/01/2022", time: "10:00 AM - 11:00 AM", location: "123 Main Street, New York, NY 10001", fees: "100" }
-    ])
-    const [upcomingAppointments, setUpcomingAppointments] = useState([{
-        name: "Dr. John Doe",
-        speciality: "Dentist",
-        date: "01/01/2022",
-        time: "10:00 AM - 11:00 AM",
-        location: "123 Main Street, New York, NY 10001"
-    },
-    {
-        name: "Dr. John Doe",
-        speciality: "Dentist",
-        date: "01/01/2022",
-        time: "10:00 AM - 11:00 AM",
-        location: "123 Main Street, New York, NY 10001"
-    }
-    ])
-    return (
-        <div className="flex flex-col items-center h-full bg-white">
-            <h1 className="text-2xl font-bold mt-4">Appointments</h1>
-            {/* Current running onlien Appointments */}
-            <div className={cn("flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-10/12 relative flex-wrap", (currentAppointments?.length > 0) ? "" : "hidden")}>
-                <span className="absolute flex rounded-full size-3 z-40 -top-1 -right-2 items-center justify-center">
-                    <span className="animate-ping inline-flex size-5  rounded-full bg-purple-400 absolute "></span>
-                    <span className=" absolute inline-flex rounded-full size-3 bg-purple-500"></span>
-                </span>
-                <h1 className="text-lg font-semibold">You have currently running Appointments</h1>
-                <div className="flex flex-col gap-2">
-                    {currentAppointments.map((appointment, index) => (
-                        <CurrentAppointmentCard key={index} appointment={appointment} />
-                    ))}
-                </div>
-            </div>
-            {/* UpComing Appointments */}
-            <div className="flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-10/12">
-                <AppointmentSection />
-            </div>
-            {/* Past Appointments */}
-        </div>
-    )
-}
 
-function CurrentAppointmentCard({ appointment }) {
+function PrescriptionPage() {
+    const fileTypes = ["JPEG", "PNG", "JPG"];
+    const [answerDialog, setAnswerDialog] = useState(true);
+    const workerRef = useRef(null);
+    const [imagePath, setImagePath] = useState(null);
+    const [image, setImage] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(null);
+    const [answers, setAnswer] = useState([
+        //answers
+        "random answer",
+        "random answer",
+        "random answer",
+        "random answer",
+    ]);
+    const questions = [
+        //questions
+    ]
+
+    const genAI = new GoogleGenerativeAI("AIzaSyBvcy9QAT7bHEv9OUUrm4n45jUrYlPKilY")
+
+    const handleFileChange = (file) => {
+        if (!file) return;
+        setImagePath(URL.createObjectURL(file));
+        setImage(file);
+    }
+
+    const getAnswers = async () => {
+        const question = document.getElementById('question').value;
+        const passage = document.getElementById('extracted-text').value;
+        setAnswer(null);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([`
+          Context: ${passage}
+
+          Question: 
+          ${questions.join('\n')}
+          Please Give only the answers sepeated by a new line dont include any other text`]);
+        console.log(result.response.text());
+        setAnswer(answers);
+    }
+
+    const handleTextExtract = async () => {
+        if (!workerRef.current) {
+            workerRef.current = await createWorker(['eng', 'ben'], 1,
+                {
+                    logger: (m) => {
+                        console.log(m);
+                        setUploadProgress(Number(m.progress) * 100);
+                    }
+                }
+            );
+        }
+        workerRef.current.setParameters({
+            tessedit_pageseg_mode: '3'
+        })
+
+        workerRef.current.recognize(imagePath).then(({ data: { text } }) => {
+            document.getElementById('extracted-text').value = text;
+        });
+    }
+
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-row justify-between items-center flex-wrap">
-                <div className="flex flex-row items-center">
-                    <Avatar avatarImgScr={avatarAang} size={52} />
-                    <div className="flex flex-col ml-5 items-start gap-1">
-                        <h1 className="text-lg font-semibold flex flex-row items-center gap-3">
-                            <FaUserDoctor size={16} />
-                            {appointment.name}
-                        </h1>
-                        <p className="text-sm flex flex-row gap-3 items-center">
-                            <MapPinned size={16} />
-                            {appointment.location}
-                        </p>
+        <div className="flex flex-col">
+            <div className="flex flex-row justify-between items-center flex-grow mt-5">
+                <div className="flex flex-col gap-5 items-center h-full text-lg font-semibold">
+                    Upload Image
+                    <FileUploader handleChange={handleFileChange}
+                        multiple={false}
+                        types={fileTypes}
+                        name="file"
+                        onTypeError={() => {
+                            toast.error("Invalid file type", {
+                                description: "Only jpg or png files are allowed",
+                            })
+                        }}
+                    />
+                    <input hidden id="file"></input>
+                    {imagePath && <Image src={imagePath} alt="Prescription" width={400} height={400} />}
+                </div>
+                <button hidden={!image} className="bg-purple-400 text-black px-4 py-1 rounded-md" onClick={handleTextExtract}>Extract Text</button>
+                <div className="flex flex-col w-1/2 h-full items-center">
+                    <h1 className="text-xl font-semibold">Extracted Text</h1>
+                    <div className="relative w-full p-5">
+                        <textarea id='extracted-text' className='w-full min-h-96 bg-gray-100 rounded-md border-gray-500 shadow-inner flex flex-row items-center justify-center p-5' />
+                        {Number(uploadProgress) === 100 &&
+                            <>
+                                <span className="  text-green-500 p-1 rounded-md">Text Extracted.</span>
+                                <button className="bg-purple-400 text-black px-4 py-1 rounded-md">Get Answers</button>
+                            </>
+                        }
+                        {Number(uploadProgress) > 0 && Number(uploadProgress) < 100 &&
+                            <div className="absolute inset-0 flex justify-center items-center">
+                                <CircularProgress size={100} color="success" variant="determinate" value={uploadProgress} />
+                            </div>
+                        }
                     </div>
                 </div>
-                <div className="flex flex-col">
-                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                        <Banknote size={24} />
-                        {appointment.fees}
-                    </p>
-                </div>
-                <div className="flex flex-row mr-16 gap-4">
-                    <button className="bg-green-600 hover:scale-90 transition ease-in w-20 text-white px-2 py-1 rounded-md ">
-                        Join
-                    </button>
-                    <button className="bg-red-600 hover:scale-90 transition ease-in w-20 text-white px-2 py-1 rounded-md ">
-                        End
-                    </button>
-                </div>
             </div>
-        </div>
-    )
-}
-
-function AppointmentSection({ appointments }) {
-    const filterOptions = useRef([
-        {
-            name: "Upcoming",
-            rule: (appointments) => appointments.filter(appointment => appointment.date > new Date())
-        },
-        {
-            name: "Past",
-            rule: (appointments) => appointments.filter(appointment => appointment.date < new Date())
-        },
-        {
-            name: "Custom Date: ",
-            date: new Date(),
-            rule: function (appointments) {
-                return appointments.filter(appointment => appointment.date === this.date)
-            }
-        }
-    ])
-
-    const [selectionCriteria, setSelectionCriteria] = useState(filterOptions.current[0])
-    const selectionCriteriaRef = useRef(filterOptions.current[0])
-    const [selectedAppointments, setSelectedAppointments] = useState(appointments)
-    const [date, setDate] = useState(new Date())
-
-    useEffect(() => {
-        console.log("Selection Criteria Changed", selectionCriteria)
-        console.log(new Date(selectionCriteria.date))
-    }, [selectionCriteria])
-
-    return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-row justify-between items-center">
-                <h1 className="text-base font-semibold capitalize">
-                    {selectionCriteria.name + "" + (selectionCriteria.date)} Appointments
-                </h1>
-                <Popover>
-                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border">
-                        {selectionCriteria.name}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto">
-                        <h1 className="w-full text-center">Filter by</h1>
-                        <Separator />
-                        <div className="gap-1 flex flex-col items-start mt-5 w-full ">
-                            <div className="w-full ">
-                                <button className="hover:bg-gray-300 rounded text-black w-full px-3" onClick={() => {
-                                    setSelectionCriteria(filterOptions.current[0])
-                                }}>Upcoming</button>
-                            </div>
-                            <div className="w-full ">
-                                <button className="hover:bg-gray-300 rounded text-black w-full px-3" onClick={() => {
-                                    setSelectionCriteria(filterOptions.current[1])
-                                }}>Past</button>
-                            </div>
-                            <div className="w-full ">
-                                <Popover onOpenChange={(e) => {
-                                    if (e === false) {
-                                        setSelectionCriteria({ ...filterOptions.current[2], date: date })
-                                    }
-                                }}>
-                                    <PopoverTrigger className="hover:bg-gray-300 rounded text-black w-full px-3">
-                                        Custom Date
-                                    </PopoverTrigger>
-                                    <PopoverContent>
-                                        <Calendar
-                                            mode="single"
-                                            selected={date}
-                                            onSelect={(selectedDate) => {
-                                                setDate(selectedDate)
-                                                filterOptions.current[2].date = selectedDate
-                                            }}
-                                            className="rounded-md"
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
+            <div className="flex flex-col gap-5 mt-5 items-center bg-gray-100 w-11/12 rounded-md">
+                <h1 className="text-xl font-semibold">Findings</h1>
+                <div className="flex flex-col gap-5">
+                    {questions.map((question, index) => (
+                        <div className="flex flex-row gap-5 items-center">
+                            <input id={`question-${index}`} className="w-full bg-gray-100 rounded-md p-2" />
+                            <button className="bg-purple-400 text-black px-4 py-1 rounded-md" onClick={getAnswers}>Get Answers</button>
                         </div>
-
-                    </PopoverContent>
-                </Popover>
+                    ))}
+                </div>
             </div>
         </div>
     )

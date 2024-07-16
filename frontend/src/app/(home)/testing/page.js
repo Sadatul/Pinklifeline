@@ -109,9 +109,8 @@ export default function DashBoard() {
     workerRef.current.recognize(imagePath).then(({ data: { text } }) => {
       document.getElementById('extracted-text').value = text;
     });
-
-
   }
+
   return (
     <div className='flex flex-col flex-1 bg-gray-100'>
       <div className='flex flex-row w-full'>

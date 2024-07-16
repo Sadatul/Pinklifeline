@@ -3,7 +3,7 @@
 import { DoctorChamberLocationSection } from "@/app/components/formSections"
 import { Separator } from "@/components/ui/separator"
 import React from "react"
-import formBgImage from '../../../../../public/userdetails/form-bg.jpg'
+import formBgImage from '../../../../../../public/userdetails/form-bg.jpg'
 
 export default function ConsultationLocationPage() {
     return (

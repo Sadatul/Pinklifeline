@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
-import formBgImage from '../../../../public/userdetails/form-bg.jpg'
+import formBgImage from '../../../../../public/userdetails/form-bg.jpg'
 import { Separator } from "@/components/ui/separator"
 import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection, DoctorChamberLocationSection } from '@/app/components/formSections'
 import { latLngToCell } from 'h3-js'
@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 
 export default function UserDetailsPage() {
     const router = useRouter()
-    const role = roles.doctor
+    const role = "ROLE_TEST"
     const locationResolution = 8
     const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
@@ -60,7 +60,7 @@ export default function UserDetailsPage() {
                 return [temp_sections[0], temp_sections[1], temp_sections[4]]
             }
             else if (user_role === "ROLE_TEST") {
-                return [temp_sections[1], temp_sections[4]]
+                return [ temp_sections[4]]
             }
             console.log("Invalid role")
             return temp_sections

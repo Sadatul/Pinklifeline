@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import  ScrollableContainer from "@/app/components/StyledScrollbar";
+import ScrollableContainer from "@/app/components/StyledScrollbar";
 import {
     Tabs,
     TabsContent,
@@ -22,10 +22,22 @@ import { Ripple } from "primereact/ripple";
 import { BsPersonVcardFill } from "react-icons/bs";
 import { PiCertificate } from "react-icons/pi";
 import { FaChair } from "react-icons/fa";
-import AddAppointAnimation from "../../../../../../public/profile/AddAppointment.json"
-import EmptyAppointment from "../../../../../../public/profile/emptyAppointment.json"
+import AddAppointAnimation from "../../../../../../../public/profile/AddAppointment.json"
+import EmptyAppointment from "../../../../../../../public/profile/emptyAppointment.json"
 import Lottie from "lottie-react";
 import Avatar from "@/app/components/avatar";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import { set } from "date-fns";
 
 
 
@@ -507,6 +519,18 @@ function ConsultationSection({ userId, className }) {
 function ChamberCard({ location, startTime, endTime, workdays, fees }) {
     const weekDays = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"]
     const workdaysArray = workdays.split('')
+    const [openDialog, setOpenDialog] = useState(false)
+    const requestAppointment = () => {
+        const contactNumber = document.getElementById('patient-contact-number')?.value
+        if (!contactNumber) {
+            toast.error('Please enter a valid contact number')
+            return
+        }
+        console.log('Requesting Appointment')
+        console.log('Contact Number:', contactNumber)
+        setOpenDialog(false)
+    }
+
     return (
         <div className="flex flex-row w-full m-1 bg-white rounded-md shadow ">
             <div className="flex flex-col w-4/12 px-4 py-2">
@@ -526,8 +550,44 @@ function ChamberCard({ location, startTime, endTime, workdays, fees }) {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col w-4/12 px-4 py-2 items-end justify-center h-full">
-                <button className="bg-pink-500 to-pink-500 text-black px-2 py-1 text-sm rounded-md ml-2 font-semibold max-w-32 hover:scale-90 hover:bg-gray-200 hover:text-purple-700 transition ease-out hover:text-base">Request Appointment</button>
+            <div className="flex flex-row w-4/12 px-4 py-2 items-center justify-center h-full">
+                <AlertDialog open={openDialog}>
+                    <AlertDialogTrigger className=" bg-gradient-to-br from-pink-600 to-pink-800 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:scale-90 hover:bg-gray-200 hover:text-purple-100 transition ease-in hover:text-base"
+                        onClick={() => setOpenDialog(true)}
+                    >Request Appointment</AlertDialogTrigger>
+                    <AlertDialogContent className="w-auto bg-gray-100">
+                        <AlertDialogHeader className={"gap-2"}>
+                            <AlertDialogTitle>Appointment Request Form</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                <div className="flex flex-col gap-3 w-full">
+                                    <p className="text-base font-semibold text-black">Location:{location}</p>
+                                    <div className="flex flex-row items-center w-full justify-between">
+                                        <p className="text-base font-semibold text-black">Fees:{fees}</p>
+                                        <p className="text-base font-semibold text-black">Start:{startTime}</p>
+                                        <p className="text-base font-semibold text-black">End:{endTime}</p>
+                                    </div>
+                                    <div className="flex flex-row items-center justify-between gap-2">
+                                        {weekDays.map((day, index) => (
+                                            <div key={index} className={cn("flex flex-row items-center rounded-md shadow-sm text-black border border-gray-600", workdaysArray[index] !== '1' && "hidden")}>
+                                                <span className="text-lg font-semibold mx-2">{day}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <input type="number" id="patient-contact-number" className="w-full number-input h-10 p-2 border border-gray-600 rounded-md" placeholder="Enter your Contact Number" pattern="[0-9]{11}" title="Please enter a valid 11 digit phone number" />
+                                </div>
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="gap-2">
+                            <AlertDialogCancel className="bg-red-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold"
+                                onClick={() => setOpenDialog(false)}
+                            >Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-green-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold"
+                                onClick={() => requestAppointment()}
+                            >Request</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                {/* <button className=" bg-gradient-to-br from-pink-600 to-pink-800 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:scale-90 hover:bg-gray-200 hover:text-purple-100 transition ease-in hover:text-base">Request Appointment</button> */}
             </div>
         </div>
     )
