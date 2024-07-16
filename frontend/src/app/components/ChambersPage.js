@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { locationOnline } from "@/utils/constants"
 import { cn } from "@/lib/utils"
-import { HardDriveUploadIcon, Pencil } from "lucide-react"
+import { Banknote, HardDriveUploadIcon, Pencil } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
 export function ChambersPage({ className }) {
@@ -14,10 +14,10 @@ export function ChambersPage({ className }) {
 
             <div className="flex flex-col rounded p-4 w-11/12 bg-gray-200">
                 <div className="flex flex-col">
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1111100" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1110011" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="0011111" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1101011" fees="500 BDT" />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1111100" fees="500" />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1110011" fees="500" />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="0011111" fees="500" />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdayString="1101011" fees="500" />
                 </div>
             </div>
         </div>
@@ -75,9 +75,9 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees }) {
         let newStartTime = document.getElementById("startTime-input").value
         let newEndTime = document.getElementById("endTime-input").value
         let newWorkdayString = workdaysToBinaryString(availableDays)
-        console.log(newLocation, newFees, newStartTime, newEndTime, newWorkdayString)
-        if (availableDays.find(day => day.on) && newLocation !== "" && newFees !== "" && isNumber(newFees) && newStartTime !== "" && newEndTime !== "" && newWorkdayString !== "")//check
-        {
+        console.log(newFees)
+        if (availableDays.find(day => day.on) && newLocation !== "" && newFees !== "" && isNumber(newFees) && newStartTime !== "" && newEndTime !== "" && newWorkdayString !== "") {
+            console.log("updating")
             setData({
                 location: data.isOnline ? locationOnline : newLocation,
                 startTime: newStartTime,
@@ -98,13 +98,13 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees }) {
                 {editable ?
                     (
                         <>
-                            <input id="location-input" type="text" disabled={data.isOnline} defaultValue={data.location} className={cn("text font-semibold line-clamp-1 flex-1", editable ? "border-2 rounded-md border-blue-200" : "")} />
+                            <textarea id="location-input" type="text" disabled={data.isOnline} defaultValue={data.location} className={cn("text font-semibold line-clamp-1 flex-1", editable ? "border-2 rounded-md border-blue-200" : "")} />
                             <input id="fees-input" type="text" defaultValue={data.fees} className={cn("mt-2 line-clamp-2", editable ? "border-2 rounded-md border-blue-200 number-input" : "")} />
                         </>
                     ) : (
                         <>
                             <h1 className="text-lg font-semibold">{data.location}</h1>
-                            <p className="text-base font-semibold">{data.fees}</p>
+                            <p className="text-base font-semibold flex gap-2 items-center"><Banknote size={24}/>{data.fees}</p>
                         </>
                     )}
             </div>

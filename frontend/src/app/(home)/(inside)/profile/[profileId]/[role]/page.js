@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
 import { messageSendUrl, roles, testingAvatar } from "@/utils/constants";
 import Image from "next/image";
-import { BriefcaseBusiness, CalendarSearch, Hospital, MessageCirclePlus, MessageCircleReply, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
+import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { set } from "date-fns";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 
 
@@ -446,19 +454,51 @@ function ReviewSection({ userId, className }) {
 }
 
 function ReviewCard({ content, date, rating, reviewer }) {
+    const [editable, setEditable] = useState(false)
+    const [data, setData] = useState({
+        content: content,
+        date: date,
+        rating: rating,
+        reviewer: reviewer
+    })
     return (
-        <div className="flex flex-row w-full mx-2 my-3 bg-white rounded-md shadow ">
+        <div className="flex flex-row w-full items-center mx-2 my-3 bg-white rounded-md shadow ">
             <div className="flex flex-col w-8/12 px-4 py-2">
-                <h1 className="text font-semibold line-clamp-1">{reviewer}</h1>
-                <p className="mt-2 line-clamp-2">{content}</p>
+                <h1 className="text font-semibold line-clamp-1">{data.reviewer}</h1>
+                {editable ? <textarea className="border border-blue-500 bg-gray-100" defaultValue={data.content} id="review-edit" /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
             </div>
             <div className="flex flex-col w-4/12 px-4 py-2 items-center justify-center">
-                <div className="flex flex-row items-center">
-                    {rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
-                    <span className="text-lg font-semibold ml-2">{rating}</span>
-                </div>
-                <span className="text-sm font-semibold text-end w-full">{date}</span>
+                {editable ? (
+                    <Select defaultValue={String(data.rating)}>
+                        <SelectTrigger className="px-5 py-2 w-20">
+                            <SelectValue placeholder="Select a rating" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Ratings</SelectLabel>
+                                <SelectItem value="0">0</SelectItem>
+                                <SelectItem value="1">1</SelectItem>
+                                <SelectItem value="2">2</SelectItem>
+                                <SelectItem value="3">3</SelectItem>
+                                <SelectItem value="4">4</SelectItem>
+                                <SelectItem value="5">5</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                ) : (
+                    <div className="flex flex-row items-center">
+                        {data.rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : data.rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
+                        <span className="text-lg font-semibold ml-2">{data.rating}</span>
+                    </div>
+                )}
+                <span className="text-sm font-semibold text-end w-full">{data.date}</span>
             </div>
+            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
+                onClick={() => { setEditable(true) }}>
+                {
+                    editable ? <Check size={24} className="text-green-600" /> : <Pencil size={24} className="text-blue-600" />
+                }
+            </button>
         </div>
     )
 }
