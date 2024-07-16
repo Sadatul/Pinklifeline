@@ -2,7 +2,7 @@ package com.sadi.pinklifeline.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sadi.pinklifeline.models.reqeusts.LivePrescriptionReq;
+import com.sadi.pinklifeline.models.dtos.LivePrescription;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -26,17 +26,25 @@ public class LivePrescriptionRepository {
         this.objectMapper = objectMapper;
     }
 
-    public void putLivePrescription(LivePrescriptionReq req) throws JsonProcessingException {
-        userRedisTemplate.opsForValue().set(cachePrefix + req.getCallId(),
-                objectMapper.writeValueAsString(req),
+    public void putLivePrescription(LivePrescription data, String callId) throws JsonProcessingException {
+        userRedisTemplate.opsForValue().set(cachePrefix + callId,
+                objectMapper.writeValueAsString(data),
                 cacheExpirationDays, TimeUnit.HOURS);
     }
 
-    public Optional<LivePrescriptionReq> getLivePrescription(LivePrescriptionReq req) throws JsonProcessingException {
-        String data = userRedisTemplate.opsForValue().get(cachePrefix + req.getCallId());
+    public Optional<LivePrescription> getLivePrescription(String callId) throws JsonProcessingException {
+        String data = userRedisTemplate.opsForValue().get(cachePrefix + callId);
         if (data == null) {
             return Optional.empty();
         }
-        return Optional.of(objectMapper.readValue(data, LivePrescriptionReq.class));
+        return Optional.of(objectMapper.readValue(data, LivePrescription.class));
+    }
+
+    public void deleteLivePrescription(String callId) {
+        userRedisTemplate.delete(cachePrefix + callId);
+    }
+
+    public Boolean doesLivePrescriptionExists(String callId) {
+        return userRedisTemplate.hasKey(cachePrefix + callId);
     }
 }

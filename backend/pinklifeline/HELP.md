@@ -461,7 +461,7 @@ transId=17208953344777288
 ```
 status: create(201)
 {
-    "callId": 21324141412
+    "callId": "21324141412"
 }
 ```
 ## Join a online meeting
@@ -471,10 +471,46 @@ status: create(201)
 ### Response Body
 ```
 {
-    "callId": 21324141412
+  "callId": "2417210933683308291",
+  "prescription":{
+    "analysis": "Roma 1",
+    "medications":[
+      {
+        "name": "Sapa",
+        "doseDescription": "Bala"
+      },
+      {
+        "name": "napa",
+        "doseDescription": "BaKumla"
+      }
+    ],
+    "tests":[
+        "Name",
+        "Name",
+        "Nani"
+     ]
+  }
 }
 ```
 ## Close a online meeting
 ``` Endpoint: DELETE /v1/online-meeting/close```
 <br><br>
 ```Response status: noContent(204)```
+## Live Prescription
+```Socket Endpoint: /ws``` <br>
+```LivePrescription Subscription Endpoint: /user/{id}/queue/live-prescription``` <br>
+```Error Subscription Endpoint: /user/{id}/queue/live-prescription/errors``` <br>
+```Send Endpoint: /app/live-prescription``` <br>
+### Sample LivePrescription Request Object
+```
+{
+      "receiverId": 2,
+      "callId": "2417210933683308291",
+      "analysis": "You are paralyzed",
+      "medications": [
+          { "name": "Sapa", "doseDescription": "Bala" },
+          { "name": "napa", "doseDescription": "BaKumla" }
+        ],
+      "tests": ["Name", "Name", "Nani"]
+}
+```

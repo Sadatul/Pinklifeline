@@ -2,19 +2,17 @@ package com.sadi.pinklifeline.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
+import com.sadi.pinklifeline.models.dtos.LivePrescription;
 import com.sadi.pinklifeline.models.reqeusts.LivePrescriptionReq;
 import com.sadi.pinklifeline.models.responses.ErrorDetails;
 import com.sadi.pinklifeline.repositories.LivePrescriptionRepository;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -41,7 +39,10 @@ public class LivePrescriptionHandlerV1 {
         Long userId = Long.valueOf(user.getName());
         log.debug("Request Received {} from UserID: {}", req, userId);
         try {
-            livePrescriptionRepository.putLivePrescription(req);
+            livePrescriptionRepository.putLivePrescription(
+                    new LivePrescription(req.getAnalysis(), req.getMedications(), req.getTests()),
+                    req.getCallId()
+            );
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Sorry unable to process Request");
         }
@@ -59,11 +60,6 @@ public class LivePrescriptionHandlerV1 {
         Long userId = Long.valueOf(user.getName());
         sendErrorMessage(userId, e.getMessage(), "Incorrect Message Payload");
     }
-
-//    @GetMapping("/live-prescription")
-//    public ResponseEntity<LivePrescriptionReq> getLivePrescription(@RequestParam String callId){
-//
-//    }
 
     public void sendErrorMessage(Long userId, String msg, String details){
         messagingTemplate.convertAndSendToUser(userId.toString(),

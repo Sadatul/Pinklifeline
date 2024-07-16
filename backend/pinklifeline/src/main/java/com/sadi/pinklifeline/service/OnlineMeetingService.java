@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.enums.AppointmentStatus;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
+import com.sadi.pinklifeline.models.dtos.LivePrescription;
 import com.sadi.pinklifeline.models.entities.Appointment;
+import com.sadi.pinklifeline.repositories.LivePrescriptionRepository;
 import com.sadi.pinklifeline.repositories.OnlineMeetingRepository;
 import com.sadi.pinklifeline.utils.CodeGenerator;
 import com.sadi.pinklifeline.utils.SecurityUtils;
@@ -13,6 +15,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,10 +24,12 @@ import java.util.Map;
 public class OnlineMeetingService {
     private final OnlineMeetingRepository onlineMeetingRepository;
     private final AppointmentService appointmentService;
+    private final LivePrescriptionRepository livePrescriptionRepository;
 
-    public OnlineMeetingService(OnlineMeetingRepository onlineMeetingRepository, AppointmentService appointmentService) {
+    public OnlineMeetingService(OnlineMeetingRepository onlineMeetingRepository, AppointmentService appointmentService, LivePrescriptionRepository livePrescriptionRepository) {
         this.onlineMeetingRepository = onlineMeetingRepository;
         this.appointmentService = appointmentService;
+        this.livePrescriptionRepository = livePrescriptionRepository;
     }
 
     void verifyIfMeetingCanBeStarted(Appointment appointment){
@@ -72,6 +77,12 @@ public class OnlineMeetingService {
         appointmentService.saveAppointment(appointment);
 
         // Processing for live prescription
+        LivePrescription prescription = new LivePrescription("", new ArrayList<>(), new ArrayList<>());
+        try {
+            livePrescriptionRepository.putLivePrescription(prescription, callId);
+        } catch (JsonProcessingException e) {
+            throw new InternalServerErrorException("Server error occurred while parsing request");
+        }
         return callId;
     }
 
@@ -81,7 +92,14 @@ public class OnlineMeetingService {
         Map<String, Object> map = new HashMap<>();
         map.put("callId", data.getSecond());
         // Data for live prescription
-
+        LivePrescription prescription;
+        try {
+            prescription = livePrescriptionRepository.getLivePrescription(data.getSecond())
+                    .orElseGet(() -> new LivePrescription("", new ArrayList<>(), new ArrayList<>()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        map.put("prescription", prescription);
         return map;
     }
 
@@ -93,6 +111,7 @@ public class OnlineMeetingService {
         appointment.setStatus(AppointmentStatus.FINISHED);
         onlineMeetingRepository.deleteMeetingData(appointment.getUser().getId());
         onlineMeetingRepository.deleteMeetingData(appointment.getDoctor().getUserId());
+        livePrescriptionRepository.deleteLivePrescription(data.getSecond());
         appointmentService.saveAppointment(appointment);
     }
 
