@@ -1,12 +1,14 @@
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
-import { useEffect } from 'react';
+import { Circle, MapContainer, Marker, Pane, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useGeolocated } from 'react-geolocated';
 import Link from 'next/link';
 import { pagePaths } from '@/utils/constants';
+import { LocateFixed } from 'lucide-react';
 
 export default function MapComponent({ position, setPosition, viewAll = false, nearByUsers, setNearByUsers }) {
+    const mapRef = useRef(null);
     const { coords } = useGeolocated({
         positionOptions: {
             enableHighAccuracy: false,
@@ -31,13 +33,32 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         iconAnchor: [25, 50],
     });
 
-    const customIcon2 = L.icon({
+    const customIconYou = L.icon({
         iconUrl: "https://visualpharm.com/assets/825/Marker-595b40b75ba036ed117d9f54.svg",
         iconSize: [40, 40],
         iconAnchor: [25, 50],
     });
 
+    function LocateUser() {
+        console.log("coords", coords)
+        const map = useMapEvents({
+            click(e) {
+                console.log("e.latlng", e.latlng)
+                map.flyTo({
+                    lat: coords.latitude,
+                    lng: coords.longitude
+                }, map.getZoom());
+            }
+        })
+        return null
+    }
+
     function LocationMarker() {
+        if (mapRef.current === null) {
+            mapRef.current = useMap();
+        }
+        console.log("mapRef", mapRef.current)
+        if (viewAll) return null;
         const map = useMapEvents({
             click(e) {
                 setPosition(e.latlng);
@@ -52,35 +73,54 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
     }
 
     return position === null ? null : (
-        <MapContainer
-            style={{
-                height: viewAll ? "100%" : "400px",
-                width: "100%",
-                zIndex: 0
-            }}
-            center={position} zoom={18} scrollWheelZoom={true}>
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {
-                viewAll ?
+        <div className='relative size-full'>
+            <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md'
+                onClick={() => {
+                    if (mapRef.current) {
+                        mapRef.current.flyTo({
+                            lat: coords.latitude,
+                            lng: coords.longitude
+                        }, mapRef.current.getZoom());
+                    }
+                }}
+            >
+                <LocateFixed size={32} className='text-blue-600' />
+            </button>
+            <MapContainer
+                id='map'
+                style={{
+                    height: viewAll ? "100%" : "400px",
+                    width: "100%",
+                    zIndex: 0
+                }}
+                center={position} zoom={18} scrollWheelZoom={true}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={{
+                    lat: coords.latitude,
+                    lng: coords.longitude
+                }}
+                    icon={customIconYou}>
+                    <Popup>
+                        <Link href={pagePaths.inbox} className='text-gray-700 '>You</Link>
+                    </Popup>
+                </Marker>
+                <LocationMarker />
+                {
+                    viewAll === true &&
                     <>
-                        <Marker position={position} icon={customIcon}>
-                            <Popup>
-                                <Link href={pagePaths.inbox} className='text-gray-700 '>Hasnain  Adil</Link>
-                            </Popup>
-                        </Marker>
-                        {/* {nearByUsers?.map((user, index) => (
-                            <Marker key={index} position={user.location} icon={customIcon2}>
-                            <Popup>
-                            <Link href={pagePaths.inbox}>{user.name}</Link>
-                            </Popup>
+                        {nearByUsers?.map((user, index) => (
+                            <Marker key={index} position={user.location} icon={customIcon}>
+                                <Popup>
+                                    <Link href={pagePaths.inbox}>{user.fullName}</Link>
+                                </Popup>
                             </Marker>
-                            ))} */}
-                    </> : <LocationMarker />
-            }
-
-        </MapContainer>
+                        ))}
+                    </>
+                }
+            </MapContainer>
+        </div>
     );
 }

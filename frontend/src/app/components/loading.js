@@ -1,11 +1,12 @@
 import Lottie from "lottie-react"
 import animationData from '../../../public/loading-animation.json'
+import handAnimation from '../../../public/loadingHand.json'
 
-export default function Loading() {
+export default function Loading({ chose = "default" }) {
     return (
-        <div className="flex flex-col w-screen h-screen justify-center items-center">
+        <div className="flex flex-col w-full h-full justify-center items-center">
             <Lottie
-                animationData={animationData}
+                animationData={chose === "hand" ? handAnimation : animationData}
                 className="flex justify-center items-center"
                 loop={true}
             />
