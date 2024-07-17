@@ -41,6 +41,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         const map = useMapEvents({
             click(e) {
                 setPosition(e.latlng);
+                console.log("e.latlng", e.latlng)
                 map.flyTo(e.latlng, map.getZoom());
             },
         });
@@ -55,7 +56,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
             style={{
                 height: viewAll ? "100%" : "400px",
                 width: "100%",
-                zIndex: 0,
+                zIndex: 0
             }}
             center={position} zoom={18} scrollWheelZoom={true}>
             <TileLayer
@@ -72,13 +73,14 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
                         </Marker>
                         {/* {nearByUsers?.map((user, index) => (
                             <Marker key={index} position={user.location} icon={customIcon2}>
-                                <Popup>
-                                    <Link href={pagePaths.inbox}>{user.name}</Link>
-                                </Popup>
+                            <Popup>
+                            <Link href={pagePaths.inbox}>{user.name}</Link>
+                            </Popup>
                             </Marker>
-                        ))} */}
+                            ))} */}
                     </> : <LocationMarker />
             }
+
         </MapContainer>
     );
 }

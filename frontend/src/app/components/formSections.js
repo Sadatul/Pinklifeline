@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useStompContext } from "../context/stompContext"
 import { useRouter } from "next/navigation"
-import { addConsultationLocationUrl, locationOnline, pagePaths } from "@/utils/constants"
+import { addConsultationLocationUrl, locationOnline, pagePaths, roles } from "@/utils/constants"
 import axios from "axios"
 import { Checkbox } from "@/components/ui/checkbox"
 
