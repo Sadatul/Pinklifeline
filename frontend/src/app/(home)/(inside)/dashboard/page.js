@@ -60,7 +60,7 @@ export default function DashboardPage() {
                 </div>
             </div>
             <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto over ml-[2px] rounded-l-lg">
-                <EditUSerDetailsPage />
+                <EditUserDetailsPage />
             </ScrollableContainer>
         </div>
     )
@@ -91,7 +91,7 @@ const getInchFromCm = (cm) => {
     return Math.floor((cm - (feet * 30.48)) / 2.54)
 }
 
-function EditUSerDetailsPage() {
+function EditUserDetailsPage() {
     const role = roles.patient
     const { register, handleSubmit, formState: { errors }, watch, getValues, trigger, setValue } = useForm();
     const cancerHistory = watch('cancerHistory');
