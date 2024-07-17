@@ -514,3 +514,127 @@ status: create(201)
       "tests": ["Name", "Name", "Nani"]
 }
 ```
+## Get request for appointments both for doctors and patients
+``` Endpoint: GET /v1/appointments```
+### Response Body for doctors
+```
+[
+  {
+    "date": "2024-08-08",
+    "fees": 700,
+    "patientFullName:": "Sadi",
+    "locationName": "Rule 2nd phase, Khulna",
+    "patientContactNumber": "01730445524",
+    "patientID": 2,
+    "locationId": 1,
+    "isOnline": true,
+    "id": 1,
+    "time": "07:43:22",
+    "isPaymentComplete": true,
+    "status": "RUNNING"
+  }
+]
+```
+### Response Body for Patients
+```
+[
+  {
+    "date": "2024-08-08",
+    "fees": 700,
+    "locationName": "Rule 2nd phase, Khulna",
+    "patientContactNumber": "01730445524",
+    "doctorId": 4,
+    "locationId": 1,
+    "isOnline": true,
+    "id": 1,
+    "time": "07:43:22",
+    "doctorFullName:": "Dr. Adil",
+    "isPaymentComplete": true,
+    "status": "RUNNING"
+  }
+]
+```
+## Get request for DoctorDetails for guest Users
+``` Endpoint: GET /v1/infos/guest/doctor/{doc_id}```
+```
+{
+  "qualifications":[
+    "MBBS",
+    "DO"
+  ],
+  "profilePicture": null,
+  "isVerified": "Y",
+  "contactNumber": "01730445524",
+  "fullName": "Dr. Adil",
+  "designation": "Head",
+  "department": "Cancer",
+  "workplace": "Khulna Medical College"
+}
+```
+## Get info for BASICUSER/PATIENTS for guest Users
+``` Endpoint: GET /v1/infos/guest/basic/{id}```
+```
+{
+  "profilePicture": null,
+  "roles":[
+    "ROLE_PATIENT"
+  ],
+  "diagnosisDate": "2000-08-08",
+  "cancerStage": "SURVIVOR",
+  "fullName": "Sadi",
+  "username": "2005077@ugrad.cse.buet.ac.bd"
+}
+```
+## Get locations for doctors for owner/guest users
+``` Endpoint: GET /v1/ROLE_DOCTOR/{doc_id}/locations```
+```
+[
+  {
+    "workdays": "1110110",
+    "fees": 700,
+    "start": "07:43:23",
+    "location": "Rule 2nd phase, Khulna",
+    "end": "17:43:23",
+    "id": 1
+  },
+  {
+    "workdays": "1111110",
+    "fees": 500,
+    "start": "07:43:23",
+    "location": "sonadanga 2nd phase, Khulna",
+    "end": "12:43:23",
+    "id": 2
+  }
+]
+```
+## Get profile_picture for user
+``` Endpoint: GET /v1/infos/profile_picture```
+```
+{
+  "profilePicture": "kaka"
+}
+```
+## Get reviews for doctors
+``` Endpoint: GET /v1/reviews/doctor/{id}```
+```
+[
+  {
+    "id": 33,
+    "reviewerId": 3,
+    "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
+    "rating": 3,
+    "comment": "A very good doctor",
+    "timestamp": "2024-07-16T11:46:20"
+  },
+  {
+    "id": 32,
+    "reviewerId": 2,
+    "reviewerName": "sadatulislamsadi@gmail.com",
+    "rating": 4,
+    "comment": "Sultan is back",
+    "timestamp": "2024-07-14T11:22:44"
+  }
+]
+```
+**<span style="color:red">Notes:</span>** <br>
+* Reviews will be sorted based on time**

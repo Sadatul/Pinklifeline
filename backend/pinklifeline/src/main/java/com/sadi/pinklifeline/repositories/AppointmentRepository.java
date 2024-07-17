@@ -25,4 +25,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("select app from Appointment app where app.user.id = :id")
     List<AppointmentDoctorDTO> findAppointmentByPatientId(Long id);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("update Appointment app set app.status = 'FINISHED' where app.doctor.userId = :docId and app.status = 'RUNNING'")
+    void updateAllUnfinishedMeetingForDoctor(Long docId);
 }
