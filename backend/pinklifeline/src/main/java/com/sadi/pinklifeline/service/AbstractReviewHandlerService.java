@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.models.dtos.RatingCountPair;
 import com.sadi.pinklifeline.models.entities.Review;
 import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
 import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
+import com.sadi.pinklifeline.models.responses.ReviewRes;
 import com.sadi.pinklifeline.models.responses.ReviewSummaryRes;
 import com.sadi.pinklifeline.repositories.ReviewCachingRepository;
 import org.springframework.data.util.Pair;
@@ -30,6 +31,7 @@ public abstract class AbstractReviewHandlerService {
     public abstract Review getNewReview(Long reviewerId, RegisterReviewReq req);
     public abstract List<RatingCountPair> getReviewRatingCountPairList(Long reviewId);
     public abstract void validateIfReviewExists(Long reviewerId, Long resourceId);
+    public abstract List<ReviewRes> getReviewsByResourceId(Long resourceId);
 
     public void verifyReviewAccess(Review review, Long userId){
         if(!Objects.equals(review.getReviewerId(), userId)){

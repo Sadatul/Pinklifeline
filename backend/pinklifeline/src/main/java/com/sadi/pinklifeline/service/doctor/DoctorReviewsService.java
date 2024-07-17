@@ -8,6 +8,7 @@ import com.sadi.pinklifeline.models.entities.DoctorReview;
 import com.sadi.pinklifeline.models.entities.Review;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
+import com.sadi.pinklifeline.models.responses.ReviewRes;
 import com.sadi.pinklifeline.repositories.ReviewCachingRepository;
 import com.sadi.pinklifeline.repositories.reviews.DoctorReviewsRepository;
 import com.sadi.pinklifeline.service.AbstractReviewHandlerService;
@@ -74,6 +75,11 @@ public class DoctorReviewsService extends AbstractReviewHandlerService {
     @Override
     public void deleteReview(Review review){
         reviewsRepository.delete((DoctorReview)review);
+    }
+
+    @Override
+    public List<ReviewRes> getReviewsByResourceId(Long resourceId){
+        return reviewsRepository.getDoctorReviewsByDoctorId(resourceId);
     }
 
 }

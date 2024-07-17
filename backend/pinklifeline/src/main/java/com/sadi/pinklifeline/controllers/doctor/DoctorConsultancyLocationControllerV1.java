@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/ROLE_DOCTOR")
@@ -48,5 +50,12 @@ public class DoctorConsultancyLocationControllerV1 {
         log.debug("Delete request on doctor locations with id: {}", locationId);
         locationService.deleteLocation(locationId, docId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{doc_id}/locations")
+    public ResponseEntity<List<Map<String, Object>>> getAllLocations(
+            @PathVariable(name = "doc_id") Long docId
+    ){
+        return ResponseEntity.ok(locationService.getDoctorConsultationLocations(docId));
     }
 }

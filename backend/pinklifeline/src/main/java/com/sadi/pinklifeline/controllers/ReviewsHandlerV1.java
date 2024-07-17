@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
 import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
+import com.sadi.pinklifeline.models.responses.ReviewRes;
 import com.sadi.pinklifeline.models.responses.ReviewSummaryRes;
 import com.sadi.pinklifeline.service.AbstractReviewHandlerService;
 import com.sadi.pinklifeline.service.doctor.DoctorReviewsService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/reviews")
@@ -60,6 +62,16 @@ public class ReviewsHandlerV1 {
         log.debug("Delete request on doctor review received: {}", reviewId);
         AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
         ReviewSummaryRes res = reviewsService.deleteReview(userId, reviewId);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/{type}/{resource_id}")
+    public ResponseEntity<List<ReviewRes>> getReviewsForResource(
+            @PathVariable(name = "type") String type,
+            @PathVariable(name = "resource_id") Long resourceId
+    ){
+        AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
+        List<ReviewRes> res = reviewsService.getReviewsByResourceId(resourceId);
         return ResponseEntity.ok(res);
     }
 

@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("select u.id from User u where u.username = :username")
     Optional<Long> findByUsernameOnlyId(String username);
+
+    @Query("select u.profilePicture from User u where u.id = :id")
+    String getProfilePictureById(Long id);
 }

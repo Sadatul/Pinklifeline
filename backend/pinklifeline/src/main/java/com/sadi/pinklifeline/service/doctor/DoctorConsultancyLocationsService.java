@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class DoctorConsultancyLocationsService {
@@ -60,5 +60,21 @@ public class DoctorConsultancyLocationsService {
         DoctorConsultationLocation location = getLocation(locId);
         verifyLocationAccess(location, docId);
         locationsRepository.delete(location);
+    }
+
+    public List<Map<String, Object>> getDoctorConsultationLocations(Long docId){
+        List<DoctorConsultationLocation> locations = locationsRepository.findByDoctorId(docId);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (DoctorConsultationLocation location : locations) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", location.getId());
+            map.put("location", location.getLocation());
+            map.put("start", location.getStart());
+            map.put("end", location.getEnd());
+            map.put("workdays", location.getWorkdays());
+            map.put("fees", location.getFees());
+            res.add(map);
+        }
+        return res;
     }
 }

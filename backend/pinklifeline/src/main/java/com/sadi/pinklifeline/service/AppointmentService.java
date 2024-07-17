@@ -5,6 +5,8 @@ import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.externals.sslcommerz.SslcommerzClientService;
+import com.sadi.pinklifeline.models.dtos.AppointmentDoctorDTO;
+import com.sadi.pinklifeline.models.dtos.AppointmentUserDTO;
 import com.sadi.pinklifeline.models.entities.Appointment;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
@@ -20,7 +22,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -63,7 +65,7 @@ public class AppointmentService extends AbstractPaymentService{
         }
     }
 
-    @PreAuthorize("#req.patientId.toString() == authentication.name")
+    @PreAuthorize("#req.patientId.toString() == authentication.name and hasAnyRole('BASICUSER', 'PATIENT')")
     public Long addAppointment(RegisterAppointmentReq req) {
         User user = userService.getUserIfRegisteredOnlyId(req.getPatientId());
         DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getDoctorId());
@@ -95,7 +97,7 @@ public class AppointmentService extends AbstractPaymentService{
         appointmentRepository.save(appointment);
     }
 
-
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void cancelAppointment(Long id) {
         Long owner = SecurityUtils.getOwnerID();
         Appointment appointment = getAppointment(id);
@@ -154,5 +156,51 @@ public class AppointmentService extends AbstractPaymentService{
         // A transaction id means we validated the resource. That's why here we will directly update the database.
         appointmentRepository.updatePaymentStatusById(id, true);
     }
+    @PreAuthorize("hasRole('DOCTOR')")
+    public List<Map<String, Object>> getAppointmentsByDocId() {
+        Long docId = SecurityUtils.getOwnerID();
+        List<AppointmentUserDTO> dtos = appointmentRepository.findAppointmentByDoctorId(docId);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (AppointmentUserDTO dto : dtos) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", dto.getId());
+            map.put("patientID", dto.getUser().getId());
+            map.put("patientFullName:", dto.getUser().getBasicUser().getFullName());
+            map.put("date", dto.getDate());
+            map.put("time", dto.getTime());
+            map.put("locationId", dto.getLocation().getId());
+            map.put("locationName", dto.getLocation().getLocation());
+            map.put("fees", dto.getLocation().getFees());
+            map.put("patientContactNumber", dto.getPatientContactNumber());
+            map.put("isOnline", dto.getIsOnline());
+            map.put("isPaymentComplete", dto.getIsPaymentComplete());
+            map.put("status", dto.getStatus());
+            res.add(map);
+        }
+        return res;
+    }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
+    public List<Map<String, Object>> getAppointmentsByPatientId() {
+        Long patientId = SecurityUtils.getOwnerID();
+        List<AppointmentDoctorDTO> dtos = appointmentRepository.findAppointmentByPatientId(patientId);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (AppointmentDoctorDTO dto : dtos) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", dto.getId());
+            map.put("doctorId", dto.getDoctor().getUserId());
+            map.put("doctorFullName:", dto.getDoctor().getFullName());
+            map.put("date", dto.getDate());
+            map.put("time", dto.getTime());
+            map.put("locationId", dto.getLocation().getId());
+            map.put("locationName", dto.getLocation().getLocation());
+            map.put("fees", dto.getLocation().getFees());
+            map.put("patientContactNumber", dto.getPatientContactNumber());
+            map.put("isOnline", dto.getIsOnline());
+            map.put("isPaymentComplete", dto.getIsPaymentComplete());
+            map.put("status", dto.getStatus());
+            res.add(map);
+        }
+        return res;
+    }
 }
