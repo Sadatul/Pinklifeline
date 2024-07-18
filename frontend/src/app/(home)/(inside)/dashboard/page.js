@@ -1,7 +1,6 @@
 'use client'
 
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { AppointmentsPage } from "@/app/components/AppointmentsPage"
 import { locationOnline, locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
 import { use, useEffect, useRef, useState } from "react"
 import { createWorker } from 'tesseract.js';
@@ -9,11 +8,9 @@ import { cn } from "@/lib/utils"
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { HardDriveUploadIcon, LoaderCircle, Minus, Pencil, Plus } from "lucide-react"
-import { ChambersPage } from "@/app/components/ChambersPage"
 import { useGeolocated } from "react-geolocated"
 import { cellToLatLng, latLngToCell } from "h3-js"
 import MapView from "@/app/components/map"
-import { LocationPage } from "@/app/components/nearByLocationPage"
 import { FileUploader } from "react-drag-drop-files"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { toast } from "sonner"
@@ -42,6 +39,10 @@ import axios from "axios"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "@/app/components/loading"
 import { EditUserDetailsPage } from "@/app/components/editUserDetails"
+import { ChambersPage } from "@/app/components/ChambersPage"
+import { AppointmentsPage } from "@/app/components/AppointmentsPage"
+import { LocationPage } from "@/app/components/nearByLocationPage"
+import { PastPrescriptionPage } from "@/app/components/vault";
 
 
 
@@ -64,10 +65,18 @@ export default function DashboardPage() {
                 </div>
             </div>
             <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto over ml-[2px] rounded-l-lg">
-                <LocationPage />
+                <ChambersPage />
             </ScrollableContainer>
         </div>
     )
 }
 
+
+export function EditDoctorDetails() {
+    return (
+        <div className="flex flex-col h-full w-full">
+
+        </div>
+    )
+}
 

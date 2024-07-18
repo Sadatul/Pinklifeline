@@ -28,9 +28,9 @@ export function LocationPage() {
             axios.get(getNearByUsers(sessionContext.sessionData.userId), {
                 headers: headers
             }).then((res) => {
-                console.log("nearByUsers", dummyData)
+                console.log("nearByUsers", res.data)
                 let updatedUser = [];
-                for (const user of dummyData) {
+                for (const user of res.data) {
                     const latlng = cellToLatLng(user.location)
                     updatedUser.push({
                         ...user,

@@ -337,7 +337,7 @@ export function DoctorChamberLocationSection({ }) {
         console.log("saving location")
         const savingLocationToast = toast.loading("Saving location")
         const loacationForm = {
-            location: isOnline ? locationOnline : userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity,
+            location: isOnline ? locationOnline : userDataRef.current.location,
             start: userDataRef.current.startTime + ":00",
             end: userDataRef.current.endTime + ":00",
             workdays: userDataRef.current.workdaysString,
@@ -362,7 +362,7 @@ export function DoctorChamberLocationSection({ }) {
             toast.dismiss()
             console.log(error)
             toast.error("Error adding location", {
-                description: error.response.data.message
+                description: error.response?.data?.message
             })
         })
     }
@@ -388,20 +388,14 @@ export function DoctorChamberLocationSection({ }) {
                     <div className="flex flex-col w-full items-center my-2">
                         <h1 className="text-center text-2xl font-semibold">Location and Fees</h1>
                         <div className="flex flex-row justify-evenly items-center w-11/12">
-                            <label className="text-md font-semibold mx-2">City
+                            <label className="text-md font-semibold mx-2">Location
                                 <div className="w-full flex flex-col mt-2 relative">
-                                    <input disabled={isOnline} defaultValue={userDataRef.current?.chamberCity} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("chamberCity", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                    {errors.chamberCity && <span className="text-red-500 mt-7 absolute">{errors.chamberCity?.message}</span>}
+                                    <input disabled={isOnline} defaultValue={userDataRef.current?.location} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("location", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                    {errors.location && <span className="text-red-500 mt-7 absolute">{errors.location?.message}</span>}
                                 </div>
                             </label>
-                            <label className="text-md font-semibold mx-2">Address
-                                <div className="w-full flex flex-col mt-2 relative">
-                                    <input disabled={isOnline} defaultValue={userDataRef.current?.chamberStreetAdress} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("chamberStreetAdress", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                    {errors.chamberStreetAdress && <span className="text-red-500 mt-7 absolute">{errors.chamberStreetAdress?.message}</span>}
-                                </div>
-                            </label>
-                            <label className="text-md font-semibold mx-2 mt-4">Online
-                                <Checkbox checked={isOnline} onCheckedChange={() => setIsOnline(!isOnline)} className="border-2" />
+                            <label className="text-md font-semibold mt-8 relative">isOnline
+                                <Checkbox checked={isOnline} onCheckedChange={() => setIsOnline(!isOnline)} className="border-2 ml-2 absolute top-1" />
                             </label>
                             <label className="text-md font-semibold mx-2">Fees
                                 <div className="w-full flex flex-col mt-2 relative">
@@ -463,10 +457,18 @@ export function DoctorChamberLocationSection({ }) {
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-center items-center w-full m-2 px-8">
-                <button type='button' onClick={handleSubmit(onSubmit)} className="text-lg px-5 font-bold text-center text-white  border hover:shadow-md bg-gradient-to-br from-gray-700 via-gray-600 to-gray-700 rounded-2xl hover:scale-105 transition ease-out" >
-                    Save
-                </button>
+            <div className="flex flex-row items-center w-full m-2 px-8 justify-evenly">
+                <Button variant = "outline" className={"border-2 border-gray-600"} 
+                onClick={()=>{
+                    router.push(pagePaths.dashboard)
+                }} >
+                    Skip
+                </Button>
+                <Button className=" hover:bg-gray-200 border-2 border-gray-700 hover:text-gray-800 bg-gray-700 text-gray-200" onClick={() => {
+                    handleSubmit(onSubmit)()
+                }}>
+                    Add Location
+                </Button>
                 <AlertDialog open={confirmDialogOpen}  >
                     <AlertDialogTrigger asChild>
                     </AlertDialogTrigger>
@@ -476,7 +478,7 @@ export function DoctorChamberLocationSection({ }) {
                             <AlertDialogDescription asChild>
                                 <div className="flex flex-col items-center justify-evenly flex-1">
                                     <div className="flex flex-row w-full justify-between items-center">
-                                        <p className="text-lg text-black ">Location: {userDataRef.current.chamberStreetAdress + ", " + userDataRef.current.chamberCity}</p>
+                                        <p className="text-lg text-black ">Location: {userDataRef.current.location}</p>
                                         <p className="text-lg text-black">Fees: {userDataRef.current.fees}</p>
                                     </div>
                                     <div className="flex flex-row w-full justify-between items-center">
@@ -1029,7 +1031,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
                                 <label className="text-md font-semibold m-2 text-center">Period Irregularities:
-                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities"  />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities" />
                                 </label>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>

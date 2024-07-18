@@ -22,8 +22,8 @@ import { Ripple } from "primereact/ripple";
 import { BsPersonVcardFill } from "react-icons/bs";
 import { PiCertificate } from "react-icons/pi";
 import { FaChair } from "react-icons/fa";
-import AddAppointAnimation from "../../../../../../../public/profile/AddAppointment.json"
-import EmptyAppointment from "../../../../../../../public/profile/emptyAppointment.json"
+import AddAppointAnimation from "../../../public/profile/AddAppointment.json"
+import EmptyAppointment from "../../../public/profile/emptyAppointment.json"
 import Lottie from "lottie-react";
 import Avatar from "@/app/components/avatar";
 import {
@@ -49,10 +49,19 @@ import {
 
 
 
-export default function Profile() {
+
+export default function Profile({ profileId, section }) {
+    const sectionEnum = {
+        posts : 0,
+        about : 1,
+        reviews : 2,
+        appointments : 3,
+        consultations :4
+    }
     const params = useParams()
+    console.log(params)
     const containerRef = useRef(null)
-    const [selectedTab, setSelectedTab] = useState(0)
+    const [selectedTab, setSelectedTab] = useState(sectionEnum[section] || 0)
     const [showProfileNavbar, setShowProfileNavbar] = useState(false)
     const [viewScrollBar, setViewScrollBar] = useState(false)
     const [tabs, setTabs] = useState([
@@ -61,7 +70,7 @@ export default function Profile() {
             scrollPosition: 0,
             textColor: "text-indigo-500",
             bgColor: "bg-indigo-500",
-            section: <PostSection userId={params.profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
+            section: <PostSection userId={profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
         },
         {
             title: "About",
@@ -75,21 +84,21 @@ export default function Profile() {
             scrollPosition: 0,
             textColor: "text-amber-500",
             bgColor: "bg-amber-500",
-            section: <ReviewSection userId={params.profileId} className={"bg-gradient-to-b from-amber-50 to-white"} />
+            section: <ReviewSection userId={profileId} className={"bg-gradient-to-b from-amber-50 to-white"} />
         },
         {
             title: "Appointments",
             scrollPosition: 0,
             textColor: "text-purple-500",
             bgColor: "bg-purple-500",
-            section: <AppointmentsSection userId={params.profileId} className={"bg-gradient-to-b from-purple-50 to-white"} />
+            section: <AppointmentsSection userId={profileId} className={"bg-gradient-to-b from-purple-50 to-white"} />
         },
         {
             title: "Consultations",
             scrollPosition: 0,
             textColor: "text-pink-500",
             bgColor: "bg-pink-500",
-            section: <ConsultationSection userId={params.profileId} className={"bg-gradient-to-b from-pink-50 to-white"} />
+            section: <ConsultationSection userId={profileId} className={"bg-gradient-to-b from-pink-50 to-white"} />
         }
     ])
     const rating = 4
@@ -107,9 +116,9 @@ export default function Profile() {
 
     const sendMessage = () => {
         const messageInput = document.getElementById('message')?.value
-        if (messageInput !== '' && params.profileId) {
+        if (messageInput !== '' && profileId) {
             const messageObject = {
-                receiverId: params.profileId,
+                receiverId: profileId,
                 message: messageInput,
                 timestamp: new Date().toISOString(),
                 type: "TEXT"
@@ -182,7 +191,7 @@ export default function Profile() {
                 <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
                     <div className="absolute -top-20 flex flex-col items-center">
                         <Image src={profilePic} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
-                        {params.role === roles.doctorProfile && <Badge className={"mt-2 text-sm"}>Doctor</Badge>}
+                        <Badge className={"mt-2 text-sm"}>Doctor</Badge>
                     </div>
                     <div className="flex flex-col ml-56">
                         <h1 className="text-2xl font-bold ">{profileName}</h1>
