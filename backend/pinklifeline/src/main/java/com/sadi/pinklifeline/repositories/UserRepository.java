@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.repositories;
 
+import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.responses.NearbyUserRes;
 import com.sadi.pinklifeline.models.entities.User;
 import jakarta.transaction.Transactional;
@@ -25,4 +26,15 @@ public interface UserRepository extends JpaRepository<User, String> {
             "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id")
     List<NearbyUserRes> findNearbyUsers(List<String> locations, Long id);
 
+    @Query("select new User(u.id, u.isRegistrationComplete) from User u where u.id = :id")
+    Optional<User> findByIdWithIsRegistrationComplete(Long id);
+
+    @Query("select u.id from User u where u.username = :username")
+    Optional<Long> findByUsernameOnlyId(String username);
+
+    @Query("select u.profilePicture from User u where u.id = :id")
+    String getProfilePictureById(Long id);
+
+    @Query("select u.roles from User u where u.id = :userId")
+    List<Roles> getRolesById(Long userId);
 }

@@ -81,10 +81,12 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
         String response = resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.userId").exists())
+                .andExpect(jsonPath("$.roles").exists())
+                .andExpect(jsonPath("$.username").exists())
                 .andReturn().getResponse().getContentAsString();
 
-        TypeReference<Map<String, String>> typeRef = new TypeReference<>() {};
-        Map<String, String> token = objectMapper.readValue(response, typeRef);
+        TypeReference<Map<String, Object>> typeRef = new TypeReference<>() {};
+        Map<String, Object> token = objectMapper.readValue(response, typeRef);
 
         mockMvc.perform(get("/v1/hello").contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token.get("token"))))

@@ -1,23 +1,24 @@
-package com.sadi.pinklifeline.controllers;
+package com.sadi.pinklifeline.controllers.doctor;
 
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
-import com.sadi.pinklifeline.service.doctor.features.DoctorConsultancyLocationsService;
+import com.sadi.pinklifeline.service.doctor.DoctorConsultancyLocationsService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/ROLE_DOCTOR")
 @Slf4j
-public class DoctorSpecificFeaturesV1 {
+public class DoctorConsultancyLocationControllerV1 {
     private final DoctorConsultancyLocationsService locationService;
 
-    public DoctorSpecificFeaturesV1(DoctorConsultancyLocationsService locationService) {
+    public DoctorConsultancyLocationControllerV1(DoctorConsultancyLocationsService locationService) {
         this.locationService = locationService;
     }
 
@@ -33,7 +34,6 @@ public class DoctorSpecificFeaturesV1 {
     }
 
     @PutMapping("{doc_id}/locations/{location_id}")
-    @PreAuthorize("(#docId.toString() == authentication.name)")
     public ResponseEntity<Void> updateLocation(
             @PathVariable(name = "doc_id") Long docId,
             @PathVariable(name = "location_id") Long locationId,
@@ -44,12 +44,18 @@ public class DoctorSpecificFeaturesV1 {
     }
 
     @DeleteMapping("{doc_id}/locations/{location_id}")
-    @PreAuthorize("(#docId.toString() == authentication.name)")
     public ResponseEntity<Void> deleteLocation(
             @PathVariable(name = "doc_id") Long docId,
             @PathVariable(name = "location_id") Long locationId) {
         log.debug("Delete request on doctor locations with id: {}", locationId);
         locationService.deleteLocation(locationId, docId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{doc_id}/locations")
+    public ResponseEntity<List<Map<String, Object>>> getAllLocations(
+            @PathVariable(name = "doc_id") Long docId
+    ){
+        return ResponseEntity.ok(locationService.getDoctorConsultationLocations(docId));
     }
 }

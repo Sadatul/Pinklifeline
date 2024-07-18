@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,18 +40,17 @@ public class JwtTokenService {
         var scope = authentication.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(" "));
-        String userId = userRepository.findByUsername(authentication.getName())
-                .map(user -> user.getId().toString())
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        User user = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
         var claims = JwtClaimsSet.builder()
                                 .issuer(issuer)
                                 .issuedAt(Instant.now())
                                 .audience(List.of(audiences))
                                 .expiresAt(Instant.now().plusSeconds(timeout))
-                                .subject(userId)
+                                .subject(user.getId().toString())
                                 .claim("scp", scope)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return new JwtTokenResponse(token, userId);
+        return new JwtTokenResponse(token, user.getId(), user.getUsername(), user.getRoles());
     }
 }

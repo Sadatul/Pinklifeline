@@ -19,8 +19,9 @@ public class DoctorConsultationLocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
     private DoctorDetails doctorDetails;
 
     @Column(name = "location", nullable = false)
