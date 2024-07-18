@@ -1,12 +1,15 @@
 
 import StreamVideoProvider from '@/app/providers/StreamVideoProvider';
+import { SessionContextProvider } from "@/app/context/sessionContext"
 
 const HomeLayout = ({ children }) => {
   return (
     <>
-      {/* <StreamVideoProvider> */}
-      {children}
-      {/* </StreamVideoProvider> */}
+      <SessionContextProvider>
+        {/* <StreamVideoProvider> */}
+        {children}
+        {/* </StreamVideoProvider> */}
+      </SessionContextProvider>
     </>
   );
 };

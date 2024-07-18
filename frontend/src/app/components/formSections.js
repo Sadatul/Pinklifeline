@@ -55,6 +55,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     const storage = getStorage(firebase_app)
     const fileTypes = ["JPEG", "PNG", "JPG"];
     const [imageFile, setImageFile] = useState(null)
+    const [imageUploaded, setImageUploaded] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(null);
     const stompContext = useStompContext();
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
@@ -93,16 +94,17 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
         const filePath = `profileImages/${localStorage.getItem('userId') || new Date().toString()}/${imageFile.name}`;
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        setImageUploaded(true)
         uploadTask.on(
             'state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
             },
             (error) => {
                 toast.error("Error uploading image", {
                     description: "Please try again later",
                 });
+                setImageUploaded(false)
             },
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
@@ -140,13 +142,13 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                     <div className="flex flex-row justify-between items-center w-full">
                         <label className="text-md font-semibold m-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.fullName} type="text" placeholder="Full Name" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
                         <label className="text-md font-semibold m-2 ">Weight(kg)
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.weight} type="number" placeholder="Weight" className="number-input border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
+                                <input defaultValue={userDataRef.current?.weight} type="number" className="number-input border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                         </label>
@@ -212,14 +214,14 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                     </div>
                     <AlertDialog >
                         <AlertDialogTrigger asChild>
-                            <Button className="px-2 py-1">Add Profile Picture</Button>
+                            <Button className="px-2 py-1">{imageUploaded ? "Uploaded" : "Upload"} Profile Picture</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Upload Profile Picture</AlertDialogTitle>
+                                <AlertDialogTitle>{imageUploaded ? "Uploaded" : "Upload"} Profile Picture</AlertDialogTitle>
                                 <AlertDialogDescription asChild>
                                     <div className="flex flex-col items-center justify-evenly flex-1">
-                                        <div className="h-96 w-96 border rounded-lg border-purple-500">
+                                        <div className={cn("w-96 border rounded-lg border-purple-500", imageUploaded ? "h-80" : "h-96")}>
                                             {userDataRef.current.profilePicturePreview && (
                                                 <div className="flex flex-col justify-center items-center">
                                                     <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-full">
@@ -227,16 +229,17 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                                     </div>
                                                 </div>
                                             )}
-                                            <FileUploader handleChange={handleFileChange}
-                                                multiple={false}
-                                                types={fileTypes}
-                                                name="file"
-                                                onTypeError={() => {
-                                                    toast.error("Invalid file type", {
-                                                        description: "Only jpg or png files are allowed",
-                                                    })
-                                                }}
-                                            />
+                                            {!imageUploaded &&
+                                                <FileUploader handleChange={handleFileChange}
+                                                    multiple={false}
+                                                    types={fileTypes}
+                                                    name="file"
+                                                    onTypeError={() => {
+                                                        toast.error("Invalid file type", {
+                                                            description: "Only jpg or png files are allowed",
+                                                        })
+                                                    }}
+                                                />}
                                             <input hidden id="file"></input>
                                         </div>
                                     </div>
@@ -244,13 +247,12 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                             </AlertDialogHeader>
                             <AlertDialogFooter className="m-2">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleUpload}>
+                                <AlertDialogAction onClick={handleUpload} disabled={imageUploaded || (uploadProgress > 0 && uploadProgress < 100)}>
                                     Upload
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-
                 </motion.div>
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
@@ -564,7 +566,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                     <div className="flex flex-row justify-evenly items-center w-11/12 relative">
                         <label className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.fullName} type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
@@ -610,7 +612,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                         </AlertDialog>
                         <label className="text-md font-semibold mx-2">Registration Number
                             <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.registrationNumber} placeholder="Registration Number" className="border-2 border-blue-500 rounded-md px-2" {...register("registrationNumber", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" defaultValue={userDataRef.current?.registrationNumber} className="border-2 border-blue-500 rounded-md px-2" {...register("registrationNumber", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.registrationNumber && <span className="text-red-500">{errors.registrationNumber?.message}</span>}
                             </div>
                         </label>
@@ -618,14 +620,14 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                     <div className="flex flex-row justify-evenly items-strech w-11/12">
                         <label className="text-md font-semibold mx-2 w-7/12">Qualifications
                             <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.qualifications} placeholder="Add Qualifications" className="border-2 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" defaultValue={userDataRef.current?.qualifications} className="border-2 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.qualifications && <span className="text-red-500">{errors.qualifications?.message}</span>}
                                 <span className="text-sm text-gray-500">Add your qualifications separated by commas. Eg: MBBS, MD, DM</span>
                             </div>
                         </label>
                         <label className="text-md font-semibold mx-2 w-5/12">Work Place
                             <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.workplace} placeholder="Workplace" className="border-2 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" defaultValue={userDataRef.current?.workplace} className="border-2 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.workplace && <span className="text-red-500">{errors.workplace?.message}</span>}
                             </div>
                         </label>
@@ -633,19 +635,19 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                     <div className="flex flex-row justify-evenly items-strech w-11/12">
                         <label className="text-md font-semibold mx-2 w-7/12">Department
                             <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.department} placeholder="Department" className="border-2 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" defaultValue={userDataRef.current?.department} className="border-2 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.department && <span className="text-red-500">{errors.department?.message}</span>}
                             </div>
                         </label>
                         <label className="text-md font-semibold mx-2 w-5/12">Designation
                             <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.designation} placeholder="Designation" className="border-2 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" defaultValue={userDataRef.current?.designation} className="border-2 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.designation && <span className="text-red-500">{errors.designation?.message}</span>}
                             </div>
                         </label>
                         <label className="text-md font-semibold mx-2 w-5/12">Contact Number
                             <div className="w-full flex flex-col">
-                                <input type="tel" defaultValue={userDataRef.current?.contactNumber} placeholder="Contact Number" className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
+                                <input type="tel" defaultValue={userDataRef.current?.contactNumber} className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
                                     required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
                                     validate: (value) => {
                                         return (value.length === 11 && /^\d+$/.test(value) && String(value).startsWith("01")) || "Invalid contact number"
@@ -732,7 +734,7 @@ export function NurseInfoSection({ userDataRef, currentSection, setCurrentSectio
                     <div className="flex flex-row justify-evenly items-center w-11/12">
                         <label className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input type="text" placeholder="Full Name" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </label>
@@ -740,14 +742,14 @@ export function NurseInfoSection({ userDataRef, currentSection, setCurrentSectio
                     <div className="flex flex-row justify-evenly items-center w-11/12">
                         <p className="text-md font-semibold mx-2 p-2">Current Hospital</p>
                         <div className="w-full flex flex-col">
-                            <input type="text" placeholder="Currently Appointed Hospital" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
+                            <input type="text" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
                             {errors.currentHospital && <span className="text-red-500">{errors.currentHospital?.message}</span>}
                         </div>
                     </div>
                     <div className="flex flex-col justify-evenly items-center w-11/12">
                         <p className="text-md font-semibold m-2 p-2">Experience and Other description(optional but recommended)</p>
                         <div className="w-full flex flex-col">
-                            <textarea {...register("description", { maxLength: { value: 200, message: "Max length 200" } })} className="w-3/4 m-auto min-h-24 p-2 rounded-xl border-2 border-gray-100" placeholder="Add any description"></textarea>
+                            <textarea {...register("description", { maxLength: { value: 200, message: "Max length 200" } })} className="w-3/4 m-auto min-h-24 p-2 rounded-xl border-2 border-gray-100"></textarea>
                             {errors.description && <span className="text-red-500">{errors.description?.message}</span>}
                         </div>
                     </div>
@@ -1027,7 +1029,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
                                 <label className="text-md font-semibold m-2 text-center">Period Irregularities:
-                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities" placeholder="Irregularity" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities"  />
                                 </label>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -1099,7 +1101,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
                                 <label className="text-md font-semibold m-2 text-center">Allergies
-                                    <input placeholder="Allergy" className="border border-blue-500 rounded-md px-2 m-2" id="allergies" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="allergies" />
                                 </label>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -1170,7 +1172,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
                                 <label className="text-md font-semibold text-center">Organs WithChronic Condition
-                                    <input placeholder="Organ" className="border border-blue-500 rounded-md px-2 m-2" id="organsWithChronicCondition" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="organsWithChronicCondition" />
                                 </label>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>

@@ -13,13 +13,17 @@ export const updateProfilePictureUrl = (id) => { return `${baseUrl}/v1/infos/pro
 export const addConsultationLocationUrl = (id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${id}/locations` }
 export const updateConsultationLocationUrl = (doctor_id, location_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doctor_id}/locations/${location_id}` }
 export const getNearByUsers = (id) => { return `${baseUrl}/v1/ROLE_PATIENT/nearby/${id}` }
+export const updateUserDetailsUrl = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` }
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
+export const locationResolution = 8
 
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
 
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
+
+export const sessionDataItem = "sessionData"
 
 export const roles = {
     basicUser: "ROLE_BASICUSER",
@@ -41,6 +45,7 @@ export const pagePaths = {
     userdetails: "/userdetails",
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
+    dashboard : "/dashboard",
 }
 
 

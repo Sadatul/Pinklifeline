@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Client } from '@stomp/stompjs';
 import { usePathname } from "next/navigation";
-import { getChatsUrl, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
+import { getChatsUrl, sessionDataItem, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import { useSessionContext } from "@/app/context/sessionContext";
 
 export function SocketInitializer() {
     const stompContext = useStompContext();
@@ -15,19 +16,19 @@ export function SocketInitializer() {
     const pathname = usePathname()
     const router = useRouter()
     const [messageQueue, setMessageQueue] = useState([])
+    const sessionContext = useSessionContext()
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
-        const id = localStorage.getItem('userId')
-        stompContext.setUserId(id)
-        if (!token || !id) {
+        const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
+        stompContext.setUserId(sessionData.userId)
+        if (!sessionData.token || !sessionData.userId) {
             console.error('Token not found')
             toast.error('Token not found', {
                 description: 'You need to login to continue'
             })
             router.push('/login')
         }
-        const headers = { 'Authorization': `Bearer ${token}` }
+        const headers = { 'Authorization': `Bearer ${sessionData.token}` }
         if (!strompInitializedRef.current) {
             stompContext.stompClientRef.current = new Client({
                 brokerURL: stompBrokerUrl,
@@ -40,7 +41,7 @@ export function SocketInitializer() {
                 heartbeatOutgoing: 4000
             })
             stompContext.stompClientRef.current.onConnect = (frame) => {
-                stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(id), (response) => {
+                stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionData.userId), (response) => {
                     console.log(response)
                     const message = JSON.parse(response.body)
                     console.log('Received message')
@@ -48,7 +49,7 @@ export function SocketInitializer() {
                     setMessageQueue([...messageQueue, message])
 
                 })
-                stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(id), (error) => {
+                stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(sessionData.userId), (error) => {
                     console.log(error)
                     console.log(JSON.parse(error.body))
                 })
@@ -74,7 +75,7 @@ export function SocketInitializer() {
     }, [pathname])
 
     useEffect(() => {
-        if (messageQueue.length > 0) {
+        if (messageQueue.length > 0 && sessionContext.sessionData) {
             for (const message of messageQueue) {
                 if (!pathname.startsWith('/inbox')) {
                     if (message.type === 'TEXT') {
@@ -97,7 +98,7 @@ export function SocketInitializer() {
                     }
                     else {
                         stompContext.chatManager.current.removeAllChats()
-                        axios.get(getChatsUrl(stompContext.userId || localStorage.getItem('userId')), {
+                        axios.get(getChatsUrl(sessionContext.sessionData.userId), {
                             headers: headers
                         }).then((response) => {
                             console.log("in stompInitializer/subscriber/elseroute")
@@ -114,7 +115,7 @@ export function SocketInitializer() {
             }
             setMessageQueue([])
         }
-    }, [messageQueue])
+    }, [messageQueue, sessionContext.sessionData])
 
     const seeContext = () => {
         console.log(stompContext.messages)

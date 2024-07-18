@@ -15,7 +15,6 @@ import { PrimeReactProvider } from 'primereact/api';
 import { StompContextProvider } from "@/app/context/stompContext";
 
 import { SocketInitializer } from "../../components/stompInitializer";
-import VideoCallSetup from "../../components/videoCallSetup";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
@@ -66,7 +65,7 @@ export default function Layout({ children }) {
                                 </Popover>
                             </div>
                         </nav>
-                        {/* <SocketInitializer /> */}
+                        <SocketInitializer />
                         {children}
                     </div>
             </StompContextProvider>

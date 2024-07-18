@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
-import { loginUrlReq, registerUrlReq, roles, pagePaths } from "@/utils/constants"
+import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem } from "@/utils/constants"
 
 export default function LoginRegister() {
     const router = useRouter()
@@ -35,11 +35,16 @@ export default function LoginRegister() {
                     toast.success("Login successful")
                     console.log("Response")
                     console.log(res.data)
-                    localStorage.setItem("userId", res.data?.userId)
-                    localStorage.setItem("token", res.data?.token)
+                    const sessionData = {
+                        userId: res.data?.userId,
+                        token: res.data?.token,
+                        role: res.data?.roles[0],
+                        username: res.data?.username,
+                        time: new Date().getTime()
+                    }
+                    localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))
                     console.log("Content from local storage")
-                    console.log(localStorage.getItem("userId"))
-                    console.log(localStorage.getItem("token"))
+                    console.log(JSON.parse(localStorage.getItem(sessionDataItem)))
                     router.push(pagePaths.userdetails)
                 }
             }).catch((err) => {

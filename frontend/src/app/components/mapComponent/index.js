@@ -6,8 +6,9 @@ import { useGeolocated } from 'react-geolocated';
 import Link from 'next/link';
 import { pagePaths } from '@/utils/constants';
 import { LocateFixed } from 'lucide-react';
+import Loading from '../loading';
 
-export default function MapComponent({ position, setPosition, viewAll = false, nearByUsers, setNearByUsers }) {
+export default function MapComponent({ position, setPosition, viewAll = false, nearByUsers, setNearByUsers, updating = false }) {
     const mapRef = useRef(null);
     const { coords } = useGeolocated({
         positionOptions: {
@@ -19,11 +20,13 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
 
     useEffect(() => {
         console.log("coords", coords)
-        if (coords && !position)
+        if (coords && !position & !updating) {
+            console.log("Setting position to current location")
             setPosition({
                 lat: coords.latitude,
                 lng: coords.longitude,
             })
+        }
     }, [coords, position, setPosition])
 
     const MakrerUrl = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png';
@@ -39,24 +42,9 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         iconAnchor: [25, 50],
     });
 
-    function LocateUser() {
-        console.log("coords", coords)
-        const map = useMapEvents({
-            click(e) {
-                console.log("e.latlng", e.latlng)
-                map.flyTo({
-                    lat: coords.latitude,
-                    lng: coords.longitude
-                }, map.getZoom());
-            }
-        })
-        return null
-    }
 
     function LocationMarker() {
-        if (mapRef.current === null) {
-            mapRef.current = useMap();
-        }
+        mapRef.current = useMap();
         console.log("mapRef", mapRef.current)
         if (viewAll) return null;
         const map = useMapEvents({
@@ -72,7 +60,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         );
     }
 
-    return position === null ? null : (
+    return (!position || !coords || (viewAll && !nearByUsers)) ? <Loading chose='hand' /> : (
         <div className='relative size-full'>
             <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md'
                 onClick={() => {

@@ -1,26 +1,37 @@
 'use client'
+
 import { useState, useEffect, useRef } from "react"
-import { useForm } from "react-hook-form"
 import formBgImage from '../../../../../public/userdetails/form-bg.jpg'
 import { Separator } from "@/components/ui/separator"
 import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection, DoctorChamberLocationSection } from '@/app/components/formSections'
 import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axios from "axios"
-import { pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
+import { locationResolution, pagePaths, roles, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useSessionContext } from "@/app/context/sessionContext"
+import Loading from "@/app/components/loading"
 
 
 export default function UserDetailsPage() {
     const router = useRouter()
-    const role = "ROLE_TEST"
-    const locationResolution = 8
+    const sessionDataRef = useRef({})
     const userDataRef = useRef({})
     const [sections, setSections] = useState([{}])
     const [currentSection, setCurrentSection] = useState(0) // 0 for user details, 1 for image upload, 2 for medical history, 3 for doctor details, 4 for nurse details, 5 for location details
+    const sessionContext = useSessionContext()
 
     useEffect(() => {
+        const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
+        if (!sessionData) {
+            toast.error("Session data not found", {
+                description: "You need to login to continue",
+            })
+            router.push(pagePaths.login)
+            return
+        }
+        sessionDataRef.current = sessionData
         const getSections = (user_role) => {
             const temp_sections = [
                 {
@@ -60,42 +71,23 @@ export default function UserDetailsPage() {
                 return [temp_sections[0], temp_sections[1], temp_sections[4]]
             }
             else if (user_role === "ROLE_TEST") {
-                return [ temp_sections[4]]
+                return [temp_sections[4]]
             }
             console.log("Invalid role")
             return temp_sections
         }
-        setSections(getSections(role))
+        setSections(getSections(sessionDataRef.current.role))
 
-    }, [currentSection, role])
+    }, [])
 
-    // {
-    //     "fullName": "Dr. Adil",
-    //       "qualifications": ["MBBS", "DO"],
-    //       "workplace": "Khulna Medical College",
-    //       "department": "Cancer",
-    //       "designation": "Head",
-    //       "contactNumber": "01730445524",
-    //       "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-    //       "profilePicture": "Nana"
-    // }
     const saveForm = () => {
         console.log("user data ref from parent", userDataRef.current)
-        const tempToken = localStorage.getItem("token")
-        const tempId = localStorage.getItem("userId")
-        if (!tempToken || !tempId) {
-            toast.error("Token not found", {
-                description: "You need to login to continue",
-            })
-            router.push(pagePaths.login)
-            return
-        }
         const headers = {
-            'Authorization': `Bearer ${tempToken}`
+            'Authorization': `Bearer ${sessionContext.sessionData.token}`
         }
         const userData = userDataRef.current
         let form_data;
-        if (role === roles.doctor) {
+        if (sessionContext.sessionData.role === roles.doctor) {
             form_data = {
                 fullName: userData?.fullName,
                 qualifications: userData?.qualifications.split(",").map((qualification) => qualification.trim()),
@@ -108,7 +100,7 @@ export default function UserDetailsPage() {
 
             }
         }
-        else if (role === roles.basicUser || role === roles.patient) {
+        else if (sessionContext.sessionData.role === roles.basicUser || sessionContext.sessionData.role === roles.patient) {
             const tempPeriodDate = new Date(userData?.lastPeriodDate)
             form_data = {
                 fullName: userData?.fullName,
@@ -125,9 +117,7 @@ export default function UserDetailsPage() {
                 organsWithChronicCondition: userData?.organsWithChronicCondition,
                 medications: userData?.medications
             }
-            if (role === roles.patient) {
-                console.log("location from parent")
-                console.log(userData?.location.lat,)
+            if (sessionContext.sessionData.role === roles.patient) {
                 const tempDiagnosisDate = new Date(userData?.diagnosisDate)
                 form_data = {
                     ...form_data,
@@ -138,18 +128,22 @@ export default function UserDetailsPage() {
             }
         }
         console.log("form data", form_data)
-        // axios.post(userInfoRegUrlReq(tempId, role), form_data, {
-        //     headers: headers
-        // }).then((response) => {
-        //     console.log(response)
-        //     toast.success("Information saved successfully")
-        // }
-        // ).catch((error) => {
-        //     console.log(error)
-        //     toast.error("An error occured", {
-        //         description: error.response.data?.message
-        //     })
-        // })
+        axios.post(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
+            headers: headers
+        }).then((response) => {
+            console.log(response)
+            toast.success("Information saved successfully")
+            router.push(pagePaths.dashboard)
+        }
+        ).catch((error) => {
+            console.log(error)
+            toast.error("An error occured", {
+                description: error.response.data?.message
+            })
+        })
+    }
+    if (!sessionContext.sessionData) {
+        return <Loading />
     }
 
     return (
@@ -180,7 +174,7 @@ export default function UserDetailsPage() {
                             setCurrentSection: setCurrentSection,
                             currentSection: currentSection,
                             totalSections: sections.length,
-                            role: role,
+                            role: sessionContext.sessionData.role,
                             saveForm: saveForm
                         })
                     }

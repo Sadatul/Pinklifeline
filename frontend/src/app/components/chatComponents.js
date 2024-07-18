@@ -50,28 +50,21 @@ import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/
 import firebase_app from "@/utils/firebaseConfig";
 import { Progress } from "@/components/ui/progress";
 import { FileUploader } from "react-drag-drop-files";
+import { useSessionContext } from "@/app/context/sessionContext";
 
 
 
 export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const stompContext = useStompContext();
+    const sessionContext = useSessionContext
     const router = useRouter();
 
     useEffect(() => {
         console.log('Opened chat changed')
         console.log(stompContext.openedChat)
-        if (stompContext.openedChat) {
-            const id = localStorage.getItem('userId')
-            const token = localStorage.getItem('token')
-            if (!token || !id) {
-                console.error('Token not found')
-                toast.error('Token not found', {
-                    description: 'You need to login to continue'
-                })
-                router.push('/login')
-            }
-            const headers = { 'Authorization': `Bearer ${token}` }
+        if (stompContext.openedChat && sessionContext.sessionData) {
+            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
             axios.get(getMessagesUrl(stompContext.openedChat.roomId), {
                 headers: headers
             }).then((response) => {
@@ -82,7 +75,7 @@ export function ChatLayout() {
                 console.error(error)
             })
         }
-    }, [stompContext.openedChat, router])
+    }, [stompContext.openedChat, router, sessionContext.sessionData])
 
     return (
         <ResizablePanelGroup direction="horizontal" >
@@ -123,28 +116,21 @@ export function ChatLayout() {
 }
 
 export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
-
+    const sessionContext = useSessionContext()
     useEffect(() => {
-        const id = localStorage.getItem('userId')
-        const token = localStorage.getItem('token')
-        if (!token || !id) {
-            console.error('Token not found')
-            toast.error('Token not found', {
-                description: 'You need to login to continue'
+        if (sessionContext.sessionData) {
+            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+            axios.get(getChatsUrl(sessionContext.sessionData.userId), {
+                headers: headers
+            }).then((response) => {
+                console.log("Chats fetched")
+                stompContext.chatManager.current.addChats(response.data)
+                stompContext.setChats(response.data)
+            }).catch((error) => {
+                console.error(error)
             })
-            router.push('/login')
         }
-        const headers = { 'Authorization': `Bearer ${token}` }
-        axios.get(getChatsUrl(id), {
-            headers: headers
-        }).then((response) => {
-            console.log("Chats fetched")
-            stompContext.chatManager.current.addChats(response.data)
-            stompContext.setChats(response.data)
-        }).catch((error) => {
-            console.error(error)
-        })
-    }, [router])
+    }, [router, sessionContext.sessionData])
     return (
         <>
             <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">
@@ -215,6 +201,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
 }
 
 export function ChatWindow({ stompContext, router }) {
+    const sessionContext = useSessionContext()
     const scrollAreaRef = useRef(null);
     const imageFileInputRef = useRef(null);
     const [imageFile, setImageFile] = useState(null);
@@ -276,7 +263,7 @@ export function ChatWindow({ stompContext, router }) {
         console.log("Message sent:", message);
         if (message !== '') {
             const messageObject = {
-                sender: (stompContext.userId || localStorage.getItem('userId')),
+                sender: sessionContext.sessionData.userId,
                 receiverId: stompContext.openedChat?.userId,
                 message: message,
                 timestamp: new Date().toISOString(),
@@ -289,7 +276,7 @@ export function ChatWindow({ stompContext, router }) {
 
     const sendImageMessage = () => {
         if (!imageFile) return;
-        const filePath = messageImageUploaPath(stompContext.openedChat?.roomId, stompContext.userId, imageFile.name);
+        const filePath = messageImageUploaPath(stompContext.openedChat?.roomId, sessionContext.sessionData.userId, imageFile.name);
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
         uploadTask.on(
@@ -307,7 +294,7 @@ export function ChatWindow({ stompContext, router }) {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 console.log('File available at', downloadURL);
                 const messageObject = {
-                    sender: (stompContext.userId || localStorage.getItem('userId')),
+                    sender: sessionContext.sessionData.userId,
                     receiverId: stompContext.openedChat.userId,
                     message: downloadURL,
                     timestamp: new Date().toISOString(),
@@ -358,18 +345,18 @@ export function ChatWindow({ stompContext, router }) {
                 <ScrollableContainer id="chat-scroll" className="flex-1 p-4 overflow-y-auto" ref={scrollAreaRef}>
                     <div className="flex flex-col-reverse" >
                         {stompContext.messages.toReversed().map((message, index) => (
-                            <div key={index} className={cn('flex flex-col my-4', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "items-end" : "items-start")}>
-                                <div className={cn('flex flex-row', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "justify-end" : "justify-start")}>
-                                    <div className={cn('flex flex-row items-center', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "flex-row-reverse" : "flex-row")}>
+                            <div key={index} className={cn('flex flex-col my-4', String(message.sender) === (sessionContext.sessionData.userId) ? "items-end" : "items-start")}>
+                                <div className={cn('flex flex-row', String(message.sender) === (sessionContext.sessionData.userId) ? "justify-end" : "justify-start")}>
+                                    <div className={cn('flex flex-row items-center', String(message.sender) === (sessionContext.sessionData.userId) ? "flex-row-reverse" : "flex-row")}>
                                         <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
-                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : (String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
+                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : (String(message.sender) === (sessionContext.sessionData.userId) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
                                             {message.type === "TEXT" && <p>{message.message}</p>}
                                             {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
                                         </div>
                                     </div>
                                 </div>
-                                <div className={cn('flex flex-row mx-5', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "justify-end" : "justify-start")}>
-                                    <p className={cn('text-xs text-gray-500', String(message.sender) === (stompContext.userId || localStorage.getItem('userId')) ? "text-right" : "text-left")}>
+                                <div className={cn('flex flex-row mx-5', String(message.sender) === (sessionContext.sessionData.userId) ? "justify-end" : "justify-start")}>
+                                    <p className={cn('text-xs text-gray-500', String(message.sender) === (sessionContext.sessionData.userId) ? "text-right" : "text-left")}>
                                         {message.timestamp}
                                     </p>
                                 </div>
@@ -430,15 +417,6 @@ export function ChatWindow({ stompContext, router }) {
                             <Send size={24} color="white" />
                             <Ripple />
                         </button>
-                        {/* <button type="submit" className="border bg-pink-600 rounded-full p-[10px] p-ripple"
-                            onClick={() => {
-                                console.log('User id')
-                                console.log(localStorage.getItem('userId'))
-                            }}
-                        >
-                            see userId
-                            <Ripple />
-                        </button> */}
                     </form>
                 </div>
                 <AlertDialog open={openImageUploadDialog} >
