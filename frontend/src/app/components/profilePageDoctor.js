@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addReview, deleteDoctorReview, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, deleteDoctorReview, locationOnline, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -47,9 +47,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useSessionContext } from "@/app/context/sessionContext";
 import axios from "axios";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 
 
@@ -102,7 +105,7 @@ export default function Profile({ profileId, section }) {
             scrollPosition: 0,
             textColor: "text-pink-500",
             bgColor: "bg-pink-500",
-            section: <ConsultationSection userId={profileId} className={"bg-gradient-to-b from-pink-50 to-white"} />
+            section: <ConsultationSection profileId={profileId} className={"bg-gradient-to-b from-pink-50 to-white"} />
         }
     ])
     const rating = 4
@@ -474,50 +477,46 @@ function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
                             </DialogHeader>
                             <DialogDescription asChild>
                                 <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
-                                    <textarea id="add-review-text" className="px-2 py-1 bg-gray-100 shadow-inner border border-blue-300" type="text" />
-                                    <Select onOpenChange={(e) => {
-                                        if (e === false) {
-                                            rating.current = null
-                                        }
-                                    }}>
-                                        <SelectTrigger className="px-5 py-2 w-20 font-semibold border-2 border-gray-600">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup >
-                                                <SelectLabel>Ratings</SelectLabel>
-                                                <SelectItem value="0">0</SelectItem>
-                                                <SelectItem value="1">1</SelectItem>
-                                                <SelectItem value="2">2</SelectItem>
-                                                <SelectItem value="3">3</SelectItem>
-                                                <SelectItem value="4">4</SelectItem>
-                                                <SelectItem value="5">5</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
+                                    <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border border-blue-300" type="text" />
+                                    <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 text-black" defaultValue={0}>
+                                        <option value={0} disabled>Rating</option>
+                                        <option value={1}>1</option>
+                                        <option value={2}>2</option>
+                                        <option value={3}>3</option>
+                                        <option value={4}>4</option>
+                                        <option value={5}>5</option>
+                                    </select>
+                                </div>
+                            </DialogDescription>
+                            <DialogFooter>
+                                <DialogClose>
                                     <Button className="w-24"
                                         onClick={() => {
                                             const comment = document.getElementById("add-review-text")?.value
-                                            console.log(rating.current)
+                                            const rating = document.getElementById("add-review-rating")?.value
+                                            if (Number(rating) !== 0) {
+                                                const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+                                                // axios.post(addReview(sessionContext.sessionData.userId), {
+                                                //     rating: rating,
+                                                //     id: sessionContext.sessionData.userId,
+                                                //     comment: comment
+                                                // }, {
+                                                //     headers: headers
+                                                // }).then((res) => {
+                                                //     setReviewInfo(res?.data)
+                                                //     toast.success("Review Added")
+                                                // }).catch((error) => {
+                                                //     toast.error("Error adding review")
+                                                // })
+                                            } else {
+                                                toast.error("Error adding review")
+                                            }
                                             //need to fix shadcn selec first
-                                            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                            // axios.post(addReview(sessionContext.sessionData.userId), {
-                                            //     rating: rating,
-                                            //     id: sessionContext.sessionData.userId,
-                                            //     comment: comment
-                                            // }, {
-                                            //     headers: headers
-                                            // }).then((res) => {
-                                            //     setReviewInfo(res?.data)
-                                            //     toast.success("Review Added")
-                                            // }).catch((error) => {
-                                            //     toast.error("Error adding review")
-                                            // })
                                         }}>
                                         Add Review
                                     </Button>
-                                </div>
-                            </DialogDescription>
+                                </DialogClose>
+                            </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -668,15 +667,15 @@ function AboutSection({ workPlace, designation, qualifications, department, cont
     )
 }
 
-function ConsultationSection({ userId, className }) {
+function ConsultationSection({ userId, className, profileId }) {
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
             <div className="flex flex-col rounded p-4 w-full">
                 <div className="flex flex-col">
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1111100" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1110011" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="0011111" fees="500 BDT" />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1101011" fees="500 BDT" />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1111100" fees="500 BDT" profileId={profileId} id={1} />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1110011" fees="500 BDT" profileId={profileId} id={1} />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="0011111" fees="500 BDT" profileId={profileId} id={1} />
+                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1101011" fees="500 BDT" profileId={profileId} id={1} />
                 </div>
             </div>
         </div>
@@ -684,19 +683,43 @@ function ConsultationSection({ userId, className }) {
     )
 }
 
-function ChamberCard({ location, startTime, endTime, workdays, fees }) {
+function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, id }) {
     const weekDays = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"]
+    const sessionContext = useSessionContext()
     const workdaysArray = workdays.split('')
+    const [appointmentDate, setAppointmentDate] = useState(null)
     const [openDialog, setOpenDialog] = useState(false)
     const requestAppointment = () => {
         const contactNumber = document.getElementById('patient-contact-number')?.value
-        if (!contactNumber) {
+        if (!contactNumber || contactNumber.length !== 11) {
             toast.error('Please enter a valid contact number')
             return
         }
+        else if (!appointmentDate) {
+            toast.error("Select an appointment date.")
+            return
+        }
+        const tempDate = new Date(appointmentDate)
+        const formData = {
+            "patientId": sessionContext.sessionData.userId,
+            "doctorId": profileId,
+            "patientContactNumber": contactNumber,
+            "locationId": id,
+            "date": `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`,
+            "isOnline": location === locationOnline
+        }
         console.log('Requesting Appointment')
-        console.log('Contact Number:', contactNumber)
-        setOpenDialog(false)
+        console.log(formData)
+        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+        axios.post(addAppointment, {
+            headers: headers
+        }, formData).then((res) => {
+            toast.success("Appointment requested")
+            setAppointmentDate(null)
+            setOpenDialog(false)
+        }).catch((error) => {
+            toast.error("Error occured. Check details and internet")
+        })
     }
 
     return (
@@ -720,19 +743,22 @@ function ChamberCard({ location, startTime, endTime, workdays, fees }) {
             </div>
             <div className="flex flex-row w-4/12 px-4 py-2 items-center justify-center h-full">
                 <AlertDialog open={openDialog}>
-                    <AlertDialogTrigger className=" bg-gradient-to-br from-pink-600 to-pink-800 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:scale-90 hover:bg-gray-200 hover:text-purple-100 transition ease-in hover:text-base"
-                        onClick={() => setOpenDialog(true)}
-                    >Request Appointment</AlertDialogTrigger>
-                    <AlertDialogContent className="w-auto bg-gray-100">
-                        <AlertDialogHeader className={"gap-2"}>
+                    <AlertDialogTrigger className="bg-gradient-to-br from-pink-600 to-pink-700 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:bg-gray-200 hover:text-purple-100 transition hover:text-base"
+                        onClick={() => setOpenDialog(true)}>
+                        Request Appointment</AlertDialogTrigger>
+                    <AlertDialogContent className="w-auto bg-gray-100  flex flex-col justify-between">
+                        <AlertDialogHeader className={"gap-3"}>
                             <AlertDialogTitle>Appointment Request Form</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                <div className="flex flex-col gap-3 w-full">
-                                    <p className="text-base font-semibold text-black">Location:{location}</p>
+                            <AlertDialogDescription asChild>
+                                <div className="flex flex-col gap-5 mx-3 w-full">
+                                    <p className="text-base font-semibold text-black">Location: {location}</p>
                                     <div className="flex flex-row items-center w-full justify-between">
-                                        <p className="text-base font-semibold text-black">Fees:{fees}</p>
-                                        <p className="text-base font-semibold text-black">Start:{startTime}</p>
-                                        <p className="text-base font-semibold text-black">End:{endTime}</p>
+                                        <p className="text-base font-semibold text-black">Fees: {fees}</p>
+                                        <div className="flex gap-4">
+                                            <p className="text-base font-semibold text-black">{startTime}</p>
+                                            <p className="text-base font-semibold text-black">To</p>
+                                            <p className="text-base font-semibold text-black">{endTime}</p>
+                                        </div>
                                     </div>
                                     <div className="flex flex-row items-center justify-between gap-2">
                                         {weekDays.map((day, index) => (
@@ -741,21 +767,51 @@ function ChamberCard({ location, startTime, endTime, workdays, fees }) {
                                             </div>
                                         ))}
                                     </div>
+                                    <div className="">
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "mx-3 w-2/3 justify-start text-left font-normal border border-gray-600",
+                                                        !appointmentDate && "text-muted-foreground"
+                                                    )}>
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={appointmentDate}
+                                                    onSelect={(selectedDate) => {
+                                                        setAppointmentDate(selectedDate)
+                                                    }}
+                                                    disabled={(date) =>
+                                                        String(workdaysArray[(new Date(date).getDay() + 1) % 7]) === '0'
+                                                    }
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
                                     <input type="number" id="patient-contact-number" className="w-full number-input h-10 p-2 border border-gray-600 rounded-md" placeholder="Enter your Contact Number" pattern="[0-9]{11}" title="Please enter a valid 11 digit phone number" />
                                 </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="gap-2">
-                            <AlertDialogCancel className="bg-red-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold"
-                                onClick={() => setOpenDialog(false)}
+                            <AlertDialogCancel className="bg-red-700 border border-red-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-gray-50 hover:text-red-600"
+                                onClick={() => {
+                                    setAppointmentDate(null)
+                                    setOpenDialog(false)
+                                }}
                             >Cancel</AlertDialogCancel>
-                            <AlertDialogAction className="bg-green-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold"
+                            <AlertDialogAction className="bg-green-700 border border-green-600 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-gray-100 hover:text-green-600"
                                 onClick={() => requestAppointment()}
                             >Request</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                {/* <button className=" bg-gradient-to-br from-pink-600 to-pink-800 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:scale-90 hover:bg-gray-200 hover:text-purple-100 transition ease-in hover:text-base">Request Appointment</button> */}
             </div>
         </div>
     )

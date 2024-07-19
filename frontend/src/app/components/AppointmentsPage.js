@@ -177,7 +177,6 @@ function CurrentAppointmentCard({ appointment }) {
     )
 }
 
-// appoinmentFields : doctor name, date , time , location, fees, status:paid or not, requste accepted or not
 
 function AppointmentSection({ appointments = [] }) {
     const filterOptions = useRef([

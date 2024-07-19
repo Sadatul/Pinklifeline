@@ -239,8 +239,7 @@ export function ChatWindow({ stompContext, router }) {
         stompContext.stompClientRef.current.publish({
             destination: messageSendUrl,
             body: JSON.stringify(message),
-        }
-        );
+        });
         const newChatMessage = {
             sender: String(message.sender),
             message: message.message,
