@@ -16,6 +16,8 @@ export const getNearByUsers = (id) => { return `${baseUrl}/v1/ROLE_PATIENT/nearb
 export const updateUserDetailsUrl = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` }
 export const getConsultationLocations = (doc_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doc_id}/locations` }
 export const addReview = (userId) => { return `${baseUrl}/v1/reviews/doctor/${userId}` }
+export const updateDoctorReview = (userId, review_id) => { return `${baseUrl}/v1/reviews/doctor/${userId}/${review_id}` }
+export const deleteDoctorReview = (userId, review_id) => { return `${baseUrl}/v1/reviews/doctor/${userId}/${review_id}` }
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
 export const locationResolution = 8

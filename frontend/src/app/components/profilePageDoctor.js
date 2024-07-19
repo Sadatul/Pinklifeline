@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { messageSendUrl, roles, testingAvatar } from "@/utils/constants";
+import { addReview, deleteDoctorReview, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,20 +46,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useSessionContext } from "@/app/context/sessionContext";
+import axios from "axios";
 
 
 
 
 export default function Profile({ profileId, section }) {
     const sectionEnum = {
-        posts : 0,
-        about : 1,
-        reviews : 2,
-        appointments : 3,
-        consultations :4
+        posts: 0,
+        about: 1,
+        reviews: 2,
+        appointments: 3,
+        consultations: 4
     }
     const params = useParams()
-    console.log(params)
+    const [reviewInfo, setReviewInfo] = useState()
     const containerRef = useRef(null)
     const [selectedTab, setSelectedTab] = useState(sectionEnum[section] || 0)
     const [showProfileNavbar, setShowProfileNavbar] = useState(false)
@@ -84,7 +88,7 @@ export default function Profile({ profileId, section }) {
             scrollPosition: 0,
             textColor: "text-amber-500",
             bgColor: "bg-amber-500",
-            section: <ReviewSection userId={profileId} className={"bg-gradient-to-b from-amber-50 to-white"} />
+            section: <ReviewSection userId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} className={"bg-gradient-to-b from-amber-50 to-white"} />
         },
         {
             title: "Appointments",
@@ -408,7 +412,10 @@ function ForumCard({ title, content, date, likesCount, commentsCount }) {
     )
 }
 
-function ReviewSection({ userId, className }) {
+function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
+    // const [reviews, setReviews] = useState(null)
+    const rating = useRef(null)
+    const sessionContext = useSessionContext()
     const [currentReviewPage, setCurrentReviewPage] = useState(1)
     const [totalReviewPages, setTotalReviewPages] = useState(12)
     const [reviews, setReviews] = useState([
@@ -437,12 +444,86 @@ function ReviewSection({ userId, className }) {
             name: "John Doe"
         },
     ])
+    function deleteReviewById(id) {
+        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+        axios.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
+            headers: headers
+        }).then((res) => {
+            setReviewInfo(res?.data)
+            //delete the review from the list by id
+            toast.success("Succefully deleted review")
+        }).catch((error) => {
+            toast.error("Error deleting review")
+        })
+    }
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
             <div className="flex flex-col rounded p-4 w-full">
-                <div className="flex flex-col">
+                <div className="flex flex-col items-end w-full">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button className="w-24">
+                                Add Review
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Write your message
+                                </DialogTitle>
+                            </DialogHeader>
+                            <DialogDescription asChild>
+                                <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
+                                    <textarea id="add-review-text" className="px-2 py-1 bg-gray-100 shadow-inner border border-blue-300" type="text" />
+                                    <Select onOpenChange={(e) => {
+                                        if (e === false) {
+                                            rating.current = null
+                                        }
+                                    }}>
+                                        <SelectTrigger className="px-5 py-2 w-20 font-semibold border-2 border-gray-600">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup >
+                                                <SelectLabel>Ratings</SelectLabel>
+                                                <SelectItem value="0">0</SelectItem>
+                                                <SelectItem value="1">1</SelectItem>
+                                                <SelectItem value="2">2</SelectItem>
+                                                <SelectItem value="3">3</SelectItem>
+                                                <SelectItem value="4">4</SelectItem>
+                                                <SelectItem value="5">5</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button className="w-24"
+                                        onClick={() => {
+                                            const comment = document.getElementById("add-review-text")?.value
+                                            console.log(rating.current)
+                                            //need to fix shadcn selec first
+                                            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+                                            // axios.post(addReview(sessionContext.sessionData.userId), {
+                                            //     rating: rating,
+                                            //     id: sessionContext.sessionData.userId,
+                                            //     comment: comment
+                                            // }, {
+                                            //     headers: headers
+                                            // }).then((res) => {
+                                            //     setReviewInfo(res?.data)
+                                            //     toast.success("Review Added")
+                                            // }).catch((error) => {
+                                            //     toast.error("Error adding review")
+                                            // })
+                                        }}>
+                                        Add Review
+                                    </Button>
+                                </div>
+                            </DialogDescription>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+                <div className="flex flex-col items-center">
                     {reviews.map((review, index) => (
-                        <ReviewCard key={index} reviewer={review.name} content={review.content} date={review.date} rating={review.rating} />
+                        <ReviewCard key={index} reviewer={review.name} content={review.content} date={review.date} rating={review.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} deleteReviewById={deleteReviewById} />
                     ))}
                 </div>
                 <div className="w-full flex justify-center mt-4">
@@ -462,7 +543,8 @@ function ReviewSection({ userId, className }) {
     )
 }
 
-function ReviewCard({ content, date, rating, reviewer }) {
+function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo, id, deleteReviewById }) {
+    const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
     const [data, setData] = useState({
         content: content,
@@ -471,29 +553,21 @@ function ReviewCard({ content, date, rating, reviewer }) {
         reviewer: reviewer
     })
     return (
-        <div className="flex flex-row w-full items-center mx-2 my-3 bg-white rounded-md shadow ">
-            <div className="flex flex-col w-8/12 px-4 py-2">
+        <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
+            <div className="flex flex-col px-4 py-2">
                 <h1 className="text font-semibold line-clamp-1">{data.reviewer}</h1>
-                {editable ? <textarea className="border border-blue-500 bg-gray-100" defaultValue={data.content} id="review-edit" /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
+                {editable ? <textarea id="review-text" className="border border-blue-500 bg-gray-100" defaultValue={data.content} /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
             </div>
-            <div className="flex flex-col w-4/12 px-4 py-2 items-center justify-center">
+            <div className="flex flex-col px-4 py-2 items-center justify-center">
                 {editable ? (
-                    <Select defaultValue={String(data.rating)}>
-                        <SelectTrigger className="px-5 py-2 w-20">
-                            <SelectValue placeholder="Select a rating" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Ratings</SelectLabel>
-                                <SelectItem value="0">0</SelectItem>
-                                <SelectItem value="1">1</SelectItem>
-                                <SelectItem value="2">2</SelectItem>
-                                <SelectItem value="3">3</SelectItem>
-                                <SelectItem value="4">4</SelectItem>
-                                <SelectItem value="5">5</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <select id="review-rating" className="p-2 rounded-md bg-gray-100 text-black" defaultValue={Number(data.rating) || 0}>
+                        <option value={0} disabled>Rating</option>
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                    </select>
                 ) : (
                     <div className="flex flex-row items-center">
                         {data.rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : data.rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
@@ -502,12 +576,57 @@ function ReviewCard({ content, date, rating, reviewer }) {
                 )}
                 <span className="text-sm font-semibold text-end w-full">{data.date}</span>
             </div>
-            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
-                onClick={() => { setEditable(true) }}>
+            <div className="flex flex-row">
                 {
-                    editable ? <Check size={24} className="text-green-600" /> : <Pencil size={24} className="text-blue-600" />
+                    editable ? (
+                        <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
+                            onClick={() => {
+                                const newContent = document.getElementById("review-text")?.value
+                                const newRating = document.getElementById("review-rating")
+                                if ((newRating !== data.rating && newRating) || newContent !== data.content) {
+                                    const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+                                    axios.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
+                                        rating: newRating,
+                                        comment: newContent
+                                    }, {
+                                        headers: headers
+                                    }).then((res) => {
+                                        setReviewInfo(res?.data)
+                                        const tempDate = new Date()
+                                        setData({
+                                            ...data,
+                                            content: newContent,
+                                            rating: newRating,
+                                            date: `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`
+                                        })
+                                        toast.success("Successfully updated")
+                                        setEditable(false)
+                                    }).catch((error) => {
+                                        toast.error("Error updating review")
+                                        setEditable(false)
+                                    })
+                                }
+                            }}>
+                            <Check size={24} className="text-green-600" />
+                        </button>
+                    ) : (
+                        <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
+                            onClick={() => {
+                                setEditable(true)
+                            }}>
+                            <Pencil size={24} className="text-blue-600" />
+                        </button>
+                    )
                 }
-            </button>
+                <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
+                    onClick={() => {
+                        deleteReviewById(id)
+                    }}>
+                    Delete
+                </button>
+            </div>
+
+
         </div>
     )
 }

@@ -36,7 +36,7 @@ export function SocketInitializer() {
                 debug: function (str) {
                     console.log(str)
                 },
-                reconnectDelay: 500,
+                reconnectDelay: 0,
                 heartbeatIncoming: 4000,
                 heartbeatOutgoing: 4000
             })
