@@ -40,36 +40,41 @@ export function ChambersPage({ className }) {
 
     }, [sessionContext.sessionData])
 
-    function deleteLocation(id){
+    function deleteLocation(id) {
         //code for delete is incomplete due to that bitch taking down my internet connection
         const headers = {
             "Authorization": `Bearer ${sessionContext.sessionData.token}`
         }
         axios.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
             headers: headers
-        }).then((res)=>{
+        }).then((res) => {
             toast.success("Location deleted")
-        }).catch((error)=>{
+        }).catch((error) => {
             toast.error("Error occured. Check internet")
         })
     }
 
 
-    if (!consulations) return <Loading chose="hand" />
+    // if (!consulations) return <Loading chose="hand" />
     return (
-        <div className={cn("flex flex-col w-full rounded items-center bg-white gap-5", className)}>
-            <h1 className="text-2xl font-bold mt-3 w-1/2 text-center">Consultation Location
-                <Separator className="w-full h-[1.5px] bg-gray-500 mt-2 mb-5" />
-            </h1>
-
-            <div className="flex flex-col rounded p-4 w-9/12 bg-gray-100">
-                <div className="flex flex-col">
+        <div className={cn("flex flex-col w-10/12 rounded items-center bg-gray-100 gap-5 py-3", className)}>
+            <div className="flex flex-col rounded w-11/12">
+                <div className="flex flex-col w-full">
                     {
                         // consulations?.map((consulation, index) => {
                         //     <ChamberCard key={index} location={consulation.location} startTime={consulation.start} endTime={consulation.end} fees={consulation.fees} workdayString={consulation.workdays} id={consulation.id} />
                         // })
-                        <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-
+                        <>
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
+                        </>
                     }
                 </div>
             </div>
@@ -152,7 +157,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                     workdayString: newWorkdayString,
                     fees: newFees
                 })
-            }).catch((error)=>{
+            }).catch((error) => {
                 toast.error("Error updating location. Check Internet. Try again.")
             })
         }

@@ -19,7 +19,11 @@ export function SessionContextProvider({ children }) {
             })
             router.push(pagePaths.login)
         }
-        setSessionData(sessionData)
+
+        setSessionData({
+            ...sessionData,
+            headers: { 'Authorization': `Bearer ${sessionData.token}` }
+        })
     }, [])
 
     return (

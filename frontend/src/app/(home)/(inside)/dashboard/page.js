@@ -44,6 +44,7 @@ import { AppointmentsPage } from "@/app/components/AppointmentsPage"
 import { LocationPage } from "@/app/components/nearByLocationPage"
 import { PastPrescriptionPage } from "@/app/components/vault";
 import { DoctorLivePrescriptionPage } from "@/app/components/livePrescription";
+import { EditDoctorDetailsPage } from "@/app/components/editDoctorDetails";
 
 
 
@@ -66,18 +67,11 @@ export default function DashboardPage() {
                 </div>
             </div>
             <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto over ml-[2px] rounded-l-lg">
-                <DoctorLivePrescriptionPage />
+                <AppointmentsPage />
             </ScrollableContainer>
         </div>
     )
 }
 
 
-export function EditDoctorDetails() {
-    return (
-        <div className="flex flex-col h-full w-full">
-
-        </div>
-    )
-}
 

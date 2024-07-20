@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, deleteDoctorReview, locationOnline, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, deleteDoctorReview, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,11 +53,16 @@ import axios from "axios";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import Loading from "./loading";
 
 
-
+function round(number) {
+    return (Math.round((number + Number.EPSILON) * 100) / 100)
+}
 
 export default function Profile({ profileId, section }) {
+    const profilePic = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
+    const stompContext = useStompContext();
     const sectionEnum = {
         posts: 0,
         about: 1,
@@ -65,60 +70,114 @@ export default function Profile({ profileId, section }) {
         appointments: 3,
         consultations: 4
     }
-    const params = useParams()
-    const [reviewInfo, setReviewInfo] = useState()
+
+    const [userData, setUserData] = useState(null)
+    const [doctorReviews, setDoctorReviews] = useState(null)
+    const sessionContext = useSessionContext()
+    const [reviewInfo, setReviewInfo] = useState(null)
+    const [ratingIcon, setRatingIcon] = useState(null)
     const containerRef = useRef(null)
     const [selectedTab, setSelectedTab] = useState(sectionEnum[section] || 0)
     const [showProfileNavbar, setShowProfileNavbar] = useState(false)
     const [viewScrollBar, setViewScrollBar] = useState(false)
-    const [tabs, setTabs] = useState([
+
+    const tabs = [
         {
             title: "Posts",
-            scrollPosition: 0,
             textColor: "text-indigo-500",
             bgColor: "bg-indigo-500",
             section: <PostSection userId={profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
         },
         {
             title: "About",
-            scrollPosition: 0,
             textColor: "text-green-500",
             bgColor: "bg-green-500",
             section: <AboutSection workPlace={"Dhaka Medical Collage"} designation={"Head"} qualifications={["MBBS", "FCPS", "Degree"]} department={"Cancer"} contactNumber={"01792421372"} className={"bg-gradient-to-b from-green-50 to-white"} />
         },
         {
             title: "Reviews",
-            scrollPosition: 0,
             textColor: "text-amber-500",
             bgColor: "bg-amber-500",
-            section: <ReviewSection userId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} className={"bg-gradient-to-b from-amber-50 to-white"} />
+            section: <ReviewSection userId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} doctorReviews={doctorReviews} setDoctorReviews={setDoctorReviews} className={"bg-gradient-to-b from-amber-50 to-white"} />
         },
         {
             title: "Appointments",
-            scrollPosition: 0,
             textColor: "text-purple-500",
             bgColor: "bg-purple-500",
             section: <AppointmentsSection userId={profileId} className={"bg-gradient-to-b from-purple-50 to-white"} />
         },
         {
             title: "Consultations",
-            scrollPosition: 0,
             textColor: "text-pink-500",
             bgColor: "bg-pink-500",
             section: <ConsultationSection profileId={profileId} className={"bg-gradient-to-b from-pink-50 to-white"} />
         }
-    ])
-    const rating = 4
-    const ratingArray = [52, 48, 86, 75, 50]
-    const profileName = "The Last Airbender Aang"
-    const workPlace = "Air Temple"
-    const designation = "Avater"
-    const profilePic = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
-    const ratingIcon = rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />
-    const stompContext = useStompContext();
-    const [userId, setUserId] = useState('')
+    ]
+
     useEffect(() => {
-        setUserId(localStorage.getItem('userId'))
+        if (doctorReviews && doctorReviews?.length > 0) {
+            const count = doctorReviews.length
+            let ratingCount = [0, 0, 0, 0, 0]
+            let sum = 0
+            for (const doctorReview of doctorReviews) {
+                sum = sum + Number(doctorReview.rating)
+                ratingCount[Number(doctorReview.rating) - 1] = ratingCount[Number(doctorReview.rating) - 1] + 1
+            }
+            setReviewInfo({
+                count: count,
+                averageRating: round(sum / count),
+                ratingCount: ratingCount
+            })
+            const averageRating = round(sum / count)
+            setRatingIcon(averageRating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : averageRating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />)
+        }
+    }, [doctorReviews])
+
+    useEffect(() => {
+        axios.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
+            setDoctorReviews(res.data)
+        }).catch((error) => {
+            toast.error("Error fetching data check internet.")
+        })
+
+        setDoctorReviews([
+            {
+                "id": 33,
+                "reviewerId": 3,
+                "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
+                "rating": 3,
+                "comment": "A very good doctor",
+                "timestamp": "2024-07-16T11:46:20"
+            },
+            {
+                "id": 32,
+                "reviewerId": 2,
+                "reviewerName": "sadatulislamsadi@gmail.com",
+                "rating": 4,
+                "comment": "Sultan is back",
+                "timestamp": "2024-07-14T11:22:44"
+            }
+        ])
+
+        axios.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
+            setUserData(res.data)
+        }).catch((error) => {
+            toast.error("Error loading. Check internet")
+        })
+
+        setUserData({
+            "qualifications": [
+                "MBBS",
+                "DO"
+            ],
+            "profilePicture": profilePic,
+            "isVerified": "Y",
+            "contactNumber": "01730445524",
+            "fullName": "Dr. Adil",
+            "designation": "Head",
+            "department": "Cancer",
+            "workplace": "Khulna Medical College"
+        })
     }, [])
 
     const sendMessage = () => {
@@ -140,6 +199,8 @@ export default function Profile({ profileId, section }) {
             );
         }
     }
+
+    if (!userData || !doctorReviews || !reviewInfo) return <Loading />
 
     return (
         <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}
@@ -175,7 +236,7 @@ export default function Profile({ profileId, section }) {
             }}>
 
             <div id="profile-navbar" hidden={true} className={cn(showProfileNavbar ? "bg-gray-50  h-16 p-3 w-full flex sticky -top-6 z-50 flex-row gap-5 justify-between items-center flex-wrap flex-shrink rounded-b-lg shadow" : "hidden")}>
-                <Image src={profilePic} width={48} height={52} className="rounded-full ml-16" alt="profile-picture" />
+                {userData?.profilePicture && <Image src={userData?.profilePicture} width={48} height={52} className="rounded-full ml-16" alt="profile-picture" />}
                 <div className="flex flex-row gap-3">
                     {tabs.map((tab, index) => (
                         <button key={index} onClick={() => setSelectedTab(index)} className={cn("text-base flex flex-col font-semibold px-2 mx-5", selectedTab === index ? tab.textColor : "text-gray-800")}>
@@ -197,24 +258,28 @@ export default function Profile({ profileId, section }) {
                 </div>
                 <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
                     <div className="absolute -top-20 flex flex-col items-center">
-                        <Image src={profilePic} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
+                        {userData?.profilePicture && <Image src={userData?.profilePicture} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />}
                         <Badge className={"mt-2 text-sm"}>Doctor</Badge>
                     </div>
-                    <div className="flex flex-col ml-56">
-                        <h1 className="text-2xl font-bold ">{profileName}</h1>
-                        <h1 className="text-base ">{designation}{", "}{workPlace}</h1>
+                    <div className="flex flex-col ml-56 gap-2">
+                        <h1 className="text-2xl font-bold flex items-center gap-3">
+                            {userData?.fullName}
+                            <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white font-thin py-1 h-6")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
+                        </h1>
+                        <h1 className="text-base ">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</h1>
+                        <h1 className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</h1>
                         <Popover>
                             <PopoverTrigger className="w-12">
                                 <div className="flex flex-row items-center mt-3">
                                     {ratingIcon}
-                                    <span className="text-base font-semibold ml-2">{rating}</span>
+                                    <span className="text-base font-semibold ml-2">{reviewInfo.averageRating}</span>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto ">
-                                {ratingArray.map((rating, index) => (
+                                {reviewInfo.ratingCount.map((rating, index) => (
                                     <div key={index} className="flex flex-row items-center p-2">
                                         <div className="flex flex-row flex-1">
-                                            {ratingArray.slice(index).map((rating2, index2) => (
+                                            {reviewInfo.ratingCount.slice(index).map((rating2, index2) => (
                                                 <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
                                             ))}
                                         </div>
@@ -227,7 +292,7 @@ export default function Profile({ profileId, section }) {
                     <div className="flex flex-row items-center mr-3 mt-12">
                         <Popover>
                             <PopoverTrigger asChild>
-                                <button className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
+                                <button disabled={!sessionContext.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
                                     <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
                                     <span className="ml-1 font-semibold">Message</span>
                                 </button>
@@ -239,7 +304,7 @@ export default function Profile({ profileId, section }) {
                                 </div>
                             </PopoverContent>
                         </Popover>
-                        <button className="bg-purple-600 text-white px-2 py-2 text-base rounded-md ml-2 font-semibold">Request Appointment</button>
+                        <button onClick={() => { setSelectedTab(4) }} className="bg-purple-600 text-white px-2 py-2 text-base rounded-md ml-2 font-semibold">Request Appointment</button>
                     </div>
                 </div>
                 <Separator className="w-11/12 mt-10 h-[2px]" />
@@ -415,38 +480,13 @@ function ForumCard({ title, content, date, likesCount, commentsCount }) {
     )
 }
 
-function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
+function ReviewSection({ userId, className, reviewInfo, setReviewInfo, doctorReviews, setDoctorReviews }) {
     // const [reviews, setReviews] = useState(null)
     const rating = useRef(null)
     const sessionContext = useSessionContext()
     const [currentReviewPage, setCurrentReviewPage] = useState(1)
     const [totalReviewPages, setTotalReviewPages] = useState(12)
-    const [reviews, setReviews] = useState([
-        {
-            content: "Dr. Aang is a very good doctor. He helped me with my anxiety and I am feeling much better now.",
-            date: "2021-09-01",
-            rating: 4,
-            name: "John Doe"
-        },
-        {
-            content: "Dr. Aang is a very good doctor. He helped me with my anxiety and I am feeling much better now.",
-            date: "2021-09-01",
-            rating: 5,
-            name: "John Doe"
-        },
-        {
-            content: "Dr. Aang is a very good doctor. He helped me with my anxiety and I am feeling much better now.",
-            date: "2021-09-01",
-            rating: 3,
-            name: "John Doe"
-        },
-        {
-            content: "Dr. Aang is a very good doctor. He helped me with my anxiety and I am feeling much better now.",
-            date: "2021-09-01",
-            rating: 4,
-            name: "John Doe"
-        },
-    ])
+
     function deleteReviewById(id) {
         const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
         axios.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
@@ -454,6 +494,7 @@ function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
         }).then((res) => {
             setReviewInfo(res?.data)
             //delete the review from the list by id
+            setDoctorReviews(doctorReviews?.filter((review, index) => review.id != id))
             toast.success("Succefully deleted review")
         }).catch((error) => {
             toast.error("Error deleting review")
@@ -496,18 +537,19 @@ function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
                                             const rating = document.getElementById("add-review-rating")?.value
                                             if (Number(rating) !== 0) {
                                                 const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                                // axios.post(addReview(sessionContext.sessionData.userId), {
-                                                //     rating: rating,
-                                                //     id: sessionContext.sessionData.userId,
-                                                //     comment: comment
-                                                // }, {
-                                                //     headers: headers
-                                                // }).then((res) => {
-                                                //     setReviewInfo(res?.data)
-                                                //     toast.success("Review Added")
-                                                // }).catch((error) => {
-                                                //     toast.error("Error adding review")
-                                                // })
+                                                axios.post(addReview(sessionContext.sessionData.userId), {
+                                                    rating: rating,
+                                                    id: sessionContext.sessionData.userId,
+                                                    comment: comment
+                                                }, {
+                                                    headers: headers
+                                                }).then((res) => {
+                                                    setReviewInfo(res?.data)
+                                                    //need to set the structure
+                                                    toast.success("Review Added")
+                                                }).catch((error) => {
+                                                    toast.error("Error adding review")
+                                                })
                                             } else {
                                                 toast.error("Error adding review")
                                             }
@@ -521,8 +563,8 @@ function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
                     </Dialog>
                 </div>
                 <div className="flex flex-col items-center">
-                    {reviews.map((review, index) => (
-                        <ReviewCard key={index} reviewer={review.name} content={review.content} date={review.date} rating={review.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} deleteReviewById={deleteReviewById} />
+                    {doctorReviews?.map((review, index) => (
+                        <ReviewCard key={index} reviewer={review.reviewerName} content={review.comment} date={review.timestamp} rating={review.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} deleteReviewById={deleteReviewById} id={review.id} reviewerId={review.reviewerId} />
                     ))}
                 </div>
                 <div className="w-full flex justify-center mt-4">
@@ -542,7 +584,7 @@ function ReviewSection({ userId, className, reviewInfo, setReviewInfo }) {
     )
 }
 
-function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo, id, deleteReviewById }) {
+function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo, id, deleteReviewById, reviewerId }) {
     const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
     const [data, setData] = useState({
@@ -553,9 +595,9 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
     })
     return (
         <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
-            <div className="flex flex-col px-4 py-2">
+            <div className="flex flex-col flex-1 px-4 py-2">
                 <h1 className="text font-semibold line-clamp-1">{data.reviewer}</h1>
-                {editable ? <textarea id="review-text" className="border border-blue-500 bg-gray-100" defaultValue={data.content} /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
+                {editable ? <textarea id="review-text" className="border w-full border-blue-500 bg-gray-100" defaultValue={data.content} /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
             </div>
             <div className="flex flex-col px-4 py-2 items-center justify-center">
                 {editable ? (
@@ -575,54 +617,68 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
                 )}
                 <span className="text-sm font-semibold text-end w-full">{data.date}</span>
             </div>
-            <div className="flex flex-row">
+            <div className="flex flex-row px-3 gap-3">
                 {
                     editable ? (
-                        <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
-                            onClick={() => {
-                                const newContent = document.getElementById("review-text")?.value
-                                const newRating = document.getElementById("review-rating")
-                                if ((newRating !== data.rating && newRating) || newContent !== data.content) {
-                                    const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                    axios.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
-                                        rating: newRating,
-                                        comment: newContent
-                                    }, {
-                                        headers: headers
-                                    }).then((res) => {
-                                        setReviewInfo(res?.data)
-                                        const tempDate = new Date()
-                                        setData({
-                                            ...data,
-                                            content: newContent,
+                        <>
+                            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
+                                onClick={() => {
+                                    const newContent = document.getElementById("review-text")?.value
+                                    const newRating = document.getElementById("review-rating")
+                                    if ((newRating !== data.rating && newRating) || newContent !== data.content) {
+                                        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+                                        axios.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
                                             rating: newRating,
-                                            date: `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`
+                                            comment: newContent
+                                        }, {
+                                            headers: headers
+                                        }).then((res) => {
+                                            setReviewInfo(res?.data)
+                                            const tempDate = new Date()
+                                            setData({
+                                                ...data,
+                                                content: newContent,
+                                                rating: newRating,
+                                                date: `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`
+                                            })
+                                            toast.success("Successfully updated")
+                                            setEditable(false)
+                                        }).catch((error) => {
+                                            toast.error("Error updating review")
+                                            setEditable(false)
                                         })
-                                        toast.success("Successfully updated")
-                                        setEditable(false)
-                                    }).catch((error) => {
-                                        toast.error("Error updating review")
-                                        setEditable(false)
-                                    })
-                                }
-                            }}>
-                            <Check size={24} className="text-green-600" />
-                        </button>
+                                    }
+                                }}>
+                                <Check size={24} className="text-green-600" />
+                            </button>
+                            <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
+                                onClick={() => {
+                                    setEditable(false)
+                                }}>
+                                Cancel
+                            </button>
+                        </>
                     ) : (
-                        <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
-                            onClick={() => {
-                                setEditable(true)
-                            }}>
-                            <Pencil size={24} className="text-blue-600" />
-                        </button>
+                        <>
+                            {sessionContext.sessionData.userId === reviewerId &&
+                                <>
+                                    <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
+                                        onClick={() => {
+                                            setEditable(true)
+                                        }}>
+                                        <Pencil size={24} className="text-blue-600" />
+                                    </button>
+                                    <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
+                                        onClick={() => {
+                                            deleteReviewById(id)
+                                        }}>
+                                        Delete
+                                    </button>
+                                </>
+                            }
+                        </>
                     )
                 }
-                <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
-                    onClick={() => {
-                        deleteReviewById(id)
-                    }}>
-                    Delete
-                </button>
             </div>
 
 
@@ -668,14 +724,36 @@ function AboutSection({ workPlace, designation, qualifications, department, cont
 }
 
 function ConsultationSection({ userId, className, profileId }) {
+    const [chambers, setChambers] = useState(null)
+    const sessionContext = useSessionContext()
+    useEffect(() => {
+        axios.get(getDoctorProfileDetailsUrlLocations(profileId)).then((res) => {
+            setChambers(res.data)
+        }).then((res) => {
+            
+        }).catch((error)=>{
+            toast.error("Error loading")
+        })
+    }, [])
+
+    if (!chambers) return <Loading />
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
             <div className="flex flex-col rounded p-4 w-full">
                 <div className="flex flex-col">
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1111100" fees="500 BDT" profileId={profileId} id={1} />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1110011" fees="500 BDT" profileId={profileId} id={1} />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="0011111" fees="500 BDT" profileId={profileId} id={1} />
-                    <ChamberCard location="Dhaka Medical College Hospital" startTime="09:00" endTime="17:00" workdays="1101011" fees="500 BDT" profileId={profileId} id={1} />
+                    {
+                        chambers.map((chamber, index) =>
+                            <ChamberCard key={index}
+                                location={chamber.location}
+                                startTime={chamber.start}
+                                endTime={chamber.end}
+                                fees={chamber.fees}
+                                workdays={chamber.workdays}
+                                id={chamber.id}
+                                profileId={profileId}
+                            />
+                        )
+                    }
                 </div>
             </div>
         </div>
@@ -735,7 +813,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                 </div>
                 <div className="flex flex-row items-center mt-4">
                     {weekDays.map((day, index) => (
-                        <div key={index} className={cn("flex flex-row items-center border text-black mx-2 bg-gradient-to-tr from-green-200 via-green-50 to-gray-100", workdaysArray[index] !== '1' && "hidden")}>
+                        <div key={index} className={cn("flex flex-row items-center border text-black mx-2 bg-green-300 rounded-sm", workdaysArray[index] !== '1' && "hidden")}>
                             <span className="text-lg font-semibold mx-2">{day}</span>
                         </div>
                     ))}

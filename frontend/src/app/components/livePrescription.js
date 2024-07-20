@@ -111,6 +111,7 @@ export function DoctorLivePrescriptionPage() {
     return (
         <div className="flex flex-col items-center w-full gap-10">
             <h1 className="text-2xl font-semibold mt-5 mb-5">Live Prescription</h1>
+            <h1 className="text-lg font-semibold mt-5 mb-5">Patient Name:{params.patientName}</h1>
             <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center">
                     <label className="text-md font-semibold m-2 text-center">Analysis:
@@ -120,7 +121,6 @@ export function DoctorLivePrescriptionPage() {
                         onClick={() => {
                             if (!document.getElementById('analysis').value) return toast.error("Analysis field is empty")
                             setAnalysis(document.getElementById('analysis').value)
-                            toast.message("Analysis added")
                             updatePatient()
                         }}
                         variant={"outline"}
@@ -130,36 +130,6 @@ export function DoctorLivePrescriptionPage() {
                         <Plus className="text-gray-700" size={28} />
                     </Button>
                 </div>
-                {/* <Popover>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-[160px] ml-3 justify-start text-left font-normal",
-                            )}>
-                            Added Analyses</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <ScrollArea className="rounded-md border h-52 min-w-64">
-                            {analysis.map((irregularity, index) => (
-                                <div key={index} className="flex justify-between p-2 border-b border-gray-300">
-                                    <span>{irregularity}</span>
-                                    <Button
-                                        onClick={() => {
-                                            setAnalysis(analysis.filter((_, i) => i !== index))
-                                            toast.message("Irregularity removed")
-                                        }}
-                                        variant={"outline"}
-                                        className={cn(
-                                            " h-7 mx-4 justify-start text-left font-normal",
-                                        )}>
-                                        <Minus className="text-red-500" size={28} />
-                                    </Button>
-                                </div>
-                            ))}
-                        </ScrollArea >
-                    </PopoverContent>
-                </Popover> */}
             </div>
             <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center">

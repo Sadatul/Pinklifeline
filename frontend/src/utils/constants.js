@@ -1,3 +1,5 @@
+import { PatientLivePrescriptionPage } from "@/app/components/livePrescription";
+
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
@@ -22,7 +24,18 @@ export const addReview = (userId) => { return `${baseUrl}/v1/reviews/doctor/${us
 export const updateDoctorReview = (userId, review_id) => { return `${baseUrl}/v1/reviews/doctor/${userId}/${review_id}` }
 export const deleteDoctorReview = (userId, review_id) => { return `${baseUrl}/v1/reviews/doctor/${userId}/${review_id}` }
 export const addAppointment = `${baseUrl}/v1/appointments`
+export const acceptAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/accept` }
+export const makePaymentUrl = (appointment_id) => { return `${baseUrl}/v1/payment/appointment/${appointment_id}/initiate` }
+export const getAppointmentsUrl = `${baseUrl}/v1/appointments`
 export const joinVideoCall = `${baseUrl}/v1/online-meeting/join`
+export const closeVideoCall = `${baseUrl}/v1/online-meeting/close`
+export const cancelAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/cancel` }
+export const declineAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/decline` }
+export const getDoctorProfileDetailsUrl = (doc_id) => { return `${baseUrl}/v1/infos/guest/doctor/${doc_id}` }
+export const getUserProfileDetails = (id) => { return `${baseUrl}/v1/infos/guest/basic/${id}` }
+export const getDoctorProfileDetailsUrlLocations = (doc_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doc_id}/locations` }
+export const getDoctorProfileDetailsUrlReviews = (doc_id) => { return `${baseUrl}/v1/reviews/doctor/${doc_id}` }
+
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
 export const locationResolution = 8
@@ -42,6 +55,11 @@ export const roles = {
     doctorProfile: "doctor"
 }
 
+export const appointmentStatus = {
+    running: "RUNNING",
+    requested: "REQUESTED"
+}
+
 export const pagePaths = {
     login: "/reglogin",
     register: "/reglogin",
@@ -55,6 +73,8 @@ export const pagePaths = {
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
     dashboard: "/dashboard",
+    patientLivePrescription: (doctorName) => { return `/prescription/live/patient/${doctorName}` },
+    doctorLivePrescription: (patientName) => { return `/prescription/live/doctor/${patientName}` }
 }
 
 
