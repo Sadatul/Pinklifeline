@@ -247,7 +247,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                             </AlertDialogHeader>
                             <AlertDialogFooter className="m-2">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleUpload} disabled={imageUploaded || (uploadProgress > 0 && uploadProgress < 100)}>
+                                <AlertDialogAction onClick={handleUpload} disabled={imageUploaded}>
                                     Upload
                                 </AlertDialogAction>
                             </AlertDialogFooter>
