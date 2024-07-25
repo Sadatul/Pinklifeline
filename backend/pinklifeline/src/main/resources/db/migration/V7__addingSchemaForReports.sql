@@ -17,12 +17,26 @@ CREATE TABLE pinklifeline.reports
     CONSTRAINT pk_reports PRIMARY KEY (id)
 );
 
+CREATE TABLE pinklifeline.shared_reports
+(
+    id              BIGINT AUTO_INCREMENT NOT NULL,
+    report_id       BIGINT                NOT NULL,
+    doctor_id       BIGINT                NOT NULL,
+    expiration_time datetime              NULL,
+    CONSTRAINT pk_shared_reports PRIMARY KEY (id)
+);
 
 ALTER TABLE pinklifeline.reports
     ADD CONSTRAINT FK_REPORTS_ON_USER FOREIGN KEY (user_id) REFERENCES pinklifeline.users (id);
 
 ALTER TABLE pinklifeline.report_keywords
     ADD CONSTRAINT fk_report_keywords_on_report FOREIGN KEY (report_id) REFERENCES pinklifeline.reports (id);
+
+ALTER TABLE pinklifeline.shared_reports
+    ADD CONSTRAINT FK_SHARED_REPORTS_ON_DOCTOR FOREIGN KEY (doctor_id) REFERENCES pinklifeline.doctor_details (user_id);
+
+ALTER TABLE pinklifeline.shared_reports
+    ADD CONSTRAINT FK_SHARED_REPORTS_ON_REPORT FOREIGN KEY (report_id) REFERENCES pinklifeline.reports (id);
 
 CREATE INDEX index_report_keywords_keyword ON report_keywords (keyword);
 CREATE INDEX index_reports_date ON pinklifeline.reports (date);

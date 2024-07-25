@@ -1,7 +1,10 @@
 package com.sadi.pinklifeline.controllers;
 
+import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
+import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
 import com.sadi.pinklifeline.models.entities.Report;
 import com.sadi.pinklifeline.models.reqeusts.ReportReq;
+import com.sadi.pinklifeline.models.reqeusts.ReportShareReq;
 import com.sadi.pinklifeline.service.ReportHandlerService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -78,5 +81,35 @@ public class ReportHandlerV1 {
             reportMapList.add(reportMap);
         }
         return ResponseEntity.ok(reportMapList);
+    }
+
+    @PostMapping("/share")
+    public ResponseEntity<Void> shareReport(
+            @Valid @RequestBody ReportShareReq req) {
+        log.debug("Share report req {}",  req);
+        Long id = reportHandlerService.shareReport(req);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
+                .path("/{id}").buildAndExpand(id).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
+    @DeleteMapping("/share/{shareId}")
+    public ResponseEntity<Void> revokeReport(
+            @PathVariable Long shareId) {
+        log.debug("Revoke share with id: {}",  shareId);
+        reportHandlerService.revokeShareReport(shareId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/share")
+    public ResponseEntity<List<SharedReportDTO>> getSharedReports(){
+        List<SharedReportDTO> reports = reportHandlerService.getSharedReportForUsers();
+        return ResponseEntity.ok(reports);
+    }
+
+    @GetMapping("/{reportId}/share")
+    public ResponseEntity<List<ReportSharedInfoDTO>> getSharedInfoForReports(@PathVariable Long reportId){
+        List<ReportSharedInfoDTO> reports = reportHandlerService.getSharedInfoForUserByReportId(reportId);
+        return ResponseEntity.ok(reports);
     }
 }

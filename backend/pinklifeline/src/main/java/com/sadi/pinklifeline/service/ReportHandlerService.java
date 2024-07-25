@@ -1,10 +1,17 @@
 package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
+import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
+import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
+import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.Report;
+import com.sadi.pinklifeline.models.entities.SharedReport;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.ReportReq;
+import com.sadi.pinklifeline.models.reqeusts.ReportShareReq;
 import com.sadi.pinklifeline.repositories.ReportRepository;
+import com.sadi.pinklifeline.repositories.SharedReportRepository;
+import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import com.sadi.pinklifeline.specifications.ReportSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import org.springframework.data.domain.Sort;
@@ -22,10 +29,14 @@ public class ReportHandlerService {
 
     private final UserService userService;
     private final ReportRepository reportRepository;
+    private final DoctorsInfoService doctorsInfoService;
+    private final SharedReportRepository sharedReportRepository;
 
-    public ReportHandlerService(UserService userService, ReportRepository reportRepository) {
+    public ReportHandlerService(UserService userService, ReportRepository reportRepository, DoctorsInfoService doctorsInfoService, SharedReportRepository sharedReportRepository) {
         this.userService = userService;
         this.reportRepository = reportRepository;
+        this.doctorsInfoService = doctorsInfoService;
+        this.sharedReportRepository = sharedReportRepository;
     }
 
     public Report getReport(Long id) {
@@ -101,5 +112,55 @@ public class ReportHandlerService {
         spec = spec.and(ReportSpecification.sortByTimestamp(sortDirection != null ? sortDirection : Sort.Direction.DESC));
 
         return reportRepository.findAll(spec);
+    }
+
+    public Long shareReport(ReportShareReq req) {
+        Long userId = SecurityUtils.getOwnerID();
+        Report report = getReport(req.getReportId());
+        verifyReportOwner(report, userId);
+
+        DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getDoctorId());
+        LocalDateTime expiredAt = null;
+        if(req.getPeriod() != null){
+            expiredAt = LocalDateTime.now().plusHours(req.getPeriod());
+        }
+
+        SharedReport sharedReport = new SharedReport(report, doctorDetails, expiredAt);
+        return sharedReportRepository.save(sharedReport).getId();
+    }
+
+    public void revokeShareReport(Long shareId) {
+        SharedReport sharedReport = getSharedReportWithReportInfo(shareId);
+        Long userId = SecurityUtils.getOwnerID();
+        verifyReportOwner(sharedReport.getReport(), userId);
+
+        sharedReportRepository.delete(sharedReport);
+    }
+
+    public SharedReport getSharedReportWithReportInfo(Long shareId) {
+        return sharedReportRepository.findByIdWithReport(shareId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("ReportShare entry with id %s not found", shareId)
+                ));
+    }
+
+    public List<SharedReportDTO> getSharedReportForUsers() {
+        Long userId = SecurityUtils.getOwnerID();
+        List<SharedReportDTO> sharedReportDTOs;
+        if(SecurityUtils.hasRole("ROLE_DOCTOR")){
+            sharedReportDTOs = sharedReportRepository.findSharedReportInfoByDoctorId(userId, LocalDateTime.now());
+        }
+        else {
+            sharedReportDTOs = sharedReportRepository.findSharedReportInfoByUserId(userId, LocalDateTime.now());
+        }
+        return sharedReportDTOs;
+    }
+
+    public List<ReportSharedInfoDTO> getSharedInfoForUserByReportId(Long reportId) {
+        Long userId = SecurityUtils.getOwnerID();
+        Report report = getReport(reportId);
+        verifyReportOwner(report, userId);
+
+        return sharedReportRepository.findSharedReportInfoByReportId(reportId, LocalDateTime.now());
     }
 }
