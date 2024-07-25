@@ -69,6 +69,12 @@ public class ReportHandlerV1 {
         for (Report report : reports) {
             Map<String, Object> reportMap = new HashMap<>();
             reportMap.put("id", report.getId());
+            reportMap.put("doctorName", report.getDoctorName());
+            reportMap.put("hospitalName", report.getHospitalName());
+            reportMap.put("date", report.getDate());
+            reportMap.put("fileLink", report.getFileLink());
+            reportMap.put("keywords", report.getKeywords());
+            reportMap.put("summary", report.getSummary());
             reportMapList.add(reportMap);
         }
         return ResponseEntity.ok(reportMapList);

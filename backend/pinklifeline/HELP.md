@@ -638,3 +638,96 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>** <br>
 * Reviews will be sorted based on time**
+
+## Add Report
+``` Endpoint: POST /v1/reports```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+	"doctorName": "Dr. Morshad Hossain",
+	"hospitalName": "Gazi Medical, Khulna",
+	"date": "2024-08-08",
+	"summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+  	"fileLink": "google.com",
+	"keywords": ["Heart", "Lungs"]
+ }
+```
+
+**<span style="color:red">Notes:</span>**
+* Add report request can be sent by any role
+* None of the above fields can be null. Must provide each one.
+* if you have no keywords than send an empty list ( [ ] )
+* Summary must be limited to 1000 characters.
+
+## Update Report
+``` Endpoint: PUT /v1/reports/{report_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+	"doctorName": "Dr. Morshad Hossain",
+	"hospitalName": "Gazi Medical, Khulna",
+	"date": "2024-08-08",
+	"summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+  	"fileLink": "google.com",
+	"keywords": ["Heart", "Lungs"]
+ }
+```
+
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* if you have no keywords than send an empty list ( [ ] )
+* Summary must be limited to 1000 characters.
+*  Remember whatever you send here will directly replace in database. So if you want to keep some fields with previous data you must send that previous data.
+
+##  Delete report
+``` Endpoint: DELETE /v1/reports/{report_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+
+
+## Filter Reports
+``` Endpoint: GET /v1/reports```
+```Response status: ok(200)```
+<br><br>
+``` Query params: doctorName=Morshad```
+<br>
+``` Query params: hospitalName=hospital```
+<br>
+``` Query params: keywords=heart,kidney```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sort=ASC```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can omit any one without any issues.
+* if you omit sort param then reports will be returned in descending order of last update time
+* keywords must be comma separated.
+* The relationships between keywords in and. If you have 5 keywords then all 5 will be keywords must be present in a report to show it in the filter result.
+
+### Response Body
+```
+[
+  {
+    "date": "2024-08-08",
+    "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+    "doctorName": "Dr. Morshad Hossain",
+    "fileLink": "google.com",
+    "keywords":[
+    "Heart",
+    "Lungs"
+      ],
+    "id": 3,
+    "hospitalName": "Gaza Medical, Khulna"
+  }
+]
+```
