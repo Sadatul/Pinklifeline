@@ -3,12 +3,16 @@ package com.sadi.pinklifeline.controllers;
 import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
 import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
 import com.sadi.pinklifeline.models.entities.Report;
+import com.sadi.pinklifeline.models.entities.SharedReport;
 import com.sadi.pinklifeline.models.reqeusts.ReportReq;
 import com.sadi.pinklifeline.models.reqeusts.ReportShareReq;
 import com.sadi.pinklifeline.service.ReportHandlerService;
+import com.sadi.pinklifeline.service.SharedReportFilterService;
+import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,8 +27,10 @@ import java.util.*;
 public class ReportHandlerV1 {
 
     private final ReportHandlerService reportHandlerService;
-    public ReportHandlerV1(ReportHandlerService reportHandlerService) {
+    private final SharedReportFilterService sharedReportFilterService;
+    public ReportHandlerV1(ReportHandlerService reportHandlerService, SharedReportFilterService sharedReportFilterService) {
         this.reportHandlerService = reportHandlerService;
+        this.sharedReportFilterService = sharedReportFilterService;
     }
 
     @PostMapping
@@ -102,8 +108,27 @@ public class ReportHandlerV1 {
     }
 
     @GetMapping("/share")
-    public ResponseEntity<List<SharedReportDTO>> getSharedReports(){
-        List<SharedReportDTO> reports = reportHandlerService.getSharedReportForUsers();
+    public ResponseEntity<List<SharedReportDTO>> getSharedReportsFiltered(
+            @RequestParam(required = false, defaultValue = "1000-01-01") LocalDate startDate,
+            @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String hospitalName,
+            @RequestParam(required = false) String doctorName,
+            @RequestParam(required = false, defaultValue = "false") Boolean limited
+    ){
+        List<String> keywordList = keywords != null ?
+                Arrays.asList(keywords.split(",")) :
+                new ArrayList<>();
+        Specification<SharedReport> spec = sharedReportFilterService.getSpecification(startDate, endDate, keywordList,
+                username, hospitalName, doctorName, limited);
+        List<SharedReportDTO> reports;
+        if(SecurityUtils.hasRole("ROLE_DOCTOR")){
+            reports = sharedReportFilterService.filterShareReportsForDoctor(spec);
+        }
+        else {
+            reports = sharedReportFilterService.filterShareReportsForUser(spec);
+        }
         return ResponseEntity.ok(reports);
     }
 

@@ -1,8 +1,8 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
-import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.Report;
 import com.sadi.pinklifeline.models.entities.SharedReport;
@@ -16,6 +16,7 @@ import com.sadi.pinklifeline.specifications.ReportSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ReportHandlerService {
@@ -45,6 +47,7 @@ public class ReportHandlerService {
         ));
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public Long addReport(ReportReq req) {
         Long userId = SecurityUtils.getOwnerID();
         User user = userService.getUserIfRegisteredOnlyId(userId);
@@ -62,6 +65,7 @@ public class ReportHandlerService {
         }
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void updateReport(Long id, ReportReq req) {
         Long userId = SecurityUtils.getOwnerID();
         Report report = getReport(id);
@@ -78,6 +82,7 @@ public class ReportHandlerService {
         reportRepository.save(report);
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void deleteReport(Long id) {
         Long userId = SecurityUtils.getOwnerID();
         Report report = getReport(id);
@@ -85,6 +90,7 @@ public class ReportHandlerService {
         reportRepository.delete(report);
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public List<Report> findReports(LocalDate startDate, LocalDate endDate,
                                     List<String> keywords, String hospitalName, String doctorName,
                                     Sort.Direction sortDirection) {
@@ -114,10 +120,19 @@ public class ReportHandlerService {
         return reportRepository.findAll(spec);
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public Long shareReport(ReportShareReq req) {
         Long userId = SecurityUtils.getOwnerID();
         Report report = getReport(req.getReportId());
         verifyReportOwner(report, userId);
+
+        Optional<SharedReport> sr = sharedReportRepository.findSharedReportByReportIdAndDocId(
+                req.getReportId(),req.getDoctorId(), LocalDateTime.now());
+        if(sr.isPresent()) {
+            throw new BadRequestFromUserException(
+                    String.format("Doctor with id: %d already has access to the report with id: %d", req.getDoctorId(), req.getReportId())
+            );
+        }
 
         DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getDoctorId());
         LocalDateTime expiredAt = null;
@@ -129,6 +144,7 @@ public class ReportHandlerService {
         return sharedReportRepository.save(sharedReport).getId();
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void revokeShareReport(Long shareId) {
         SharedReport sharedReport = getSharedReportWithReportInfo(shareId);
         Long userId = SecurityUtils.getOwnerID();
@@ -143,19 +159,7 @@ public class ReportHandlerService {
                         String.format("ReportShare entry with id %s not found", shareId)
                 ));
     }
-
-    public List<SharedReportDTO> getSharedReportForUsers() {
-        Long userId = SecurityUtils.getOwnerID();
-        List<SharedReportDTO> sharedReportDTOs;
-        if(SecurityUtils.hasRole("ROLE_DOCTOR")){
-            sharedReportDTOs = sharedReportRepository.findSharedReportInfoByDoctorId(userId, LocalDateTime.now());
-        }
-        else {
-            sharedReportDTOs = sharedReportRepository.findSharedReportInfoByUserId(userId, LocalDateTime.now());
-        }
-        return sharedReportDTOs;
-    }
-
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public List<ReportSharedInfoDTO> getSharedInfoForUserByReportId(Long reportId) {
         Long userId = SecurityUtils.getOwnerID();
         Report report = getReport(reportId);
