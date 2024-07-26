@@ -36,7 +36,7 @@ ALTER TABLE pinklifeline.shared_reports
     ADD CONSTRAINT FK_SHARED_REPORTS_ON_DOCTOR FOREIGN KEY (doctor_id) REFERENCES pinklifeline.doctor_details (user_id);
 
 ALTER TABLE pinklifeline.shared_reports
-    ADD CONSTRAINT FK_SHARED_REPORTS_ON_REPORT FOREIGN KEY (report_id) REFERENCES pinklifeline.reports (id);
+    ADD CONSTRAINT FK_SHARED_REPORTS_ON_REPORT FOREIGN KEY (report_id) REFERENCES pinklifeline.reports (id) ON DELETE CASCADE;
 
 CREATE INDEX index_report_keywords_keyword ON report_keywords (keyword);
 CREATE INDEX index_reports_date ON pinklifeline.reports (date);

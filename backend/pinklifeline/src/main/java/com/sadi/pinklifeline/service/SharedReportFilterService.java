@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.SharedReportType;
 import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.Report;
@@ -94,7 +95,7 @@ public class SharedReportFilterService {
 
     public Specification<SharedReport> getSpecification(LocalDate startDate, LocalDate endDate,
                                                          List<String> keywords, String username, String hospitalName, String doctorName,
-                                                         Boolean limited) {
+                                                         SharedReportType type) {
         Specification<com.sadi.pinklifeline.models.entities.SharedReport> spec = Specification.where(null);
         Long doctorId = SecurityUtils.getOwnerID();
         if(SecurityUtils.hasRole("ROLE_DOCTOR")) {
@@ -103,9 +104,12 @@ public class SharedReportFilterService {
         else{
             spec = spec.and(SharedReportSpecification.withUserId(doctorId));
         }
-        if(!limited){
+        if(type.equals(SharedReportType.ALL)){
             spec = spec.and(SharedReportSpecification.withExpirationTime()
                     .or(SharedReportSpecification.withExpirationTimeNull()));
+        }
+        else if(type.equals(SharedReportType.UNLIMITED)){
+            spec = spec.and(SharedReportSpecification.withExpirationTimeNull());
         }
         else{
             spec = spec.and(SharedReportSpecification.withExpirationTime());

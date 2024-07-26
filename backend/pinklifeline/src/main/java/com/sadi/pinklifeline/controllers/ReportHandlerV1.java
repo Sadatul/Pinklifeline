@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.controllers;
 
+import com.sadi.pinklifeline.enums.SharedReportType;
 import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
 import com.sadi.pinklifeline.models.dtos.SharedReportDTO;
 import com.sadi.pinklifeline.models.entities.Report;
@@ -53,9 +54,11 @@ public class ReportHandlerV1 {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReport(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "false") Boolean force
+    ) {
         log.debug("Delete report for id {}", id);
-        reportHandlerService.deleteReport(id);
+        reportHandlerService.deleteReport(id, force);
         return ResponseEntity.noContent().build();
     }
 
@@ -115,13 +118,13 @@ public class ReportHandlerV1 {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String hospitalName,
             @RequestParam(required = false) String doctorName,
-            @RequestParam(required = false, defaultValue = "false") Boolean limited
+            @RequestParam(required = false, defaultValue = "ALL") SharedReportType type
     ){
         List<String> keywordList = keywords != null ?
                 Arrays.asList(keywords.split(",")) :
                 new ArrayList<>();
         Specification<SharedReport> spec = sharedReportFilterService.getSpecification(startDate, endDate, keywordList,
-                username, hospitalName, doctorName, limited);
+                username, hospitalName, doctorName, type);
         List<SharedReportDTO> reports;
         if(SecurityUtils.hasRole("ROLE_DOCTOR")){
             reports = sharedReportFilterService.filterShareReportsForDoctor(spec);

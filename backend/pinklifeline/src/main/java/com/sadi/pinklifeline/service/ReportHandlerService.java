@@ -83,8 +83,15 @@ public class ReportHandlerService {
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
-    public void deleteReport(Long id) {
+    public void deleteReport(Long id, Boolean force) {
         Long userId = SecurityUtils.getOwnerID();
+        List<ReportSharedInfoDTO> dtos = sharedReportRepository.findSharedReportInfoByReportId(id,
+                LocalDateTime.now());
+        if(!dtos.isEmpty() && !force){
+            throw new BadRequestFromUserException(
+                    String.format("Report with id:%d is shared to %d doctors", id, dtos.size())
+            );
+        }
         Report report = getReport(id);
         verifyReportOwner(report, userId);
         reportRepository.delete(report);
