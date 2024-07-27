@@ -49,6 +49,7 @@ import { useRouter } from "next/navigation"
 import { addConsultationLocationUrl, locationOnline, pagePaths, roles } from "@/utils/constants"
 import axios from "axios"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useSessionContext } from "@/app/context/sessionContext"
 
 
 export function UserInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
@@ -297,6 +298,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
 
 // location, start, end, workdays, fees
 export function DoctorChamberLocationSection({ }) {
+    const sessionContext = useSessionContext()
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
     const userDataRef = useRef({})
     const [isOnline, setIsOnline] = useState(false)
@@ -343,19 +345,9 @@ export function DoctorChamberLocationSection({ }) {
             workdays: userDataRef.current.workdaysString,
             fees: userDataRef.current.fees
         }
-        console.log("location form: ", loacationForm)
-        const id = localStorage.getItem('userId')
-        const token = localStorage.getItem('token')
-        if (!id || !token) {
-            toast.error("Login required")
-            router.push(pagePaths.login)
-        }
-        const headers = {
-            'Authorization': `Bearer ${token}`
-        }
-        axios.post(addConsultationLocationUrl(id), loacationForm, { headers: headers }).then((response) => {
+        axios.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm, { headers: sessionContext.sessionData.headers }).then((response) => {
             console.log(response.data)
-            toast.dismiss(savingLocationToast)
+            toast.dismiss()
             toast.success("Location added successfully")
             setConfirmDialogOpen(false)
         }).catch((error) => {
@@ -458,10 +450,10 @@ export function DoctorChamberLocationSection({ }) {
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row items-center w-full m-2 px-8 justify-evenly">
-                <Button variant = "outline" className={"border-2 border-gray-600"} 
-                onClick={()=>{
-                    router.push(pagePaths.dashboard)
-                }} >
+                <Button variant="outline" className={"border-2 border-gray-600"}
+                    onClick={() => {
+                        router.push(pagePaths.dashboard)
+                    }} >
                     Skip
                 </Button>
                 <Button className=" hover:bg-gray-200 border-2 border-gray-700 hover:text-gray-800 bg-gray-700 text-gray-200" onClick={() => {
@@ -478,7 +470,7 @@ export function DoctorChamberLocationSection({ }) {
                             <AlertDialogDescription asChild>
                                 <div className="flex flex-col items-center justify-evenly flex-1">
                                     <div className="flex flex-row w-full justify-between items-center">
-                                        <p className="text-lg text-black ">Location: {userDataRef.current.location}</p>
+                                        <p className="text-lg text-black ">Location: {isOnline ? locationOnline : userDataRef.current.location}</p>
                                         <p className="text-lg text-black">Fees: {userDataRef.current.fees}</p>
                                     </div>
                                     <div className="flex flex-row w-full justify-between items-center">
@@ -508,13 +500,11 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
     const storage = getStorage(firebase_app)
     const fileTypes = ["JPEG", "PNG", "JPG"];
     const [imageFile, setImageFile] = useState(null)
-
-    useEffect(() => {
-        register("doctorDocs", { required: "Document is required" });
-    }, [register]);
+    const [disableButtons, setDisableButtons] = useState(false)
 
     const onSubmit = (data) => {
         userDataRef.current = { ...userDataRef.current, ...data }
+        console.log("user data: ", userDataRef.current)
         if (currentSection < (totalSections - 1)) {
             setCurrentSection(a => ((a + 1) % totalSections))
         }
@@ -535,11 +525,12 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
         const filePath = `profileImages/${localStorage.getItem('userId') || new Date().toString()}/${imageFile.name}`;
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        setDisableButtons(true)
         uploadTask.on(
             'state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
+                console.log("progress :", progress)
             },
             (error) => {
                 toast.error("Error uploading image", {
@@ -549,6 +540,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 userDataRef.current = { ...userDataRef.current, profilePictureUrl: downloadURL }
+                setDisableButtons(false)
                 toast.dismiss(uploadingToast)
                 toast.success("Image uploaded successfully")
             }
@@ -574,14 +566,14 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                         </label>
                         <AlertDialog >
                             <AlertDialogTrigger asChild>
-                                <button className="px-2 border bg-gray-700 text-white rounded-lg h-8 mt-5">Add Profile Picture</button>
+                                <button disabled={disableButtons} className="px-2 border bg-gray-700 text-white rounded-lg h-8 mt-5">Add Profile Picture</button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Upload Profile Picture</AlertDialogTitle>
                                     <AlertDialogDescription asChild>
                                         <div className="flex flex-col items-center justify-evenly flex-1">
-                                            <div className="h-96 w-96 border rounded-lg border-purple-500">
+                                            <div className="min-h-96 w-96 border rounded-lg border-purple-500">
                                                 {userDataRef.current.profilePicturePreview && (
                                                     <div className="flex flex-col justify-center items-center">
                                                         <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-full">
@@ -664,7 +656,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
             </AnimatePresence>
             <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)}
+                <button type='button' disabled={!(currentSection > 0) || disableButtons}
                     onClick={() => {
                         userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
@@ -673,7 +665,11 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                 >
                     Previous
                 </button>
-                <button type='button' onClick={handleSubmit(onSubmit)}
+                <button disabled={disableButtons} type='button' onClick={() => {
+                    console.log("Hello")
+                    console.log(errors)
+                    handleSubmit(onSubmit)()
+                }}
                     className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
                     {currentSection === totalSections - 1 ? "Save" : "Next"}
                 </button>
@@ -1015,10 +1011,11 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         <option value="cancerStage" disabled  >
                                             Current Cancer Stage
                                         </option>
-                                        <option value="Stage_1">Stage 1</option>
-                                        <option value="Stage_2">Stage 2</option>
-                                        <option value="Stage_3">Stage 3</option>
-                                        <option value="Stage_4">Stage 4</option>
+                                        <option value="STAGE_0">Stage 0</option>
+                                        <option value="STAGE_1">Stage 1</option>
+                                        <option value="STAGE_2">Stage 2</option>
+                                        <option value="STAGE_3">Stage 3</option>
+                                        <option value="STAGE_4">Stage 4</option>
                                         <option value="SURVIVOR">Survivor</option>
                                     </select>
                                 </label>

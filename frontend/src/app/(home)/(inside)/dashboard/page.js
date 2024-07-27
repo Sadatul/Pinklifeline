@@ -71,7 +71,7 @@ export default function DashboardPage() {
                 </div>
             </div>
             <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto over ml-[2px] rounded-l-lg">
-                <BlogWritePage />
+                <AppointmentsPage />
             </ScrollableContainer>
         </div>
     )

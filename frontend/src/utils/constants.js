@@ -35,6 +35,8 @@ export const getDoctorProfileDetailsUrl = (doc_id) => { return `${baseUrl}/v1/in
 export const getUserProfileDetails = (id) => { return `${baseUrl}/v1/infos/guest/basic/${id}` }
 export const getDoctorProfileDetailsUrlLocations = (doc_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doc_id}/locations` }
 export const getDoctorProfileDetailsUrlReviews = (doc_id) => { return `${baseUrl}/v1/reviews/doctor/${doc_id}` }
+export const getVideoCallToekn = `${baseUrl}/v1/meeting/user/token`
+export const createOnlineMeetingUrl = `${baseUrl}/v1/online-meeting/start`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -42,6 +44,7 @@ export const locationResolution = 8
 
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
+export const emptyAvatar = "/emptyAvatar.png"
 
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
 
@@ -57,7 +60,11 @@ export const roles = {
 
 export const appointmentStatus = {
     running: "RUNNING",
-    requested: "REQUESTED"
+    requested: "REQUESTED",
+    accepted: "ACCEPTED",
+    finished: "FINISHED",
+    cancelled: "CANCELLED",
+    declined: "DECLINED"
 }
 
 export const pagePaths = {
@@ -74,7 +81,9 @@ export const pagePaths = {
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
     dashboard: "/dashboard",
     patientLivePrescription: (doctorName) => { return `/prescription/live/patient/${doctorName}` },
-    doctorLivePrescription: (patientName) => { return `/prescription/live/doctor/${patientName}` }
+    doctorLivePrescription: (patientName) => { return `/prescription/live/doctor/${patientName}` },
+    addConsultation: "/userdetails/addconsultation",
+    userProfile: (userId) => { return `/profile/user/${userId}` }
 }
 
 

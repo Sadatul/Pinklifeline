@@ -22,11 +22,8 @@ export function LocationPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            const headers = {
-                "Authorization": `Bearer ${sessionContext.sessionData.token}`
-            }
             axios.get(getNearByUsers(sessionContext.sessionData.userId), {
-                headers: headers
+                headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("nearByUsers", res.data)
                 let updatedUser = [];

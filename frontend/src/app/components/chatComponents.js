@@ -57,7 +57,7 @@ import { useSessionContext } from "@/app/context/sessionContext";
 export function ChatLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const stompContext = useStompContext();
-    const sessionContext = useSessionContext
+    const sessionContext = useSessionContext()
     const router = useRouter();
 
     useEffect(() => {
@@ -121,9 +121,10 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
             axios.get(getChatsUrl(sessionContext.sessionData.userId), {
-                headers: headers
+                headers: sessionContext.sessionData.headers
             }).then((response) => {
                 console.log("Chats fetched")
+                console.log(response.data)
                 stompContext.chatManager.current.addChats(response.data)
                 stompContext.setChats(response.data)
             }).catch((error) => {
@@ -152,7 +153,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                 <ScrollBar className="" />
                 {stompContext.chats?.map((chat, index) => (
                     <React.Fragment key={index}>
-                        <button
+                        <div type="button"
                             className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group"
                             onClick={() => {
                                 console.log("Chat clicked")
@@ -191,7 +192,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                     </div>
                                 </>
                             )}
-                        </button>
+                        </div>
                         <Separator className="bg-gray-300" />
                     </React.Fragment>
                 ))}
@@ -344,18 +345,18 @@ export function ChatWindow({ stompContext, router }) {
                 <ScrollableContainer id="chat-scroll" className="flex-1 p-4 overflow-y-auto" ref={scrollAreaRef}>
                     <div className="flex flex-col-reverse" >
                         {stompContext.messages.toReversed().map((message, index) => (
-                            <div key={index} className={cn('flex flex-col my-4', String(message.sender) === (sessionContext.sessionData.userId) ? "items-end" : "items-start")}>
-                                <div className={cn('flex flex-row', String(message.sender) === (sessionContext.sessionData.userId) ? "justify-end" : "justify-start")}>
-                                    <div className={cn('flex flex-row items-center', String(message.sender) === (sessionContext.sessionData.userId) ? "flex-row-reverse" : "flex-row")}>
+                            <div key={index} className={cn('flex flex-col my-4', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "items-end" : "items-start")}>
+                                <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
+                                    <div className={cn('flex flex-row items-center', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
                                         <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
-                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : (String(message.sender) === (sessionContext.sessionData.userId) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
+                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext.sessionData.userId)) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
                                             {message.type === "TEXT" && <p>{message.message}</p>}
                                             {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
                                         </div>
                                     </div>
                                 </div>
-                                <div className={cn('flex flex-row mx-5', String(message.sender) === (sessionContext.sessionData.userId) ? "justify-end" : "justify-start")}>
-                                    <p className={cn('text-xs text-gray-500', String(message.sender) === (sessionContext.sessionData.userId) ? "text-right" : "text-left")}>
+                                <div className={cn('flex flex-row mx-5', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
+                                    <p className={cn('text-xs text-gray-500', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "text-right" : "text-left")}>
                                         {message.timestamp}
                                     </p>
                                 </div>

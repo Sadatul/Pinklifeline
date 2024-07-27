@@ -133,7 +133,12 @@ export default function UserDetailsPage() {
         }).then((response) => {
             console.log(response)
             toast.success("Information saved successfully")
-            router.push(pagePaths.dashboard)
+            if (sessionContext.sessionData.role === roles.doctor) {
+                router.push(pagePaths.addConsultation)
+            }
+            else {
+                router.push(pagePaths.dashboard)
+            }
         }
         ).catch((error) => {
             console.log(error)

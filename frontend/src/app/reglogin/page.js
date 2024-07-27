@@ -42,10 +42,11 @@ export default function LoginRegister() {
                         username: res.data?.username,
                         time: new Date().getTime()
                     }
+                    localStorage.clear();
                     localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))
                     console.log("Content from local storage")
                     console.log(JSON.parse(localStorage.getItem(sessionDataItem)))
-                    router.push(pagePaths.userdetails)
+                    // router.push(pagePaths.userdetails)
                 }
             }).catch((err) => {
                 console.log(err)
@@ -119,31 +120,35 @@ export default function LoginRegister() {
                             validate: (value) => { return /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com)$/.test(value) || 'Use @gmail.com or @yahoo.com' }
                         })} />
                     {errors.email && <span className="text-red-500">{errors.email?.message}</span>}
+                    {currentSection === "Register" && (
+                        <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("role")}>
+                            <option className="w-full m-3" value={roles.basicUser}>Basic User</option>
+                            <option className="w-full m-3" value={roles.patient}>Patient</option>
+                            <option className="w-full m-3" value={roles.doctor}>Doctor</option>
+                            <option className="w-full m-3" value={roles.nurse}>Nurse</option>
+                        </select>
 
+                    )
+                    }
                     <label className="text-xl font-bold mt-5">Password</label>
                     <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} />
                     {errors.password?.type === "required" && <span className="text-red-500">{errors.password?.message}</span>}
+                    {currentSection === "Register" && (
+                        <>
+                            <label className="text-xl font-bold mt-5">Confirm Password</label>
+                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
+                            <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
+                        </>
+                    )
 
+                    }
                     <div className="flex flex-row items-center justify-center mt-1">
                         <Checkbox defaultChecked={false} id="show_pass" onCheckedChange={(checked) => {
                             setShowPassword(checked)
                         }} />
                         <label htmlFor="show_pass" className="text-sm font-bold ml-2">Show Password</label>
                     </div>
-                    {currentSection === "Register" && (
-                        <>
-                            <label className="text-xl font-bold mt-5">Confirm Password</label>
-                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
-                            <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
-                            <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("role")}>
-                                <option className="w-full m-3" value={roles.basicUser}>Basic User</option>
-                                <option className="w-full m-3" value={roles.patient}>Patient</option>
-                                <option className="w-full m-3" value={roles.doctor}>Doctor</option>
-                                <option className="w-full m-3" value={roles.nurse}>Nurse</option>
-                            </select>
-                        </>
-                    )
-                    }
+
                     <div hidden={true} id="submit-button-loading-state" className="p-2 m-4 w-1/2 border shadow-md rounded-md text-center">
                         <svg aria-hidden="true" className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-purple-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />

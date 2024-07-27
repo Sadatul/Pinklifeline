@@ -23,133 +23,47 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useSessionContext } from "@/app/context/sessionContext"
 import axios from "axios"
-import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, declineAppointmentUrl, getAppointmentsUrl, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, roles } from "@/utils/constants"
+import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, roles } from "@/utils/constants"
 import Loading from "./loading"
 import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
 import { Badge } from "@/components/ui/badge"
+import { useStreamVideoClient } from "@stream-io/video-react-sdk"
 
 export function AppointmentsPage() {
     const [disableCard, setDisableCard] = useState(false)
-    const [requestedAppointments, setRequestedAppointments] = useState([
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "patientFullName": "Sadi",
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "patientID": 2,
-            "locationId": 1,
-            "isOnline": false,
-            "id": 1,
-            "time": "07:43:22",
-            "isPaymentComplete": false,
-            "status": "REQUESTED"
-        },
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "doctorId": 4,
-            "locationId": 1,
-            "isOnline": true,
-            "id": 2,
-            "time": "07:43:22",
-            "doctorFullName": "Dr. Adil",
-            "isPaymentComplete": true,
-            "status": "RUNNING"
-        }
-    ])
-    const [appointments, setAppointments] = useState([
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "patientFullName": "Sadi",
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "patientID": 2,
-            "locationId": 1,
-            "isOnline": false,
-            "id": 1,
-            "time": "07:43:22",
-            "isPaymentComplete": false,
-            "status": "REQUESTED"
-        },
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "doctorId": 4,
-            "locationId": 1,
-            "isOnline": true,
-            "id": 1,
-            "time": "07:43:22",
-            "doctorFullName": "Dr. Adil",
-            "isPaymentComplete": true,
-            "status": "RUNNING"
-        }
-    ])
-    const [currentAppointments, setCurrentAppointments] = useState([
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "patientFullName": "Sadi",
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "patientID": 2,
-            "locationId": 1,
-            "isOnline": true,
-            "id": 1,
-            "time": "07:43:22",
-            "isPaymentComplete": true,
-            "status": "RUNNING"
-        },
-        {
-            "date": "2024-08-08",
-            "fees": 700,
-            "locationName": "Rule 2nd phase, Khulna",
-            "patientContactNumber": "01730445524",
-            "doctorId": 4,
-            "locationId": 1,
-            "isOnline": true,
-            "id": 1,
-            "time": "07:43:22",
-            "doctorFullName": "Dr. Adil",
-            "isPaymentComplete": true,
-            "status": "RUNNING"
-        }
-    ])
+    const [requestedAppointments, setRequestedAppointments] = useState([])
+    const [appointments, setAppointments] = useState([])
+    const [currentAppointments, setCurrentAppointments] = useState([])
     const sessionContext = useSessionContext()
+    const [fetchAgain, setFetchAgain] = useState(true)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
+        console.log("Value changed")
+        console.log("Appointments", appointments)
+        console.log("Requested Appointments", requestedAppointments)
+        console.log("Current Appointments", currentAppointments)
+    }, [appointments, currentAppointments, requestedAppointments])
+
+    useEffect(() => {
+        if (sessionContext.sessionData && fetchAgain) {
             axios.get(getAppointmentsUrl, {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
-                let tempAppointments = []
-                let tempRequestedAppointments = []
-                let tempCurrentAppointments = []
-                for (const appointment of res?.data) {
-                    if (appointment?.status === appointmentStatus.running) {
-                        tempCurrentAppointments.push(appointment)
-                    }
-                    else if (appointment.status === appointmentStatus.requested) {
-                        tempRequestedAppointments.push(appointment)
-                    }
-                    else {
-                        tempAppointments.push(appointment)
-                    }
-                }
-                setAppointments(tempAppointments)
-                setCurrentAppointments(tempCurrentAppointments)
-                setRequestedAppointments(tempRequestedAppointments)
+                console.log("Appointments", res?.data)
+                setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
+                setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
+                setAppointments(res?.data.filter(appointment => (appointment.status !== appointmentStatus.running && appointment.status !== appointmentStatus.requested)))
+                setFetchAgain(false)
             }).catch((error) => {
-                toast.error("Error fetching appointments. Check internet")
+                console.log("Error fetching appointments", error)
+                if (error.code === "ERR_NETWORK") toast.error("Error fetching appointments. Check your internet connection")
+                else toast.error("Error fetching appointments. Try again later")
+                setFetchAgain(false)
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext.sessionData, fetchAgain])
 
     return (
         <div className="flex flex-col items-center h-full bg-white">
@@ -170,21 +84,25 @@ export function AppointmentsPage() {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-11/12">
+            <div className="flex flex-col gap-4 mt-4 bg-blue-100 p-4 rounded-md mx-2 w-11/12">
                 <h1 className="text-lg font-semibold">Requested Appointments</h1>
-                {requestedAppointments?.length > 0 &&
-                    <ScrollableContainer className="flex flex-col gap-2 max-h-96 overflow-y-auto overflow-x-hidden w-full">
+                <Separator className="w-full bg-pink-400 h-[1.5px]" />
+                {requestedAppointments?.length > 0 ? (
+                    <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full bg-white p-3 rounded-md flex-wrap items-center justify-start">
                         {requestedAppointments?.map((appointment, index) => (
                             <AppointmentCard key={index}
                                 appointment={appointment}
                                 disableCard={disableCard}
                                 setDisableCard={setDisableCard}
+                                setFetchAgain={setFetchAgain}
                                 deleteAppointmentById={(id) => {
                                     setRequestedAppointments(requestedAppointments.filter((appointment, index) => appointment.id != id))
                                 }} />
                         ))}
                     </ScrollableContainer>
-                }
+                ) : (
+                    <h1 className="text-lg w-full text-center font-semibold text-blue-800">No Requested Appointments</h1>
+                )}
             </div>
             {/* UpComing Appointments */}
             <div className="flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-11/12">
@@ -192,6 +110,7 @@ export function AppointmentsPage() {
                     appointments={appointments}
                     setAppointments={setAppointments}
                     disableCard={disableCard}
+                    setFetchAgain={setFetchAgain}
                     setDisableCard={setDisableCard} />
             </div>
             {/* Past Appointments */}
@@ -199,7 +118,7 @@ export function AppointmentsPage() {
     )
 }
 
-function CurrentAppointmentCard({ appointment, disableCard, setDisableCard }) {
+function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setFetchAgain }) {
     const sessionContext = useSessionContext()
     const router = useRouter()
     const clocks = [
@@ -241,6 +160,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard }) {
         }).catch((error) => {
             setDisableCard(false)
             toast.dismiss(loadingtoast)
+            console.log("Error joining call", error)
             toast.error("Error joining call. Call may not be running. Refresh or contact doctor")
         })
     }
@@ -249,7 +169,9 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard }) {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             toast.success("Closed running appointment")
+            setFetchAgain(true)
         }).catch((error) => {
+            console.log("Error closing appointment", error)
             toast.error("Error closing appointment. Appointment may not be running anymore.")
         })
     }
@@ -305,9 +227,91 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard }) {
     )
 }
 
+function AppointmentSection({ appointments, setAppointments, disableCard, setDisableCard, setFetchAgain }) {
+    const filterOptions = useRef([
+        {
+            name: "Upcoming",
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.accepted)
+        },
+        {
+            name: "Past",
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.finished)
+        },
+        {
+            name: "Cancelled",
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.cancelled)
+        },
+        {
+            name: "Declined",
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.declined)
+        },
+        {
+            name: "All",
+            rule: (appointments) => appointments
+        }
+    ])
 
-function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppointmentById }) {
+    const [selectionCriteria, setSelectionCriteria] = useState(filterOptions.current[0])
+    const [selectedAppointments, setSelectedAppointments] = useState(appointments)
+    const [date, setDate] = useState(null)
+
+    useEffect(() => {
+        setSelectedAppointments(selectionCriteria.rule(appointments))
+    }, [selectionCriteria, appointments])
+
+    useEffect(() => {
+        console.log("Selected Appointments Changed", selectedAppointments)
+    }, [selectedAppointments])
+
+    return (
+        <div className="flex flex-col gap-4 w-full">
+            <div className="flex flex-row justify-between items-center">
+                <h1 className="text-base capitalize font-semibold">
+                    {selectionCriteria.name} Appointments
+                </h1>
+                <Popover>
+                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border w-24">
+                        {selectionCriteria.name}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto">
+                        <h1 className="w-full text-center">Filter by</h1>
+                        <Separator />
+                        <div className="gap-1 flex flex-col items-start mt-5 w-full ">
+                            {filterOptions.current.map((option, index) => (
+                                <button key={index} className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md"
+                                    onClick={() => {
+                                        setSelectionCriteria(option)
+                                    }}
+                                >
+                                    {option.name}
+                                </button>
+                            ))}
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <Separator className="w-full bg-pink-400 h-[1.5px]" />
+            <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full bg-white p-3 rounded-md flex-wrap items-center justify-start">
+                {selectedAppointments?.map((selectedAppointment, index) => (
+                    <AppointmentCard key={index}
+                        appointment={selectedAppointment}
+                        disableCard={disableCard}
+                        setDisableCard={setDisableCard}
+                        setFetchAgain={setFetchAgain}
+                        deleteAppointmentById={(id) => {
+                            setAppointments(appointments.filter((appointment, index) => appointment.id != id))
+                            setSelectedAppointments(selectedAppointments.filter((appointment, index) => appointment.id != id))
+                        }}
+                    />
+                ))}
+            </ScrollableContainer>
+        </div>
+    )
+}
+
+function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppointmentById, setFetchAgain }) {
     const sessionContext = useSessionContext()
+    const client = useStreamVideoClient();
     const router = useRouter()
     const [opendialog, setOpendialog] = useState(false)
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
@@ -336,7 +340,9 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         }).then((res) => {
             toast.success("Appointment accepted")
             setDisableCard(false)
+            setFetchAgain(true)
         }).catch((error) => {
+            console.log("Error accepting appointment", error)
             toast.error("Error accepting appointment.", {
                 description: "Patient may canceled the appointment.:)"
             })
@@ -352,10 +358,48 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             toast.success("Appointment deleted")
             deleteAppointmentById(appointment.id)
             setDisableCard(false)
+            setFetchAgain(true)
         }).catch((error) => {
+            console.log("Error canceling appointment", error)
             toast.error("Error declining or canceling the appointment.")
             setDisableCard(false)
         })
+    }
+
+    const startOnlineAppointment = async () => {
+        // if (!client) {
+        //     console.error("Client is not available");
+        //     return;
+        // }
+        try {
+            const token = await axios.get(getVideoCallToekn, {
+                headers: sessionContext.sessionData.headers
+            })
+            // const callId = await axios.post(createOnlineMeetingUrl, {
+            //     appointmentId: appointment.id,
+            // }, {
+            //     headers: sessionContext.sessionData.headers
+            // })
+            // if (!callId) console.error('Call ID is required');
+            // const call = client.call('default', callId);
+            // if (!call) throw new Error('Failed to create meeting');
+            // const startsAt = new Date(Date.now()).toISOString();
+            // await call.getOrCreate({
+            //     data: {
+            //         starts_at: startsAt,
+            //         members: [{ user_id: client.streamClient.user.id, role: 'admin' }, { user_id: "3" }],
+            //     },
+            // });
+            // console.log("Call created");
+            // console.log(call);
+            // const newWindow = window.open(`/videocall/${callId}`, '_blank');
+            // if (newWindow) {
+            //     newWindow.focus();
+            // }
+        }
+        catch (error) {
+            console.log("Error getting video call", error)
+        }
     }
 
     const makePayment = () => {
@@ -388,6 +432,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                 //need to do velidate with transictionId
             }).catch((error) => {
                 toast.dismiss(loadingtoast)
+                console.log("Error making payment", error)
                 toast.error("Error occured initating payment")
             })
             setOpenPaymentDialog(false)
@@ -410,47 +455,118 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     if (!sessionContext.sessionData) return <Loading />
 
     return (
-        <div disabled className="flex flex-row justify-between items-center w-full my-2 bg-white p-3 rounded-md flex-wrap">
-            <div className="flex w-1/3 flex-col ml-5 items-start gap-1">
-                <h1 className="text-lg font-semibold text-black flex flex-row items-center gap-3">
-                    {appointment.doctorFullName && <FaUserDoctor size={16} />}
+        <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100">
+            <div className="flex w-full flex-col items-center text-black shadow-md justify-center px-3 py-1 rounded-b-full rounded-md scale-x-110 bg-pink-300 h-1/3">
+                <h1 className="text-xl font-semibold flex flex-row items-center gap-3">
+                    {appointment["doctorFullName:"] && <FaUserDoctor size={16} />}
                     {appointment.patientFullName && <Person size={16} />}
-                    {appointment.doctorFullName}
+                    {appointment["doctorFullName:"]}
                     {appointment.patientFullName}
                 </h1>
-                <p className="text-base flex flex-row gap-3 items-center">
+                <p className="text-lg flex flex-row gap-3 items-center">
                     <MapPinned size={16} />
                     {appointment.isOnline ? locationOnline : appointment.locationName}
                 </p>
             </div>
-            <div className="flex w-1/3 flex-col items-center w-auto gap-2">
+            <div className="flex flex-col items-center gap-2">
                 <div className="flex justify-center items-center gap-4">
-                    <p className="text-sm font-semibold flex flex-row items-center gap-2">
+                    <p className="text-base font-semibold flex flex-row items-center gap-2">
                         <CalendarIcon size={20} />
                         {appointment.date}
                     </p>
-                    <p className="text-sm font-semibold flex flex-row items-center gap-2">
-                        {clocks[Number(appointment?.time?.split(":")[0]) % 12] || <Clock size={20} />}
-                        {appointment.time}
-                    </p>
+                    {appointment.time &&
+                        <p className="text-base font-semibold flex flex-row items-center gap-2">
+                            {clocks[Number(appointment?.time?.split(":")[0]) % 12] || <Clock size={20} />}
+                            {appointment.time}
+                        </p>
+                    }
                 </div>
                 <div className="flex justify-center items-center gap-4">
-                    <p className="text-sm font-semibold flex flex-row items-center gap-2">
+                    <p className="text-base font-semibold flex flex-row items-center gap-2">
                         <Banknote size={24} />
                         {appointment.fees}
                     </p>
-                    <p className="text-sm font-semibold flex flex-row items-center gap-2">
+                    <p className="text-base font-semibold flex flex-row items-center gap-2">
                         <Phone size={20} />
                         {appointment.patientContactNumber}
                     </p>
                 </div>
             </div>
-            <div className="flex flex-row w-1/3 items-center justify-between">
-                <div className="flex gap-3 justify-end flex-row w-full">
+            <div className="flex flex-row w-full items-center justify-between rounded-t-full h-12 scale-x-105 shadow-md">
+                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.requested) &&
+                    <Dialog open={opendialog} onOpenChange={setOpendialog}>
+                        <DialogTrigger disabled={disableCard} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                            <CircleCheck size={32} /> Accept
+                        </DialogTrigger>
+                        <DialogContent className={"w-60 gap-5"}>
+                            <DialogHeader>
+                                <DialogTitle>Add Time </DialogTitle>
+                            </DialogHeader>
+                            <div className="flex flex-row items-center m-auto gap-7">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                            <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <input type="time" id="appointmentTime" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={"00:00"} />
+                                </div>
+                                <button className="bg-green-700 p-1 hover:bg-gray-50 hover:text-green-600 hover:border-green-500 border hover:scale-90 w-9 transition ease-in text-white rounded-md shadow flex flex-row items-center flex-nowrap gap-1"
+                                    onClick={() => {
+                                        const appointmentTime = document.getElementById("appointmentTime")?.value
+                                        console.log(appointmentTime)
+                                        acceptAppointment(`${appointmentTime}:00`)
+                                        setOpendialog(false)
+                                    }}>
+                                    <Check size={32} />
+                                </button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                }
+                {((sessionContext.sessionData.role === roles.patient && appointment.status === appointmentStatus.accepted)) &&
+                    <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
+                        <DialogTrigger disabled={disableCard || appointment.isPaymentComplete} className={cn("text-gray-700 border bg-[#fcf5ef]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full")}>
+                            <Banknote size={32} /> {appointment.isPaymentComplete ? "PAID" : "PAY"}
+                        </DialogTrigger>
+                        <DialogContent className={"gap-5 w-96"}>
+                            <DialogHeader>
+                                <DialogTitle>Payment</DialogTitle>
+                            </DialogHeader>
+                            <div className="flex flex-col items-end m-auto gap-7 w-full">
+                                <form className="flex flex-col w-full gap-4">
+                                    <label className="flex flex-row gap-2 justify-between items-center w-full"> Name
+                                        <input id="payment-name-input" type="text" className="bg-gray-50 border-2 px-2 py-1 leading-none border-purple-500 text-gray-900 text-base rounded-lg" />
+                                    </label>
+                                    <label className="flex flex-row gap-2 justify-between items-center w-full"> Email
+                                        <input id="payment-email-input" type="email" className="bg-gray-50 border-2 px-2 py-1 leading-none border-purple-500 text-gray-900 text-base rounded-lg" />
+                                    </label>
+                                    <label className="flex flex-row gap-2 justify-between items-center w-full"> Contact Number
+                                        <input id="payment-number-input" type="number" className="bg-gray-50 border-2 px-2 py-1 leading-none border-purple-500 text-gray-900 text-base rounded-lg number-input" />
+                                    </label>
+                                    <span id="error-message" className="text-red-500"></span>
+                                </form>
+                                <button type="submit" className="bg-green-700 hover:scale-90 w-9 transition ease-in text-white rounded-md shadow flex flex-row items-center flex-nowrap gap-1"
+                                    onClick={() => {
+                                        makePayment()
+                                    }}
+                                >
+                                    <Check size={32} />
+                                </button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                }
+                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && appointment.isOnline) &&
+                    <button onClick={startOnlineAppointment} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                        Start Call
+                    </button>
+                }
+                {(appointment.status === appointmentStatus.requested || appointment.status === appointmentStatus.accepted) &&
                     <AlertDialog>
-                        <AlertDialogTrigger disabled={disableCard} className="bg-red-500 border border-red-500 hover:scale-90 transition ease-in text-white rounded-lg shadow flex flex-row items-center flex-nowrap gap-1 px-2 py-[2px] hover:bg-gray-50 hover:text-red-500">
+                        <AlertDialogTrigger disabled={disableCard} className={cn("bg-blue-200 border transition ease-in text-red-600 shadow flex flex-row items-center justify-center flex-nowrap gap-1 flex-1 h-full ")}>
                             <CircleX size={32} />
-                            {sessionContext.sessionData.role === roles.doctor ? "Descline" : "Cancel"}
+                            {sessionContext.sessionData.role === roles.doctor ? "Decline" : "Cancel"}
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -470,202 +586,12 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.requested) &&
-                        <Dialog open={opendialog} onOpenChange={setOpendialog}>
-                            <DialogTrigger disabled={disableCard} className="bg-green-500 hover:scale-90 transition ease-in text-white rounded-lg px-2 py-1 shadow flex flex-row items-center flex-nowrap">
-                                <CircleCheck size={32} /> Accept
-                            </DialogTrigger>
-                            <DialogContent className={"w-60 gap-5"}>
-                                <DialogHeader>
-                                    <DialogTitle>Add Time </DialogTitle>
-                                </DialogHeader>
-                                <div className="flex flex-row items-center m-auto gap-7">
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-                                            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <input type="time" id="appointmentTime" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={"00:00"} />
-                                    </div>
-                                    <button className="bg-green-700 p-1 hover:bg-gray-50 hover:text-green-600 hover:border-green-500 border hover:scale-90 w-9 transition ease-in text-white rounded-md shadow flex flex-row items-center flex-nowrap gap-1"
-                                        onClick={() => {
-                                            const appointmentTime = document.getElementById("appointmentTime")?.value
-                                            console.log(appointmentTime)
-                                            acceptAppointment(`${appointmentTime}:00`)
-                                            setOpendialog(false)
-                                        }}>
-                                        <Check size={32} />
-                                    </button>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
-                    }
-                    {
-                        sessionContext.sessionData.role === roles.doctor ? (
-                            <>
-                                <button disabled className={cn("border border-gray-500 flex-col text-balance justify-center items-center  w-20 text-center bg-gray-50 rounded-lg hover:bg-gray-100", appointment.isPaymentComplete ? "text-green-500" : "text-red-500")} >{appointment.isPaymentComplete ? "PAID" : "UNPAID"}</button>
-                            </>
-                        ) : (
-                            <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-                                <DialogTrigger disabled={disableCard || appointment.isPaymentComplete} className={cn("text-green-600 border border-green-600 bg-gray-50 transition gap-2 w-24 ease-in px-2 py-1 rounded-md shadow flex flex-row items-center flex-nowrap", !appointment.isPaymentComplete && "hover:scale-90 text-blue-700 border-blue-700 font-semibold")}>
-                                    <Banknote size={32} /> {appointment.isPaymentComplete ? "PAID" : "PAY"}
-                                </DialogTrigger>
-                                <DialogContent className={"gap-5 w-96"}>
-                                    <DialogHeader>
-                                        <DialogTitle>Payment</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="flex flex-col items-end m-auto gap-7 w-full">
-                                        <form className="flex flex-col w-full gap-4">
-                                            <label className="flex flex-row gap-2 justify-between items-center w-full"> Name
-                                                <input id="payment-name-input" type="text" className="bg-gray-50 border-2 leading-none border-purple-500 text-gray-900 text-base rounded-lg" />
-                                            </label>
-                                            <label className="flex flex-row gap-2 justify-between items-center w-full"> Email
-                                                <input id="payment-email-input" type="email" className="bg-gray-50 border-2 leading-none border-purple-500 text-gray-900 text-base rounded-lg" />
-                                            </label>
-                                            <label className="flex flex-row gap-2 justify-between items-center w-full"> Contact Number
-                                                <input id="payment-number-input" type="number" className="bg-gray-50 border-2 leading-none border-purple-500 text-gray-900 text-base rounded-lg number-input" />
-                                            </label>
-                                            <span id="error-message" className="text-red-500"></span>
-                                        </form>
-                                        <button type="submit" className="bg-green-700 hover:scale-90 w-9 transition ease-in text-white rounded-md shadow flex flex-row items-center flex-nowrap gap-1"
-                                            onClick={() => {
-                                                makePayment()
-                                            }}
-                                        >
-                                            <Check size={32} />
-                                        </button>
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
-                        )
-                    }
-                </div>
+                }
             </div >
         </div >
     )
 }
 
-function AppointmentSection({ appointments, setAppointments, disableCard, setDisableCard }) {
-    const filterOptions = useRef([
-        {
-            name: "Upcoming",
-            rule: (appointments) => appointments?.filter(appointment => new Date(appointment.date) > new Date())
-        },
-        {
-            name: "Past",
-            rule: (appointments) => appointments?.filter(appointment => new Date(appointment.date) < new Date())
-        },
-        {
-            name: "Custom Date: ",
-            date: new Date(),
-            rule: function (appointments) {
-                console.log("Custom Date", this.date)
-                console.log("Appointments", appointments)
-                for (const appointment of appointments) {
-                    console.log("Appointment Date", new Date(appointment.date))
-                    if (isSameDate(appointment.date, this.date)) {
-                        console.log("Found")
-                    }
-                }
-                return appointments?.filter(appointment => isSameDate(appointment.date, this.date));
-            }
-        },
-        {
-            name: "All",
-            rule: (appointments) => appointments
-        }
-    ])
-
-    const [selectionCriteria, setSelectionCriteria] = useState(filterOptions.current[0])
-    const selectionCriteriaRef = useRef(filterOptions.current[0])
-    const [selectedAppointments, setSelectedAppointments] = useState(appointments)
-    const [date, setDate] = useState(null)
-
-    useEffect(() => {
-        console.log("Selection Criteria Changed", selectionCriteria)
-        setSelectedAppointments(selectionCriteria.rule(appointments))
-    }, [selectionCriteria])
-
-    return (
-        <div className="flex flex-col gap-4 w-full">
-            <div className="flex flex-row justify-between items-center">
-                {!selectionCriteria.date &&
-                    <h1 className="text-base capitalize font-semibold">
-                        {selectionCriteria.name} Appointments
-                    </h1>
-                }
-                {selectionCriteria.date &&
-                    <h1 className="text-base capitalize">
-                        {selectionCriteria.name} Appointments on {getFormatedDate(date)}
-                    </h1>}
-                <Popover>
-                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border w-24">
-                        {selectionCriteria.name}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto">
-                        <h1 className="w-full text-center">Filter by</h1>
-                        <Separator />
-                        <div className="gap-1 flex flex-col items-start mt-5 w-full ">
-                            <div className="w-full ">
-                                <button className="hover:bg-gray-300 rounded text-black w-full px-3" onClick={() => {
-                                    setSelectionCriteria(filterOptions.current[0])
-                                }}>Upcoming</button>
-                            </div>
-                            <div className="w-full ">
-                                <button className="hover:bg-gray-300 rounded text-black w-full px-3" onClick={() => {
-                                    setSelectionCriteria(filterOptions.current[1])
-                                }}>Past</button>
-                            </div>
-                            <div className="w-full ">
-                                <Popover onOpenChange={(e) => {
-                                    if (e === false && date) {
-                                        setSelectionCriteria({ ...filterOptions.current[2], date: date })
-                                    }
-                                }}>
-                                    <PopoverTrigger className="hover:bg-gray-300 rounded text-black w-full px-3">
-                                        Custom Date
-                                    </PopoverTrigger>
-                                    <PopoverContent className="mr-10">
-                                        <Calendar
-                                            mode="single"
-                                            selected={date}
-                                            onSelect={(selectedDate) => {
-                                                setDate(selectedDate)
-                                                console.log("Selected Date", selectedDate)
-                                                filterOptions.current[2].date = selectedDate
-                                            }}
-                                            className="rounded-md"
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                            <div className="w-full ">
-                                <button className="hover:bg-gray-300 rounded text-black w-full px-3" onClick={() => {
-                                    setSelectionCriteria(filterOptions.current[3])
-                                }}>All</button>
-                            </div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
-            </div>
-            <Separator className="w-full bg-pink-400 h-[1.5px]" />
-            <ScrollableContainer className="flex flex-col gap-2 h-96 overflow-y-auto overflow-x-hidden w-full">
-                {selectedAppointments?.map((selectedAppointment, index) => (
-                    <AppointmentCard key={index}
-                        appointment={selectedAppointment}
-                        disableCard={disableCard}
-                        setDisableCard={setDisableCard}
-                        deleteAppointmentById={(id) => {
-                            setAppointments(appointments.filter((appointment, index) => appointment.id != id))
-                            setSelectedAppointments(selectedAppointments.filter((appointment, index) => appointment.id != id))
-                        }}
-                    />
-                ))}
-            </ScrollableContainer>
-        </div>
-    )
-}
 
 // function AppointmentCard({ appointment }) {
 //     const [opendialog, setOpendialog] = useState(false)

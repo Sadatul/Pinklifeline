@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, deleteDoctorReview, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, deleteDoctorReview, emptyAvatar, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
+import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Hospital, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -54,39 +54,44 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import Loading from "./loading";
+import Link from "next/link";
 
 
 function round(number) {
     return (Math.round((number + Number.EPSILON) * 100) / 100)
 }
 
-export default function Profile({ profileId, section }) {
+export default function DoctorProfile({ profileId, section }) {
     const profilePic = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
     const stompContext = useStompContext();
     const sectionEnum = {
-        posts: 0,
+        reviews: 0,
         about: 1,
-        reviews: 2,
+        posts: 2,
         appointments: 3,
         consultations: 4
     }
 
     const [userData, setUserData] = useState(null)
-    const [doctorReviews, setDoctorReviews] = useState(null)
+    const [doctorReviews, setDoctorReviews] = useState([])
     const sessionContext = useSessionContext()
-    const [reviewInfo, setReviewInfo] = useState(null)
+    const [reviewInfo, setReviewInfo] = useState({
+        count: 0,
+        averageRating: 0,
+        ratingCount: [0, 0, 0, 0, 0]
+    })
     const [ratingIcon, setRatingIcon] = useState(null)
     const containerRef = useRef(null)
     const [selectedTab, setSelectedTab] = useState(sectionEnum[section] || 0)
     const [showProfileNavbar, setShowProfileNavbar] = useState(false)
-    const [viewScrollBar, setViewScrollBar] = useState(false)
+    const [openMessageBox, setOpenMessageBox] = useState(false)
 
     const tabs = [
         {
-            title: "Posts",
-            textColor: "text-indigo-500",
-            bgColor: "bg-indigo-500",
-            section: <PostSection userId={profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
+            title: "Reviews",
+            textColor: "text-amber-500",
+            bgColor: "bg-amber-500",
+            section: <ReviewSection profileId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} className={"bg-gradient-to-b from-amber-50 to-white"} />
         },
         {
             title: "About",
@@ -95,10 +100,10 @@ export default function Profile({ profileId, section }) {
             section: <AboutSection workPlace={"Dhaka Medical Collage"} designation={"Head"} qualifications={["MBBS", "FCPS", "Degree"]} department={"Cancer"} contactNumber={"01792421372"} className={"bg-gradient-to-b from-green-50 to-white"} />
         },
         {
-            title: "Reviews",
-            textColor: "text-amber-500",
-            bgColor: "bg-amber-500",
-            section: <ReviewSection userId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} doctorReviews={doctorReviews} setDoctorReviews={setDoctorReviews} className={"bg-gradient-to-b from-amber-50 to-white"} />
+            title: "Posts",
+            textColor: "text-indigo-500",
+            bgColor: "bg-indigo-500",
+            section: <PostSection userId={profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
         },
         {
             title: "Appointments",
@@ -128,57 +133,76 @@ export default function Profile({ profileId, section }) {
                 averageRating: round(sum / count),
                 ratingCount: ratingCount
             })
-            const averageRating = round(sum / count)
-            setRatingIcon(averageRating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : averageRating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />)
+        }
+        else {
+            setReviewInfo({
+                count: 0,
+                averageRating: 0,
+                ratingCount: [0, 0, 0, 0, 0]
+            })
         }
     }, [doctorReviews])
 
     useEffect(() => {
-        axios.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
-            setDoctorReviews(res.data)
-        }).catch((error) => {
-            toast.error("Error fetching data check internet.")
-        })
+        setRatingIcon(reviewInfo.averageRating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : reviewInfo.averageRating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />)
+    }, [reviewInfo])
 
-        setDoctorReviews([
-            {
-                "id": 33,
-                "reviewerId": 3,
-                "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
-                "rating": 3,
-                "comment": "A very good doctor",
-                "timestamp": "2024-07-16T11:46:20"
-            },
-            {
-                "id": 32,
-                "reviewerId": 2,
-                "reviewerName": "sadatulislamsadi@gmail.com",
-                "rating": 4,
-                "comment": "Sultan is back",
-                "timestamp": "2024-07-14T11:22:44"
-            }
-        ])
+    useEffect(() => {
+        if (sessionContext.sessionData) {
+            axios.get(getDoctorProfileDetailsUrlReviews(profileId), {
+                headers: sessionContext.sessionData.headers
+            }).then((res) => {
+                console.log("doctor reviews", res.data)
+                setDoctorReviews(res.data)
+            }).catch((error) => {
+                console.log(error)
+                toast.error("Error fetching data check internet.")
+            })
 
-        axios.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
-            setUserData(res.data)
-        }).catch((error) => {
-            toast.error("Error loading. Check internet")
-        })
+            // setDoctorReviews([
+            //     {
+            //         "id": 33,
+            //         "reviewerId": 3,
+            //         "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
+            //         "rating": 3,
+            //         "comment": "A very good doctor",
+            //         "timestamp": "2024-07-16T11:46:20"
+            //     },
+            //     {
+            //         "id": 32,
+            //         "reviewerId": 2,
+            //         "reviewerName": "sadatulislamsadi@gmail.com",
+            //         "rating": 4,
+            //         "comment": "Sultan is back",
+            //         "timestamp": "2024-07-14T11:22:44"
+            //     }
+            // ])
 
-        setUserData({
-            "qualifications": [
-                "MBBS",
-                "DO"
-            ],
-            "profilePicture": profilePic,
-            "isVerified": "Y",
-            "contactNumber": "01730445524",
-            "fullName": "Dr. Adil",
-            "designation": "Head",
-            "department": "Cancer",
-            "workplace": "Khulna Medical College"
-        })
-    }, [])
+            axios.get(getDoctorProfileDetailsUrl(profileId), {
+                headers: sessionContext.sessionData.headers
+            }).then((res) => {
+                console.log("doctor data", res.data)
+                setUserData(res.data)
+            }).catch((error) => {
+                console.log(error)
+                toast.error("Error loading. Check internet")
+            })
+
+            setUserData({
+                "qualifications": [
+                    "MBBS",
+                    "DO"
+                ],
+                "profilePicture": profilePic,
+                "isVerified": "Y",
+                "contactNumber": "01730445524",
+                "fullName": "Dr. Adil",
+                "designation": "Head",
+                "department": "Cancer",
+                "workplace": "Khulna Medical College"
+            })
+        }
+    }, [sessionContext.sessionData])
 
     const sendMessage = () => {
         const messageInput = document.getElementById('message')?.value
@@ -197,35 +221,14 @@ export default function Profile({ profileId, section }) {
                     body: JSON.stringify(messageObject),
                 }
             );
+            setOpenMessageBox(false)
         }
     }
 
-    if (!userData || !doctorReviews || !reviewInfo) return <Loading />
+    if (!userData) return <Loading />
 
     return (
         <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}
-            onKeyDown={(e) => {
-                console.log(e.key)
-                if (e.key === "ArrowRight") {
-                    setSelectedTab((value) => (value + 1) % tabs.length)
-                }
-                else if (e.key === "ArrowLeft") {
-                    if (selectedTab > 0) {
-                        setSelectedTab((value) => (value - 1) % tabs.length)
-                    }
-                    else if (selectedTab === 0) {
-                        setSelectedTab((value) => tabs.length - 1)
-                    }
-                }
-                else if (e.key === "ArrowUp") {
-                    if (containerRef.current?.scrollTop > 100)
-                        containerRef.current?.scrollTo({ top: containerRef.current?.scrollTop - 100, behavior: 'smooth' })
-                }
-                else if (e.key === "ArrowDown") {
-                    if (containerRef.current?.scrollTop < (containerRef.current?.scrollHeight - 100))
-                        containerRef.current?.scrollTo({ top: containerRef.current?.scrollTop + 100, behavior: 'smooth' })
-                }
-            }}
             onScroll={(e) => {
                 if (containerRef.current?.scrollTop > 350 && !showProfileNavbar) {
                     setShowProfileNavbar(true)
@@ -258,7 +261,7 @@ export default function Profile({ profileId, section }) {
                 </div>
                 <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
                     <div className="absolute -top-20 flex flex-col items-center">
-                        {userData?.profilePicture && <Image src={userData?.profilePicture} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />}
+                        <Image src={userData?.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
                         <Badge className={"mt-2 text-sm"}>Doctor</Badge>
                     </div>
                     <div className="flex flex-col ml-56 gap-2">
@@ -287,10 +290,11 @@ export default function Profile({ profileId, section }) {
                                     </div>
                                 ))}
                             </PopoverContent>
+
                         </Popover>
                     </div>
                     <div className="flex flex-row items-center mr-3 mt-12">
-                        <Popover>
+                        <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
                             <PopoverTrigger asChild>
                                 <button disabled={!sessionContext.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
                                     <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
@@ -304,7 +308,7 @@ export default function Profile({ profileId, section }) {
                                 </div>
                             </PopoverContent>
                         </Popover>
-                        <button onClick={() => { setSelectedTab(4) }} className="bg-purple-600 text-white px-2 py-2 text-base rounded-md ml-2 font-semibold">Request Appointment</button>
+                        <button onClick={() => { setSelectedTab(sectionEnum.consultations) }} className="bg-purple-600 text-white px-2 py-2 text-base rounded-md ml-2 font-semibold">Request Appointment</button>
                     </div>
                 </div>
                 <Separator className="w-11/12 mt-10 h-[2px]" />
@@ -323,6 +327,30 @@ export default function Profile({ profileId, section }) {
             </div>
             <div className="flex flex-col w-11/12 items-center mt-4">
                 {tabs[selectedTab].section}
+                <div
+                    onKeyDown={(e) => {
+                        console.log(e.key)
+                        if (e.key === "ArrowRight") {
+                            setSelectedTab((value) => (value + 1) % tabs.length)
+                        }
+                        else if (e.key === "ArrowLeft") {
+                            if (selectedTab > 0) {
+                                setSelectedTab((value) => (value - 1) % tabs.length)
+                            }
+                            else if (selectedTab === 0) {
+                                setSelectedTab((value) => tabs.length - 1)
+                            }
+                        }
+                        else if (e.key === "ArrowUp") {
+                            if (containerRef.current?.scrollTop > 100)
+                                containerRef.current?.scrollTo({ top: containerRef.current?.scrollTop - 100, behavior: 'smooth' })
+                        }
+                        else if (e.key === "ArrowDown") {
+                            if (containerRef.current?.scrollTop < (containerRef.current?.scrollHeight - 100))
+                                containerRef.current?.scrollTo({ top: containerRef.current?.scrollTop + 100, behavior: 'smooth' })
+                        }
+                    }}>
+                </div>
             </div>
         </ScrollableContainer>
     )
@@ -480,111 +508,114 @@ function ForumCard({ title, content, date, likesCount, commentsCount }) {
     )
 }
 
-function ReviewSection({ userId, className, reviewInfo, setReviewInfo, doctorReviews, setDoctorReviews }) {
-    // const [reviews, setReviews] = useState(null)
-    const rating = useRef(null)
+function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     const sessionContext = useSessionContext()
-    const [currentReviewPage, setCurrentReviewPage] = useState(1)
-    const [totalReviewPages, setTotalReviewPages] = useState(12)
+    const [doctorReviews, setDoctorReviews] = useState([])
+    const [fetchAgain, setFetchAgain] = useState(true)
+    const [userReview, setUserReview] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-    function deleteReviewById(id) {
-        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-        axios.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
-            headers: headers
-        }).then((res) => {
-            setReviewInfo(res?.data)
-            //delete the review from the list by id
-            setDoctorReviews(doctorReviews?.filter((review, index) => review.id != id))
-            toast.success("Succefully deleted review")
-        }).catch((error) => {
-            toast.error("Error deleting review")
-        })
-    }
+    useEffect(() => {
+        if (sessionContext.sessionData && fetchAgain) {
+            console.log("fetching doctor reviews")
+            axios.get(getDoctorProfileDetailsUrlReviews(profileId), {
+                headers: sessionContext.sessionData.headers
+            }).then((res) => {
+                console.log("doctor reviews", res.data)
+                setUserReview(res.data.find((review) => review.reviewerId === sessionContext.sessionData.userId) || null)
+                setDoctorReviews(res.data.filter((review) => review.reviewerId !== sessionContext.sessionData.userId))
+                setLoading(false)
+                setFetchAgain(false)
+            }).catch((error) => {
+                console.log(error)
+                toast.error("Error fetching data check internet.")
+                setLoading(false)
+                setFetchAgain(false)
+            })
+        }
+    }, [sessionContext.sessionData, fetchAgain])
+
+    if (loading) return <Loading chose="hand" />
+
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
             <div className="flex flex-col rounded p-4 w-full">
                 <div className="flex flex-col items-end w-full">
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button className="w-24">
-                                Add Review
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>
-                                    Write your message
-                                </DialogTitle>
-                            </DialogHeader>
-                            <DialogDescription asChild>
-                                <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
-                                    <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border border-blue-300" type="text" />
-                                    <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 text-black" defaultValue={0}>
-                                        <option value={0} disabled>Rating</option>
-                                        <option value={1}>1</option>
-                                        <option value={2}>2</option>
-                                        <option value={3}>3</option>
-                                        <option value={4}>4</option>
-                                        <option value={5}>5</option>
-                                    </select>
-                                </div>
-                            </DialogDescription>
-                            <DialogFooter>
-                                <DialogClose>
-                                    <Button className="w-24"
-                                        onClick={() => {
-                                            const comment = document.getElementById("add-review-text")?.value
-                                            const rating = document.getElementById("add-review-rating")?.value
-                                            if (Number(rating) !== 0) {
-                                                const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                                axios.post(addReview(sessionContext.sessionData.userId), {
-                                                    rating: rating,
-                                                    id: sessionContext.sessionData.userId,
-                                                    comment: comment
-                                                }, {
-                                                    headers: headers
-                                                }).then((res) => {
-                                                    setReviewInfo(res?.data)
-                                                    //need to set the structure
-                                                    toast.success("Review Added")
-                                                }).catch((error) => {
-                                                    toast.error("Error adding review")
-                                                })
-                                            } else {
-                                                toast.error("Error adding review")
-                                            }
-                                            //need to fix shadcn selec first
-                                        }}>
-                                        Add Review
-                                    </Button>
-                                </DialogClose>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    {!userReview ?
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button className="w-24">
+                                    Add Review
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Write your message
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <DialogDescription asChild>
+                                    <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
+                                        <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 border border-gray-500 text-black" defaultValue={0}>
+                                            <option value={0} disabled>Rating</option>
+                                            <option value={1}>1</option>
+                                            <option value={2}>2</option>
+                                            <option value={3}>3</option>
+                                            <option value={4}>4</option>
+                                            <option value={5}>5</option>
+                                        </select>
+                                        <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" />
+                                    </div>
+                                </DialogDescription>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button className="w-24"
+                                            onClick={() => {
+                                                const comment = document.getElementById("add-review-text")?.value
+                                                const rating = document.getElementById("add-review-rating")?.value
+                                                if (Number(rating) !== 0) {
+                                                    axios.post(addReview(sessionContext.sessionData.userId), {
+                                                        rating: rating,
+                                                        id: profileId,
+                                                        comment: comment
+                                                    }, {
+                                                        headers: sessionContext.sessionData.headers
+                                                    }).then((res) => {
+                                                        setReviewInfo(res?.data)
+                                                        setFetchAgain(true)
+                                                        setLoading(true)
+                                                        //need to set the structure
+                                                        toast.success("Review Added")
+                                                    }).catch((error) => {
+                                                        console.log(error)
+                                                        toast.error("Error adding review")
+                                                    })
+                                                } else {
+                                                    toast.error("Please select a rating")
+                                                }
+                                            }}>
+                                            Add Review
+                                        </Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog> :
+                        <></>
+                    }
                 </div>
+                {(!doctorReviews?.length > 0 && !userReview) && <h1 className="text-3xl font-semibold text-center m-4">No reviews found</h1>}
                 <div className="flex flex-col items-center">
+                    {userReview ? <UserReviewCard reviewer={userReview?.reviewerName} content={userReview?.comment} date={userReview?.timestamp} rating={userReview?.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} id={userReview?.id} reviewerId={userReview?.reviewerId} setUserReview={setUserReview} /> : <></>}
                     {doctorReviews?.map((review, index) => (
-                        <ReviewCard key={index} reviewer={review.reviewerName} content={review.comment} date={review.timestamp} rating={review.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} deleteReviewById={deleteReviewById} id={review.id} reviewerId={review.reviewerId} />
+                        <ReviewCard key={index} reviewer={review.reviewerName} content={review.comment} date={review.timestamp} rating={review.rating} reviewerId={review.reviewerId} />
                     ))}
-                </div>
-                <div className="w-full flex justify-center mt-4">
-                    <Pagination count={totalReviewPages}
-                        page={currentReviewPage}
-                        boundaryCount={3}
-                        size="large"
-                        variant="outlined"
-                        onChange={(event, value) => {
-                            setCurrentReviewPage(value)
-                        }}
-                        color={"primary"}
-                    />
                 </div>
             </div>
         </div>
     )
 }
 
-function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo, id, deleteReviewById, reviewerId }) {
+function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview }) {
     const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
     const [data, setData] = useState({
@@ -593,6 +624,20 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
         rating: rating,
         reviewer: reviewer
     })
+
+    const deleteReview = () => {
+        axios.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
+            headers: sessionContext.sessionData.headers
+        }).then((res) => {
+            console.log("deleted review", res.data)
+            setReviewInfo(res?.data)
+            setUserReview(null)
+
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+
     return (
         <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
             <div className="flex flex-col flex-1 px-4 py-2">
@@ -624,7 +669,7 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
                             <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
                                 onClick={() => {
                                     const newContent = document.getElementById("review-text")?.value
-                                    const newRating = document.getElementById("review-rating")
+                                    const newRating = document.getElementById("review-rating")?.value
                                     if ((newRating !== data.rating && newRating) || newContent !== data.content) {
                                         const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
                                         axios.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
@@ -633,6 +678,7 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
                                         }, {
                                             headers: headers
                                         }).then((res) => {
+                                            console.log("updated review", res.data)
                                             setReviewInfo(res?.data)
                                             const tempDate = new Date()
                                             setData({
@@ -644,6 +690,7 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
                                             toast.success("Successfully updated")
                                             setEditable(false)
                                         }).catch((error) => {
+                                            console.log(error)
                                             toast.error("Error updating review")
                                             setEditable(false)
                                         })
@@ -660,28 +707,43 @@ function ReviewCard({ content, date, rating, reviewer, reviewInfo, setReviewInfo
                         </>
                     ) : (
                         <>
-                            {sessionContext.sessionData.userId === reviewerId &&
-                                <>
-                                    <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
-                                        onClick={() => {
-                                            setEditable(true)
-                                        }}>
-                                        <Pencil size={24} className="text-blue-600" />
-                                    </button>
-                                    <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
-                                        onClick={() => {
-                                            deleteReviewById(id)
-                                        }}>
-                                        Delete
-                                    </button>
-                                </>
-                            }
+                            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
+                                onClick={() => {
+                                    setEditable(true)
+                                }}>
+                                <Pencil size={24} className="text-blue-600" />
+                            </button>
+                            <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
+                                onClick={() => {
+                                    deleteReview()
+                                }}>
+                                Delete
+                            </button>
                         </>
                     )
                 }
             </div>
 
 
+        </div>
+    )
+}
+
+function ReviewCard({ content, date, rating, reviewer, reviewerId }) {
+
+    return (
+        <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
+            <div className="flex flex-col flex-1 px-4 py-2">
+                <Link href={pagePaths.userProfile(reviewerId)} className="text font-semibold line-clamp-1">{reviewer?.split("@")[0]}</Link>
+                <p className="mt-2 line-clamp-2">{content}</p>
+            </div>
+            <div className="flex flex-col px-4 py-2 items-center justify-center">
+                <div className="flex flex-row items-center">
+                    {rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
+                    <span className="text-lg font-semibold ml-2">{rating}</span>
+                </div>
+                <span className="text-sm font-semibold text-end w-full">{date}</span>
+            </div>
         </div>
     )
 }
@@ -724,25 +786,32 @@ function AboutSection({ workPlace, designation, qualifications, department, cont
 }
 
 function ConsultationSection({ userId, className, profileId }) {
-    const [chambers, setChambers] = useState(null)
+    const [chambers, setChambers] = useState([])
     const sessionContext = useSessionContext()
     useEffect(() => {
-        axios.get(getDoctorProfileDetailsUrlLocations(profileId)).then((res) => {
-            setChambers(res.data)
-        }).then((res) => {
-            
-        }).catch((error)=>{
-            toast.error("Error loading")
-        })
-    }, [])
+        if (sessionContext.sessionData) {
+            axios.get(getDoctorProfileDetailsUrlLocations(profileId), {
+                headers: sessionContext.sessionData.headers
+            }).then((res) => {
+                console.log("chambers", res.data)
+                setChambers(res.data)
+            }).then((res) => {
 
-    if (!chambers) return <Loading />
+            }).catch((error) => {
+                console.log(error)
+                toast.error("Error loading")
+            })
+        }
+    }, [sessionContext.sessionData])
+
+    if (!sessionContext.sessionData) return <Loading />
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
-            <div className="flex flex-col rounded p-4 w-full">
-                <div className="flex flex-col">
+            <div className="flex flex-col items-center rounded p-4 w-full">
+                {chambers?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No chambers found</h1>}
+                <div className="flex flex-col items-center w-11/12">
                     {
-                        chambers.map((chamber, index) =>
+                        chambers?.map((chamber, index) =>
                             <ChamberCard key={index}
                                 location={chamber.location}
                                 startTime={chamber.start}
@@ -780,7 +849,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         const tempDate = new Date(appointmentDate)
         const formData = {
             "patientId": sessionContext.sessionData.userId,
-            "doctorId": profileId,
+            "doctorId": Number(profileId),
             "patientContactNumber": contactNumber,
             "locationId": id,
             "date": `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`,
@@ -789,13 +858,14 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         console.log('Requesting Appointment')
         console.log(formData)
         const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-        axios.post(addAppointment, {
+        axios.post(addAppointment, formData, {
             headers: headers
-        }, formData).then((res) => {
+        }).then((res) => {
             toast.success("Appointment requested")
             setAppointmentDate(null)
             setOpenDialog(false)
         }).catch((error) => {
+            console.log(error)
             toast.error("Error occured. Check details and internet")
         })
     }
@@ -803,13 +873,19 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
     return (
         <div className="flex flex-row w-full m-1 bg-white rounded-md shadow ">
             <div className="flex flex-col w-4/12 px-4 py-2">
-                <h1 className="text font-semibold line-clamp-1">{location}</h1>
-                <p className="mt-2 line-clamp-2">{fees}</p>
+                <h1 className="text font-semibold line-clamp-1 flex gap-2 items-center">
+                    <MapPinIcon size={20} />
+                    {location}
+                </h1>
+                <p className="mt-2 line-clamp-2 flex gap-2 items-center">
+                    <Banknote size={16} />
+                    {fees}
+                </p>
             </div>
             <div className="flex flex-col w-4/12 px-4 py-2">
                 <div className="flex flex-row items-center">
-                    <p className="text-lg font-semibold ml-2">{"Start Time: " + startTime}</p>
-                    <p className="text-lg font-semibold ml-2">{"End Time: " + endTime}</p>
+                    <Clock size={20} />
+                    <p className="text-lg font-semibold ml-2">{startTime} to {endTime}</p>
                 </div>
                 <div className="flex flex-row items-center mt-4">
                     {weekDays.map((day, index) => (
@@ -838,7 +914,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                             <p className="text-base font-semibold text-black">{endTime}</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-row items-center justify-between gap-2">
+                                    <div className="flex flex-row items-center justify-start gap-2">
                                         {weekDays.map((day, index) => (
                                             <div key={index} className={cn("flex flex-row items-center rounded-md shadow-sm text-black border border-gray-600", workdaysArray[index] !== '1' && "hidden")}>
                                                 <span className="text-lg font-semibold mx-2">{day}</span>
@@ -851,7 +927,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                                 <Button
                                                     variant={"outline"}
                                                     className={cn(
-                                                        "mx-3 w-2/3 justify-start text-left font-normal border border-gray-600",
+                                                        "w-2/3 justify-start text-left font-normal border border-gray-600",
                                                         !appointmentDate && "text-muted-foreground"
                                                     )}>
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -866,14 +942,14 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                                         setAppointmentDate(selectedDate)
                                                     }}
                                                     disabled={(date) =>
-                                                        String(workdaysArray[(new Date(date).getDay() + 1) % 7]) === '0'
+                                                        String(workdaysArray[(new Date(date).getDay() + 1) % 7]) === '0' || date < new Date()
                                                     }
                                                     initialFocus
                                                 />
                                             </PopoverContent>
                                         </Popover>
                                     </div>
-                                    <input type="number" id="patient-contact-number" className="w-full number-input h-10 p-2 border border-gray-600 rounded-md" placeholder="Enter your Contact Number" pattern="[0-9]{11}" title="Please enter a valid 11 digit phone number" />
+                                    <input type="number" id="patient-contact-number" className="w-full number-input h-10 p-2 border text-black border-gray-600 rounded-md" placeholder="Enter your Contact Number" pattern="[0-9]{11}" title="Please enter a valid 11 digit phone number" />
                                 </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>

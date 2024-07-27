@@ -99,7 +99,7 @@ export function SocketInitializer() {
                     else {
                         stompContext.chatManager.current.removeAllChats()
                         axios.get(getChatsUrl(sessionContext.sessionData.userId), {
-                            headers: headers
+                            headers: sessionContext.sessionData.headers
                         }).then((response) => {
                             console.log("in stompInitializer/subscriber/elseroute")
                             console.log(response)

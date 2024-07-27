@@ -66,26 +66,20 @@ export default function () {
     const stompContext = useStompContext();
 
     useEffect(() => {
-        axios.get(getUserProfileDetails(params.profileId)).then((res) => {
-            setUserData({
-                ...res.data,
-                role: res?.data?.roles[0]
+        if (sessionContext.sessionData) {
+            axios.get(getUserProfileDetails(params.profileId), {
+                headers: sessionContext.sessionData.headers
+            }).then((res) => {
+                setUserData({
+                    ...res.data,
+                    role: res?.data?.roles[0]
+                })
+            }).catch((error) => {
+                console.log(error)
+                toast.error("Error loading. Check internet.")
             })
-        }).catch((error) => {
-            toast.error("Error loading. Check internet.")
-        })
-        setUserData({
-            "profilePicture": profilePic,
-            "roles": [
-                "ROLE_PATIENT"
-            ],
-            role: "ROLE_PATIENT",
-            "diagnosisDate": "2000-08-08",
-            "cancerStage": "SURVIVOR",
-            "fullName": "Sadi",
-            "username": "2005077@ugrad.cse.buet.ac.bd"
-        })
-    }, [])
+        }
+    }, [sessionContext.sessionData])
 
     const sendMessage = () => {
         if (!sessionContext.sessionData) return toast.message("Log in to send messages")
