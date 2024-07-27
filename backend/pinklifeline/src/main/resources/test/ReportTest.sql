@@ -1,16 +1,16 @@
-INSERT INTO users VALUES (12, '12@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y');
+INSERT INTO users VALUES (12, '12@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y', 'Faria Islam');
 INSERT INTO pinklifeline.profile_pictures VALUES (12, 'someprofilepicture');
 INSERT INTO pinklifeline.user_roles VALUES (12, 'ROLE_PATIENT');
 INSERT INTO pinklifeline.basic_users_details VALUES (12, 'Faria Islam', '2000-08-28', '55', '50', 'N', '2024-05-28', 7);
 INSERT INTO pinklifeline.patient_specific_details VALUES (12, 'STAGE_0', '2024-05-28', '883cf1760bfffff');
 
-INSERT INTO users VALUES (13, '13@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y');
+INSERT INTO users VALUES (13, '13@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y', 'ROLE_PATIENT');
 INSERT INTO pinklifeline.profile_pictures VALUES (13, 'someprofilepicture');
 INSERT INTO pinklifeline.user_roles VALUES (13, 'ROLE_PATIENT');
 INSERT INTO pinklifeline.basic_users_details VALUES (13, 'Faria Islam', '2000-08-28', '55', '50', 'N', '2024-05-28', 7);
 INSERT INTO pinklifeline.patient_specific_details VALUES (13, 'STAGE_0', '2024-05-28', '883cf1760bfffff');
 
-INSERT INTO users VALUES (14, '14@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y');
+INSERT INTO users VALUES (14, '14@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y', 'Raka Vai');
 INSERT INTO pinklifeline.user_roles VALUES (14, 'ROLE_DOCTOR');
 INSERT INTO pinklifeline.doctor_details VALUES (14, 'Raka Vai', 'sdfasdfsdfsdf', 'Khulna Medical College', 'Cancer', 'Consultant', '01231435512', 'Y');
 

@@ -27,6 +27,7 @@ public class UserInfoUpdateHandlerService {
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoUpdateReq req, User user) {
         BasicUserDetails basic = user.getBasicUser();
+        basic.getUser().setFullName(req.getFullName());
         basic.setHeight(req.getHeight());
         basic.setWeight(req.getWeight());
         basic.setCancerHistory(req.getCancerHistory());
@@ -81,6 +82,7 @@ public class UserInfoUpdateHandlerService {
     public void updateDoctorInfo(DocInfoUpdateReq req, User user) {
         DoctorDetails doctorDetails = user.getDoctorDetails();
 
+        doctorDetails.getUser().setFullName(req.getFullName());
         doctorDetails.setFullName(req.getFullName());
         doctorDetails.setDepartment(req.getDepartment());
         doctorDetails.setDesignation(req.getDesignation());
