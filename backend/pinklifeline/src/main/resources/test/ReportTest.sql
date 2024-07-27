@@ -10,6 +10,10 @@ INSERT INTO pinklifeline.user_roles VALUES (13, 'ROLE_PATIENT');
 INSERT INTO pinklifeline.basic_users_details VALUES (13, 'Faria Islam', '2000-08-28', '55', '50', 'N', '2024-05-28', 7);
 INSERT INTO pinklifeline.patient_specific_details VALUES (13, 'STAGE_0', '2024-05-28', '883cf1760bfffff');
 
+INSERT INTO users VALUES (14, '14@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y');
+INSERT INTO pinklifeline.user_roles VALUES (14, 'ROLE_DOCTOR');
+INSERT INTO pinklifeline.doctor_details VALUES (14, 'Raka Vai', 'sdfasdfsdfsdf', 'Khulna Medical College', 'Cancer', 'Consultant', '01231435512', 'Y');
+
 INSERT INTO pinklifeline.reports VALUES (1, 12, 'Dr. Alex', 'Popular Hospital', '2024-01-28', '2024-07-13 11:03:33', 'Dad dad dad', 'google.com');
 INSERT INTO pinklifeline.report_keywords VALUES (1, 'Heart');
 INSERT INTO pinklifeline.report_keywords VALUES (1, 'Kidney');

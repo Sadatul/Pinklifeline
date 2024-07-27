@@ -14,6 +14,8 @@ import com.sadi.pinklifeline.repositories.SharedReportRepository;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import com.sadi.pinklifeline.specifications.ReportSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -98,9 +100,9 @@ public class ReportHandlerService {
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
-    public List<Report> findReports(LocalDate startDate, LocalDate endDate,
+    public Page<Report> findReports(LocalDate startDate, LocalDate endDate,
                                     List<String> keywords, String hospitalName, String doctorName,
-                                    Sort.Direction sortDirection) {
+                                    Sort.Direction sortDirection, Pageable pageable) {
         Long userId = SecurityUtils.getOwnerID();
         Specification<Report> spec = Specification.where(null);
 
@@ -123,8 +125,7 @@ public class ReportHandlerService {
         }
 
         spec = spec.and(ReportSpecification.sortByTimestamp(sortDirection != null ? sortDirection : Sort.Direction.DESC));
-
-        return reportRepository.findAll(spec);
+        return reportRepository.findAll(spec, pageable);
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")

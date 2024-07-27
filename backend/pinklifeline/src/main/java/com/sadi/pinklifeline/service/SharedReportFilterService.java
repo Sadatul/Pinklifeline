@@ -6,11 +6,16 @@ import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.Report;
 import com.sadi.pinklifeline.models.entities.SharedReport;
 import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.repositories.SharedReportRepository;
 import com.sadi.pinklifeline.specifications.SharedReportSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +29,13 @@ public class SharedReportFilterService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<SharedReportDTO> filterShareReportsForDoctor(Specification<SharedReport> spec) {
+    private final SharedReportRepository sharedReportRepository;
+
+    public SharedReportFilterService(SharedReportRepository sharedReportRepository) {
+        this.sharedReportRepository = sharedReportRepository;
+    }
+
+    public Page<SharedReportDTO> filterShareReportsForDoctor(Specification<SharedReport> spec, Pageable pageable) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<SharedReportDTO> cq = cb.createQuery(SharedReportDTO.class);
 
@@ -55,10 +66,19 @@ public class SharedReportFilterService {
         ));
 
         cq.orderBy(cb.asc(userJoin.get("username")));
-        return entityManager.createQuery(cq).getResultList();
+
+        TypedQuery<SharedReportDTO> query = entityManager.createQuery(cq);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<SharedReportDTO> dtos =  query.getResultList();
+
+        assert spec != null;
+        long total = sharedReportRepository.count(spec);
+        return new PageImpl<>(dtos, pageable, total);
     }
 
-    public List<SharedReportDTO> filterShareReportsForUser(Specification<SharedReport> spec) {
+    public Page<SharedReportDTO> filterShareReportsForUser(Specification<SharedReport> spec, Pageable pageable) {
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<SharedReportDTO> cq = cb.createQuery(SharedReportDTO.class);
@@ -90,7 +110,15 @@ public class SharedReportFilterService {
         ));
 
         cq.orderBy(cb.asc(doctorJoin.get("user").get("username")));
-        return entityManager.createQuery(cq).getResultList();
+
+        TypedQuery<SharedReportDTO> query = entityManager.createQuery(cq);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<SharedReportDTO> dtos =  query.getResultList();
+        assert spec != null;
+        long total = sharedReportRepository.count(spec);
+        return new PageImpl<>(dtos, pageable, total);
     }
 
     public Specification<SharedReport> getSpecification(LocalDate startDate, LocalDate endDate,

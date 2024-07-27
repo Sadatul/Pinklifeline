@@ -12,7 +12,8 @@ import com.sadi.pinklifeline.service.SharedReportFilterService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,9 @@ import java.util.*;
 @RequestMapping("/v1/reports")
 @Slf4j
 public class ReportHandlerV1 {
+
+    @Value("${report.user.get.page-size}")
+    private Integer userReportPageSize;
 
     private final ReportHandlerService reportHandlerService;
     private final SharedReportFilterService sharedReportFilterService;
@@ -63,20 +67,24 @@ public class ReportHandlerV1 {
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getReports(
+    public ResponseEntity<Page<Map<String, Object>>> getReports(
             @RequestParam(required = false, defaultValue = "1000-01-01") LocalDate startDate,
             @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
             @RequestParam(required = false) String keywords,
             @RequestParam(required = false) String hospitalName,
             @RequestParam(required = false) String doctorName,
-            @RequestParam(required = false) Sort.Direction sort) {
+            @RequestParam(required = false) Sort.Direction sort,
+            @RequestParam(required = false, defaultValue = "0") Integer pageNo) {
         log.info("Get reports for {}", keywords);
         List<String> keywordList = keywords != null ?
                 Arrays.asList(keywords.split(",")) :
                 new ArrayList<>();
 
-        List<Report> reports = reportHandlerService.findReports(startDate, endDate, keywordList,
-                hospitalName, doctorName, sort);
+        Pageable pageable = PageRequest.of(pageNo, userReportPageSize);
+
+        Page<Report> page = reportHandlerService.findReports(startDate, endDate, keywordList,
+                hospitalName, doctorName, sort, pageable);
+        List<Report> reports = page.getContent();
         List<Map<String, Object>> reportMapList = new ArrayList<>();
         for (Report report : reports) {
             Map<String, Object> reportMap = new HashMap<>();
@@ -89,7 +97,8 @@ public class ReportHandlerV1 {
             reportMap.put("summary", report.getSummary());
             reportMapList.add(reportMap);
         }
-        return ResponseEntity.ok(reportMapList);
+        Page<Map<String, Object>> result = new PageImpl<>(reportMapList, pageable, page.getTotalElements());
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/share")
@@ -111,26 +120,28 @@ public class ReportHandlerV1 {
     }
 
     @GetMapping("/share")
-    public ResponseEntity<List<SharedReportDTO>> getSharedReportsFiltered(
+    public ResponseEntity<Page<SharedReportDTO>> getSharedReportsFiltered(
             @RequestParam(required = false, defaultValue = "1000-01-01") LocalDate startDate,
             @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
             @RequestParam(required = false) String keywords,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String hospitalName,
             @RequestParam(required = false) String doctorName,
-            @RequestParam(required = false, defaultValue = "ALL") SharedReportType type
+            @RequestParam(required = false, defaultValue = "ALL") SharedReportType type,
+            @RequestParam(required = false, defaultValue = "0") Integer pageNo
     ){
         List<String> keywordList = keywords != null ?
                 Arrays.asList(keywords.split(",")) :
                 new ArrayList<>();
         Specification<SharedReport> spec = sharedReportFilterService.getSpecification(startDate, endDate, keywordList,
                 username, hospitalName, doctorName, type);
-        List<SharedReportDTO> reports;
+        Pageable pageable = PageRequest.of(pageNo, userReportPageSize);
+        Page<SharedReportDTO> reports;
         if(SecurityUtils.hasRole("ROLE_DOCTOR")){
-            reports = sharedReportFilterService.filterShareReportsForDoctor(spec);
+            reports = sharedReportFilterService.filterShareReportsForDoctor(spec, pageable);
         }
         else {
-            reports = sharedReportFilterService.filterShareReportsForUser(spec);
+            reports = sharedReportFilterService.filterShareReportsForUser(spec, pageable);
         }
         return ResponseEntity.ok(reports);
     }

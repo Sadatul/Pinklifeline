@@ -165,7 +165,7 @@ public class AppointmentService extends AbstractPaymentService{
             Map<String, Object> map = new HashMap<>();
             map.put("id", dto.getId());
             map.put("patientID", dto.getUser().getId());
-            map.put("patientFullName:", dto.getUser().getBasicUser().getFullName());
+            map.put("patientFullName", dto.getUser().getBasicUser().getFullName());
             map.put("date", dto.getDate());
             map.put("time", dto.getTime());
             map.put("locationId", dto.getLocation().getId());
