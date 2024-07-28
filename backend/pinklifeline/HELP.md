@@ -638,3 +638,293 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>** <br>
 * Reviews will be sorted based on time**
+
+## Add Report
+``` Endpoint: POST /v1/reports```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+	"doctorName": "Dr. Morshad Hossain",
+	"hospitalName": "Gazi Medical, Khulna",
+	"date": "2024-08-08",
+	"summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+  	"fileLink": "google.com",
+	"keywords": ["Heart", "Lungs"]
+ }
+```
+
+**<span style="color:red">Notes:</span>**
+* Add report request can be sent by any role
+* None of the above fields can be null. Must provide each one.
+* if you have no keywords than send an empty list ( [ ] )
+* Summary must be limited to 1000 characters.
+
+## Update Report
+``` Endpoint: PUT /v1/reports/{report_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+	"doctorName": "Dr. Morshad Hossain",
+	"hospitalName": "Gazi Medical, Khulna",
+	"date": "2024-08-08",
+	"summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+  	"fileLink": "google.com",
+	"keywords": ["Heart", "Lungs"]
+ }
+```
+
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* if you have no keywords than send an empty list ( [ ] )
+* Summary must be limited to 1000 characters.
+*  Remember whatever you send here will directly replace in database. So if you want to keep some fields with previous data you must send that previous data.
+
+##  Delete report
+``` Endpoint: DELETE /v1/reports/{report_id}```
+<br>
+<br>
+``` Query params: force=true```
+<br>
+```Response status: noContent(204) or badRequest(400)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* By default, force is false. If a report is shared with any doctor, you will get badRequest.
+* If force is true, the report will be deleted even if it is shared with another doctor.
+## Paginated Responses
+```
+{
+  "totalElements": 2,
+  "totalPages": 1,
+  "pageable":{
+      "pageNumber": 0,
+      "pageSize": 2,
+      "sort":[],
+      "offset": 0,
+      "paged": true,
+      "unpaged": false
+  },
+  "first": true,
+  "last": true,
+  "size": 2,
+  "content":<Actual Response body. Should be a list>,
+  "number": 0,
+  "sort":[],
+  "numberOfElements": 2,
+  "empty": false
+}
+```
+**<span style="color:red">Notes:</span>**
+* Every paginated response will have this structure
+* In the title if you see :Paginated. That means this response has pagination
+* Any title with ": Paginated" will have a response boyd. That body will found in the "content" field
+* The elements are very self explanatory. numberOfElements means the number of elements in the current page. totalElements mean total number of elements found. first will true if it is the first page. last will be true if it is the last page.
+
+## GET Reports: Paginated
+``` Endpoint: GET /v1/reports```
+```Response status: ok(200)```
+<br><br>
+``` Query params: doctorName=Morshad```
+<br>
+``` Query params: hospitalName=hospital```
+<br>
+``` Query params: keywords=heart,kidney```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sort=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can filter result based on the query parameters
+* You can omit any one without any issues.
+* if you omit sort param then reports will be returned in descending order of last update time
+* keywords must be comma separated.
+* The relationships between keywords in and. If you have 5 keywords then all 5 will be keywords must be present in a report to show it in the filter result.
+* Here PageNo. is the number of page you want to load in a paginated response. If pageNo. is omitted, 0 index or first page will be sent. Remember pageNo. must be 0 indexed meaning fist page starts at zero.
+
+### Response Body.content
+**<span style="color:red">Note: This is paginated. You will find this list inside "content" field</span>**
+```
+[
+  {
+    "date": "2024-08-08",
+    "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+    "doctorName": "Dr. Morshad Hossain",
+    "fileLink": "google.com",
+    "keywords":[
+    "Heart",
+    "Lungs"
+      ],
+    "id": 3,
+    "hospitalName": "Gaza Medical, Khulna"
+  }
+]
+```
+
+## Share Report
+``` Endpoint: POST /v1/reports/share```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "reportId": 14,
+  "doctorId": 3,
+  "period": 72
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* reportId and doctorId is mandatory.
+* period is optional. Here the report will be shared for 72 hours
+* If period is omitted then the report will be shared for infinite time until user revokes it.
+
+## Revoke Report
+``` Endpoint: DELETE /v1/reports/share/{sharedReportId}```
+<br>
+<br>
+```Response status: noContent(204)```
+
+**<span style="color:red">Notes:</span>**
+* "sharedReportId" is not same as reportId. You can find this when you GetSharedReport or you get a share info for report.
+
+## GET Shared reports for user: Paginated
+``` Endpoint: GET /v1/reports/share```
+<br><br>
+```Response status: ok(200)```
+<br><br>
+``` Query params: username=Morshad```
+<br>
+``` Query params: doctorName=Morshad```
+<br>
+``` Query params: hospitalName=hospital```
+<br>
+``` Query params: keywords=heart,kidney```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: type=ALL```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* "username" is doctors username.
+* You can filter result based on the query parameters
+* You can omit any one without any issues.
+* Shared reports will be sorted based on username
+* keywords must be comma separated.
+* The relationships between keywords in and. If you have 5 keywords then all 5 will be keywords must be present in a report to show it in the filter result.
+* "type" can have three values ALL(for all reports), UNLIMITED(the reports that are shared for infinite time) and LIMITED(the reports that are shared for limited amount of time)"
+* Here PageNo. is the number of page you want to load in a paginated response. If pageNo. is omitted, 0 index or first page will be sent. Remember pageNo. must be 0 indexed meaning fist page starts at zero.
+
+### Response Body.content
+**<span style="color:red">Note: This is paginated. You will find this list inside "content" field</span>**
+```
+[
+  {
+    "id": 8,
+    "username": "bfb38043@doolk.com",
+    "fullName": "bfagbb",
+    "expirationTime": "2024-07-30T09:08:12",
+    "reportId": 12,
+    "doctorName": "Dr. Sadi Kaka",
+    "hospitalName": "Belgium Medical, Belgium",
+    "date": "2021-10-08",
+    "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+    "fileLink": "google.com"
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* "id" is sharedReportId, this can be used to revoke share.
+* "username" is doctors username. "fullName" is doctor fullName.
+* "expirationTime" is the time when the share will be expired. If null it means the share will exist for infinite time. 
+* The rest of the information are about the report that was shared.
+
+## GET Shared reports for doctors: Paginated
+``` Endpoint: GET /v1/reports/share```
+<br><br>
+```Response status: ok(200)```
+<br><br>
+``` Query params: username=Morshad```
+<br>
+``` Query params: doctorName=Morshad```
+<br>
+``` Query params: hospitalName=hospital```
+<br>
+``` Query params: keywords=heart,kidney```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: type=ALL```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* "username" is username of the user who owns the report.
+* You can filter result based on the query parameters
+* You can omit any one without any issues.
+* Shared reports will be sorted based on username
+* keywords must be comma separated.
+* The relationships between keywords in and. If you have 5 keywords then all 5 will be keywords must be present in a report to show it in the filter result.
+* "type" can have three values ALL(for all reports), UNLIMITED(the reports that are shared for infinite time) and LIMITED(the reports that are shared for limited amount of time)"
+* Here PageNo. is the number of page you want to load in a paginated response. If pageNo. is omitted, 0 index or first page will be sent. Remember pageNo. must be 0 indexed meaning fist page starts at zero.
+
+### Response Body.content
+**<span style="color:red">Note: This is paginated. You will find this list inside "content" field</span>**
+```
+[
+  {
+    "id": 8,
+    "username": "bfb38043@doolk.com",
+    "fullName": "bfagbb",
+    "expirationTime": "2024-07-30T09:08:12",
+    "reportId": 12,
+    "doctorName": "Dr. Sadi Kaka",
+    "hospitalName": "Belgium Medical, Belgium",
+    "date": "2021-10-08",
+    "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+    "fileLink": "google.com"
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* "id" is sharedReportId
+* "username" is username of the user who owns the report. "fullName" is owner's fullName.
+* "expirationTime" is the time when the share will be expired. If null it means the share will exist for infinite time.
+* The rest of the information are about the report that was shared.
+
+## Get share info for reports
+``` Endpoint: GET /v1/reports/{reportId}/share```
+<br><br>
+```Response status: ok(200)```
+
+### Response Body
+```
+[
+  {
+    "id":1,
+    "username":"14@gmail.com",
+    "fullName":"Raka Vai",
+    "expirationTime":null
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* "id" is sharedReportId, this can be used to revoke share.
+* "username" is doctors username. "fullName" is doctor fullName.
+* "expirationTime" is the time when the share will be expired. If null it means the share will exist for infinite time.

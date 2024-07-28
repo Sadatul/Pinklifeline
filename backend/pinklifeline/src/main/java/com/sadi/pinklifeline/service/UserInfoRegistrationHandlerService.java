@@ -26,6 +26,7 @@ public class UserInfoRegistrationHandlerService {
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoRegisterReq req, User user) {
         BasicUserDetails basic = new BasicUserDetails();
+        user.setFullName(req.getFullName());
         basic.setUser(user);
         basic.setHeight(req.getHeight());
         basic.setWeight(req.getWeight());
@@ -99,6 +100,7 @@ public class UserInfoRegistrationHandlerService {
 
     private DoctorDetails getDoctorDetails(DocInfoRegReq req, User user) {
         DoctorDetails doctorDetails = new DoctorDetails();
+        user.setFullName(req.getFullName());
         doctorDetails.setUser(user);
         doctorDetails.setUserId(user.getId());
         doctorDetails.setFullName(req.getFullName());

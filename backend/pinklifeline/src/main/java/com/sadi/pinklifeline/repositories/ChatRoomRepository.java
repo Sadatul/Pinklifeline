@@ -16,7 +16,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             "or (cr.user1 = ?2 and cr.user2 = ?1)")
     Optional<ChatRoom> findChatroomByUserIds(User user1, User user2);
 
-    @Query("select new com.sadi.pinklifeline.models.responses.ChatroomRes(cr.id, u.id, u.username, u.profilePicture) from ChatRoom cr join User u on (u.id = case when cr.user1.id = :id then cr.user2.id else cr.user1.id end) left join ChatMessage cm on cr.id = cm.room.id where (cr.user1.id = :id or cr.user2.id = :id) group by cr.id, u.id, u.username, u.profilePicture order by max(cm.sentAt) desc")
+    @Query("select new com.sadi.pinklifeline.models.responses.ChatroomRes(cr.id, u.id, u.fullName, u.profilePicture) from ChatRoom cr join User u on (u.id = case when cr.user1.id = :id then cr.user2.id else cr.user1.id end) left join ChatMessage cm on cr.id = cm.room.id where (cr.user1.id = :id or cr.user2.id = :id) group by cr.id, u.id, u.fullName, u.profilePicture order by max(cm.sentAt) desc")
     List<ChatroomRes> findChatRooms(Long id);
 
 }

@@ -248,6 +248,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
     private void assertThatDocInfoUpdateIsCorrect(DocInfoUpdateReq req, User user) {
         DoctorDetails doc = user.getDoctorDetails();
         Assertions.assertThat(doc.getFullName()).isEqualTo(req.getFullName());
+        Assertions.assertThat(user.getFullName()).isEqualTo(req.getFullName());
         assertArrayEquals(req.getQualifications().toArray(), doc.getQualifications().toArray());
         Assertions.assertThat(doc.getWorkplace()).isEqualTo(req.getWorkplace());
         Assertions.assertThat(doc.getDepartment()).isEqualTo(req.getDepartment());
@@ -259,6 +260,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         Assertions.assertThat(user.getProfilePicture()).isEqualTo(req.getProfilePicture());
         DoctorDetails doc = user.getDoctorDetails();
         Assertions.assertThat(doc.getFullName()).isEqualTo(req.getFullName());
+        Assertions.assertThat(user.getFullName()).isEqualTo(req.getFullName());
         Assertions.assertThat(doc.getRegistrationNumber()).isEqualTo(req.getRegistrationNumber());
         assertArrayEquals(req.getQualifications().toArray(), doc.getQualifications().toArray());
         Assertions.assertThat(doc.getWorkplace()).isEqualTo(req.getWorkplace());
@@ -271,6 +273,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         Assertions.assertThat(user.getProfilePicture()).isEqualTo(req.getProfilePicture());
         BasicUserDetails basic = user.getBasicUser();
         Assertions.assertThat(basic.getFullName()).isEqualTo(req.getFullName());
+        Assertions.assertThat(user.getFullName()).isEqualTo(req.getFullName());
         Assertions.assertThat(basic.getWeight()).isEqualTo(req.getWeight());
         Assertions.assertThat(basic.getHeight()).isEqualTo(req.getHeight());
         Assertions.assertThat(basic.getDob()).isEqualTo(req.getDob());
@@ -287,6 +290,7 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
     private void assertThatBasicUpdateIsCorrect(AbstractUserInfoUpdateReq req, User user){
         BasicUserDetails basic = user.getBasicUser();
         Assertions.assertThat(basic.getFullName()).isEqualTo(req.getFullName());
+        Assertions.assertThat(user.getFullName()).isEqualTo(req.getFullName());
         Assertions.assertThat(basic.getWeight()).isEqualTo(req.getWeight());
         Assertions.assertThat(basic.getHeight()).isEqualTo(req.getHeight());
         Assertions.assertThat(basic.getCancerHistory()).isEqualTo(req.getCancerHistory());
