@@ -52,7 +52,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(jwt -> jwt
+                .oauth2ResourceServer((oauth2) -> oauth2
+                        .bearerTokenResolver(new CookieBearerTokenResolver())
+                        .jwt(jwt -> jwt
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();
     }
