@@ -179,7 +179,7 @@ need to be passed, then pass an empty list like this:
 ```
 **<span style="color:red">Notes:</span>**
 * Remember we are using STOMP protocol, for js you must use @stomp/stompjs library
-* For authorization, we are using STOMP connect headers. So, when CONNECT request is sent you must also provide Authorization: Bearer {JWT_TOKEN} header with the connect headers, otherwise connection won't be established
+* For authorization, we are using httpOnly cookie. If the cookie is not available then websocket will not be opened.
 * During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS, you can use this to set the timestamp new ```new Date().toISOString()```
 * If you are using JS use the reference javaScriptCode that was provided to you.
 

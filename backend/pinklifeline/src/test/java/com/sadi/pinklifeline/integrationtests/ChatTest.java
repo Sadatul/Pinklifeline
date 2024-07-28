@@ -10,9 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -51,6 +53,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Slf4j
 public class ChatTest extends AbstractBaseIntegrationTest{
+    @Value("${auth.jwt.cookie.name}")
+    private String cookieName;
 
     @LocalServerPort
     private int port;
@@ -118,18 +122,18 @@ public class ChatTest extends AbstractBaseIntegrationTest{
         stompClient1.setMessageConverter(new MappingJackson2MessageConverter(objectMapper));
         stompClient2.setMessageConverter(new MappingJackson2MessageConverter(objectMapper));
 
-        StompHeaders headers1 = new StompHeaders();
-        headers1.add("Authorization", String.format("Bearer %s", token1));
-        StompHeaders headers2 = new StompHeaders();
-        headers2.add("Authorization", String.format("Bearer %s", token2));
+        WebSocketHttpHeaders headers1 = new WebSocketHttpHeaders();
+        headers1.add(HttpHeaders.COOKIE, String.format("%s=%s; HttpOnly", cookieName, token1));
+        WebSocketHttpHeaders headers2 = new WebSocketHttpHeaders();
+        headers2.add(HttpHeaders.COOKIE, String.format("%s=%s; HttpOnly", cookieName, token2));
         StompSession stompSession1 = stompClient1.connectAsync(String.format("ws://localhost:%d/ws", port),
-                        new WebSocketHttpHeaders(),
-                        headers1, new StompSessionHandlerAdapter() {}
+                        headers1,
+                        new StompHeaders(), new StompSessionHandlerAdapter() {}
                         )
                 .get(1, TimeUnit.SECONDS);
         StompSession stompSession2 = stompClient2.connectAsync(String.format("ws://localhost:%d/ws", port),
-                        new WebSocketHttpHeaders(),
-                        headers2, new StompSessionHandlerAdapter() {}
+                        headers2,
+                        new StompHeaders(), new StompSessionHandlerAdapter() {}
                 )
                 .get(1, TimeUnit.SECONDS);
 
