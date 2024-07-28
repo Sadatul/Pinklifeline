@@ -116,9 +116,7 @@ export default function LoginRegister() {
                     <label className="text-xl font-bold m-2">Email</label>
                     <input type="email" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
                         {...register("email", {
-                            required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" },
-                            validate: (value) => { return /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com)$/.test(value) || 'Use @gmail.com or @yahoo.com' }
-                        })} />
+                            required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }})} />
                     {errors.email && <span className="text-red-500">{errors.email?.message}</span>}
                     {currentSection === "Register" && (
                         <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("role")}>

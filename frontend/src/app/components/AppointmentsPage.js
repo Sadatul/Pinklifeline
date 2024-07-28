@@ -375,27 +375,28 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             const token = await axios.get(getVideoCallToekn, {
                 headers: sessionContext.sessionData.headers
             })
-            // const callId = await axios.post(createOnlineMeetingUrl, {
-            //     appointmentId: appointment.id,
-            // }, {
-            //     headers: sessionContext.sessionData.headers
-            // })
-            // if (!callId) console.error('Call ID is required');
-            // const call = client.call('default', callId);
-            // if (!call) throw new Error('Failed to create meeting');
-            // const startsAt = new Date(Date.now()).toISOString();
-            // await call.getOrCreate({
-            //     data: {
-            //         starts_at: startsAt,
-            //         members: [{ user_id: client.streamClient.user.id, role: 'admin' }, { user_id: "3" }],
-            //     },
-            // });
-            // console.log("Call created");
-            // console.log(call);
-            // const newWindow = window.open(`/videocall/${callId}`, '_blank');
-            // if (newWindow) {
-            //     newWindow.focus();
-            // }
+            console.log("Token", token)
+            const callId = await axios.post(createOnlineMeetingUrl, {
+                appointmentId: appointment.id,
+            }, {
+                headers: sessionContext.sessionData.headers
+            })
+            if (!callId) console.error('Call ID is required');
+            const call = client.call('default', callId);
+            if (!call) throw new Error('Failed to create meeting');
+            const startsAt = new Date(Date.now()).toISOString();
+            await call.getOrCreate({
+                data: {
+                    starts_at: startsAt,
+                    members: [{ user_id: client.streamClient.user.id, role: 'admin' }, { user_id: "3" }],
+                },
+            });
+            console.log("Call created");
+            console.log(call);
+            const newWindow = window.open(`/videocall/${callId}`, '_blank');
+            if (newWindow) {
+                newWindow.focus();
+            }
         }
         catch (error) {
             console.log("Error getting video call", error)

@@ -426,9 +426,9 @@ export function DoctorChamberLocationSection({ }) {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-row space-x-10 items-center">
+                    <div className="flex flex-row gap-3 items-center">
 
-                        <label className="text-md font-semibold mx-2 text-center">Work days
+                        <div className="text-md font-semibold mx-2 text-center">Work days
                             <div className="flex flex-row space-x-2 mt-2">
                                 {workdays.current.map((day, index) => (
                                     <label key={index} className="cursor-pointer select-none">
@@ -444,7 +444,7 @@ export function DoctorChamberLocationSection({ }) {
                                 ))}
                             </div>
                             {errors.workdays && <span className="text-red-500">{errors.workdays?.message}</span>}
-                        </label>
+                        </div>
                     </div>
                 </motion.div>
             </AnimatePresence>

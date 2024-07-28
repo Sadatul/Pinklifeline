@@ -12,18 +12,19 @@ const StreamVideoProvider = ({ children }) => {
   const [videoClient, setVideoClient] = useState();
 
   useEffect(() => {
+    console.log("StreamVideoProvider");
     const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
     if (!sessionData.userId) throw new Error('User ID is missing');
     console.log("User ID: ", sessionData.userId);
     if (!API_KEY) throw new Error('Stream API key is missing');
     const tokenProvider = async () => {
       try {
+        console.log("Getting token");
         const response = await axios.get(getVideoCallToekn, {
           headers: {
             Authorization: `Bearer ${sessionData.token}`,
           },
         });
-        console.log("Getting token");
         console.log(response.data.token);
         return response.data.token;
       }
@@ -35,11 +36,11 @@ const StreamVideoProvider = ({ children }) => {
     const client = new StreamVideoClient({
       apiKey: API_KEY,
       user: {
-        id: sessionData.userId,
+        id: String(sessionData.userId),
         name: sessionData.userId == 2 ? 'Adil' : 'General_Crix_Madine',
         image: 'https://getstream.io/random_svg/?name=Adil',
       },
-      tokenProvider,
+      tokenProvider: tokenProvider,
     });
 
     setVideoClient(client);
