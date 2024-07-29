@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.responses.PatientResForeign;
 import com.sadi.pinklifeline.service.UserService;
+import com.sadi.pinklifeline.service.doctor.DoctorReviewsService;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,10 +22,12 @@ import java.util.Map;
 public class UserInfoForGuestHandlerV1 {
     private final DoctorsInfoService doctorsInfoService;
     private final UserService userService;
+    private final DoctorReviewsService doctorReviewsService;
 
-    public UserInfoForGuestHandlerV1(DoctorsInfoService doctorsInfoService, UserService userService) {
+    public UserInfoForGuestHandlerV1(DoctorsInfoService doctorsInfoService, UserService userService, DoctorReviewsService doctorReviewsService) {
         this.doctorsInfoService = doctorsInfoService;
         this.userService = userService;
+        this.doctorReviewsService = doctorReviewsService;
     }
 
     @GetMapping("/doctor/{id}")
@@ -40,7 +43,7 @@ public class UserInfoForGuestHandlerV1 {
         response.put("designation", doctorDetails.getDesignation());
         response.put("isVerified", doctorDetails.getIsVerified());
         response.put("contactNumber", doctorDetails.getContactNumber());
-
+        response.put("reviewSummary", doctorReviewsService.getReviewSummaryRes(id, "doctor"));
         return ResponseEntity.ok(response);
     }
 

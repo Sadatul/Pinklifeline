@@ -18,6 +18,6 @@ public interface DoctorReviewsRepository extends JpaRepository<DoctorReview, Lon
     @Query("select r.id from DoctorReview r where r.reviewer.id = :reviewerId and r.doctorDetails.userId = :doctorId")
     Optional<Long> findReviewIdByReviewerIdAndDoctorId(Long reviewerId, Long doctorId);
 
-    @Query("select new com.sadi.pinklifeline.models.responses.ReviewRes(dr.id, dr.reviewer.id, dr.reviewer.username, dr.comment, dr.rating, dr.timestamp) from DoctorReview dr where dr.doctorDetails.userId = :id order by dr.timestamp desc")
+    @Query("select new com.sadi.pinklifeline.models.responses.ReviewRes(dr.id, dr.reviewer.id, dr.reviewer.fullName, dr.reviewer.profilePicture, dr.comment, dr.rating, dr.timestamp) from DoctorReview dr where dr.doctorDetails.userId = :id order by dr.timestamp desc")
     List<ReviewRes> getDoctorReviewsByDoctorId(Long id);
 }
