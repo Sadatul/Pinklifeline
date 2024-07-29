@@ -114,7 +114,7 @@ public abstract class AbstractReviewHandlerService {
     }
 
     public ReviewSummaryRes getReviewSummaryRes(Long id, String type) {
-        Long[] lst = null;
+        Long[] lst;
         try {
             lst = reviewCachingRepository.getRatingCount(id, type).orElseGet(
                     () -> refreshRatingCountPairCache(id, type)

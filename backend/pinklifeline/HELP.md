@@ -559,16 +559,21 @@ status: create(201)
 ```
 {
   "qualifications":[
-    "MBBS",
-    "DO"
-  ],
-  "profilePicture": null,
+      "MBBS",
+      "FCPS"
+    ],
+  "profilePicture": "Nana",
   "isVerified": "Y",
   "contactNumber": "01730445524",
-  "fullName": "Dr. Adil",
+  "fullName": "Dr. Anika",
   "designation": "Head",
   "department": "Cancer",
-  "workplace": "Khulna Medical College"
+  "workplace": "Comilla Medical College",
+  "reviewSummary":{
+      "count": 3,
+      "averageRating": 3.3333333333333335,
+      "ratingCount":[0, 0, 2, 1, 0]
+  }
 }
 ```
 ## Get info for BASICUSER/PATIENTS for guest Users
@@ -619,20 +624,22 @@ status: create(201)
 ```
 [
   {
-    "id": 33,
-    "reviewerId": 3,
-    "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
+    "id": 4,
+    "reviewerId": 5,
+    "reviewerName": "Dr. Rahima Begum",
+    "profilePicture": "Nana",
     "rating": 3,
     "comment": "A very good doctor",
-    "timestamp": "2024-07-16T11:46:20"
+    "timestamp": "2024-07-29T22:42:45"
   },
   {
-    "id": 32,
-    "reviewerId": 2,
-    "reviewerName": "sadatulislamsadi@gmail.com",
+    "id": 3,
+    "reviewerId": 4,
+    "reviewerName": "Biva Ahmed",
+    "profilePicture": "google.com",
     "rating": 4,
-    "comment": "Sultan is back",
-    "timestamp": "2024-07-14T11:22:44"
+    "comment": "A very good doctor",
+    "timestamp": "2024-07-29T22:20:51"
   }
 ]
 ```
