@@ -1,7 +1,6 @@
 package com.sadi.pinklifeline.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
 import com.sadi.pinklifeline.externals.sslcommerz.SslcommerzClientService;
 import com.sadi.pinklifeline.externals.sslcommerz.SslcommerzInitResponse;
@@ -24,7 +23,7 @@ public abstract class AbstractPaymentService {
     public abstract void validateResourceForPayment(Long id);
     public InitiatePaymentRes initiatePayment(Long id, InitiatePaymentReq req) {
         validateResourceForPayment(id);
-        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(getTotalAmount(id).doubleValue(), req.getCustomerName(),
+        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, getTotalAmount(id).doubleValue(), req.getCustomerName(),
                 req.getCustomerEmail(), req.getCustomerPhone());
         if(!(res.getStatus().equals("SUCCESS"))){
             log.info("Failed to initiate payment: {}", res.getFailedreason());
@@ -42,7 +41,7 @@ public abstract class AbstractPaymentService {
             throw new InternalServerErrorException("Some issues may have occurred in the database. Please try again later");
         }
         if(res.getStatus().equals("FAILED")){
-            throw new BadRequestFromUserException("Transaction failed");
+            return ResponseEntity.badRequest().build();
         }
         if(res.getStatus().equals("PENDING")){
             return ResponseEntity.accepted().build();

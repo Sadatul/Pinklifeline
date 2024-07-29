@@ -42,7 +42,7 @@ public class PaymentServiceTest{
     public void testMethod() {
         BDDMockito.willDoNothing().given(paymentSessionKeyRepository).putUserSessionKey(BDDMockito.anyString(), BDDMockito.anyString());
 
-        SslcommerzInitResponse res = clientService.initiatePayment(100.00, "Sadi", "sfsdfsdf", "sdfsadf");
+        SslcommerzInitResponse res = clientService.initiatePayment(1L,100.00, "Sadi", "sfsdfsdf", "sdfsadf");
         System.out.println(res);
         Assertions.assertThat(res.getStatus()).isEqualTo("SUCCESS");
     }

@@ -30,7 +30,7 @@ public class PaymentServiceIntegrationTest extends AbstractBaseIntegrationTest{
 
     @Test
     public void testPayment() throws JsonProcessingException {
-        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(100.0, "Sadi",
+        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(1L,100.0, "Sadi",
                 "sdfasdfsdf", "sadfsdfsdfsadf");
 
         assertEquals("SUCCESS", res.getStatus());
