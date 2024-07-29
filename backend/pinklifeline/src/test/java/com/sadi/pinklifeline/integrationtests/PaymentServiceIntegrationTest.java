@@ -30,14 +30,16 @@ public class PaymentServiceIntegrationTest extends AbstractBaseIntegrationTest{
 
     @Test
     public void testPayment() throws JsonProcessingException {
-        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(1L,100.0, "Sadi",
+        String type = "appointment";
+        Long resourceId = 1L;
+        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(resourceId, type,100.0, "Sadi",
                 "sdfasdfsdf", "sadfsdfsdfsadf");
 
         assertEquals("SUCCESS", res.getStatus());
 
-        Optional<String> sessionKey = repository.getUserSessionKey(res.getTranId());
+        Optional<String> sessionKey = repository.getUserSessionKey(res.getTranId(), type, resourceId);
         Assertions.assertThat(sessionKey).isPresent();
-        SslcommerzValidationResponse validationRes = sslcommerzClientService.validatePayment(res.getTranId());
+        SslcommerzValidationResponse validationRes = sslcommerzClientService.validatePayment(res.getTranId(), type, resourceId);
         log.info("Validation response: {}", validationRes);
     }
 }

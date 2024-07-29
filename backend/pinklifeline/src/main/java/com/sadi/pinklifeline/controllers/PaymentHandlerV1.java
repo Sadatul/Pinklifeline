@@ -32,7 +32,7 @@ public class PaymentHandlerV1 {
             @PathVariable String type,
             @PathVariable Long id, @RequestBody InitiatePaymentReq req){
         AbstractPaymentService service = paymentServiceFactory(type);
-        InitiatePaymentRes res = service.initiatePayment(id, req);
+        InitiatePaymentRes res = service.initiatePayment(id, type, req);
         return ResponseEntity.ok(res);
     }
 
@@ -41,7 +41,7 @@ public class PaymentHandlerV1 {
                                                 @PathVariable String type,
                                                 @RequestParam String transId){
         AbstractPaymentService service = paymentServiceFactory(type);
-        return service.validatePayment(id, transId);
+        return service.validatePayment(id, type, transId);
     }
 
     @PostMapping("/{type}/{id}/ssl-redirect")
@@ -51,7 +51,7 @@ public class PaymentHandlerV1 {
                                                 @RequestParam String transId,
                                                 HttpServletResponse response) throws IOException {
         AbstractPaymentService service = paymentServiceFactory(type);
-        ResponseEntity<Void> res = service.validatePayment(id, transId);
+        ResponseEntity<Void> res = service.validatePayment(id, type, transId);
         if(res.getStatusCode().equals(HttpStatus.OK))
         {
             response.sendRedirect(String.format("%s?status=SUCCESS", frontendRedirectUri));

@@ -21,9 +21,9 @@ public abstract class AbstractPaymentService {
     public abstract void updatePaymentStatus(Long id);
     public abstract Integer getTotalAmount(Long id);
     public abstract void validateResourceForPayment(Long id);
-    public InitiatePaymentRes initiatePayment(Long id, InitiatePaymentReq req) {
+    public InitiatePaymentRes initiatePayment(Long id, String type, InitiatePaymentReq req) {
         validateResourceForPayment(id);
-        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, getTotalAmount(id).doubleValue(), req.getCustomerName(),
+        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, type, getTotalAmount(id).doubleValue(), req.getCustomerName(),
                 req.getCustomerEmail(), req.getCustomerPhone());
         if(!(res.getStatus().equals("SUCCESS"))){
             log.info("Failed to initiate payment: {}", res.getFailedreason());
@@ -32,10 +32,10 @@ public abstract class AbstractPaymentService {
         return new InitiatePaymentRes(res.getTranId(), res.getGatewayPageURL());
     }
 
-    public ResponseEntity<Void> validatePayment(Long id, String transactionId) {
+    public ResponseEntity<Void> validatePayment(Long id, String type, String transactionId) {
         SslcommerzValidationResponse res;
         try {
-            res = sslcommerzClientService.validatePayment(transactionId);
+            res = sslcommerzClientService.validatePayment(transactionId, type, id);
 
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Some issues may have occurred in the database. Please try again later");
