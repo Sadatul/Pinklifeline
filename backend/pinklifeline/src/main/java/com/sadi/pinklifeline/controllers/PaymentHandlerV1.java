@@ -5,12 +5,22 @@ import com.sadi.pinklifeline.models.reqeusts.InitiatePaymentReq;
 import com.sadi.pinklifeline.models.responses.InitiatePaymentRes;
 import com.sadi.pinklifeline.service.AbstractPaymentService;
 import com.sadi.pinklifeline.service.AppointmentService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
+@Slf4j
 @RequestMapping("/v1/payment")
 public class PaymentHandlerV1 {
+    @Value("${payment.redirect.uri.frontend}")
+    private String frontendRedirectUri;
+
     private final AppointmentService appointmentService;
 
     public PaymentHandlerV1(AppointmentService appointmentService) {
@@ -22,7 +32,7 @@ public class PaymentHandlerV1 {
             @PathVariable String type,
             @PathVariable Long id, @RequestBody InitiatePaymentReq req){
         AbstractPaymentService service = paymentServiceFactory(type);
-        InitiatePaymentRes res = service.initiatePayment(id, req);
+        InitiatePaymentRes res = service.initiatePayment(id, type, req);
         return ResponseEntity.ok(res);
     }
 
@@ -31,7 +41,29 @@ public class PaymentHandlerV1 {
                                                 @PathVariable String type,
                                                 @RequestParam String transId){
         AbstractPaymentService service = paymentServiceFactory(type);
-        return service.validatePayment(id, transId);
+        return service.validatePayment(id, type, transId);
+    }
+
+    @PostMapping("/{type}/{id}/ssl-redirect")
+    @CrossOrigin("null")
+    public ResponseEntity<Void> paymentRedirect(@PathVariable Long id,
+                                                @PathVariable String type,
+                                                @RequestParam String transId,
+                                                HttpServletResponse response) throws IOException {
+        AbstractPaymentService service = paymentServiceFactory(type);
+        ResponseEntity<Void> res = service.validatePayment(id, type, transId);
+        if(res.getStatusCode().equals(HttpStatus.OK))
+        {
+            response.sendRedirect(String.format("%s?status=SUCCESS", frontendRedirectUri));
+        }
+        else if(res.getStatusCode().equals(HttpStatus.ACCEPTED))
+        {
+            response.sendRedirect(String.format("%s?status=PENDING", frontendRedirectUri));
+        }
+        else{
+            response.sendRedirect(String.format("%s?status=FAILED", frontendRedirectUri));
+        }
+        return res;
     }
 
     private AbstractPaymentService paymentServiceFactory(String type){

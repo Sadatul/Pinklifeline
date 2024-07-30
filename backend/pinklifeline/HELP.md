@@ -179,7 +179,7 @@ need to be passed, then pass an empty list like this:
 ```
 **<span style="color:red">Notes:</span>**
 * Remember we are using STOMP protocol, for js you must use @stomp/stompjs library
-* For authorization, we are using STOMP connect headers. So, when CONNECT request is sent you must also provide Authorization: Bearer {JWT_TOKEN} header with the connect headers, otherwise connection won't be established
+* For authorization, we are using httpOnly cookie. If the cookie is not available then websocket will not be opened.
 * During SEND request you must provide a json object. Here very the timestamp must be in ISO 8061 format. For JS, you can use this to set the timestamp new ```new Date().toISOString()```
 * If you are using JS use the reference javaScriptCode that was provided to you.
 
@@ -559,16 +559,21 @@ status: create(201)
 ```
 {
   "qualifications":[
-    "MBBS",
-    "DO"
-  ],
-  "profilePicture": null,
+      "MBBS",
+      "FCPS"
+    ],
+  "profilePicture": "Nana",
   "isVerified": "Y",
   "contactNumber": "01730445524",
-  "fullName": "Dr. Adil",
+  "fullName": "Dr. Anika",
   "designation": "Head",
   "department": "Cancer",
-  "workplace": "Khulna Medical College"
+  "workplace": "Comilla Medical College",
+  "reviewSummary":{
+      "count": 3,
+      "averageRating": 3.3333333333333335,
+      "ratingCount":[0, 0, 2, 1, 0]
+  }
 }
 ```
 ## Get info for BASICUSER/PATIENTS for guest Users
@@ -619,20 +624,22 @@ status: create(201)
 ```
 [
   {
-    "id": 33,
-    "reviewerId": 3,
-    "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
+    "id": 4,
+    "reviewerId": 5,
+    "reviewerName": "Dr. Rahima Begum",
+    "profilePicture": "Nana",
     "rating": 3,
     "comment": "A very good doctor",
-    "timestamp": "2024-07-16T11:46:20"
+    "timestamp": "2024-07-29T22:42:45"
   },
   {
-    "id": 32,
-    "reviewerId": 2,
-    "reviewerName": "sadatulislamsadi@gmail.com",
+    "id": 3,
+    "reviewerId": 4,
+    "reviewerName": "Biva Ahmed",
+    "profilePicture": "google.com",
     "rating": 4,
-    "comment": "Sultan is back",
-    "timestamp": "2024-07-14T11:22:44"
+    "comment": "A very good doctor",
+    "timestamp": "2024-07-29T22:20:51"
   }
 ]
 ```

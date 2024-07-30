@@ -48,7 +48,7 @@ public abstract class AbstractReviewHandlerService {
         Long id = saveReview(review).getId();
         Long[] lst = addReviewRatingCountPairUpdate(req.getRating(),
                 req.getId(), "doctor");
-        return Pair.of(id, getReviewSummaryRes(lst));
+        return Pair.of(id, getReviewSummaryResFromArray(lst));
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
@@ -63,7 +63,7 @@ public abstract class AbstractReviewHandlerService {
 
         Long[] lst = updateReviewRatingCountPairUpdate(req.getRating(), review.getResourceId(),
                 prevRating, "doctor");
-        return getReviewSummaryRes(lst);
+        return getReviewSummaryResFromArray(lst);
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
@@ -74,7 +74,7 @@ public abstract class AbstractReviewHandlerService {
         deleteReview(review);
 
         Long[] lst = deleteReviewRatingCountPairUpdate(prevRating, review.getResourceId(), "doctor");
-        return getReviewSummaryRes(lst);
+        return getReviewSummaryResFromArray(lst);
     }
 
     public Long[] addReviewRatingCountPairUpdate(Integer rating, Long id, String type) throws JsonProcessingException {
@@ -104,12 +104,24 @@ public abstract class AbstractReviewHandlerService {
         return lst;
     }
 
-    protected ReviewSummaryRes getReviewSummaryRes(Long[] lst) {
+    protected ReviewSummaryRes getReviewSummaryResFromArray(Long[] lst) {
         long count = Arrays.stream(lst).mapToLong(Long::longValue).sum();
         double avg = 0.0;
         if(count != 0){
             avg = IntStream.range(0, 5).mapToLong(i -> (i + 1) * lst[i]).sum() / (double) count;
         }
         return new ReviewSummaryRes(count, avg, lst);
+    }
+
+    public ReviewSummaryRes getReviewSummaryRes(Long id, String type) {
+        Long[] lst;
+        try {
+            lst = reviewCachingRepository.getRatingCount(id, type).orElseGet(
+                    () -> refreshRatingCountPairCache(id, type)
+            );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return getReviewSummaryResFromArray(lst);
     }
 }

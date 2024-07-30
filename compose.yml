@@ -46,6 +46,7 @@ services:
     # image: sadatul/pinklifeline_dev:0.0.1-SNAPSHOT
     container_name: backend
     environment:
+      - TZ=Asia/Dhaka
       - DB_URL=mysql:3306/pinklifeline
       - DB_USERNAME=pinklifeline
       - DB_PASSWORD=pinklifeline

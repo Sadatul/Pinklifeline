@@ -10,12 +10,14 @@ import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.repositories.UserVerificationRepository;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.Cookie;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -41,6 +43,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Rollback
 @Transactional
 public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
+    @Value("${auth.jwt.cookie.name}")
+    private String cookieName;
+
+    @Value("${auth.jwt.timeout}")
+    private int cookieJwtTimeout;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -77,6 +85,9 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
                     "password": "12345"
                   }
                  """));
+        String cookieString = resultActions.andReturn().getResponse().getHeader("Set-Cookie");
+
+        logger.info("The cookie received: {}", cookieString);
 
         String response = resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
@@ -90,6 +101,14 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
 
         mockMvc.perform(get("/v1/hello").contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token.get("token"))))
+                .andExpect(status().isOk());
+
+        Cookie cookie = new Cookie(cookieName,token.get("token").toString());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(cookieJwtTimeout); // 7 days
+        mockMvc.perform(get("/v1/hello")
+                        .cookie(cookie))
                 .andExpect(status().isOk());
     }
 

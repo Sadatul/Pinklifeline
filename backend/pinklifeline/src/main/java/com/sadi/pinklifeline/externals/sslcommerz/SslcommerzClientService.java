@@ -40,7 +40,8 @@ public class SslcommerzClientService {
         this.restClient = RestClient.create();
     }
 
-    public SslcommerzInitResponse initiatePayment(Double totalAmount, String cusName, String cusEmail, String cusPhone) {
+    public SslcommerzInitResponse initiatePayment(Long resourceId, String type, Double totalAmount,
+                                                  String cusName, String cusEmail, String cusPhone) {
         String tranId = CodeGenerator.transactionIdGenerator();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("store_id", storeId);
@@ -48,9 +49,9 @@ public class SslcommerzClientService {
         formData.add("total_amount", totalAmount.toString());
         formData.add("currency", "BDT");
         formData.add("tran_id", tranId);
-        formData.add("success_url", successUri);
-        formData.add("fail_url", failUri);
-        formData.add("cancel_url", cancelUri);
+        formData.add("success_url", String.format(successUri, resourceId, tranId));
+        formData.add("fail_url", String.format(failUri, resourceId, tranId));
+        formData.add("cancel_url", String.format(cancelUri, resourceId, tranId));
         formData.add("cus_name", cusName);
         formData.add("cus_email", cusEmail);
         formData.add("cus_add1", "Online");
@@ -60,8 +61,8 @@ public class SslcommerzClientService {
         formData.add("cus_country", "Online");
         formData.add("cus_phone", cusPhone);
         formData.add("shipping_method", "NO");
-        formData.add("product_name", "pinklifeline");
-        formData.add("product_category", "Service");
+        formData.add("product_name", resourceId.toString());
+        formData.add("product_category", type);
         formData.add("product_profile", "Service");
 
 
@@ -74,7 +75,7 @@ public class SslcommerzClientService {
 
         if(res != null){
             res.setTranId(tranId);
-            sessionKeyRepository.putUserSessionKey(tranId, res.getSessionkey());
+            sessionKeyRepository.putUserSessionKey(tranId, type, resourceId, res.getSessionkey());
         }
 
         log.debug("Converted Object: {}", res);
@@ -82,8 +83,9 @@ public class SslcommerzClientService {
         return res;
     }
 
-    public SslcommerzValidationResponse validatePayment(String tranId) throws JsonProcessingException {
-        Optional<String> sessionKey = sessionKeyRepository.getUserSessionKey(tranId);
+    public SslcommerzValidationResponse validatePayment(String tranId, String type, Long resourceID)
+            throws JsonProcessingException {
+        Optional<String> sessionKey = sessionKeyRepository.getUserSessionKey(tranId, type, resourceID);
         if(sessionKey.isEmpty()){
             throw new BadRequestFromUserException("The transId provided doesn't exist or has timed out");
         }
@@ -97,7 +99,7 @@ public class SslcommerzClientService {
             throw new InternalServerErrorException("Server failed to validate request");
         }
         if(!res.getStatus().equals("PENDING")){
-                sessionKeyRepository.deleteUserSessionKeyByTransId(tranId);
+                sessionKeyRepository.deleteUserSessionKeyByTransId(tranId, type, resourceID);
         }
         return res;
     }

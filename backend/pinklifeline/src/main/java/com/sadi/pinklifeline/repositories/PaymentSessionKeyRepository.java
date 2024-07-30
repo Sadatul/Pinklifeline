@@ -1,6 +1,5 @@
 package com.sadi.pinklifeline.repositories;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -22,21 +21,22 @@ public class PaymentSessionKeyRepository {
         this.userRedisTemplate = userRedisTemplate;
     }
 
-    public void putUserSessionKey(String transId, String sessionKey) {
-        userRedisTemplate.opsForValue().set(redisKeyPrefix + transId,
+    // transId is unique by itself, but we are adding type and id as a validation. When user tries to validate, it will ensure that the validation is done for same resource
+    public void putUserSessionKey(String transId, String type, Long id, String sessionKey) {
+        userRedisTemplate.opsForValue().set(redisKeyPrefix + type  + id  + transId,
                 sessionKey,
                 expiration, TimeUnit.SECONDS);
     }
 
-    public Optional<String> getUserSessionKey(String transId) throws JsonProcessingException {
-        String data = userRedisTemplate.opsForValue().get(redisKeyPrefix + transId);
+    public Optional<String> getUserSessionKey(String transId, String type, Long id) {
+        String data = userRedisTemplate.opsForValue().get(redisKeyPrefix + type + id + transId);
         if (data == null) {
             return Optional.empty();
         }
         return Optional.of(data);
     }
 
-    public void deleteUserSessionKeyByTransId(String transId) {
-        userRedisTemplate.delete(redisKeyPrefix + transId);
+    public void deleteUserSessionKeyByTransId(String transId, String type, Long id) {
+        userRedisTemplate.delete(redisKeyPrefix + type + id + transId);
     }
 }

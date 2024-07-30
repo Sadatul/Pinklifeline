@@ -38,6 +38,9 @@ public class SecurityConfig {
     @Value("${cors.allowed-origins}")
     private String[] origins;
 
+    @Value("${auth.jwt.cookie.name}")
+    private String cookieName;
+
     private final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
@@ -48,11 +51,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/verify").permitAll()
-                        .requestMatchers("/ws").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/payment/*/*/ssl-redirect").permitAll()
+//                        .requestMatchers("/ws").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(jwt -> jwt
+                .oauth2ResourceServer((oauth2) -> oauth2
+                        .bearerTokenResolver(new CookieBearerTokenResolver(cookieName))
+                        .jwt(jwt -> jwt
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();
     }
@@ -94,6 +100,7 @@ public class SecurityConfig {
           public void addCorsMappings(CorsRegistry registry) {
               logger.info("Allowed Origins: {}", String.join(", ", origins));
               registry.addMapping("/**").allowedMethods("*")
+                      .allowCredentials(true)
                       .allowedOrigins(origins);
           }
         };
