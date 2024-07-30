@@ -64,10 +64,7 @@ export function ChatLayout() {
         console.log('Opened chat changed')
         console.log(stompContext.openedChat)
         if (stompContext.openedChat && sessionContext.sessionData) {
-            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axiosInstance.get(getMessagesUrl(stompContext.openedChat.roomId), {
-                headers: headers
-            }).then((response) => {
+            axiosInstance.get(getMessagesUrl(stompContext.openedChat.roomId)).then((response) => {
                 console.log("Messages fetched")
                 console.log(response.data)
                 stompContext.setMessages(response.data)
@@ -120,9 +117,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
     useEffect(() => {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId), {
-                headers: sessionContext.sessionData.headers
-            }).then((response) => {
+            axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId)).then((response) => {
                 console.log("Chats fetched")
                 console.log(response.data)
                 stompContext.chatManager.current.addChats(response.data)

@@ -60,7 +60,15 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         );
     }
 
-    return (!position || !coords || (viewAll && !nearByUsers)) ? <Loading chose='hand' /> : (
+    if (!position || !coords || (viewAll && !nearByUsers)) return <Loading chose='hand' />
+    if (!coords) {
+        return (
+            <div className="flex flex-col items-center justify-center w-full text-red-500 text-2xl font-bold">
+                **You need to enable location services to continue**
+            </div>
+        )
+    }
+    return (
         <div className='relative size-full'>
             <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md'
                 onClick={() => {

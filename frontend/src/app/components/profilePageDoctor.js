@@ -149,18 +149,14 @@ export default function DoctorProfile({ profileId, section }) {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
                 console.log("doctor reviews", res.data)
                 setDoctorReviews(res.data)
             }).catch((error) => {
                 console.log(error)
             })
 
-            axiosInstance.get(getDoctorProfileDetailsUrl(profileId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
                 console.log("doctor data", res.data)
                 setUserData(res.data)
             }).catch((error) => {
@@ -489,9 +485,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
             console.log("fetching doctor reviews")
-            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
                 console.log("doctor reviews", res.data)
                 setUserReview(res.data.find((review) => review.reviewerId === sessionContext.sessionData.userId) || null)
                 setDoctorReviews(res.data.filter((review) => review.reviewerId !== sessionContext.sessionData.userId))
@@ -548,8 +542,6 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                                         rating: rating,
                                                         id: profileId,
                                                         comment: comment
-                                                    }, {
-                                                        headers: sessionContext.sessionData.headers
                                                     }).then((res) => {
                                                         setReviewInfo(res?.data)
                                                         setFetchAgain(true)
@@ -602,9 +594,7 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
 
 
     const deleteReview = () => {
-        axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id)).then((res) => {
             console.log("deleted review", res.data)
             setReviewInfo(res?.data)
             setUserReview(null)
@@ -663,8 +653,6 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
                                                 axiosInstance.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
                                                     rating: newRating,
                                                     comment: newContent
-                                                }, {
-                                                    headers: headers
                                                 }).then((res) => {
                                                     console.log("updated review", res.data)
                                                     setReviewInfo(res?.data)
@@ -791,9 +779,7 @@ function ConsultationSection({ userId, className, profileId }) {
     const sessionContext = useSessionContext()
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axiosInstance.get(getDoctorProfileDetailsUrlLocations(profileId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getDoctorProfileDetailsUrlLocations(profileId)).then((res) => {
                 console.log("chambers", res.data)
                 setChambers(res.data)
             }).then((res) => {
@@ -859,9 +845,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         console.log('Requesting Appointment')
         console.log(formData)
         const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-        axiosInstance.post(addAppointment, formData, {
-            headers: headers
-        }).then((res) => {
+        axiosInstance.post(addAppointment, formData).then((res) => {
             toast.success("Appointment requested")
             setAppointmentDate(null)
             setOpenDialog(false)
@@ -872,8 +856,8 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
     }
 
     return (
-        <div className="flex flex-row w-full m-1 bg-white rounded-md shadow ">
-            <div className="flex flex-col w-4/12 px-4 py-2">
+        <div className="flex flex-row w-full m-1 bg-white rounded-md shadow justify-between px-3">
+            <div className="flex flex-col px-4 py-2">
                 <h1 className="text font-semibold line-clamp-1 flex gap-2 items-center">
                     <MapPinIcon size={20} />
                     {location}
@@ -883,7 +867,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                     {fees}
                 </p>
             </div>
-            <div className="flex flex-col w-4/12 px-4 py-2">
+            <div className="flex flex-col px-4 py-2 items-center">
                 <div className="flex flex-row items-center">
                     <Clock size={20} />
                     <p className="text-lg font-semibold ml-2">{startTime} to {endTime}</p>
@@ -896,7 +880,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                     ))}
                 </div>
             </div>
-            <div className="flex flex-row w-4/12 px-4 py-2 items-center justify-center h-full">
+            <div className="flex flex-row px-4 py-2 items-center justify-center h-full">
                 <AlertDialog open={openDialog}>
                     <AlertDialogTrigger className="bg-gradient-to-br from-pink-600 to-pink-700 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:bg-gray-200 hover:text-purple-100 transition hover:text-base"
                         onClick={() => setOpenDialog(true)}>

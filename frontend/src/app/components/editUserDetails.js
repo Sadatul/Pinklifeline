@@ -154,9 +154,7 @@ export function EditUserDetailsPage() {
             }
         }
         console.log("form data", form_data)
-        axiosInstance.put(updateUserDetailsUrl(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
-            headers: headers
-        }).then((response) => {
+        axiosInstance.put(updateUserDetailsUrl(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data).then((response) => {
             console.log(response)
             toast.success("Information saved successfully")
         }

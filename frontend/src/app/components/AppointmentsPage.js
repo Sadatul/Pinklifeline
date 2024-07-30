@@ -48,9 +48,7 @@ export function AppointmentsPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
-            axiosInstance.get(getAppointmentsUrl, {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getAppointmentsUrl).then((res) => {
                 console.log("Appointments", res?.data)
                 setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
                 setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
@@ -140,9 +138,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
     const joinCall = () => {
         setDisableCard(true)
         const loadingtoast = toast.loading("Joining video call")
-        axiosInstance.get(joinVideoCall, {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.get(joinVideoCall).then((res) => {
             //may be changed later the structure is not complete
             const callId = res?.data?.callId
             toast.dismiss(loadingtoast)
@@ -166,9 +162,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
         })
     }
     const endAppointment = () => {
-        axiosInstance.delete(closeVideoCall, {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.delete(closeVideoCall).then((res) => {
             toast.success("Closed running appointment")
             setFetchAgain(true)
         }).catch((error) => {
@@ -338,8 +332,6 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         setDisableCard(true)
         axiosInstance.put(acceptAppointmentUrl(appointment.id), {
             time: time
-        }, {
-            headers: sessionContext.sessionData.headers
         }).then((res) => {
             toast.success("Appointment accepted")
             setDisableCard(false)
@@ -355,9 +347,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const cancelAppointment = () => {
         setDisableCard(true)
         const deleteAppointmentUrl = sessionContext.sessionData.role === roles.doctor ? declineAppointmentUrl(appointment.id) : cancelAppointmentUrl(appointment.id)
-        axiosInstance.delete(deleteAppointmentUrl, {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.delete(deleteAppointmentUrl).then((res) => {
             toast.success("Appointment deleted")
             deleteAppointmentById(appointment.id)
             setDisableCard(false)
@@ -375,14 +365,8 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             return;
         }
         try {
-            const token = await axiosInstance.get(getVideoCallToekn, {
-                headers: sessionContext.sessionData.headers
-            })
-            console.log("Token", token)
             const callIdResponse = await axiosInstance.post(createOnlineMeetingUrl, {
                 appointmentId: appointment.id,
-            }, {
-                headers: sessionContext.sessionData.headers
             })
             console.log("Call ID", callIdResponse.data.callId)
             console.log("Client", client)
@@ -425,9 +409,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                 "customerPhone": number
             }
             const loadingtoast = toast.loading("Making payment. Don't close the window")
-            axiosInstance.post(makePaymentUrl(appointment.id), formData, {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.post(makePaymentUrl(appointment.id), formData).then((res) => {
                 toast.dismiss(loadingtoast)
                 setOpenPaymentDialog(false)
                 const gatewayUrl = res?.data?.gatewayUrl

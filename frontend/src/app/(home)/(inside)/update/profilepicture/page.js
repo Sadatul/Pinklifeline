@@ -30,9 +30,7 @@ export default function UpdateProfilePicturePage() {
             router.push("/login");
         }
         const headers = { 'Authorization': `Bearer ${token}` }
-        axiosInstance.put(updateProfilePictureUrl(userId), { profilePicture: pictureLink }, {
-            headers: headers
-        }).then((response) => {
+        axiosInstance.put(updateProfilePictureUrl(userId), { profilePicture: pictureLink }).then((response) => {
             toast.success("Profile picture updated successfully")
             router.push("/profile/" + userId)
         }).catch((error) => {

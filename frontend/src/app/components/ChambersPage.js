@@ -147,9 +147,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
             const headers = {
                 "Authorization": `Bearer ${sessionContext.sessionData.token}`
             }
-            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
-                headers: headers
-            }).then((res) => {
+            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
                 setData({
                     location: data.isOnline ? locationOnline : newLocation,
                     startTime: newStartTime,

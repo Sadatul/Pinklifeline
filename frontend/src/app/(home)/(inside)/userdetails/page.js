@@ -128,9 +128,7 @@ export default function UserDetailsPage() {
             }
         }
         console.log("form data", form_data)
-        axiosInstance.post(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
-            headers: headers
-        }).then((response) => {
+        axiosInstance.post(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data).then((response) => {
             console.log(response)
             toast.success("Information saved successfully")
             if (sessionContext.sessionData.role === roles.doctor) {

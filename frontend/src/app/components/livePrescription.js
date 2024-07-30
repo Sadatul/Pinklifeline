@@ -40,7 +40,7 @@ export function DoctorLivePrescriptionPage() {
     useEffect(() => {
         if (sessionContext.sessionData && !initialized.current) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axiosInstance.get(joinVideoCall, { headers: headers }).then((res) => {
+            axiosInstance.get(joinVideoCall).then((res) => {
                 callId.current = res?.data?.callId
                 setAnalysis(res?.data?.prescription?.analysis)
                 setMedications(res?.data?.prescription?.medications)
@@ -268,7 +268,7 @@ export function PatientLivePrescriptionPage() {
     useEffect(() => {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axiosInstance.get(joinVideoCall, { headers: headers }).then((res) => {
+            axiosInstance.get(joinVideoCall).then((res) => {
                 callId.current = res?.data?.callId
                 setAnalysis(res?.data?.prescription?.analysis)
                 setMedications(res?.data?.prescription?.medications)

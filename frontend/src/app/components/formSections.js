@@ -345,7 +345,7 @@ export function DoctorChamberLocationSection({ }) {
             workdays: userDataRef.current.workdaysString,
             fees: userDataRef.current.fees
         }
-        axiosInstance.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm, { headers: sessionContext.sessionData.headers }).then((response) => {
+        axiosInstance.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm).then((response) => {
             console.log(response.data)
             toast.dismiss()
             toast.success("Location added successfully")
@@ -1387,13 +1387,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
         }
     }
 
-    return !coords ? (
-        <>
-            <div className="flex flex-col items-center justify-center w-full text-red-500 text-2xl font-bold">
-                **You need to enable location services to continue**
-            </div>
-        </>
-    ) : (
+    return (
         <>
             <AnimatePresence>
                 <motion.div className="flex flex-col items-center justify-center w-full"
@@ -1444,7 +1438,6 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
             </div>
         </>
     )
-
 }
 
 

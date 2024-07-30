@@ -18,9 +18,7 @@ export default function ValidatePage() {
             const transactionId = searchParams.get('transactionId');
             const appointmentId = searchParams.get('appointmentId');
             console.log(transactionId);
-            axiosInstance.get(validateTransactionUrl(appointmentId, transactionId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(validateTransactionUrl(appointmentId, transactionId)).then((res) => {
                 setValidationSuccessfulStatus(res.status);
                 setCountdown(5);
             }).catch((error) => {

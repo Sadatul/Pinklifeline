@@ -59,7 +59,6 @@ export function EditDoctorDetailsPage() {
     const sessionContext = useSessionContext()
     useEffect(() => {
         if (sessionContext.sessionData) {
-            // axiosInstance.get()
             // get doctor details.
         }
     }, [sessionContext.sessionData])
@@ -76,9 +75,7 @@ export function EditDoctorDetailsPage() {
             designation: userData?.designation,
             contactNumber: userData?.contactNumber
         }
-        axiosInstance.put(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.put(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data).then((res) => {
             toast.dismiss(loadingtoast)
             toast.success("Data updated")
         }).catch((error) => {

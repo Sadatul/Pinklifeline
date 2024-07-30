@@ -37,10 +37,9 @@ export default function LoginRegister() {
                     console.log(res.data)
                     const sessionData = {
                         userId: res.data?.userId,
-                        token: res.data?.token,
                         role: res.data?.roles[0],
                         username: res.data?.username,
-                        time: new Date().getTime()
+                        time: new Date()
                     }
                     localStorage.clear();
                     localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))

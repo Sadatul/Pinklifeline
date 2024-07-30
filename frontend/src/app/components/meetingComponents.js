@@ -176,9 +176,7 @@ export function MeetingRoom() {
 
     const endCall = async () => {
         console.log("Ending call")
-        axiosInstance.delete(closeVideoCall, {
-            headers: sessionContext.sessionData.headers
-        }).then((res) => {
+        axiosInstance.delete(closeVideoCall).then((res) => {
             console.log(res.data);
         }).catch((err) => {
             console.log(err);

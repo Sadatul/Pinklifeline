@@ -67,9 +67,7 @@ export default function () {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axiosInstance.get(getUserProfileDetails(params.profileId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getUserProfileDetails(params.profileId)).then((res) => {
                 setUserData({
                     ...res.data,
                     role: res?.data?.roles[0]

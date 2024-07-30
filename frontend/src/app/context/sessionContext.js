@@ -22,7 +22,6 @@ export function SessionContextProvider({ children }) {
 
         setSessionData({
             ...sessionData,
-            headers: { 'Authorization': `Bearer ${sessionData.token}` }
         })
     }, [])
 

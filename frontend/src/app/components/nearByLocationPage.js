@@ -22,9 +22,7 @@ export function LocationPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axiosInstance.get(getNearByUsers(sessionContext.sessionData.userId), {
-                headers: sessionContext.sessionData.headers
-            }).then((res) => {
+            axiosInstance.get(getNearByUsers(sessionContext.sessionData.userId)).then((res) => {
                 console.log("nearByUsers", res.data)
                 let updatedUser = [];
                 for (const user of res.data) {
