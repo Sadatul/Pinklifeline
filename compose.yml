@@ -47,6 +47,8 @@ services:
     container_name: backend
     environment:
       - TZ=Asia/Dhaka
+      - BACKEND_HOST=http://localhost:8080
+      - FRONTEND_HOST=http://localhost:3000
       - DB_URL=mysql:3306/pinklifeline
       - DB_USERNAME=pinklifeline
       - DB_PASSWORD=pinklifeline
