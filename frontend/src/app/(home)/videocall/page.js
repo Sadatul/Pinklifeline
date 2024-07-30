@@ -23,7 +23,6 @@ export default function VideoCallPage() {
             await call.getOrCreate({
                 data: {
                     starts_at: startsAt,
-                    members: [{user_id:client.streamClient.user.id, role: 'admin'}, {user_id: "3"} ],
                 },
             });
             console.log("Call created");

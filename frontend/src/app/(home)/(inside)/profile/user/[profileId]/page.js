@@ -50,7 +50,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useSessionContext } from "@/app/context/sessionContext";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance"
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -67,7 +67,7 @@ export default function () {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axios.get(getUserProfileDetails(params.profileId), {
+            axiosInstance.get(getUserProfileDetails(params.profileId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 setUserData({

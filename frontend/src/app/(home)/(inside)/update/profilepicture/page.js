@@ -3,7 +3,7 @@
 import { Progress } from "@/components/ui/progress";
 import { updateProfilePictureUrl } from "@/utils/constants";
 import firebase_app from "@/utils/firebaseConfig";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -30,7 +30,7 @@ export default function UpdateProfilePicturePage() {
             router.push("/login");
         }
         const headers = { 'Authorization': `Bearer ${token}` }
-        axios.put(updateProfilePictureUrl(userId), { profilePicture: pictureLink }, {
+        axiosInstance.put(updateProfilePictureUrl(userId), { profilePicture: pictureLink }, {
             headers: headers
         }).then((response) => {
             toast.success("Profile picture updated successfully")

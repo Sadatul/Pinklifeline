@@ -6,7 +6,7 @@ import { Banknote, Binary, Delete, HardDriveUploadIcon, Pencil, Recycle, Recycle
 import { Separator } from "@/components/ui/separator"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { toast } from "sonner"
 import { Button } from "@mui/material"
 
@@ -28,7 +28,7 @@ export function ChambersPage({ className }) {
             const headers = {
                 "Authorization": `Bearer ${sessionContext.sessionData.token}`
             }
-            axios.get(getConsultationLocations(sessionContext.sessionData.userId), {
+            axiosInstance.get(getConsultationLocations(sessionContext.sessionData.userId), {
                 headers: headers
             }).then((res) => {
                 console.log(res)
@@ -45,7 +45,7 @@ export function ChambersPage({ className }) {
         const headers = {
             "Authorization": `Bearer ${sessionContext.sessionData.token}`
         }
-        axios.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
+        axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
             headers: headers
         }).then((res) => {
             toast.success("Location deleted")
@@ -147,7 +147,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
             const headers = {
                 "Authorization": `Bearer ${sessionContext.sessionData.token}`
             }
-            axios.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
+            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
                 headers: headers
             }).then((res) => {
                 setData({

@@ -34,6 +34,9 @@ import { Terminal } from 'lucide-react';
 import Loading from './loading';
 import { set } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import axiosInstance from "@/utils/axiosInstance"
+import { closeVideoCall, pagePaths } from '@/utils/constants';
+import { useSessionContext } from '@/app/context/sessionContext';
 
 const EndCallButton = () => {
     const call = useCall();
@@ -56,7 +59,7 @@ const EndCallButton = () => {
 
     const endCall = async () => {
         await call.endCall();
-        router.push('/');
+        router.push(pagePaths.dashboard);
     };
 
     return (
@@ -141,17 +144,24 @@ export function MeetingSetup({ setIsSetupComplete }) {
 
 
 export function MeetingRoom() {
+    const call = useCall();
+    const sessionContext = useSessionContext();
     const searchParams = useSearchParams();
-    const isPersonalRoom = !!searchParams.get('personal');
     const router = useRouter();
     const [layout, setLayout] = useState('speaker-left');
     const [showParticipants, setShowParticipants] = useState(false);
     const { useCallCallingState } = useCallStateHooks();
 
-    // for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
     const callingState = useCallCallingState();
 
     if (callingState !== CallingState.JOINED) return <Loading />;
+
+    call.on('call.ended', (() => {
+        console.log("Call ended");
+        call.microphone.disable()
+        call.camera.disable()
+        router.push(pagePaths.dashboard);
+    }))
 
     const CallLayout = () => {
         switch (layout) {
@@ -162,6 +172,20 @@ export function MeetingRoom() {
             default:
                 return <SpeakerLayout participantsBarPosition="right" />;
         }
+    };
+
+    const endCall = async () => {
+        console.log("Ending call")
+        axiosInstance.delete(closeVideoCall, {
+            headers: sessionContext.sessionData.headers
+        }).then((res) => {
+            console.log(res.data);
+        }).catch((err) => {
+            console.log(err);
+        });
+        call.microphone.disable()
+        call.camera.disable()
+        await call.endCall();
     };
 
     return (
@@ -206,9 +230,11 @@ export function MeetingRoom() {
                     <button className='bg-[#19232d] px-4 rounded-3xl' onClick={() => setShowParticipants((prev) => !prev)}>
                         <Users size={24} className="text-white" />
                     </button>
-                    <CancelCallButton />
+                    <CancelCallButton
+                        onLeave={endCall}
+                        onClick={endCall}
+                    />
                 </div>
-                {!isPersonalRoom && <EndCallButton />}
             </div>
         </section>
     );

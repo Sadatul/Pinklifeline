@@ -37,11 +37,13 @@ export const getDoctorProfileDetailsUrlLocations = (doc_id) => { return `${baseU
 export const getDoctorProfileDetailsUrlReviews = (doc_id) => { return `${baseUrl}/v1/reviews/doctor/${doc_id}` }
 export const getVideoCallToekn = `${baseUrl}/v1/meeting/user/token`
 export const createOnlineMeetingUrl = `${baseUrl}/v1/online-meeting/start`
+export const validateTransactionUrl = (appointment_id, transactionId) => { return `${baseUrl}/v1/payment/appointment/${appointment_id}/validate?transId=${transactionId}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
 export const locationResolution = 8
 
+export const dummyAvatar = (name) => { return `https://getstream.io/random_svg/?name=${name}` }
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
 export const emptyAvatar = "/emptyAvatar.png"

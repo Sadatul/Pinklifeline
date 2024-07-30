@@ -3,7 +3,7 @@ import { set, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation"
 import {
@@ -29,7 +29,7 @@ export default function OTPVerify() {
         const sentData = { username: data.email, otp: data.otp }
         console.log("Sent data")
         console.log(sentData)
-        axios.post(otpUrlReq, sentData).then((res) => {
+        axiosInstance.post(otpUrlReq, sentData).then((res) => {
             if (res.status === 200) {
                 toast.success("OTP verified",{
                     description: "You can now login"

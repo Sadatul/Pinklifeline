@@ -7,7 +7,7 @@ import { Client } from '@stomp/stompjs';
 import { usePathname } from "next/navigation";
 import { getChatsUrl, sessionDataItem, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
 import { useParams } from "next/navigation";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance"
 import { useSessionContext } from "@/app/context/sessionContext";
 
 export function SocketInitializer() {
@@ -98,7 +98,7 @@ export function SocketInitializer() {
                     }
                     else {
                         stompContext.chatManager.current.removeAllChats()
-                        axios.get(getChatsUrl(sessionContext.sessionData.userId), {
+                        axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId), {
                             headers: sessionContext.sessionData.headers
                         }).then((response) => {
                             console.log("in stompInitializer/subscriber/elseroute")

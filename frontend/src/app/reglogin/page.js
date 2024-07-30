@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
 import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem } from "@/utils/constants"
@@ -30,7 +30,7 @@ export default function LoginRegister() {
             document.getElementById("submit-button-text").hidden = true
             document.getElementById("submit-button-loading-state").hidden = false
             const sentData = { username: data.email, password: data.password }
-            axios.post(loginUrlReq, sentData).then((res) => {
+            axiosInstance.post(loginUrlReq, sentData).then((res) => {
                 if (res.status === 200) {
                     toast.success("Login successful")
                     console.log("Response")
@@ -76,7 +76,7 @@ export default function LoginRegister() {
                 document.getElementById("submit-button-loading-state").hidden = false
                 console.log("Sent data")
                 console.log(sentData)
-                axios.post(registerUrlReq, sentData).then((res) => {
+                axiosInstance.post(registerUrlReq, sentData).then((res) => {
                     console.log("Response")
                     console.log(res)
                     if (res.status === 200) {

@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSessionContext } from "@/app/context/sessionContext"
 import { joinVideoCall, livePrescriptionSendUrl, livePrescriptionSubscribe, livePrescriptionSubscribeErrors, stompBrokerUrl } from "@/utils/constants"
 import { useParams } from "next/navigation"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 
 const dummy = {
     "receiverId": 2,
@@ -40,7 +40,7 @@ export function DoctorLivePrescriptionPage() {
     useEffect(() => {
         if (sessionContext.sessionData && !initialized.current) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axios.get(joinVideoCall, { headers: headers }).then((res) => {
+            axiosInstance.get(joinVideoCall, { headers: headers }).then((res) => {
                 callId.current = res?.data?.callId
                 setAnalysis(res?.data?.prescription?.analysis)
                 setMedications(res?.data?.prescription?.medications)
@@ -268,7 +268,7 @@ export function PatientLivePrescriptionPage() {
     useEffect(() => {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axios.get(joinVideoCall, { headers: headers }).then((res) => {
+            axiosInstance.get(joinVideoCall, { headers: headers }).then((res) => {
                 callId.current = res?.data?.callId
                 setAnalysis(res?.data?.prescription?.analysis)
                 setMedications(res?.data?.prescription?.medications)

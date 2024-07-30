@@ -4,7 +4,7 @@ import MapView from "./map"
 import Loading from "./loading"
 import { cellToLatLng } from "h3-js"
 import { useSessionContext } from "@/app/context/sessionContext"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { getNearByUsers } from "@/utils/constants"
 import { toast } from "sonner"
 
@@ -22,7 +22,7 @@ export function LocationPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axios.get(getNearByUsers(sessionContext.sessionData.userId), {
+            axiosInstance.get(getNearByUsers(sessionContext.sessionData.userId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("nearByUsers", res.data)

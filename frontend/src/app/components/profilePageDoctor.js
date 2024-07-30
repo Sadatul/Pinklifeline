@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, deleteDoctorReview, emptyAvatar, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, avatarAang, deleteDoctorReview, dummyAvatar, emptyAvatar, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Hospital, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
+import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -49,10 +49,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useSessionContext } from "@/app/context/sessionContext";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance"
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import Loading from "./loading";
 import Link from "next/link";
 
@@ -149,57 +149,26 @@ export default function DoctorProfile({ profileId, section }) {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axios.get(getDoctorProfileDetailsUrlReviews(profileId), {
+            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("doctor reviews", res.data)
                 setDoctorReviews(res.data)
             }).catch((error) => {
                 console.log(error)
-                toast.error("Error fetching data check internet.")
             })
 
-            // setDoctorReviews([
-            //     {
-            //         "id": 33,
-            //         "reviewerId": 3,
-            //         "reviewerName": "2005077@ugrad.cse.buet.ac.bd",
-            //         "rating": 3,
-            //         "comment": "A very good doctor",
-            //         "timestamp": "2024-07-16T11:46:20"
-            //     },
-            //     {
-            //         "id": 32,
-            //         "reviewerId": 2,
-            //         "reviewerName": "sadatulislamsadi@gmail.com",
-            //         "rating": 4,
-            //         "comment": "Sultan is back",
-            //         "timestamp": "2024-07-14T11:22:44"
-            //     }
-            // ])
-
-            axios.get(getDoctorProfileDetailsUrl(profileId), {
+            axiosInstance.get(getDoctorProfileDetailsUrl(profileId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("doctor data", res.data)
                 setUserData(res.data)
             }).catch((error) => {
                 console.log(error)
-                toast.error("Error loading. Check internet")
-            })
-
-            setUserData({
-                "qualifications": [
-                    "MBBS",
-                    "DO"
-                ],
-                "profilePicture": profilePic,
-                "isVerified": "Y",
-                "contactNumber": "01730445524",
-                "fullName": "Dr. Adil",
-                "designation": "Head",
-                "department": "Cancer",
-                "workplace": "Khulna Medical College"
+                if (error.response.status === 404) {
+                    toast.error("Doctor not found")
+                    setUserData("EMPTY")
+                }
             })
         }
     }, [sessionContext.sessionData])
@@ -226,6 +195,7 @@ export default function DoctorProfile({ profileId, section }) {
     }
 
     if (!userData) return <Loading />
+    else if (userData === "EMPTY") return <h1 className="text-3xl font-semibold text-center m-4">Doctor not found</h1>
 
     return (
         <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}
@@ -514,11 +484,12 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     const [fetchAgain, setFetchAgain] = useState(true)
     const [userReview, setUserReview] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [addReviewDialog, setAddReviewDialog] = useState(false)
 
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
             console.log("fetching doctor reviews")
-            axios.get(getDoctorProfileDetailsUrlReviews(profileId), {
+            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("doctor reviews", res.data)
@@ -542,7 +513,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
             <div className="flex flex-col rounded p-4 w-full">
                 <div className="flex flex-col items-end w-full">
                     {!userReview ?
-                        <Dialog>
+                        <Dialog open={addReviewDialog} onOpenChange={setAddReviewDialog}>
                             <DialogTrigger asChild>
                                 <Button className="w-24">
                                     Add Review
@@ -555,26 +526,25 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                     </DialogTitle>
                                 </DialogHeader>
                                 <DialogDescription asChild>
-                                    <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
-                                        <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 border border-gray-500 text-black" defaultValue={0}>
-                                            <option value={0} disabled>Rating</option>
-                                            <option value={1}>1</option>
-                                            <option value={2}>2</option>
-                                            <option value={3}>3</option>
-                                            <option value={4}>4</option>
-                                            <option value={5}>5</option>
-                                        </select>
-                                        <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" />
-                                    </div>
-                                </DialogDescription>
-                                <DialogFooter>
-                                    <DialogClose asChild>
+                                    <div className="flex flex-col w-full items-end gap-3">
+                                        <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
+                                            <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 border border-gray-500 text-black" defaultValue={0}>
+                                                <option value={0} disabled>Rating</option>
+                                                <option value={1}>1</option>
+                                                <option value={2}>2</option>
+                                                <option value={3}>3</option>
+                                                <option value={4}>4</option>
+                                                <option value={5}>5</option>
+                                            </select>
+                                            <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" />
+                                        </div>
+                                        <span id="error-message" className="text-sm font-semibold text-end w-full text-red-500 hidden">Please provide a rating at least</span>
                                         <Button className="w-24"
                                             onClick={() => {
                                                 const comment = document.getElementById("add-review-text")?.value
                                                 const rating = document.getElementById("add-review-rating")?.value
                                                 if (Number(rating) !== 0) {
-                                                    axios.post(addReview(sessionContext.sessionData.userId), {
+                                                    axiosInstance.post(addReview(sessionContext.sessionData.userId), {
                                                         rating: rating,
                                                         id: profileId,
                                                         comment: comment
@@ -584,6 +554,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                                         setReviewInfo(res?.data)
                                                         setFetchAgain(true)
                                                         setLoading(true)
+                                                        setAddReviewDialog(false)
                                                         //need to set the structure
                                                         toast.success("Review Added")
                                                     }).catch((error) => {
@@ -591,12 +562,14 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                                         toast.error("Error adding review")
                                                     })
                                                 } else {
-                                                    toast.error("Please select a rating")
+                                                    document.getElementById("error-message").classList.remove("hidden")
                                                 }
                                             }}>
                                             Add Review
                                         </Button>
-                                    </DialogClose>
+                                    </div>
+                                </DialogDescription>
+                                <DialogFooter>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog> :
@@ -605,7 +578,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                 </div>
                 {(!doctorReviews?.length > 0 && !userReview) && <h1 className="text-3xl font-semibold text-center m-4">No reviews found</h1>}
                 <div className="flex flex-col items-center">
-                    {userReview ? <UserReviewCard reviewer={userReview?.reviewerName} content={userReview?.comment} date={userReview?.timestamp} rating={userReview?.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} id={userReview?.id} reviewerId={userReview?.reviewerId} setUserReview={setUserReview} /> : <></>}
+                    {userReview ? <UserReviewCard reviewer={userReview?.reviewerName} content={userReview?.comment} date={userReview?.timestamp} rating={userReview?.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} id={userReview?.id} reviewerId={userReview?.reviewerId} setUserReview={setUserReview} setFetchAgain={setFetchAgain} /> : <></>}
                     {doctorReviews?.map((review, index) => (
                         <ReviewCard key={index} reviewer={review.reviewerName} content={review.comment} date={review.timestamp} rating={review.rating} reviewerId={review.reviewerId} />
                     ))}
@@ -615,7 +588,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     )
 }
 
-function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview }) {
+function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview, setFetchAgain }) {
     const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
     const [data, setData] = useState({
@@ -624,9 +597,12 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
         rating: rating,
         reviewer: reviewer
     })
+    console.log("date", data.date)
+    console.log("new date ", new Date(data.date))
+
 
     const deleteReview = () => {
-        axios.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
+        axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id), {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             console.log("deleted review", res.data)
@@ -639,92 +615,100 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
     }
 
     return (
-        <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
-            <div className="flex flex-col flex-1 px-4 py-2">
-                <h1 className="text font-semibold line-clamp-1">{data.reviewer}</h1>
-                {editable ? <textarea id="review-text" className="border w-full border-blue-500 bg-gray-100" defaultValue={data.content} /> : (<p className="mt-2 line-clamp-2">{data.content}</p>)}
-            </div>
-            <div className="flex flex-col px-4 py-2 items-center justify-center">
-                {editable ? (
-                    <select id="review-rating" className="p-2 rounded-md bg-gray-100 text-black" defaultValue={Number(data.rating) || 0}>
-                        <option value={0} disabled>Rating</option>
-                        <option value={1}>1</option>
-                        <option value={2}>2</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4</option>
-                        <option value={5}>5</option>
-                    </select>
-                ) : (
-                    <div className="flex flex-row items-center">
-                        {data.rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : data.rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
-                        <span className="text-lg font-semibold ml-2">{data.rating}</span>
+        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
+            <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
+                <div className="flex flex-row py-1 items-center gap-3">
+                    <Avatar avatarImgScr={avatarAang} size={44} />
+                    <h1 className="text-lg font-semibold line-clamp-1">{data.reviewer.split("@")[0]}</h1>
+                </div>
+                <div className="flex flex-col gap-1">
+                    <div className="flex flex-col py-1 items-start justify-center">
+                        {editable ? (
+                            <select id="review-rating" className="p-2 rounded-md bg-gray-200 border border-gray-600 text-black" defaultValue={Number(data.rating) || 0}>
+                                <option value={0} disabled>Rating</option>
+                                <option value={1}>1</option>
+                                <option value={2}>2</option>
+                                <option value={3}>3</option>
+                                <option value={4}>4</option>
+                                <option value={5}>5</option>
+                            </select>
+                        ) : (
+                            <div className="flex flex-row items-start">
+                                {[...Array(data.rating)].map((_, index) => (
+                                    <Star size={24} key={index} fill="#FFD700" className={cn("text-transparent")} />
+                                ))}
+                                {[...Array(5 - data.rating)].map((_, index) => (
+                                    <Star size={24} key={index} fill="#818181" className={cn("text-transparent")} />
+                                ))}
+
+                            </div>
+                        )}
                     </div>
-                )}
-                <span className="text-sm font-semibold text-end w-full">{data.date}</span>
-            </div>
-            <div className="flex flex-row px-3 gap-3">
-                {
-                    editable ? (
-                        <>
-                            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
-                                onClick={() => {
-                                    const newContent = document.getElementById("review-text")?.value
-                                    const newRating = document.getElementById("review-rating")?.value
-                                    if ((newRating !== data.rating && newRating) || newContent !== data.content) {
-                                        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                        axios.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
-                                            rating: newRating,
-                                            comment: newContent
-                                        }, {
-                                            headers: headers
-                                        }).then((res) => {
-                                            console.log("updated review", res.data)
-                                            setReviewInfo(res?.data)
-                                            const tempDate = new Date()
-                                            setData({
-                                                ...data,
-                                                content: newContent,
-                                                rating: newRating,
-                                                date: `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`
-                                            })
-                                            toast.success("Successfully updated")
-                                            setEditable(false)
-                                        }).catch((error) => {
-                                            console.log(error)
-                                            toast.error("Error updating review")
-                                            setEditable(false)
-                                        })
-                                    }
-                                }}>
-                                <Check size={24} className="text-green-600" />
-                            </button>
-                            <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
-                                onClick={() => {
-                                    setEditable(false)
-                                }}>
-                                Cancel
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md mr-7 font-semibold"
-                                onClick={() => {
-                                    setEditable(true)
-                                }}>
-                                <Pencil size={24} className="text-blue-600" />
-                            </button>
-                            <button className="px-2 py-1 bg-gray-50 border-red-400 border text-red-500"
-                                onClick={() => {
-                                    deleteReview()
-                                }}>
-                                Delete
-                            </button>
-                        </>
-                    )
-                }
-            </div>
+                    <div className="flex flex-row gap-2">
+                        <span className="flex items-center gap-1">
+                            <Clock size={16} />
+                            {formatDistanceToNow(new Date(data.date), { addSuffix: true })}
+                        </span>
+                    </div>
+                    <div className="flex flex-row gap-3 absolute top-3 right-3">
+                        {
+                            editable ? (
+                                <>
+                                    <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
+                                        onClick={() => {
+                                            const newContent = document.getElementById("review-text")?.value
+                                            const newRating = document.getElementById("review-rating")?.value
+                                            if ((newRating !== data.rating && newRating) || newContent !== data.content) {
+                                                const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+                                                axiosInstance.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
+                                                    rating: newRating,
+                                                    comment: newContent
+                                                }, {
+                                                    headers: headers
+                                                }).then((res) => {
+                                                    console.log("updated review", res.data)
+                                                    setReviewInfo(res?.data)
+                                                    setFetchAgain(true)
 
-
+                                                    toast.success("Successfully updated")
+                                                    setEditable(false)
+                                                }).catch((error) => {
+                                                    console.log(error)
+                                                    toast.error("Error updating review")
+                                                    setEditable(false)
+                                                })
+                                            }
+                                        }}>
+                                        <Check size={32} className="text-green-600" />
+                                    </button>
+                                    <button className="px-2 py-1 text-red-500"
+                                        onClick={() => {
+                                            setEditable(false)
+                                        }}>
+                                        <X size={32} />
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <button className="  px-2 text-base font-semibold"
+                                        onClick={() => {
+                                            setEditable(true)
+                                        }}>
+                                        <Pencil size={28} className="" />
+                                    </button>
+                                    <button className="px-2 py-1 text-[#ff5151] font-semibold"
+                                        onClick={() => {
+                                            deleteReview()
+                                        }}>
+                                        <Trash2 size={28} />
+                                    </button>
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+            </div>
+            {editable ? <textarea id="review-text" className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.content} /> : (<p className=" text-lg py-1 px-3 mb-1">{data.content}</p>)}
         </div>
     )
 }
@@ -732,18 +716,35 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
 function ReviewCard({ content, date, rating, reviewer, reviewerId }) {
 
     return (
-        <div className="flex flex-row justify-evenly w-11/12 items-center mx-2 my-3 bg-white rounded-md shadow ">
-            <div className="flex flex-col flex-1 px-4 py-2">
-                <Link href={pagePaths.userProfile(reviewerId)} className="text font-semibold line-clamp-1">{reviewer?.split("@")[0]}</Link>
-                <p className="mt-2 line-clamp-2">{content}</p>
-            </div>
-            <div className="flex flex-col px-4 py-2 items-center justify-center">
-                <div className="flex flex-row items-center">
-                    {rating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : rating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />}
-                    <span className="text-lg font-semibold ml-2">{rating}</span>
+        <div className="flex flex-col w-10/12 items-center bg-zinc-200 scale-x-90 gap-2 rounded-md">
+            <div className="flex flex-col justify-between w-full items-center bg-zinc-600 text-white rounded-md shadow scale-x-110 px-5 py-1">
+                <div className="flex flex-col py-1">
+                    <h1 className="text-lg font-semibold line-clamp-1">{reviewer.split("@")[0]}</h1>
                 </div>
-                <span className="text-sm font-semibold text-end w-full">{date}</span>
+                <div className="flex flex-row gap-4">
+                    <div className="flex flex-row gap-2">
+                        <span className="flex items-center gap-1">
+                            <CalendarIcon size={16} />
+                            {date.split("T")[0]}
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <Clock size={16} />
+                            {date.split("T")[1]}
+                        </span>
+                    </div>
+                    <div className="flex flex-col px-4 py-1 items-center justify-center">
+                        <div className="flex flex-row items-center">
+                            {[...Array(rating)].map((_, index) => (
+                                <Star size={24} key={index} fill="#FFD700" className={cn("text-transparent")} />
+                            ))}
+                            {[...Array(5 - rating)].map((_, index) => (
+                                <Star size={24} key={index} fill="#ebe7e7" className={cn("text-transparent")} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
+            <p className=" text-lg py-1 px-3 mb-1">{content}</p>
         </div>
     )
 }
@@ -790,7 +791,7 @@ function ConsultationSection({ userId, className, profileId }) {
     const sessionContext = useSessionContext()
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axios.get(getDoctorProfileDetailsUrlLocations(profileId), {
+            axiosInstance.get(getDoctorProfileDetailsUrlLocations(profileId), {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("chambers", res.data)
@@ -858,7 +859,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         console.log('Requesting Appointment')
         console.log(formData)
         const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-        axios.post(addAppointment, formData, {
+        axiosInstance.post(addAppointment, formData, {
             headers: headers
         }).then((res) => {
             toast.success("Appointment requested")

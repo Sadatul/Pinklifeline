@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSection, MedicalInfoSection, LocationSection, DoctorChamberLocationSection } from '@/app/components/formSections'
 import { latLngToCell } from 'h3-js'
 import React from 'react';
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { locationResolution, pagePaths, roles, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -128,7 +128,7 @@ export default function UserDetailsPage() {
             }
         }
         console.log("form data", form_data)
-        axios.post(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
+        axiosInstance.post(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
             headers: headers
         }).then((response) => {
             console.log(response)

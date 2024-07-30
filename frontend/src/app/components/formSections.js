@@ -47,7 +47,7 @@ import {
 import { useStompContext } from "../context/stompContext"
 import { useRouter } from "next/navigation"
 import { addConsultationLocationUrl, locationOnline, pagePaths, roles } from "@/utils/constants"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSessionContext } from "@/app/context/sessionContext"
 
@@ -345,7 +345,7 @@ export function DoctorChamberLocationSection({ }) {
             workdays: userDataRef.current.workdaysString,
             fees: userDataRef.current.fees
         }
-        axios.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm, { headers: sessionContext.sessionData.headers }).then((response) => {
+        axiosInstance.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm, { headers: sessionContext.sessionData.headers }).then((response) => {
             console.log(response.data)
             toast.dismiss()
             toast.success("Location added successfully")

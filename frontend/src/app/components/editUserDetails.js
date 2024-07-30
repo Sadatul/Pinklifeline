@@ -26,7 +26,7 @@ import { red } from "@mui/material/colors"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "@/app/components/loading"
 
@@ -154,7 +154,7 @@ export function EditUserDetailsPage() {
             }
         }
         console.log("form data", form_data)
-        axios.put(updateUserDetailsUrl(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
+        axiosInstance.put(updateUserDetailsUrl(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
             headers: headers
         }).then((response) => {
             console.log(response)

@@ -44,7 +44,7 @@ import {
 import { useStompContext } from "../context/stompContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance"
 import { set } from "date-fns";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
@@ -65,7 +65,7 @@ export function ChatLayout() {
         console.log(stompContext.openedChat)
         if (stompContext.openedChat && sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axios.get(getMessagesUrl(stompContext.openedChat.roomId), {
+            axiosInstance.get(getMessagesUrl(stompContext.openedChat.roomId), {
                 headers: headers
             }).then((response) => {
                 console.log("Messages fetched")
@@ -120,7 +120,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
     useEffect(() => {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axios.get(getChatsUrl(sessionContext.sessionData.userId), {
+            axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId), {
                 headers: sessionContext.sessionData.headers
             }).then((response) => {
                 console.log("Chats fetched")

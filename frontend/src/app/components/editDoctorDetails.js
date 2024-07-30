@@ -48,7 +48,7 @@ import {
 import { useStompContext } from "../context/stompContext"
 import { useRouter } from "next/navigation"
 import { addConsultationLocationUrl, locationOnline, pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
@@ -59,7 +59,7 @@ export function EditDoctorDetailsPage() {
     const sessionContext = useSessionContext()
     useEffect(() => {
         if (sessionContext.sessionData) {
-            // axios.get()
+            // axiosInstance.get()
             // get doctor details.
         }
     }, [sessionContext.sessionData])
@@ -76,7 +76,7 @@ export function EditDoctorDetailsPage() {
             designation: userData?.designation,
             contactNumber: userData?.contactNumber
         }
-        axios.put(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
+        axiosInstance.put(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data, {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             toast.dismiss(loadingtoast)

@@ -22,8 +22,8 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useSessionContext } from "@/app/context/sessionContext"
-import axios from "axios"
-import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, roles } from "@/utils/constants"
+import axiosInstance from "@/utils/axiosInstance"
+import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, roles, validateTransactionUrl } from "@/utils/constants"
 import Loading from "./loading"
 import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
@@ -48,7 +48,7 @@ export function AppointmentsPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
-            axios.get(getAppointmentsUrl, {
+            axiosInstance.get(getAppointmentsUrl, {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 console.log("Appointments", res?.data)
@@ -80,6 +80,7 @@ export function AppointmentsPage() {
                         <CurrentAppointmentCard key={index}
                             appointment={appointment}
                             disableCard={disableCard}
+                            setFetchAgain={setFetchAgain}
                             setDisableCard={setDisableCard} />
                     ))}
                 </div>
@@ -139,7 +140,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
     const joinCall = () => {
         setDisableCard(true)
         const loadingtoast = toast.loading("Joining video call")
-        axios.get(joinVideoCall, {
+        axiosInstance.get(joinVideoCall, {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             //may be changed later the structure is not complete
@@ -165,7 +166,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
         })
     }
     const endAppointment = () => {
-        axios.delete(closeVideoCall, {
+        axiosInstance.delete(closeVideoCall, {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             toast.success("Closed running appointment")
@@ -312,9 +313,11 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
 function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppointmentById, setFetchAgain }) {
     const sessionContext = useSessionContext()
     const client = useStreamVideoClient();
-    const router = useRouter()
+    const [transactionId, setTransactionId] = useState(null)
     const [opendialog, setOpendialog] = useState(false)
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
+    const [verifyPaymentDialog, setVerifyPaymentDialog] = useState(false)
+    const router = useRouter()
 
     const clocks = [
         <Clock12 size={20} />,
@@ -333,7 +336,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
 
     const acceptAppointment = (time) => {
         setDisableCard(true)
-        axios.put(acceptAppointmentUrl(appointment.id), {
+        axiosInstance.put(acceptAppointmentUrl(appointment.id), {
             time: time
         }, {
             headers: sessionContext.sessionData.headers
@@ -352,7 +355,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const cancelAppointment = () => {
         setDisableCard(true)
         const deleteAppointmentUrl = sessionContext.sessionData.role === roles.doctor ? declineAppointmentUrl(appointment.id) : cancelAppointmentUrl(appointment.id)
-        axios.delete(deleteAppointmentUrl, {
+        axiosInstance.delete(deleteAppointmentUrl, {
             headers: sessionContext.sessionData.headers
         }).then((res) => {
             toast.success("Appointment deleted")
@@ -367,22 +370,24 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     }
 
     const startOnlineAppointment = async () => {
-        // if (!client) {
-        //     console.error("Client is not available");
-        //     return;
-        // }
+        if (!client) {
+            console.error("Client is not available");
+            return;
+        }
         try {
-            const token = await axios.get(getVideoCallToekn, {
+            const token = await axiosInstance.get(getVideoCallToekn, {
                 headers: sessionContext.sessionData.headers
             })
             console.log("Token", token)
-            const callId = await axios.post(createOnlineMeetingUrl, {
+            const callIdResponse = await axiosInstance.post(createOnlineMeetingUrl, {
                 appointmentId: appointment.id,
             }, {
                 headers: sessionContext.sessionData.headers
             })
-            if (!callId) console.error('Call ID is required');
-            const call = client.call('default', callId);
+            console.log("Call ID", callIdResponse.data.callId)
+            console.log("Client", client)
+            if (!callIdResponse) console.error('Call ID is required');
+            const call = client.call('default', callIdResponse.data.callId);
             if (!call) throw new Error('Failed to create meeting');
             const startsAt = new Date(Date.now()).toISOString();
             await call.getOrCreate({
@@ -420,23 +425,19 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                 "customerPhone": number
             }
             const loadingtoast = toast.loading("Making payment. Don't close the window")
-            axios.post(makePaymentUrl(appointment.id), formData, {
+            axiosInstance.post(makePaymentUrl(appointment.id), formData, {
                 headers: sessionContext.sessionData.headers
             }).then((res) => {
                 toast.dismiss(loadingtoast)
-                const transictionId = res?.data?.transactionId
+                setOpenPaymentDialog(false)
                 const gatewayUrl = res?.data?.gatewayUrl
-                const newWindow = window.open(gatewayUrl, '_blank');
-                if (newWindow) {
-                    newWindow.focus();
-                }
+                router.push(gatewayUrl)
                 //need to do velidate with transictionId
             }).catch((error) => {
                 toast.dismiss(loadingtoast)
                 console.log("Error making payment", error)
                 toast.error("Error occured initating payment")
             })
-            setOpenPaymentDialog(false)
         }
         else {
             document.getElementById("error-message").innerText = "Error: All is required"
@@ -452,6 +453,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             }
         }
     }
+
 
     if (!sessionContext.sessionData) return <Loading />
 

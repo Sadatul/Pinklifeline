@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { StreamVideoClient, StreamVideo } from '@stream-io/video-react-sdk';
-import axios from 'axios';
+import axiosInstance from "@/utils/axiosInstance"
 import Loading from '../components/loading';
 import { getVideoCallToekn, sessionDataItem } from '@/utils/constants';
 
@@ -20,7 +20,7 @@ const StreamVideoProvider = ({ children }) => {
     const tokenProvider = async () => {
       try {
         console.log("Getting token");
-        const response = await axios.get(getVideoCallToekn, {
+        const response = await axiosInstance.get(getVideoCallToekn, {
           headers: {
             Authorization: `Bearer ${sessionData.token}`,
           },
