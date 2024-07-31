@@ -54,14 +54,17 @@ public class PaymentHandlerV1 {
         ResponseEntity<Void> res = service.validatePayment(id, type, transId);
         if(res.getStatusCode().equals(HttpStatus.OK))
         {
-            response.sendRedirect(String.format("%s?status=SUCCESS&transactionId=%s&type=%s&id=%d", frontendRedirectUri, transId, type, id));
+            response.sendRedirect(String.format("%s?status=SUCCESS&transactionId=%s&type=%s&id=%d",
+                    frontendRedirectUri, transId, type, id));
         }
         else if(res.getStatusCode().equals(HttpStatus.ACCEPTED))
         {
-            response.sendRedirect(String.format("%s?status=PENDING&transactionId=%s&type=%s&id=%d", frontendRedirectUri, transId, type, id));
+            response.sendRedirect(String.format("%s?status=PENDING&transactionId=%s&type=%s&id=%d",
+                    frontendRedirectUri, transId, type, id));
         }
         else{
-            response.sendRedirect(String.format("%s?status=FAILED&transactionId=%s&type=%s&id=%d", frontendRedirectUri, transId, type, id));
+            response.sendRedirect(String.format("%s?status=FAILED&transactionId=%s&type=%s&id=%d",
+                    frontendRedirectUri, transId, type, id));
         }
         return res;
     }

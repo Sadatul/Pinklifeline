@@ -30,9 +30,7 @@ public class PaymentServiceTest{
         ObjectMapper objectMapper = new ObjectMapper();
         clientService = new SslcommerzClientService(paymentSessionKeyRepository);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ReflectionTestUtils.setField(clientService, "successUri", "http://locahost:3000/success");
-        ReflectionTestUtils.setField(clientService, "failUri", "http://locahost:3000/fail");
-        ReflectionTestUtils.setField(clientService, "cancelUri", "http://locahost:3000/cancel");
+        ReflectionTestUtils.setField(clientService, "backendHost", "http://locahost:3000/success");
         ReflectionTestUtils.setField(clientService, "storeId", "dsfas668fae4f6b7f1");
         ReflectionTestUtils.setField(clientService, "storePasswd", "dsfas668fae4f6b7f1@ssl");
         ReflectionTestUtils.setField(clientService, "baseUri", "https://sandbox.sslcommerz.com");

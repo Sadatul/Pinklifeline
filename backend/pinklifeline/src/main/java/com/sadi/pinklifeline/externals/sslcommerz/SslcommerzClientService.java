@@ -22,12 +22,9 @@ public class SslcommerzClientService {
     private final RestClient restClient;
     private final PaymentSessionKeyRepository sessionKeyRepository;
 
-    @Value("${payment.sslcommerz.success.url:http://locahost:3000/success}")
-    private String successUri;
-    @Value("${payment.sslcommerz.fail.url:http://locahost:3000/fail}")
-    private String failUri;
-    @Value("${payment.sslcommerz.cancel.url:http://locahost:3000/cancel}")
-    private String cancelUri;
+    @Value("${BACKEND_HOST}")
+    private String backendHost;
+
     @Value("${payment.sslcommerz.base.uri:https://sandbox.sslcommerz.com}")
     private String baseUri;
     @Value("${SSLCOMMERZ_STORE_ID}")
@@ -49,9 +46,9 @@ public class SslcommerzClientService {
         formData.add("total_amount", totalAmount.toString());
         formData.add("currency", "BDT");
         formData.add("tran_id", tranId);
-        formData.add("success_url", String.format(successUri, resourceId, tranId));
-        formData.add("fail_url", String.format(failUri, resourceId, tranId));
-        formData.add("cancel_url", String.format(cancelUri, resourceId, tranId));
+        formData.add("success_url", String.format("%s/v1/payment/%s/%d/ssl-redirect?transId=%s", backendHost, type, resourceId, tranId));
+        formData.add("fail_url", String.format("%s/v1/payment/%s/%d/ssl-redirect?transId=%s", backendHost, type, resourceId, tranId));
+        formData.add("cancel_url", String.format("%s/v1/payment/%s/%d/ssl-redirect?transId=%s", backendHost, type, resourceId, tranId));
         formData.add("cus_name", cusName);
         formData.add("cus_email", cusEmail);
         formData.add("cus_add1", "Online");
