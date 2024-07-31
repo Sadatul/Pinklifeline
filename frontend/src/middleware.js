@@ -18,5 +18,6 @@ export const config = {
         '/verifyotp/:path*',
         '/dashboard/:path*',
         '/userdetails/:path*',
+        '/validatetransaction/:path*',
     ]
 }

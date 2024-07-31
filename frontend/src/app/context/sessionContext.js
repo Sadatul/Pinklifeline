@@ -12,14 +12,12 @@ export function SessionContextProvider({ children }) {
 
     useEffect(() => {
         const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
-        console.log("sessionData in context", sessionData)
         if (!sessionData) {
             toast.error("Session data not found", {
                 description: "You need to login to continue",
             })
             router.push(pagePaths.login)
         }
-
         setSessionData({
             ...sessionData,
         })

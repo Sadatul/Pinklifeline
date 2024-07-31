@@ -119,29 +119,6 @@ export default function DoctorProfile({ profileId, section }) {
         }
     ]
 
-    useEffect(() => {
-        if (doctorReviews && doctorReviews?.length > 0) {
-            const count = doctorReviews.length
-            let ratingCount = [0, 0, 0, 0, 0]
-            let sum = 0
-            for (const doctorReview of doctorReviews) {
-                sum = sum + Number(doctorReview.rating)
-                ratingCount[Number(doctorReview.rating) - 1] = ratingCount[Number(doctorReview.rating) - 1] + 1
-            }
-            setReviewInfo({
-                count: count,
-                averageRating: round(sum / count),
-                ratingCount: ratingCount
-            })
-        }
-        else {
-            setReviewInfo({
-                count: 0,
-                averageRating: 0,
-                ratingCount: [0, 0, 0, 0, 0]
-            })
-        }
-    }, [doctorReviews])
 
     useEffect(() => {
         setRatingIcon(reviewInfo.averageRating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : reviewInfo.averageRating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />)
@@ -149,19 +126,16 @@ export default function DoctorProfile({ profileId, section }) {
 
     useEffect(() => {
         if (sessionContext.sessionData) {
-            axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
-                console.log("doctor reviews", res.data)
-                setDoctorReviews(res.data)
-            }).catch((error) => {
-                console.log(error)
-            })
-
             axiosInstance.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
                 console.log("doctor data", res.data)
                 setUserData(res.data)
+                setReviewInfo({
+                    ...res.data?.reviewSummary,
+                    ratingCount: res.data?.reviewSummary?.ratingCount?.reverse()
+                })
             }).catch((error) => {
                 console.log(error)
-                if (error.response.status === 404) {
+                if (error.response?.status === 404) {
                     toast.error("Doctor not found")
                     setUserData("EMPTY")
                 }
@@ -241,7 +215,7 @@ export default function DoctorProfile({ profileId, section }) {
                             <PopoverTrigger className="w-12">
                                 <div className="flex flex-row items-center mt-3">
                                     {ratingIcon}
-                                    <span className="text-base font-semibold ml-2">{reviewInfo.averageRating}</span>
+                                    <span className="text-base font-semibold ml-2">{round(reviewInfo.averageRating)}</span>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto ">
@@ -484,7 +458,6 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
 
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
-            console.log("fetching doctor reviews")
             axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
                 console.log("doctor reviews", res.data)
                 setUserReview(res.data.find((review) => review.reviewerId === sessionContext.sessionData.userId) || null)
@@ -569,10 +542,32 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                     }
                 </div>
                 {(!doctorReviews?.length > 0 && !userReview) && <h1 className="text-3xl font-semibold text-center m-4">No reviews found</h1>}
-                <div className="flex flex-col items-center">
-                    {userReview ? <UserReviewCard reviewer={userReview?.reviewerName} content={userReview?.comment} date={userReview?.timestamp} rating={userReview?.rating} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} id={userReview?.id} reviewerId={userReview?.reviewerId} setUserReview={setUserReview} setFetchAgain={setFetchAgain} /> : <></>}
+                <div className="flex flex-col items-center gap-5">
+                    {userReview ?
+                        <UserReviewCard
+                            reviewer={userReview?.reviewerName}
+                            content={userReview?.comment}
+                            date={userReview?.timestamp}
+                            rating={userReview?.rating}
+                            reviewInfo={reviewInfo}
+                            setReviewInfo={setReviewInfo}
+                            id={userReview?.id}
+                            reviewerId={userReview?.reviewerId}
+                            setUserReview={setUserReview}
+                            setFetchAgain={setFetchAgain}
+                            profilePicture={userReview.profilePicture}
+                        /> :
+                        <></>
+                    }
                     {doctorReviews?.map((review, index) => (
-                        <ReviewCard key={index} reviewer={review.reviewerName} content={review.comment} date={review.timestamp} rating={review.rating} reviewerId={review.reviewerId} />
+                        <ReviewCard key={index}
+                            reviewer={review.reviewerName}
+                            content={review.comment}
+                            date={review.timestamp}
+                            rating={review.rating}
+                            reviewerId={review.reviewerId}
+                            profilePicture={review.profilePicture}
+                        />
                     ))}
                 </div>
             </div>
@@ -580,7 +575,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     )
 }
 
-function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview, setFetchAgain }) {
+function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview, setFetchAgain, profilePicture }) {
     const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
     const [data, setData] = useState({
@@ -589,9 +584,6 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
         rating: rating,
         reviewer: reviewer
     })
-    console.log("date", data.date)
-    console.log("new date ", new Date(data.date))
-
 
     const deleteReview = () => {
         axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id)).then((res) => {
@@ -608,7 +600,7 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
         <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
             <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
-                    <Avatar avatarImgScr={avatarAang} size={44} />
+                    <Avatar avatarImgScr={profilePicture || emptyAvatar} size={44} />
                     <h1 className="text-lg font-semibold line-clamp-1">{data.reviewer.split("@")[0]}</h1>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -701,34 +693,32 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
     )
 }
 
-function ReviewCard({ content, date, rating, reviewer, reviewerId }) {
+function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePicture }) {
 
     return (
-        <div className="flex flex-col w-10/12 items-center bg-zinc-200 scale-x-90 gap-2 rounded-md">
-            <div className="flex flex-col justify-between w-full items-center bg-zinc-600 text-white rounded-md shadow scale-x-110 px-5 py-1">
-                <div className="flex flex-col py-1">
+        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
+            <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
+                <div className="flex flex-row py-1 items-center gap-3">
+                    <Avatar avatarImgScr={profilePicture || emptyAvatar} size={44} />
                     <h1 className="text-lg font-semibold line-clamp-1">{reviewer.split("@")[0]}</h1>
                 </div>
-                <div className="flex flex-row gap-4">
-                    <div className="flex flex-row gap-2">
-                        <span className="flex items-center gap-1">
-                            <CalendarIcon size={16} />
-                            {date.split("T")[0]}
-                        </span>
-                        <span className="flex items-center gap-1">
-                            <Clock size={16} />
-                            {date.split("T")[1]}
-                        </span>
-                    </div>
-                    <div className="flex flex-col px-4 py-1 items-center justify-center">
-                        <div className="flex flex-row items-center">
+                <div className="flex flex-col gap-1">
+                    <div className="flex flex-col py-1 items-start justify-center">
+                        <div className="flex flex-row items-start">
                             {[...Array(rating)].map((_, index) => (
                                 <Star size={24} key={index} fill="#FFD700" className={cn("text-transparent")} />
                             ))}
                             {[...Array(5 - rating)].map((_, index) => (
-                                <Star size={24} key={index} fill="#ebe7e7" className={cn("text-transparent")} />
+                                <Star size={24} key={index} fill="#818181" className={cn("text-transparent")} />
                             ))}
+
                         </div>
+                    </div>
+                    <div className="flex flex-row gap-2">
+                        <span className="flex items-center gap-1">
+                            <Clock size={16} />
+                            {formatDistanceToNow(new Date(date), { addSuffix: true })}
+                        </span>
                     </div>
                 </div>
             </div>

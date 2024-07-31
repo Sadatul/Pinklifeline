@@ -69,6 +69,12 @@ export const appointmentStatus = {
     declined: "DECLINED"
 }
 
+export const transactionStatus = {
+    success: "SUCCESS",
+    failed: "FAILED",
+    pending: "PENDING"
+}
+
 export const pagePaths = {
     login: "/reglogin",
     register: "/reglogin",

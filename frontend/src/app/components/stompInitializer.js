@@ -21,18 +21,12 @@ export function SocketInitializer() {
     useEffect(() => {
         const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
         stompContext.setUserId(sessionData.userId)
-        if (!sessionData.token || !sessionData.userId) {
-            console.error('Token not found')
-            toast.error('Token not found', {
-                description: 'You need to login to continue'
-            })
+        if (!sessionData.userId) {
             router.push('/login')
         }
-        const headers = { 'Authorization': `Bearer ${sessionData.token}` }
         if (!strompInitializedRef.current) {
             stompContext.stompClientRef.current = new Client({
                 brokerURL: stompBrokerUrl,
-                connectHeaders: headers,
                 debug: function (str) {
                     console.log(str)
                 },
