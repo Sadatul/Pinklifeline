@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pinklifeline
+  name: pinklifeline
+  namespace: default
+spec:
+  replicas: 1
+  minReadySeconds: 45
+  selector:
+    matchLabels:
+      app: pinklifeline
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pinklifeline
+    spec:
+      containers:
+      - name: pinklifeline
+        image: sadatul/pinklifeline_prod:0.0.1-RELEASE
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: liveness-port
+          containerPort: 8080
+        env:
+        - name: TZ
+          value: Asia/Dhaka
+        - name: REDIS_HOST
+          valueFrom: 
+            configMapKeyRef:
+              key: PINKLIFELINE_REDIS_SERVICE_HOST
+              name: pinklifeline-config
+        - name: REDIS_PORT
+          value: '6379'
+        - name: FRONTEND_HOST
+          valueFrom: 
+            configMapKeyRef:
+              key: FRONTEND_HOST
+              name: pinklifeline-config
+        - name: BACKEND_HOST
+          valueFrom: 
+            configMapKeyRef:
+              key: BACKEND_HOST
+              name: pinklifeline-config
+        - name: DB_URL
+          valueFrom: 
+            secretKeyRef:
+              key: DB_URL
+              name: api-keys-secret
+        - name: DB_USERNAME
+          valueFrom: 
+            secretKeyRef:
+              key: DB_USERNAME
+              name: api-keys-secret
+        - name: DB_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              key: DB_PASSWORD
+              name: api-keys-secret
+        - name: ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: ADMIN_USERNAME
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: ADMIN_PASSWORD
+        - name: GETSTREAM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: GETSTREAM_API_KEY
+        - name: GETSTREAM_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: GETSTREAM_API_SECRET
+        - name: SSLCOMMERZ_STORE_ID
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: SSLCOMMERZ_STORE_ID
+        - name: SSLCOMMERZ_STORE_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: SSLCOMMERZ_STORE_PASSWD
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /v1/hello/healthy
+            port: liveness-port
+          failureThreshold: 5
+          periodSeconds: 10
+          initialDelaySeconds: 60
+        livenessProbe:
+          httpGet:
+            path: /v1/hello/healthy
+            port: liveness-port
+          failureThreshold: 5
+          periodSeconds: 10
+          initialDelaySeconds: 60
+      - name: cloud-sql-proxy
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.4
+        ports: 
+          - containerPort: 3306
+        args:
+          - "--structured-logs"
+          - "--port=3306"
+          - "pinklifeline:asia-south1:pinklifeline-database-instance"
+          - "--credentials-file=/secrets/service_account.json"
+        securityContext:
+          runAsNonRoot: true
+        volumeMounts:
+          - name: cloud-sql-secret-volume
+            mountPath: /secrets/
+            readOnly: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu:    "100m"
+      volumes:
+        - name: cloud-sql-secret-volume
+          secret:
+            secretName: cloud-sql-secret
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pinklifeline
+  name: pinklifeline
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: pinklifeline
+  sessionAffinity: ClientIP
+  type: NodePort

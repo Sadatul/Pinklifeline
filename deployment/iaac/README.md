@@ -13,3 +13,7 @@ docker run -d --publish 3306:3306 --mount type=bind,source="$(pwd)"/cloudsql_pro
 1. Delete "backend.tf"
 2. Run ```terraform init -migrate-state``` to migrate to the bucket.
 3. Remember to delete the bucket in cloud and also to remove storage admin role from user.
+
+staticIp = 34.54.55.255
+
+kubectl create secret generic cloud-sql-secret --from-file=service_account.json=./cloudsql_proxy_key.json
