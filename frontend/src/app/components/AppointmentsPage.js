@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
 import { Badge } from "@/components/ui/badge"
 import { useStreamVideoClient } from "@stream-io/video-react-sdk"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function AppointmentsPage() {
     const [disableCard, setDisableCard] = useState(false)
@@ -148,10 +149,10 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
                 newWindow.focus();
             }
             if (sessionContext.sessionData.role === roles.doctor) {
-                router.push(pagePaths.doctorLivePrescription(appointment.patientFullName))
+                router.push(pagePaths.dashboardPages.doctorLivePrescription(appointment.patientFullName))
             }
             else {
-                router.push(pagePaths.patientLivePrescription(appointment.doctorFullName))
+                router.push(pagePaths.dashboardPages.patientLivePrescription(appointment.doctorFullName))
             }
             setDisableCard(false)
         }).catch((error) => {
@@ -305,6 +306,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
 }
 
 function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppointmentById, setFetchAgain }) {
+    console.log("Appointment", appointment)
     const sessionContext = useSessionContext()
     const client = useStreamVideoClient();
     const [transactionId, setTransactionId] = useState(null)
@@ -373,19 +375,19 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             if (!callIdResponse) console.error('Call ID is required');
             const call = client.call('default', callIdResponse.data.callId);
             if (!call) throw new Error('Failed to create meeting');
-            const startsAt = new Date(Date.now()).toISOString();
+            const startsAt = new Date().toString();
             await call.getOrCreate({
                 data: {
                     starts_at: startsAt,
-                    members: [{ user_id: client.streamClient.user.id, role: 'admin' }, { user_id: "3" }],
                 },
             });
             console.log("Call created");
             console.log(call);
-            const newWindow = window.open(`/videocall/${callId}`, '_blank');
+            const newWindow = window.open(`/videocall/${callIdResponse.data.callId}`, '_blank');
             if (newWindow) {
                 newWindow.focus();
             }
+            router.push(pagePaths.dashboardPages.doctorLivePrescription(appointment.patientFullName))
         }
         catch (error) {
             console.log("Error getting video call", error)
@@ -443,9 +445,9 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100">
             <div className="flex w-full flex-col items-center text-black shadow-md justify-center px-3 py-1 rounded-b-full rounded-md scale-x-110 bg-pink-300 h-1/3">
                 <h1 className="text-xl font-semibold flex flex-row items-center gap-3">
-                    {appointment["doctorFullName:"] && <FaUserDoctor size={16} />}
+                    {appointment.doctorFullName && <FaUserDoctor size={16} />}
                     {appointment.patientFullName && <Person size={16} />}
-                    {appointment["doctorFullName:"]}
+                    {appointment.doctorFullName}
                     {appointment.patientFullName}
                 </h1>
                 <p className="text-lg flex flex-row gap-3 items-center">
@@ -543,9 +545,27 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                     </Dialog>
                 }
                 {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && appointment.isOnline) &&
-                    <button onClick={startOnlineAppointment} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
-                        Start Call
-                    </button>
+                    <>
+                        {!appointment.isPaymentComplete ? (
+                            <TooltipProvider delayDuration={400}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button disabled className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                                            Start Call
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Appointment is not paid</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ) : (
+                            <button onClick={startOnlineAppointment} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                                Start Call
+                            </button>
+                        )}
+                    </>
+
                 }
                 {(appointment.status === appointmentStatus.requested || appointment.status === appointmentStatus.accepted) &&
                     <AlertDialog>

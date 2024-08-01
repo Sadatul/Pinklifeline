@@ -13,7 +13,6 @@ export default function ValidatePage() {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(searchParams.get("status"));
     const router = useRouter()
-
     const transactionId = searchParams.get("transactionId");
     const type = searchParams.get("type");
     const appointmentId = searchParams.get("id");
@@ -92,6 +91,7 @@ export default function ValidatePage() {
     return (
         <div className="h-screen w-full flex flex-col justify-center items-center">
             <div className="flex flex-col items-center gap-2">
+                <h1 className="text-4xl font-bold flex flex-col items-center gap-2 mb-4 text-red-600">Do not leave this page without completing validation.</h1>
                 <h1 className="text-2xl font-bold flex flex-col items-center gap-2">Transaction Validation {status}</h1>
                 {status === transactionStatus.pending ?
                     <>

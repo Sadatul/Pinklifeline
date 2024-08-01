@@ -39,7 +39,6 @@ export function DoctorLivePrescriptionPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData && !initialized.current) {
-            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
             axiosInstance.get(joinVideoCall).then((res) => {
                 callId.current = res?.data?.callId
                 setAnalysis(res?.data?.prescription?.analysis)
@@ -47,6 +46,7 @@ export function DoctorLivePrescriptionPage() {
                 setTests(res?.data?.prescription?.tests)
                 initialized.current = true
             }).catch((error) => {
+                console.log("error fetching prescription data ", error)
                 toast.error("Error connecting.")
             })
         }
@@ -54,10 +54,8 @@ export function DoctorLivePrescriptionPage() {
 
     useEffect(() => {
         if (sessionContext.sessionData && !socketRef.current && initialized.current) {
-            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
             socketRef.current = new Client({
                 brokerURL: stompBrokerUrl,
-                connectHeaders: headers,
                 debug: function (str) {
                     console.log(str)
                 },

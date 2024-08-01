@@ -38,6 +38,7 @@ export const getDoctorProfileDetailsUrlReviews = (doc_id) => { return `${baseUrl
 export const getVideoCallToekn = `${baseUrl}/v1/meeting/user/token`
 export const createOnlineMeetingUrl = `${baseUrl}/v1/online-meeting/start`
 export const validateTransactionUrl = (appointment_id, transactionId) => { return `${baseUrl}/v1/payment/appointment/${appointment_id}/validate?transId=${transactionId}` }
+export const addReportUrl = `${baseUrl}/v1/reports`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -88,8 +89,14 @@ export const pagePaths = {
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
     dashboard: "/dashboard",
-    patientLivePrescription: (doctorName) => { return `/prescription/live/patient/${doctorName}` },
-    doctorLivePrescription: (patientName) => { return `/prescription/live/doctor/${patientName}` },
+    dashboardPages : {
+        appointmentsPage : "/dashboard/appointments",
+        patientLivePrescription: (doctorName) => { return `/dashboard/prescription/live/patient/${doctorName}` },
+        doctorLivePrescription: (patientName) => { return `/dashboard/prescription/live/doctor/${patientName}` },
+        addToVaultPage: "/dashboard/prescription/vault/add",
+        prescriptionVaultPage : "/dashboard/prescription/vault",
+
+    },
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` }
 }
