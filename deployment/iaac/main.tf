@@ -101,3 +101,62 @@ output "static_ip_address" {
   value       = google_compute_global_address.pinklife_line_ip.address
   description = "The static IP address"
 }
+
+resource "google_project_service" "redis_admin_api" {
+  service = "redis.googleapis.com"
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+}
+
+resource "google_project_service" "private_service_networking" {
+  service = "servicenetworking.googleapis.com"
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+}
+
+resource "google_redis_instance" "pinklifeline_redis_instance" {
+  name           = "pinklifeline-redis-instance"
+  tier           = "STANDARD_HA"
+  memory_size_gb = 1
+
+  location_id = "asia-south1-c"
+
+  authorized_network = "default"
+  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+
+  redis_version = "REDIS_7_0"
+  display_name  = "Pinklifeline Redis Cache"
+  redis_configs = {
+    "notify-keyspace-events" = "Ex"
+  }
+}
+
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "private-ip-address"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = "default"
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = "default"
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+output "redis_host" {
+  description = "The IP address of the redis instance."
+  value       = google_redis_instance.pinklifeline_redis_instance.host
+}
+
+output "redis_port" {
+  description = "The port of the redis instance."
+  value       = google_redis_instance.pinklifeline_redis_instance.port
+}

@@ -1,33 +1,24 @@
 package com.sadi.pinklifeline.configs;
 
 import com.sadi.pinklifeline.enums.Roles;
-import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.AppointmentRepository;
-import com.sadi.pinklifeline.repositories.OnlineMeetingRepository;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.stereotype.Component;
+import org.springframework.data.redis.connection.MessageListener;
 
 import java.util.List;
 
-@Component
 @Slf4j
-public class RedisKeyExpirationListener extends KeyExpirationEventMessageListener {
-
+public class KeyExpirationMessageListener implements MessageListener {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
+    private final String cachePrefix;
 
-    @Value("${online.meeting.prefix}")
-    private String cachePrefix;
-
-    public RedisKeyExpirationListener(RedisMessageListenerContainer listenerContainer, AppointmentRepository appointmentRepository, UserRepository userRepository) {
-        super(listenerContainer);
+    public KeyExpirationMessageListener(AppointmentRepository appointmentRepository, UserRepository userRepository, String cachePrefix) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
+        this.cachePrefix = cachePrefix;
     }
 
     @Override

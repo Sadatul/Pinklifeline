@@ -7,7 +7,7 @@ docker run -d -e MYSQL_ROOT_PASSWORD=sadi -e MYSQL_USER=pinklifeline -e MYSQL_PA
 
 ### Redis Startup
 ```bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 -v `pwd`/redis-stack.conf:/redis-stack.conf redis/redis-stack:latest
 ```
 
 ## Basic User Information Register
