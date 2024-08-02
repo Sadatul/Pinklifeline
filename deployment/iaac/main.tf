@@ -11,6 +11,7 @@ resource "google_sql_database_instance" "pinklifeline_database_instance" {
     tier    = "db-f1-micro"
     edition = "ENTERPRISE"
   }
+  # deletion_protection = false
 }
 
 resource "google_sql_database" "pinklifeline_database" {
@@ -91,7 +92,11 @@ resource "google_container_cluster" "pinklifeline_cluster" {
     create = "30m"
     update = "40m"
   }
+
+  # deletion_protection = false
 }
+
+# STEP 1:
 
 resource "google_compute_global_address" "pinklife_line_ip" {
   name = "pinklifeline-appserver-ip"
@@ -120,6 +125,24 @@ resource "google_project_service" "private_service_networking" {
   }
 }
 
+# STEP 2:
+
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "private-ip-address"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = "default"
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = "default"
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+# STEP 3:
+
 resource "google_redis_instance" "pinklifeline_redis_instance" {
   name           = "pinklifeline-redis-instance"
   tier           = "STANDARD_HA"
@@ -135,20 +158,6 @@ resource "google_redis_instance" "pinklifeline_redis_instance" {
   redis_configs = {
     "notify-keyspace-events" = "Ex"
   }
-}
-
-resource "google_compute_global_address" "private_ip_address" {
-  name          = "private-ip-address"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = "default"
-}
-
-resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = "default"
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
 
 output "redis_host" {
