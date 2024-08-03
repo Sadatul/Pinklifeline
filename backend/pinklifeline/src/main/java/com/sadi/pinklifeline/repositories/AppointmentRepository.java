@@ -1,5 +1,7 @@
 package com.sadi.pinklifeline.repositories;
 
+import com.sadi.pinklifeline.enums.AppointmentStatus;
+import com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentDoctorDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentUserDTO;
 import com.sadi.pinklifeline.models.entities.Appointment;
@@ -30,4 +32,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Transactional
     @Query("update Appointment app set app.status = 'FINISHED' where app.doctor.userId = :docId and app.status = 'RUNNING'")
     void updateAllUnfinishedMeetingForDoctor(Long docId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("update Appointment app set app.status = :status where app.id = :id")
+    void updateAppointmentStatus(Long id, AppointmentStatus status);
+
+    @Query("select new com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO(app.id, app.doctor.userId, app.doctor.fullName, app.user.id, app.user.fullName, app.user.basicUser.dob, app.user.basicUser.weight, app.user.basicUser.height, app.status, app.isPaymentComplete, app.isOnline) from Appointment app where app.id = :id")
+    Optional<AppointmentDataForLivePrescriptionDTO> findAppointmentDataForLivePrescriptionById(Long id);
 }

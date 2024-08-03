@@ -7,7 +7,7 @@ docker run -d -e MYSQL_ROOT_PASSWORD=sadi -e MYSQL_USER=pinklifeline -e MYSQL_PA
 
 ### Redis Startup
 ```bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 -v `pwd`/redis-stack.conf:/redis-stack.conf redis/redis-stack:latest
 ```
 
 ## Basic User Information Register
@@ -461,18 +461,16 @@ transId=17208953344777288
 ```
 status: create(201)
 {
-    "callId": "21324141412"
-}
-```
-## Join a online meeting
-``` Endpoint: GET /v1/online-meeting/join```
-<br><br>
-```Response status: ok(200)```
-### Response Body
-```
-{
-  "callId": "2417210933683308291",
+  "callId": "2317226806956981703",
   "prescription":{
+    "id": 1,
+    "patientId": 2,
+    "patientName": "Sadatul",
+    "doctorId": 3,
+    "doctorName": "Dr. Rahima Begum",
+    "weight": 58.0,
+    "height": 25.0,
+    "age": 23,
     "analysis": "Roma 1",
     "medications":[
       {
@@ -488,7 +486,45 @@ status: create(201)
         "Name",
         "Name",
         "Nani"
-     ]
+     ],
+    "date": "2024-08-03"
+  }
+}
+```
+## Join a online meeting
+``` Endpoint: GET /v1/online-meeting/join```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "callId": "2417210933683308291",
+  "prescription":{
+    "id": 1,
+    "patientId": 2,
+    "patientName": "Sadatul",
+    "doctorId": 3,
+    "doctorName": "Dr. Rahima Begum",
+    "weight": 58.0,
+    "height": 25.0,
+    "age": 23,
+    "analysis": "Roma 1",
+    "medications":[
+      {
+        "name": "Sapa",
+        "doseDescription": "Bala"
+      },
+      {
+        "name": "napa",
+        "doseDescription": "BaKumla"
+      }
+    ],
+    "tests":[
+        "Name",
+        "Name",
+        "Nani"
+     ],
+    "date": "2024-08-03"
   }
 }
 ```
@@ -507,6 +543,8 @@ status: create(201)
       "receiverId": 2,
       "callId": "2417210933683308291",
       "analysis": "You are paralyzed",
+      "weight": 55.0,
+      "height": 50.0,
       "medications": [
           { "name": "Sapa", "doseDescription": "Bala" },
           { "name": "napa", "doseDescription": "BaKumla" }

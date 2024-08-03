@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.externals.sslcommerz.SslcommerzClientService;
+import com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentDoctorDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentUserDTO;
 import com.sadi.pinklifeline.models.entities.Appointment;
@@ -42,6 +43,13 @@ public class AppointmentService extends AbstractPaymentService{
 
     public Appointment getAppointment(Long id){
         return appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Appointment with id %s not found", id)
+                ));
+    }
+
+    public AppointmentDataForLivePrescriptionDTO getAppointmentDataForLivePrescription(Long id){
+        return appointmentRepository.findAppointmentDataForLivePrescriptionById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Appointment with id %s not found", id)
                 ));
@@ -202,5 +210,9 @@ public class AppointmentService extends AbstractPaymentService{
             res.add(map);
         }
         return res;
+    }
+
+    public void updateAppointmentStatus(Long appointmentId, AppointmentStatus appointmentStatus) {
+        appointmentRepository.updateAppointmentStatus(appointmentId, appointmentStatus);
     }
 }

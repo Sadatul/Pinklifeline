@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -22,10 +21,8 @@ public class OnlineMeetingHandlerV1 {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<Map<String, String>> startMeeting(@RequestBody OnlineMeetingStartReq req) throws URISyntaxException {
-        String callId = onlineMeetingService.startMeeting(req.getAppointmentId());
-        Map<String, String> response = new HashMap<>();
-        response.put("callId", callId);
+    public ResponseEntity<Map<String, Object>> startMeeting(@RequestBody OnlineMeetingStartReq req) throws URISyntaxException {
+        Map<String, Object> response = onlineMeetingService.startMeeting(req.getAppointmentId());
         URI uri = new URI( "/v1/online-meeting/join");
         return ResponseEntity.created(uri).body(response);
     }

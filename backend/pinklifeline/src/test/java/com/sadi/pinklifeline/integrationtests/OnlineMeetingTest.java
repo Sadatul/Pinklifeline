@@ -116,9 +116,10 @@ public class OnlineMeetingTest extends AbstractBaseIntegrationTest{
         log.info("Location to join meeting: {}", location);
 
         String responseBody = actions.andReturn().getResponse().getContentAsString();
-        TypeReference<Map<String, String>> typeRef = new TypeReference<>() {};
-        Map<String, String> response = objectMapper.readValue(responseBody, typeRef);
-        String callId = response.get("callId");
+        log.info("Response after starting a meeting: {}", responseBody);
+        TypeReference<Map<String, Object>> typeRef = new TypeReference<>() {};
+        Map<String, Object> response = objectMapper.readValue(responseBody, typeRef);
+        String callId = (String) response.get("callId");
 
         Appointment app = appointmentService.getAppointment(appointmentId);
         log.info("Appointment after meeting creation {}", app);
@@ -129,7 +130,7 @@ public class OnlineMeetingTest extends AbstractBaseIntegrationTest{
         }
         assertEquals(appointmentId, data.get().getFirst());
 
-        LivePrescriptionReq req1 = new LivePrescriptionReq(patientId, callId, "Analysis Added",
+        LivePrescriptionReq req1 = new LivePrescriptionReq(patientId, callId,55.0, 50.0,"Analysis Added",
                 new ArrayList<>(), new ArrayList<>());
         messageExchange(doctorToken, userToken, doctorId, patientId, req1);
 

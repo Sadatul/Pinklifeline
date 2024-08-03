@@ -2,7 +2,6 @@ package com.sadi.pinklifeline.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
-import com.sadi.pinklifeline.models.dtos.LivePrescription;
 import com.sadi.pinklifeline.models.reqeusts.LivePrescriptionReq;
 import com.sadi.pinklifeline.models.responses.ErrorDetails;
 import com.sadi.pinklifeline.repositories.LivePrescriptionRepository;
@@ -39,8 +38,9 @@ public class LivePrescriptionHandlerV1 {
         Long userId = Long.valueOf(user.getName());
         log.debug("Request Received {} from UserID: {}", req, userId);
         try {
-            livePrescriptionRepository.putLivePrescription(
-                    new LivePrescription(req.getAnalysis(), req.getMedications(), req.getTests()),
+            livePrescriptionRepository.updateLivePrescription(
+                    req.getWeight(), req.getHeight(),
+                    req.getAnalysis(), req.getMedications(), req.getTests(),
                     req.getCallId()
             );
         } catch (JsonProcessingException e) {

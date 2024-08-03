@@ -13,4 +13,9 @@ public class HelloControllerV1 {
     public ResponseEntity<String> auth(){
         return ResponseEntity.ok("Hello World");
     }
+
+    @GetMapping("/healthy")
+    public ResponseEntity<String> healthCheck(){
+        return ResponseEntity.ok("Hello World");
+    }
 }
