@@ -18,6 +18,10 @@ public class LivePrescriptionReq implements Serializable {
     @NotNull(message = "Must have a call ID")
     private String callId;
 
+    private Double weight;
+
+    private Double height;
+
     @NotNull(message = "Must have analysis but can be empty string")
     private String analysis;
 

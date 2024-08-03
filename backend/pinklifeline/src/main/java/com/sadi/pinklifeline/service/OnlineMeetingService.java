@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sadi.pinklifeline.enums.AppointmentStatus;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.InternalServerErrorException;
+import com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO;
 import com.sadi.pinklifeline.models.dtos.LivePrescription;
 import com.sadi.pinklifeline.models.entities.Appointment;
 import com.sadi.pinklifeline.repositories.LivePrescriptionRepository;
@@ -13,11 +14,15 @@ import com.sadi.pinklifeline.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -32,7 +37,13 @@ public class OnlineMeetingService {
         this.livePrescriptionRepository = livePrescriptionRepository;
     }
 
-    void verifyIfMeetingCanBeStarted(Appointment appointment){
+    void verifyIfMeetingCanBeStarted(AppointmentDataForLivePrescriptionDTO appointment, Long docId){
+        if(!Objects.equals(appointment.getDoctorId(), docId)){
+            throw new AuthorizationDeniedException(
+                    String.format("User with id:%d doesn't have access to the appointment: %d"
+                            , docId, appointment.getId()),
+                    () -> false);
+        }
         if(!appointment.getStatus().equals(AppointmentStatus.ACCEPTED)){
             throw new BadRequestFromUserException(
                     String.format("Can not start an appointment with status %s", appointment.getStatus())
@@ -45,45 +56,50 @@ public class OnlineMeetingService {
         {
             throw new BadRequestFromUserException("Patient needs to complete the payment first");
         }
-        if(onlineMeetingRepository.ifUserInMeeting(appointment.getDoctor().getUserId())){
+        if(onlineMeetingRepository.ifUserInMeeting(appointment.getDoctorId())){
             throw new BadRequestFromUserException(
-                    String.format("Doctor with id:%d is in another meeting", appointment.getDoctor().getUserId())
+                    String.format("Doctor with id:%d is in another meeting", appointment.getDoctorId())
             );
         }
-        if(onlineMeetingRepository.ifUserInMeeting(appointment.getUser().getId())){
+        if(onlineMeetingRepository.ifUserInMeeting(appointment.getPatientId())){
             throw new BadRequestFromUserException(
-                    String.format("Patient with id:%d is in another meeting", appointment.getUser().getId())
+                    String.format("Patient with id:%d is in another meeting", appointment.getPatientId())
             );
         }
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
-    public String startMeeting(Long appointmentId){
+    public Map<String, Object> startMeeting(Long appointmentId){
         Long doctorId = SecurityUtils.getOwnerID();
-        Appointment appointment = appointmentService.getAppointment(appointmentId);
-        appointmentService.verifyAppointmentDoctorAccess(appointment, doctorId);
-        verifyIfMeetingCanBeStarted(appointment);
-        appointment.setStatus(AppointmentStatus.RUNNING);
-        String callId = CodeGenerator.callIdGenerator(appointment.getUser().getId(),
-                appointment.getDoctor().getUserId());
+        var appointment = appointmentService.getAppointmentDataForLivePrescription(appointmentId);
+        verifyIfMeetingCanBeStarted(appointment, doctorId);
+        String callId = CodeGenerator.callIdGenerator(appointment.getPatientId(),
+                appointment.getDoctorId());
         try {
-            onlineMeetingRepository.putAppIdAndCallIdForMeeting(appointment.getUser().getId(),
+            onlineMeetingRepository.putAppIdAndCallIdForMeeting(appointment.getPatientId(),
                     Pair.of(appointmentId, callId));
-            onlineMeetingRepository.putAppIdAndCallIdForMeeting(appointment.getDoctor().getUserId(),
+            onlineMeetingRepository.putAppIdAndCallIdForMeeting(appointment.getDoctorId(),
                     Pair.of(appointmentId, callId));
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Server error occurred while parsing request");
         }
-        appointmentService.saveAppointment(appointment);
+        appointmentService.updateAppointmentStatus(appointmentId, AppointmentStatus.RUNNING);
 
         // Processing for live prescription
-        LivePrescription prescription = new LivePrescription("", new ArrayList<>(), new ArrayList<>());
+        Long age = ChronoUnit.YEARS.between(appointment.getPatientDob(), LocalDate.now());
+        LivePrescription prescription = new LivePrescription(appointmentId, appointment.getPatientId(), appointment.getPatientName(),
+                appointment.getDoctorId(), appointment.getDoctorName(), appointment.getWeight(), appointment.getHeight(), age,
+                "", new ArrayList<>(), new ArrayList<>());
         try {
             livePrescriptionRepository.putLivePrescription(prescription, callId);
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Server error occurred while parsing request");
         }
-        return callId;
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("callId", callId);
+        response.put("prescription", prescription);
+        return response;
     }
 
     public Map<String, Object> joinMeeting(){
@@ -95,7 +111,8 @@ public class OnlineMeetingService {
         LivePrescription prescription;
         try {
             prescription = livePrescriptionRepository.getLivePrescription(data.getSecond())
-                    .orElseGet(() -> new LivePrescription("", new ArrayList<>(), new ArrayList<>()));
+                    .orElseGet(() -> new LivePrescription(null, null, null, null,
+                            null, null, null, null, "", new ArrayList<>(), new ArrayList<>()));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
