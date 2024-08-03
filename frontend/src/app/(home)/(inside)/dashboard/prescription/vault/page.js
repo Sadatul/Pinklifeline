@@ -13,15 +13,20 @@ import {
 } from "@/components/ui/popover"
 import ReactSelect from "react-select"
 import makeAnimated from 'react-select/animated';
-import { act, useEffect, useState } from "react"
+import { act, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Pagination } from "@mui/material"
+import { addReportUrl, cleanString, generateFormattedDate } from "@/utils/constants"
+import axiosInstance from "@/utils/axiosInstance"
+import { FaUserDoctor } from "react-icons/fa6"
+import { HospitalIcon, Key } from "lucide-react"
 
 export default function PrescriptionVaultPage() {
     const animatedComponents = makeAnimated();
     const [documents, setDocuments] = useState([])
-    const serachke
+    const [data, setData] = useState(null)
+    const selectedKeywords = useRef([])
     const [currentPage, setCurrentPage] = useState(1)
     const [isMounted, setIsMounted] = useState(false)
     const keyWordsOption = [
@@ -37,18 +42,17 @@ export default function PrescriptionVaultPage() {
 
     useEffect(() => {
         console.log("fetching documents")
-        const docs = []
-        for (let i = 0; i < 5; i++) {
-            docs.push({
-                fileLink: "https://via.placeholder.com/150",
-                doctorName: "Dr. John Doe",
-                hospitalName: "Hospital Name",
-                date: addDays(new Date(), i),
-                keywords: ["kidney", "pain"]
-            })
-        }
-        setDocuments(docs)
+        axiosInstance.get(addReportUrl).then((response) => {
+            console.log("Response from filter", response)
+            setData(response.data)
+        }).catch((error) => {
+            console.log("Error from filter", error)
+        })
     }, [])
+
+    useEffect(() => {
+        console.log("Data changed ", data)
+    }, [data])
 
     useEffect(() => {
         console.log("page changed ", currentPage)
@@ -59,7 +63,27 @@ export default function PrescriptionVaultPage() {
     }, [])
 
     const handleFilter = () => {
-        console.log(document.getElementById("search-keywords"))
+        const doctorName = cleanString(document.getElementById("search-doctorName")?.value)
+        const hospitalName = cleanString(document.getElementById("search-hospitalName")?.value)
+        const sort = document.getElementById("search-sort")?.value
+        const startDate = generateFormattedDate(dateRange.from)
+        const endDate = generateFormattedDate(dateRange.to)
+        axiosInstance.get(addReportUrl, {
+            params: {
+                doctorName: doctorName,
+                hospitalName: hospitalName,
+                keywords: selectedKeywords.current.map((keyword) => keyword.value),
+                startDate: startDate,
+                endDate: endDate,
+                sort: sort,
+                page: currentPage
+            }
+        }).then((response) => {
+            console.log("Response from filter", response)
+            setDocuments(response.data)
+        }).catch((error) => {
+            console.log("Error from filter", error)
+        })
     }
 
     return (
@@ -92,6 +116,7 @@ export default function PrescriptionVaultPage() {
                                     components={animatedComponents}
                                     onChange={(newValue, actionMeta) => {
                                         console.log(newValue, actionMeta)
+                                        selectedKeywords.current = newValue
                                     }}
                                 />
                             </label>
@@ -152,37 +177,41 @@ export default function PrescriptionVaultPage() {
                     <h2 className="text-lg">
                         Documents
                     </h2>
-                    <div className="flex flex-row gap-5 w-full justify-start items-center flex-wrap bg-gray-200 rounded-md border-gray-700 min-h-48 p-4">
-                        {documents?.length === 0 &&
+                    <div className="flex flex-row gap-5 w-full justify-start items-center flex-wrap bg-blue-100 rounded-md border-gray-700 min-h-48 p-4">
+                        {data?.empty === true &&
                             <h2 className="text-lg w-full text-center">
                                 No Documents Found
                             </h2>
                         }
-                        {documents?.map((doc, index) => (
-                            <div key={index} className="flex flex-col gap-2 w-52 p-2 bg-white rounded-md border border-gray-700 items-center">
-                                <div className="relative w-full h-40 rounded-l-md overflow-hidden">
+                        {data?.content?.map((doc, index) => (
+                            <div key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center">
+                                <div className="w-full h-40 rounded-l-md overflow-hidden flex justify-center relative">
                                     <Image
                                         src={doc.fileLink}
                                         fill={true}
-                                        className="w-full h-full object-left object-contain rounded-l-md"
+                                        className="w-full h-full object-contain object-center rounded-l-md"
                                         alt="Blog Image"
                                     />
                                 </div>
                                 <div className="flex flex-col justify-between">
-                                    <span className="text-base text-gray-800">
+                                    <span className="text-base text-gray-800 flex gap-1 items-center">
+                                        <FaUserDoctor size={16} />
                                         {doc.doctorName}
                                     </span>
-                                    <span className="text-base text-gray-800">
+                                    <span className="text-base text-gray-800 flex gap-1 items-center">
+                                        <HospitalIcon size={16} />
                                         {doc.hospitalName}
                                     </span>
                                 </div>
                                 <div className="flex flex-row justify-between">
-                                    <span className="text-sm text-gray-800">
+                                    <span className="text-sm text-gray-800 flex gap-1 items-center">
+                                        <CalendarIcon size={16} />
                                         {format(doc.date, "LLL dd, y")}
                                     </span>
                                 </div>
                                 <div className="flex flex-row justify-between">
-                                    <span className="text-sm text-gray-800">
+                                    <span className="text-sm text-gray-800 flex gap-1 items-center">
+                                        <Key size={20} />
                                         {doc.keywords.join(", ")}
                                     </span>
                                 </div>
@@ -192,7 +221,7 @@ export default function PrescriptionVaultPage() {
                     </div>
                     <div className="flex flex-col w-full items-center mb-5">
                         <Pagination
-                            count={10}
+                            count={data?.totalPages}
                             page={currentPage}
                             onChange={(event, page) => setCurrentPage(page)}
                             variant="outlined"

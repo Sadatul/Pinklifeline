@@ -6,7 +6,7 @@ export function middleware(request) {
     const tokenName = "access_token";
     if (!publicPaths.find((publicPath) => path === publicPath) && !request.cookies.get(tokenName)) {
         console.log('middleware.js: redirecting to /reglogin');
-        return NextResponse.redirect(new URL('/reglogin', request.nextUrl));
+        // return NextResponse.redirect(new URL('/reglogin', request.nextUrl));
     }
 }
 

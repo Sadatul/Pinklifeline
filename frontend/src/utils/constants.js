@@ -76,6 +76,21 @@ export const transactionStatus = {
     pending: "PENDING"
 }
 
+export function cleanString(str) {
+    if (!str) {
+        return null
+    }
+    return str.trim().replace(/\s+/g, ' ');
+}
+
+export function generateFormattedDate(date) {
+    if (!date) {
+        return null
+    }
+    const tempDate = new Date(date)
+    return `${tempDate.getFullYear()}-${(tempDate.getMonth() + 1) < 10 ? `0${tempDate.getMonth() + 1}` : `${tempDate.getMonth() + 1}`}-${(tempDate.getDate()) < 10 ? `0${tempDate.getDate()}` : `${tempDate.getDate()}`}`
+}
+
 export const pagePaths = {
     login: "/reglogin",
     register: "/reglogin",
@@ -89,12 +104,12 @@ export const pagePaths = {
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
     dashboard: "/dashboard",
-    dashboardPages : {
-        appointmentsPage : "/dashboard/appointments",
+    dashboardPages: {
+        appointmentsPage: "/dashboard/appointments",
         patientLivePrescription: (doctorName) => { return `/dashboard/prescription/live/patient/${doctorName}` },
         doctorLivePrescription: (patientName) => { return `/dashboard/prescription/live/doctor/${patientName}` },
         addToVaultPage: "/dashboard/prescription/vault/add",
-        prescriptionVaultPage : "/dashboard/prescription/vault",
+        prescriptionVaultPage: "/dashboard/prescription/vault",
 
     },
     addConsultation: "/userdetails/addconsultation",
