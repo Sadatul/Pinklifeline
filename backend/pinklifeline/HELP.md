@@ -973,3 +973,121 @@ status: create(201)
 * "id" is sharedReportId, this can be used to revoke share.
 * "username" is doctors username. "fullName" is doctor fullName.
 * "expirationTime" is the time when the share will be expired. If null it means the share will exist for infinite time.
+
+## Get PatientInfo For Doctor with appointments
+```Endpoint: /v1/appointments/user-data/{appointment_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "allergies":["Peanut"],
+  "organsWithChronicConditions":["Heart","Throat"],
+  "diagnosisDate": "2000-08-08",
+  "cancerRelatives":["Aunt","Samiha"],
+  "fullName": "Sadatul",
+  "weight": 58.0,
+  "avgCycleLength": 5,
+  "cancerHistory": "Y",
+  "lastPeriodDate": "2000-08-08",
+  "medications":[
+   {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+   },
+   {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+   }
+  ],
+  "cancerStage": "SURVIVOR",
+  "periodIrregularities":["Higher pain","Longer than average cycles"],
+  "age": 23,
+  "height": 25.0
+  }
+```
+**<span style="color:red">Notes:</span>**
+* if the patient is a basicUser then cancerStage, diagnosisDate will not be present, be very careful
+
+## Get User info For Doctor
+```Endpoint: /v1/infos/ROLE_DOCTOR/{user_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "qualifications":["MBBS","FCPS"],
+  "isVerified": "N",
+  "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+  "contactNumber": "01730445524",
+  "fullName": "Dr. QQW Ahmed",
+  "designation": "Head",
+  "department": "Cancer",
+  "workplace": "Dhaka Medical College"
+}
+```
+
+## Get User info For Basic User
+```Endpoint: /v1/infos/ROLE_BASICUSER/{user_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "allergies":["Peanut"],
+  "organsWithChronicConditions":["Heart", "Throat"],
+  "cancerRelatives":["Aunt", "Samiha"],
+  "fullName": "Sadatul",
+  "weight": 58.0,
+  "avgCycleLength": 5,
+  "cancerHistory": "Y",
+  "lastPeriodDate": "2000-08-08",
+  "dob": "2000-08-08",
+  "medications":[
+  {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+  },
+  {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+  }
+],
+  "periodIrregularities":[ "Higher pain", "Longer than average cycles"],
+  "height": 25.0
+}
+```
+
+## Get User info For patient
+```Endpoint: /v1/infos/ROLE_PATIENT/{user_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "allergies":["Peanut"],
+  "organsWithChronicConditions":["Heart", "Throat"],
+  "cancerRelatives":["Aunt", "Samiha"],
+  "fullName": "Sadatul",
+  "weight": 58.0,
+  "avgCycleLength": 5,
+  "cancerHistory": "Y",
+  "lastPeriodDate": "2000-08-08",
+  "dob": "2000-08-08",
+  "medications":[
+  {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+  },
+  {
+    "name": "Napa Extra",
+    "doseDescription": "3 times a day"
+  }
+],
+  "periodIrregularities":[ "Higher pain", "Longer than average cycles"],
+  "height": 25.0,
+  "cancerStage": "SURVIVOR",
+  "diagnosisDate": "2020-08-03",
+  "location": "sdfasdfdsfsdfjsdfjfds"
+}
+```

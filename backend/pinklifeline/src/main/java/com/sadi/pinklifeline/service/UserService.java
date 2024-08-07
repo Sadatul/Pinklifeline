@@ -3,12 +3,17 @@ package com.sadi.pinklifeline.service;
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserInfoUnregisteredException;
 import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
+import com.sadi.pinklifeline.models.entities.BasicUserDetails;
+import com.sadi.pinklifeline.models.entities.DoctorDetails;
+import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.responses.PatientResForeign;
 import com.sadi.pinklifeline.repositories.PatientSpecificDetailsRepository;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -58,5 +63,37 @@ public class UserService {
         return patientSpecificDetailsRepository.findByPatientByUserIdForeign(id).orElseThrow(
                 () -> new UserInfoUnregisteredException(String.format("Patient with id:%d hasn't registered yet", id))
         );
+    }
+
+    public void injectBasicUserDetailsToMap(BasicUserDetails basicUserDetails, Map<String, Object> response) {
+        response.put("fullName", basicUserDetails.getFullName());
+        response.put("dob", basicUserDetails.getDob());
+        response.put("height", basicUserDetails.getHeight());
+        response.put("weight", basicUserDetails.getWeight());
+        response.put("cancerHistory", basicUserDetails.getCancerHistory());
+        response.put("cancerRelatives", basicUserDetails.getCancerRelatives());
+        response.put("lastPeriodDate", basicUserDetails.getLastPeriodDate());
+        response.put("avgCycleLength", basicUserDetails.getAvgCycleLength());
+        response.put("periodIrregularities", basicUserDetails.getPeriodIrregularities());
+        response.put("allergies", basicUserDetails.getAllergies());
+        response.put("organsWithChronicConditions", basicUserDetails.getOrgansWithChronicCondition());
+        response.put("medications", basicUserDetails.getMedications());
+    }
+
+    public void injectPatientSpecificDetailsToMap(PatientSpecificDetails patient, Map<String, Object> response) {
+        response.put("cancerStage", patient.getCancerStage());
+        response.put("diagnosisDate", patient.getDiagnosisDate());
+        response.put("location", patient.getLocation());
+    }
+
+    public void injectDoctorDetailsToMap(DoctorDetails doctorDetails, Map<String, Object> response){
+        response.put("fullName", doctorDetails.getFullName());
+        response.put("registrationNumber", doctorDetails.getRegistrationNumber());
+        response.put("qualifications", doctorDetails.getQualifications());
+        response.put("workplace", doctorDetails.getWorkplace());
+        response.put("department", doctorDetails.getDepartment());
+        response.put("designation", doctorDetails.getDesignation());
+        response.put("contactNumber", doctorDetails.getContactNumber());
+        response.put("isVerified", doctorDetails.getIsVerified());
     }
 }
