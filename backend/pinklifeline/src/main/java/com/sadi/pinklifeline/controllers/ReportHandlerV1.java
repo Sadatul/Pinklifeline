@@ -101,6 +101,25 @@ public class ReportHandlerV1 {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getReports(
+            @PathVariable Long id
+    ){
+        Report report = reportHandlerService.getReport(id);
+        Long userId = SecurityUtils.getOwnerID();
+        reportHandlerService.verifyReportOwner(report, userId);
+        Map<String, Object> reportMap = new HashMap<>();
+        reportMap.put("id", report.getId());
+        reportMap.put("doctorName", report.getDoctorName());
+        reportMap.put("hospitalName", report.getHospitalName());
+        reportMap.put("date", report.getDate());
+        reportMap.put("fileLink", report.getFileLink());
+        reportMap.put("keywords", report.getKeywords());
+        reportMap.put("summary", report.getSummary());
+        reportMap.put("shareInfo", reportHandlerService.getSharedInfoForUserByReportId(id));
+        return ResponseEntity.ok(reportMap);
+    }
+
     @PostMapping("/share")
     public ResponseEntity<Void> shareReport(
             @Valid @RequestBody ReportShareReq req) {
