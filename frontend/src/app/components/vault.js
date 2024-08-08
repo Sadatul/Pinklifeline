@@ -6,18 +6,19 @@ import { FileUploader } from "react-drag-drop-files"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { toast } from "sonner"
 import Image from "next/image"
-import { CircularProgress, DialogContent } from "@mui/material"
-import { Calendar, Check, Loader2, LoaderCircle, Pencil, Share2, X } from "lucide-react";
+import { CircularProgress } from "@mui/material"
+import { Calendar, Check, Loader2, LoaderCircle, Pencil, Share2, Trash2, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
 import axiosInstance from "@/utils/axiosInstance";
-import { addReportUrl, capitalizeFirstLetter, getImageDimensions, pagePaths } from "@/utils/constants";
+import { addReportUrl, capitalizeFirstLetter, getImageDimensions, pagePaths, shareReportUrl } from "@/utils/constants";
 import { useSessionContext } from "@/app/context/sessionContext";
 import { useRouter } from "next/navigation";
 import CreatableSelect from 'react-select/creatable'
 import { cn } from "@/lib/utils";
-import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogContent, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function AddPrescriptionPage() {
     const storage = getStorage(firebase_app)
@@ -233,6 +234,7 @@ export function PrescriptionDescriptionComponent({ report, setReport }) {
     const [editable, setEditable] = useState(false)
     const [defaultOptions, setDefaultOptions] = useState(report.keywords.map((keyword) => ({ label: capitalizeFirstLetter(keyword), value: keyword })))
     const [selectedOptions, setSelectedOptions] = useState(defaultOptions)
+    const [shareDialogOpen, setShareDialogOpen] = useState(false)
 
     useEffect(() => {
         const fetchImageDimensions = async () => {
@@ -247,6 +249,45 @@ export function PrescriptionDescriptionComponent({ report, setReport }) {
     }, [report.fileLink])
 
     const updateReport = () => {
+        const doctorName = document.getElementById("reportDoctorName").value
+        const hospitalName = document.getElementById("reportHospitalName").value
+        const date = document.getElementById("reportDate").value
+        const summary = document.getElementById("reportSummary").value
+        const fileLink = report.fileLink
+        const form = {
+            "doctorName": "Dr. Morshad Hossain",
+            "hospitalName": "Gazi Medical, Khulna",
+            "date": "2024-08-08",
+            "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+            "fileLink": "google.com",
+            "keywords": ["Heart", "Lungs"]
+        }
+    }
+
+    const handleShareReport = () => {
+        if (document.getElementById("reportShareDoctorId").value === "") {
+            document.getElementById("error").innerText = "Must fill doctor id field"
+            return
+        }
+        else {
+            toast.loading("Sharing report")
+            document.getElementById("error").innerText = ""
+            const form = {
+                "reportId": report.id,
+                "doctorId": document.getElementById("reportShareDoctorId").value,
+                "period": document.getElementById("reportSharePeriod").value > 0 ? document.getElementById("reportSharePeriod").value : null
+            }
+            axiosInstance.post(shareReportUrl, form).then((res) => {
+                setShareDialogOpen(false)
+                toast.dismiss()
+            }).catch((error) => {
+                console.log("Error sharing report", error)
+                toast.dismiss()
+                toast.error("Error sharing report", {
+                    description: "Please try again later"
+                })
+            })
+        }
     }
 
     return (
@@ -271,28 +312,80 @@ export function PrescriptionDescriptionComponent({ report, setReport }) {
                                 }}>
                                     <Pencil size={24} />
                                 </button>
-                                <Dialog>
+                                <Dialog open={shareDialogOpen} onOpenChange={(e) => { setShareDialogOpen(e) }}>
                                     <DialogTrigger asChild>
-                                        <button className={cn("text-gray-100 px-4 py-1 rounded-md flex items-center bg-gray-700")} onClick={() => {
-                                            setEditable(true)
-                                        }}>
+                                        <button className={cn("text-gray-100 px-4 py-1 rounded-md flex items-center bg-gray-700")} >
                                             <Share2 size={24} />
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent>
+                                    <DialogContent className="">
                                         <DialogHeader>
                                             <DialogTitle>Share Report</DialogTitle>
                                             <DialogDescription>
                                                 Are your sure you want to share this report with others?
                                             </DialogDescription>
                                         </DialogHeader>
+                                        <div className="flex flex-col gap-2 ">
+                                            <label className="flex text-lg font-semibold gap-2">
+                                                Doctor ID:
+                                                <input id="reportShareDoctorId" type="number" className="number-input rounded border border-gray-700 px-2 py-1" min={0} />
+                                            </label>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="flex text-lg font-semibold gap-2">
+                                                    Period (in hours):
+                                                    <input id="reportSharePeriod" type="number" className="number-input rounded border border-gray-700 px-2 py-1" min={0} defaultValue={0} />
+                                                </label>
+                                                <span className="text-sm">
+                                                    Keep the period 0 or empty to share the report indefinitely
+                                                </span>
+                                                <span id="error" className="text-red-500"></span>
+                                            </div>
+                                        </div>
                                         <DialogFooter>
-                                            <button type="submit">Save changes</button>
+                                            <Button className="" onClick={() => {
+                                                handleShareReport()
+                                            }}>
+                                                Share
+                                            </Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
                             </>
                         }
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <button className="bg-red-700 px-4 py-1 rounded-md text-white">
+                                    <Trash2 size={24} />
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Delete Report</DialogTitle>
+                                    <DialogDescription>
+                                        Are you sure you want to delete this report?
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button className="bg-red-700" onClick={() => {
+                                            toast.loading("Deleting report")
+                                            axiosInstance.delete(`${addReportUrl}/${report.id}`).then((res) => {
+                                                console.log("Report deleted", res)
+                                                toast.dismiss()
+                                            }).catch((error) => {
+                                                console.log("Error deleting report", error)
+                                                toast.dismiss()
+                                                toast.error("Error deleting report", {
+                                                    description: "Please try again later"
+                                                })
+                                            })
+                                        }}>
+                                            Delete
+                                        </Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                     {editable ? (
                         <div className="flex flex-col gap-4 w-10/12">
@@ -300,11 +393,11 @@ export function PrescriptionDescriptionComponent({ report, setReport }) {
                             <div className="flex flex-col gap-2 w-full">
                                 <label className="flex text-lg font-semibold gap-2">
                                     Doctor Name:
-                                    <input defaultValue={report.doctorName} id="reportDoctorName" type="text" />
+                                    <input defaultValue={report.doctorName} id="reportDoctorName" type="text" className="border border-blue-800 shadow-inner p-1" />
                                 </label>
                                 <label className="flex text-lg font-semibold gap-2">
                                     Hospital Name:
-                                    <input defaultValue={report.doctorName} id="reportHospitalName" type="text" />
+                                    <input defaultValue={report.doctorName} id="reportHospitalName" type="text" className="border border-blue-800 shadow-inner p-1" />
                                 </label>
                                 <label className="flex text-lg font-semibold gap-2">
                                     Date:
@@ -334,7 +427,7 @@ export function PrescriptionDescriptionComponent({ report, setReport }) {
                                 </label>
                                 <label className="flex text-lg font-semibold gap-1 w-full">
                                     Summary:
-                                    <textarea id="reportSummary" type="text" value={report.summary} className="flex-1 min-h-80 p-3 rounded shadow-inner" />
+                                    <textarea id="reportSummary" type="text" defaultValue={report.summary} className="flex-1 min-h-80 p-3 rounded shadow-inner" />
                                 </label>
                             </div>
                         </div>

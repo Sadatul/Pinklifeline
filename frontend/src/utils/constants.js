@@ -40,6 +40,7 @@ export const createOnlineMeetingUrl = `${baseUrl}/v1/online-meeting/start`
 export const validateTransactionUrl = (appointment_id, transactionId) => { return `${baseUrl}/v1/payment/appointment/${appointment_id}/validate?transId=${transactionId}` }
 export const addReportUrl = `${baseUrl}/v1/reports`
 export const updateReportUrl = (reportId) => { return `${baseUrl}/v1/reports/${reportId}` }
+export const shareReportUrl = `${baseUrl}/v1/reports/share`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"

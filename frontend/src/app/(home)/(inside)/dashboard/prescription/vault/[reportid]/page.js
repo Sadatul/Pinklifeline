@@ -16,7 +16,7 @@ export default function ReportDescriptionPage() {
             "Heart",
             "Lungs"
         ],
-        "id": 3,
+        "id": 2,
         "hospitalName": "Gaza Medical, Khulna"
     })
 
