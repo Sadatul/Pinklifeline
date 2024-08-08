@@ -1091,3 +1091,27 @@ status: create(201)
   "location": "sdfasdfdsfsdfjsdfjfds"
 }
 ```
+## Get a Report By Id
+```Endpoint: /v1/reports/{report_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "date": "2022-10-08",
+  "summary": "ljdflasldfsldfjlsdflsdfjlsdfjsldfjsldfjsldfjsldfjlasdjf",
+  "doctorName": "Dr. Isa Hossai",
+  "fileLink": "google.com",
+  "shareInfo":[
+    {
+      "id": 1,
+      "username": "acy06289@nowni.com",
+      "fullName": "Dr. Rahima Begum",
+      "expirationTime": "2024-08-11T20:40:21"
+    }
+   ],
+  "keywords":["Blood", "Body"],
+  "id": 1,
+  "hospitalName": "American Medical, Belgium"
+}
+```
