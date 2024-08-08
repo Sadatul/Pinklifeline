@@ -17,10 +17,11 @@ import { act, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Pagination } from "@mui/material"
-import { addReportUrl, cleanString, generateFormattedDate } from "@/utils/constants"
+import { addReportUrl, cleanString, generateFormattedDate, pagePaths } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { FaUserDoctor } from "react-icons/fa6"
 import { HospitalIcon, Key } from "lucide-react"
+import Link from "next/link"
 
 export default function PrescriptionVaultPage() {
     const animatedComponents = makeAnimated();
@@ -184,7 +185,7 @@ export default function PrescriptionVaultPage() {
                             </h2>
                         }
                         {data?.content?.map((doc, index) => (
-                            <div key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center">
+                            <Link href={pagePaths.dashboardPages.prescriptionVaultPageById(doc.id)} key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center">
                                 <div className="w-full h-40 rounded-l-md overflow-hidden flex justify-center relative">
                                     <Image
                                         src={doc.fileLink}
@@ -215,7 +216,7 @@ export default function PrescriptionVaultPage() {
                                         {doc.keywords.join(", ")}
                                     </span>
                                 </div>
-                            </div>
+                            </Link>
                         ))
                         }
                     </div>

@@ -39,6 +39,7 @@ export const getVideoCallToekn = `${baseUrl}/v1/meeting/user/token`
 export const createOnlineMeetingUrl = `${baseUrl}/v1/online-meeting/start`
 export const validateTransactionUrl = (appointment_id, transactionId) => { return `${baseUrl}/v1/payment/appointment/${appointment_id}/validate?transId=${transactionId}` }
 export const addReportUrl = `${baseUrl}/v1/reports`
+export const updateReportUrl = (reportId) => { return `${baseUrl}/v1/reports/${reportId}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -110,6 +111,7 @@ export const pagePaths = {
         doctorLivePrescription: `/dashboard/prescription/live/doctor`,
         addToVaultPage: "/dashboard/prescription/vault/add",
         prescriptionVaultPage: "/dashboard/prescription/vault",
+        prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
 
     },
     addConsultation: "/userdetails/addconsultation",
@@ -131,6 +133,21 @@ export const convertFtIncToCm = (ft, inch) => {
     return rountToTwo((Number(ft) * 30.48) + (Number(inch) * 2.54))
 }
 
-//formats used in different places
-//message format added `?FROM={senderID}` to the message
-// chat room link format `{roomid}chat{senderID}`
+export const getImageDimensions = (url) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+            resolve({ width: img.width, height: img.height });
+        };
+        img.onerror = reject;
+    });
+};
+
+export const capitalizeFirstLetter = (string) => {
+    string = String(string)
+    if (!string) {
+        return null
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}

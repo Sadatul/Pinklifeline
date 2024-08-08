@@ -1,20 +1,23 @@
 'use client'
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createWorker } from 'tesseract.js';
 import { FileUploader } from "react-drag-drop-files"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { toast } from "sonner"
 import Image from "next/image"
-import { CircularProgress } from "@mui/material"
-import { Loader2 } from "lucide-react";
+import { CircularProgress, DialogContent } from "@mui/material"
+import { Calendar, Check, Loader2, LoaderCircle, Pencil, Share2, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
 import axiosInstance from "@/utils/axiosInstance";
-import { addReportUrl, pagePaths } from "@/utils/constants";
+import { addReportUrl, capitalizeFirstLetter, getImageDimensions, pagePaths } from "@/utils/constants";
 import { useSessionContext } from "@/app/context/sessionContext";
 import { useRouter } from "next/navigation";
+import CreatableSelect from 'react-select/creatable'
+import { cn } from "@/lib/utils";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function AddPrescriptionPage() {
     const storage = getStorage(firebase_app)
@@ -225,6 +228,138 @@ If you don't find answer for a field then put null. I will parse your answer thr
     )
 }
 
-export function PrescriptionDescriptionComponent({ report}){
-    
+export function PrescriptionDescriptionComponent({ report, setReport }) {
+    const [imageDimension, setImageDimension] = useState(null)
+    const [editable, setEditable] = useState(false)
+    const [defaultOptions, setDefaultOptions] = useState(report.keywords.map((keyword) => ({ label: capitalizeFirstLetter(keyword), value: keyword })))
+    const [selectedOptions, setSelectedOptions] = useState(defaultOptions)
+
+    useEffect(() => {
+        const fetchImageDimensions = async () => {
+            try {
+                const { width, height } = await getImageDimensions(report.fileLink);
+                setImageDimension({ width, height });
+            } catch (error) {
+                console.error("Error fetching image dimensions:", error);
+            }
+        };
+        fetchImageDimensions();
+    }, [report.fileLink])
+
+    const updateReport = () => {
+    }
+
+    return (
+        <div className="flex flex-col gap-5 p-2 w-full">
+            <h1 className="text-2xl font-semibold mt-5">Prescription/Report</h1>
+            <div className="flex flex-col gap-7 w-full bg-blue-50 rounded-md p-2">
+                <div className="flex flex-col gap-4 w-full relative">
+                    <div className="flex flex-row justify-between items-center gap-2 absolute top-5 right-10">
+                        {editable ?
+                            <>
+                                <button className="bg-green-400 text-white px-4 py-1 rounded-md flex items-center" onClick={() => { updateReport() }}>
+                                    <Check size={24} />
+                                </button>
+                                <button className="bg-red-400 text-white px-4 py-1 rounded-md flex items-center" onClick={() => { setEditable(false) }}>
+                                    <X size={24} />
+                                </button>
+                            </>
+                            :
+                            <>
+                                <button className={cn("text-white px-4 py-1 rounded-md flex items-center bg-gray-600")} onClick={() => {
+                                    setEditable(true)
+                                }}>
+                                    <Pencil size={24} />
+                                </button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <button className={cn("text-gray-100 px-4 py-1 rounded-md flex items-center bg-gray-700")} onClick={() => {
+                                            setEditable(true)
+                                        }}>
+                                            <Share2 size={24} />
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Share Report</DialogTitle>
+                                            <DialogDescription>
+                                                Are your sure you want to share this report with others?
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <DialogFooter>
+                                            <button type="submit">Save changes</button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            </>
+                        }
+                    </div>
+                    {editable ? (
+                        <div className="flex flex-col gap-4 w-10/12">
+                            <h2 className="text-xl font-semibold">Edit Report details</h2>
+                            <div className="flex flex-col gap-2 w-full">
+                                <label className="flex text-lg font-semibold gap-2">
+                                    Doctor Name:
+                                    <input defaultValue={report.doctorName} id="reportDoctorName" type="text" />
+                                </label>
+                                <label className="flex text-lg font-semibold gap-2">
+                                    Hospital Name:
+                                    <input defaultValue={report.doctorName} id="reportHospitalName" type="text" />
+                                </label>
+                                <label className="flex text-lg font-semibold gap-2">
+                                    Date:
+                                    <input defaultValue={report.date} id="reportDate" type="date" />
+                                </label>
+                                <label className="flex text-lg font-semibold gap-2 w-full">
+                                    Keywords:
+                                    <div className="flex-1">
+                                        <CreatableSelect
+                                            isMulti={true}
+                                            defaultValue={defaultOptions}
+                                            value={selectedOptions}
+                                            options={defaultOptions}
+                                            onCreateOption={(keyword) => {
+                                                setDefaultOptions([...defaultOptions, { label: capitalizeFirstLetter(keyword), value: keyword }])
+                                                setSelectedOptions([...selectedOptions, { label: capitalizeFirstLetter(keyword), value: keyword }])
+                                            }}
+                                            onChange={(selectedOptions) => {
+                                                setSelectedOptions(selectedOptions)
+                                            }}
+                                            className="flex-1"
+                                        />
+                                        <span className="text-sm">
+                                            Write new keyword to add new keyword to the list
+                                        </span>
+                                    </div>
+                                </label>
+                                <label className="flex text-lg font-semibold gap-1 w-full">
+                                    Summary:
+                                    <textarea id="reportSummary" type="text" value={report.summary} className="flex-1 min-h-80 p-3 rounded shadow-inner" />
+                                </label>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <h2 className="text-xl font-semibold">Details</h2>
+                            <div className="flex flex-col gap-2">
+                                <span className="text-lg font-semibold flex gap-1 items-center">Doctor Name: {report.doctorName}</span>
+                                <span className="text-lg font-semibold flex gap-1 items-center">Hospital Name: {report.hospitalName}</span>
+                                <span className="text-lg font-semibold flex gap-1 items-center">Keywords: {report.keywords.join(", ")}</span>
+                                <span className="text-lg font-semibold flex gap-1 items-center"> <Calendar size={24} /> {report.date}</span>
+                                <span className="text-lg font-semibold flex-col gap-1 items-center">{report.summary}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col gap-2 items-center">
+                    <h3 className="text-2xl font-semibold">Prescription/Report Image</h3>
+                    {imageDimension ?
+                        <Image src={report.fileLink} alt="Prescription" width={imageDimension.width} height={imageDimension.height} className=" border-4 border-purple-200" />
+                        :
+                        <LoaderCircle size={44} className="text-purple-500 animate-spin" />
+                    }
+                </div>
+            </div>
+        </div>
+    )
 }
