@@ -12,6 +12,7 @@ export const generatePDF = async (elementId) => {
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
   let heightLeft = imgHeight;
   let position = 0;
+  console.log("image data", imgData);
 
   pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;

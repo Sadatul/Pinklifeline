@@ -50,7 +50,7 @@ export default function LoginRegister() {
             }).catch((err) => {
                 console.log(err)
                 toast.error("An error occured.", {
-                    description: err.response.data.message
+                    description: err?.response?.data?.message
                 })
                 document.getElementById("submit-button-text").hidden = false
                 document.getElementById("submit-button-loading-state").hidden = true

@@ -21,7 +21,7 @@ export function SessionContextProvider({ children }) {
         setSessionData({
             ...sessionData,
         })
-    }, [])
+    }, [router])
 
     return (
         <sessionContext.Provider value={{

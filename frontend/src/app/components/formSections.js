@@ -92,7 +92,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
         const uploadingToast = toast.loading("Uploading image", {
             duration: Infinity
         })
-        const filePath = `profileImages/${localStorage.getItem('userId') || new Date().toString()}/${imageFile.name}`;
+        const filePath = `profileImages/${new Date().toString()}/${imageFile.name}`;
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
         setImageUploaded(true)

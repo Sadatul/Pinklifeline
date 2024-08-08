@@ -106,8 +106,8 @@ export const pagePaths = {
     dashboard: "/dashboard",
     dashboardPages: {
         appointmentsPage: "/dashboard/appointments",
-        patientLivePrescription: (doctorName) => { return `/dashboard/prescription/live/patient/${doctorName}` },
-        doctorLivePrescription: (patientName) => { return `/dashboard/prescription/live/doctor/${patientName}` },
+        patientLivePrescription: `/dashboard/prescription/live/patient`,
+        doctorLivePrescription: `/dashboard/prescription/live/doctor`,
         addToVaultPage: "/dashboard/prescription/vault/add",
         prescriptionVaultPage: "/dashboard/prescription/vault",
 
@@ -117,6 +117,19 @@ export const pagePaths = {
 }
 
 
+export const convertCmtoFeetInch = (cm) => {
+    const feet = Math.floor(cm / 30.48)
+    const inch = Math.round((cm - feet * 30.48) / 2.54)
+    return `${feet} ft ${inch} in`
+}
+
+export const rountToTwo = (num) => {
+    return Math.round((num + Number.EPSILON) * 100) / 100
+}
+
+export const convertFtIncToCm = (ft, inch) => {
+    return rountToTwo((Number(ft) * 30.48) + (Number(inch) * 2.54))
+}
 
 //formats used in different places
 //message format added `?FROM={senderID}` to the message

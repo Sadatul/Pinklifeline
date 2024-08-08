@@ -57,7 +57,7 @@ import { format } from "date-fns";
 import Loading from "@/app/components/loading";
 import { role } from "@stream-io/video-react-sdk";
 
-export default function () {
+export default function USerProfilePage () {
     const sessionContext = useSessionContext()
     const [userData, setUserData] = useState(null)
     const params = useParams()
@@ -77,7 +77,7 @@ export default function () {
                 toast.error("Error loading. Check internet.")
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext.sessionData, params.profileId])
 
     const sendMessage = () => {
         if (!sessionContext.sessionData) return toast.message("Log in to send messages")

@@ -141,7 +141,7 @@ export default function DoctorProfile({ profileId, section }) {
                 }
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext.sessionData, profileId])
 
     const sendMessage = () => {
         const messageInput = document.getElementById('message')?.value
@@ -471,7 +471,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                 setFetchAgain(false)
             })
         }
-    }, [sessionContext.sessionData, fetchAgain])
+    }, [sessionContext.sessionData, fetchAgain, profileId])
 
     if (loading) return <Loading chose="hand" />
 
@@ -779,7 +779,7 @@ function ConsultationSection({ userId, className, profileId }) {
                 toast.error("Error loading")
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext.sessionData, profileId])
 
     if (!sessionContext.sessionData) return <Loading />
     return (

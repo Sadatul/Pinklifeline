@@ -1,10 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
-import { cookies } from "next/headers";
+// import { cookies } from "next/headers";
 
 export async function GET(request) {
     try {
-        const cookieStore = cookies()
-        console.log("Coockie currently,", cookieStore.getAll())
+        // const cookieStore = cookies()
+        // console.log("Coockie currently,", cookieStore.getAll())
         const response =  NextResponse.json({
             message: "Successful",
             success: true

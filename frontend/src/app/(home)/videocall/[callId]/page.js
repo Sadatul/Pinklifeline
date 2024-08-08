@@ -27,7 +27,7 @@ const MeetingPage = () => {
     return (
       <div className="h-screen w-full bg-gradient-to-b from-zinc-100 via-slate-200 to-gray-200">
         <StreamCall call={call}>
-          <StreamTheme>
+          <StreamTheme className="w-full h-full">
   
           {!isSetupComplete ? (
             <MeetingSetup setIsSetupComplete={setIsSetupComplete} />

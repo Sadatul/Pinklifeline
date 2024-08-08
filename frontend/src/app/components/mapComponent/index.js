@@ -27,7 +27,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
                 lng: coords.longitude,
             })
         }
-    }, [coords, position, setPosition])
+    }, [coords, position, setPosition, updating])
 
     const MakrerUrl = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png';
     const customIcon = L.icon({
@@ -43,10 +43,13 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
     });
 
 
-    function LocationMarker() {
+    function LocationRefSetUp() {
         mapRef.current = useMap();
         console.log("mapRef", mapRef.current)
-        if (viewAll) return null;
+        return null;
+    }
+
+    function LocationMarker() {
         const map = useMapEvents({
             click(e) {
                 setPosition(e.latlng);
@@ -103,18 +106,20 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
                         <Link href={pagePaths.inbox} className='text-gray-700 '>You</Link>
                     </Popup>
                 </Marker>
-                <LocationMarker />
+                <LocationRefSetUp />
                 {
-                    viewAll === true &&
-                    <>
-                        {nearByUsers?.map((user, index) => (
-                            <Marker key={index} position={user.location} icon={customIcon}>
-                                <Popup>
-                                    <Link href={pagePaths.inbox}>{user.fullName}</Link>
-                                </Popup>
-                            </Marker>
-                        ))}
-                    </>
+                    viewAll === true ?
+                        <>
+                            {nearByUsers?.map((user, index) => (
+                                <Marker key={index} position={user.location} icon={customIcon}>
+                                    <Popup>
+                                        <Link href={pagePaths.inbox}>{user.fullName}</Link>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </>
+                        :
+                        <LocationMarker />
                 }
             </MapContainer>
         </div>

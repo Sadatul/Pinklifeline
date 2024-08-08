@@ -8,7 +8,7 @@ import { Banknote, CalendarIcon, Check, CircleCheck, CircleX, Clock, Clock1, Clo
 import { useEffect, useRef, useState } from "react"
 import { FaUserDoctor } from "react-icons/fa6";
 import ScrollableContainer from "./StyledScrollbar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import {
     AlertDialog,
@@ -122,18 +122,18 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
     const sessionContext = useSessionContext()
     const router = useRouter()
     const clocks = [
-        <Clock12 size={20} />,
-        <Clock1 size={20} />,
-        <Clock2 size={20} />,
-        <Clock3 size={20} />,
-        <Clock4 size={20} />,
-        <Clock5 size={20} />,
-        <Clock6 size={20} />,
-        <Clock7 size={20} />,
-        <Clock8 size={20} />,
-        <Clock9 size={20} />,
-        <Clock10 size={20} />,
-        <Clock11 size={20} />,
+        <Clock12 key={0} size={20} />,
+        <Clock1 key={1} size={20} />,
+        <Clock2 key={2} size={20} />,
+        <Clock3 key={3} size={20} />,
+        <Clock4 key={4} size={20} />,
+        <Clock5 key={5} size={20} />,
+        <Clock6 key={6} size={20} />,
+        <Clock7 key={7} size={20} />,
+        <Clock8 key={8} size={20} />,
+        <Clock9 key={9} size={20} />,
+        <Clock10 key={10} size={20} />,
+        <Clock11 key={11} size={20} />,
     ]
 
     const joinCall = () => {
@@ -149,10 +149,10 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
                 newWindow.focus();
             }
             if (sessionContext.sessionData.role === roles.doctor) {
-                router.push(pagePaths.dashboardPages.doctorLivePrescription(appointment.patientFullName))
+                router.push(pagePaths.dashboardPages.doctorLivePrescription)
             }
             else {
-                router.push(pagePaths.dashboardPages.patientLivePrescription(appointment.doctorFullName))
+                router.push(pagePaths.dashboardPages.patientLivePrescription)
             }
             setDisableCard(false)
         }).catch((error) => {
@@ -226,32 +226,68 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
 function AppointmentSection({ appointments, setAppointments, disableCard, setDisableCard, setFetchAgain }) {
     const filterOptions = useRef([
         {
+            name: "Unpaid Upcoming",
+            rule: (appointments) => appointments.filter(appointment => (!appointment.isPaymentComplete && appointment.status === appointmentStatus.accepted)).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
+        },
+        {
+            name: "Paid Upcoming",
+            rule: (appointments) => appointments.filter(appointment => (appointment.isPaymentComplete && appointment.status === appointmentStatus.accepted)).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
+        }
+        ,
+        {
             name: "Upcoming",
-            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.accepted)
+            rule: (appointments) => appointments.filter(appointment => appointment.status === appointmentStatus.accepted).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
         },
         {
             name: "Past",
-            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.finished)
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.finished).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
         },
         {
             name: "Cancelled",
-            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.cancelled)
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.cancelled).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
         },
         {
             name: "Declined",
-            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.declined)
+            rule: (appointments) => appointments?.filter(appointment => appointment.status === appointmentStatus.declined).sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
         },
         {
             name: "All",
             rule: (appointments) => appointments
         }
-    ])
+    ]);
 
-    const [selectionCriteria, setSelectionCriteria] = useState(filterOptions.current[0])
+
+    const [selectionCriteria, setSelectionCriteria] = useState(appointments.doctorFullName ? filterOptions.current[0] : filterOptions.current[1])
     const [selectedAppointments, setSelectedAppointments] = useState(appointments)
     const [date, setDate] = useState(null)
 
     useEffect(() => {
+        console.log("Selection Criteria Changed", selectionCriteria)
+        console.log("Appointments", appointments)
         setSelectedAppointments(selectionCriteria.rule(appointments))
     }, [selectionCriteria, appointments])
 
@@ -266,7 +302,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
                     {selectionCriteria.name} Appointments
                 </h1>
                 <Popover>
-                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border w-24">
+                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
                         {selectionCriteria.name}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto">
@@ -306,28 +342,25 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
 }
 
 function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppointmentById, setFetchAgain }) {
-    console.log("Appointment", appointment)
     const sessionContext = useSessionContext()
     const client = useStreamVideoClient();
-    const [transactionId, setTransactionId] = useState(null)
     const [opendialog, setOpendialog] = useState(false)
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
-    const [verifyPaymentDialog, setVerifyPaymentDialog] = useState(false)
     const router = useRouter()
 
     const clocks = [
-        <Clock12 size={20} />,
-        <Clock1 size={20} />,
-        <Clock2 size={20} />,
-        <Clock3 size={20} />,
-        <Clock4 size={20} />,
-        <Clock5 size={20} />,
-        <Clock6 size={20} />,
-        <Clock7 size={20} />,
-        <Clock8 size={20} />,
-        <Clock9 size={20} />,
-        <Clock10 size={20} />,
-        <Clock11 size={20} />,
+        <Clock12 key={0} size={20} />,
+        <Clock1 key={1} size={20} />,
+        <Clock2 key={2} size={20} />,
+        <Clock3 key={3} size={20} />,
+        <Clock4 key={4} size={20} />,
+        <Clock5 key={5} size={20} />,
+        <Clock6 key={6} size={20} />,
+        <Clock7 key={7} size={20} />,
+        <Clock8 key={8} size={20} />,
+        <Clock9 key={9} size={20} />,
+        <Clock10 key={10} size={20} />,
+        <Clock11 key={11} size={20} />,
     ]
 
     const acceptAppointment = (time) => {
@@ -346,6 +379,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             setDisableCard(false)
         })
     }
+
     const cancelAppointment = () => {
         setDisableCard(true)
         const deleteAppointmentUrl = sessionContext.sessionData.role === roles.doctor ? declineAppointmentUrl(appointment.id) : cancelAppointmentUrl(appointment.id)
@@ -366,32 +400,30 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             console.error("Client is not available");
             return;
         }
-        try {
-            const callIdResponse = await axiosInstance.post(createOnlineMeetingUrl, {
-                appointmentId: appointment.id,
-            })
-            console.log("Call ID", callIdResponse.data.callId)
-            console.log("Client", client)
-            if (!callIdResponse) console.error('Call ID is required');
-            const call = client.call('default', callIdResponse.data.callId);
-            if (!call) throw new Error('Failed to create meeting');
-            const startsAt = new Date().toString();
-            await call.getOrCreate({
+        axiosInstance.post(createOnlineMeetingUrl, {
+            appointmentId: appointment.id,
+        }).then((res) => {
+            console.log("Call ID", res.data.callId)
+            const call = client.call('default', res.data.callId);
+            call.getOrCreate({
                 data: {
-                    starts_at: startsAt,
+                    starts_at: new Date(),
                 },
+            }).then((response) => {
+                console.log("Call created");
+                console.log(response);
+                const newWindow = window.open(`/videocall/${response.call.id}`, '_blank');
+                if (newWindow) {
+                    newWindow.focus();
+                }
+                router.push(pagePaths.dashboardPages.doctorLivePrescription)
+            }).catch((error) => {
+                console.error('Failed to create meeting', error);
             });
-            console.log("Call created");
-            console.log(call);
-            const newWindow = window.open(`/videocall/${callIdResponse.data.callId}`, '_blank');
-            if (newWindow) {
-                newWindow.focus();
-            }
-            router.push(pagePaths.dashboardPages.doctorLivePrescription(appointment.patientFullName))
-        }
-        catch (error) {
+
+        }).catch((error) => {
             console.log("Error getting video call", error)
-        }
+        })
     }
 
     const makePayment = () => {
@@ -560,9 +592,27 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                                 </Tooltip>
                             </TooltipProvider>
                         ) : (
-                            <button onClick={startOnlineAppointment} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
-                                Start Call
-                            </button>
+                            <Dialog >
+                                <DialogTrigger asChild>
+                                    <button className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                                        Start Call
+                                    </button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Sure?</DialogTitle>
+                                    </DialogHeader>
+                                    <DialogDescription>
+                                        This will start the video call and live prescription
+                                    </DialogDescription>
+                                    <DialogFooter>
+                                        <DialogClose onClick={startOnlineAppointment} className="border bg-gray-800 text-white hover:scale-95 rounded p-2">
+                                            Start Call
+                                        </DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
                         )}
                     </>
 

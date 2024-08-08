@@ -38,7 +38,7 @@ export function ChambersPage({ className }) {
             })
         }
 
-    }, [sessionContext.sessionData])
+    }, [sessionContext.sessionData, consulations])
 
     function deleteLocation(id) {
         //code for delete is incomplete due to that bitch taking down my internet connection

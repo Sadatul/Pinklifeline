@@ -20,13 +20,14 @@ export default function VideoCallPage() {
             const call = client.call('default', callId);
             if (!call) throw new Error('Failed to create meeting');
             const startsAt = new Date(Date.now()).toISOString();
-            await call.getOrCreate({
+            const tempCall = await call.getOrCreate({
                 data: {
                     starts_at: startsAt,
                 },
             });
             console.log("Call created");
-            console.log(call);
+            console.log(tempCall);
+            // console.log(call);
             setCallDetail(call);
             const newWindow = window.open(`/videocall/${callId}`, '_blank');
             if (newWindow) {
@@ -42,7 +43,7 @@ export default function VideoCallPage() {
         <div className="gap-4 grid grid-cols">
             <h1>Video Call Page</h1>
             <p>Call ID: {callId}</p>
-            <input type="text" onChange={(e) => setCallId(e.target.value)} />
+            <input className="p-2 border border-black" type="text" onChange={(e) => setCallId(e.target.value)} />
             <button onClick={()=>{createMetting()}
             }>Create Meeting</button>
         </div>

@@ -78,7 +78,7 @@ export default function UserDetailsPage() {
         }
         setSections(getSections(sessionDataRef.current.role))
 
-    }, [])
+    }, [router])
 
     const saveForm = () => {
         console.log("user data ref from parent", userDataRef.current)

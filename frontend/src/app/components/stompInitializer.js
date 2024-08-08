@@ -58,7 +58,7 @@ export function SocketInitializer() {
         }
 
         return () => {
-            stompContext.stompClientRef.current.deactivate()
+            stompContext.stompClientRef.current?.deactivate()
             strompInitializedRef.current = false
             console.log('Disconnected')
         }

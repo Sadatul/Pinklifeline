@@ -224,3 +224,7 @@ If you don't find answer for a field then put null. I will parse your answer thr
         </div>
     )
 }
+
+export function PrescriptionDescriptionComponent({ report}){
+    
+}

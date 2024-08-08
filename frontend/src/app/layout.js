@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         {children}
-        <Toaster richColors closeButton />
+        <Toaster richColors closeButton position='bottom-left' duration={1000} />
       </body>
     </html>
   );
