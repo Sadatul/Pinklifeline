@@ -41,6 +41,9 @@ export const validateTransactionUrl = (appointment_id, transactionId) => { retur
 export const addReportUrl = `${baseUrl}/v1/reports`
 export const updateReportUrl = (reportId) => { return `${baseUrl}/v1/reports/${reportId}` }
 export const shareReportUrl = `${baseUrl}/v1/reports/share`
+export const getReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/${reportId}` }
+export const getSharedReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/share/${reportId}` }
+export const getProfilePicUrl = `${baseUrl}/v1/infos/profile_picture`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -116,7 +119,8 @@ export const pagePaths = {
 
     },
     addConsultation: "/userdetails/addconsultation",
-    userProfile: (userId) => { return `/profile/user/${userId}` }
+    userProfile: (userId) => { return `/profile/user/${userId}` },
+    doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
 }
 
 
@@ -151,4 +155,11 @@ export const capitalizeFirstLetter = (string) => {
         return null
     }
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export const parseDate = (date) => {
+    if (!date) {
+        return null
+    }
+    return new Date(date)
 }
