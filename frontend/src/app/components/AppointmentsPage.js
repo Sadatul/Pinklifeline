@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Banknote, CalendarIcon, Check, CircleCheck, CircleX, Clock, Clock1, Clock10, Clock11, Clock12, Clock2, Clock3, Clock4, Clock5, Clock6, Clock7, Clock8, Clock9, MapPinned, MessageCircleQuestion, Phone, X } from "lucide-react"
+import { Banknote, CalendarIcon, Check, CircleCheck, CircleX, Clock, Clock1, Clock10, Clock11, Clock12, Clock2, Clock3, Clock4, Clock5, Clock6, Clock7, Clock8, Clock9, LoaderCircle, MapPinned, MessageCircleQuestion, Phone, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { FaUserDoctor } from "react-icons/fa6";
 import ScrollableContainer from "./StyledScrollbar"
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useSessionContext } from "@/app/context/sessionContext"
 import axiosInstance from "@/utils/axiosInstance"
-import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, roles, validateTransactionUrl } from "@/utils/constants"
+import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, convertCmtoFeetInch, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, patientInfoUrl, roles, validateTransactionUrl } from "@/utils/constants"
 import Loading from "./loading"
 import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
@@ -50,7 +50,6 @@ export function AppointmentsPage() {
     useEffect(() => {
         if (sessionContext.sessionData && fetchAgain) {
             axiosInstance.get(getAppointmentsUrl).then((res) => {
-                console.log("Appointments", res?.data)
                 setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
                 setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
                 setAppointments(res?.data.filter(appointment => (appointment.status !== appointmentStatus.running && appointment.status !== appointmentStatus.requested)))
@@ -227,7 +226,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
     const filterOptions = useRef([
         {
             name: "Unpaid Upcoming",
-            rule: (appointments) => appointments.filter(appointment => (!appointment.isPaymentComplete && appointment.status === appointmentStatus.accepted)).sort((a, b) => {
+            rule: (appointments) => appointments.filter(appointment => ((!appointment.isPaymentComplete) && (appointment.status === appointmentStatus.accepted))).sort((a, b) => {
                 const dateTimeA = new Date(`${a.date}T${a.time}`);
                 const dateTimeB = new Date(`${b.date}T${b.time}`);
                 return dateTimeA - dateTimeB;
@@ -276,34 +275,46 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
         },
         {
             name: "All",
-            rule: (appointments) => appointments
+            rule: (appointments) => appointments.sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeA - dateTimeB;
+            })
         }
     ]);
 
 
-    const [selectionCriteria, setSelectionCriteria] = useState(appointments.doctorFullName ? filterOptions.current[0] : filterOptions.current[1])
+    const [selectionCriteria, setSelectionCriteria] = useState(null)
     const [selectedAppointments, setSelectedAppointments] = useState(appointments)
     const [date, setDate] = useState(null)
+    const sessionContext = useSessionContext()
 
     useEffect(() => {
-        console.log("Selection Criteria Changed", selectionCriteria)
-        console.log("Appointments", appointments)
-        setSelectedAppointments(selectionCriteria.rule(appointments))
+        if (sessionContext.sessionData) {
+            if (sessionContext.sessionData.role === roles.doctor) {
+                setSelectionCriteria(filterOptions.current[1])
+            }
+            else {
+                setSelectionCriteria(filterOptions.current[0])
+            }
+        }
+    }, [sessionContext.sessionData])
+
+    useEffect(() => {
+        if (selectionCriteria) {
+            setSelectedAppointments(selectionCriteria.rule(appointments))
+        }
     }, [selectionCriteria, appointments])
-
-    useEffect(() => {
-        console.log("Selected Appointments Changed", selectedAppointments)
-    }, [selectedAppointments])
 
     return (
         <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-row justify-between items-center">
                 <h1 className="text-base capitalize font-semibold">
-                    {selectionCriteria.name} Appointments
+                    {selectionCriteria?.name} Appointments
                 </h1>
                 <Popover>
                     <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
-                        {selectionCriteria.name}
+                        {selectionCriteria?.name}
                     </PopoverTrigger>
                     <PopoverContent className="w-auto">
                         <h1 className="w-full text-center">Filter by</h1>
@@ -346,6 +357,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const client = useStreamVideoClient();
     const [opendialog, setOpendialog] = useState(false)
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
+    const [patientInfo, setPatientInfo] = useState()
     const router = useRouter()
 
     const clocks = [
@@ -470,23 +482,112 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         }
     }
 
-
     if (!sessionContext.sessionData) return <Loading />
 
     return (
         <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100">
-            <div className="flex w-full flex-col items-center text-black shadow-md justify-center px-3 py-1 rounded-b-full rounded-md scale-x-110 bg-pink-300 h-1/3">
-                <h1 className="text-xl font-semibold flex flex-row items-center gap-3">
-                    {appointment.doctorFullName && <FaUserDoctor size={16} />}
-                    {appointment.patientFullName && <Person size={16} />}
-                    {appointment.doctorFullName}
-                    {appointment.patientFullName}
-                </h1>
-                <p className="text-lg flex flex-row gap-3 items-center">
-                    <MapPinned size={16} />
-                    {appointment.isOnline ? locationOnline : appointment.locationName}
-                </p>
-            </div>
+            {sessionContext.sessionData.role === roles.doctor ?
+                <Dialog onOpenChange={(e) => {
+                    if (e) {
+                        axiosInstance.get(patientInfoUrl(appointment.id)).then((res) => {
+                            setPatientInfo(res.data)
+                        }).catch((error) => {
+                            console.log("Error getting patient info", error)
+                        })
+                    }
+                    else {
+                        setPatientInfo(null)
+                    }
+                }} >
+                    <DialogTrigger asChild >
+                        <div className="flex w-full flex-col items-center text-black shadow-md justify-center px-3 py-1 rounded-b-full rounded-md scale-x-110 bg-pink-300 h-1/3 cursor-pointer">
+                            <h1 className="text-xl font-semibold flex flex-row items-center gap-3 cursor-pointer">
+                                {appointment.doctorFullName && <FaUserDoctor size={16} />}
+                                {appointment.patientFullName && <Person size={16} />}
+                                {appointment.doctorFullName}
+                                {appointment.patientFullName}
+                            </h1>
+                            <p className="text-lg flex flex-row gap-3 items-center">
+                                <MapPinned size={16} />
+                                {appointment.isOnline ? locationOnline : appointment.locationName}
+                            </p>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>See Patient Info</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescription>
+                            Here is your patient info
+                        </DialogDescription>
+                        <div className="flex flex-col items-start gap-2">
+                            {patientInfo ?
+                                <>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Full Name: {patientInfo.fullName}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Age: {patientInfo.age}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Height: {convertCmtoFeetInch(patientInfo.height)}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Weight: {patientInfo.weight}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Diagnosis Date: {patientInfo.diagnosisDate}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Cancer Stage: {patientInfo.cancerStage}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Cancer History: {patientInfo.cancerHistory}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Last Period Date: {patientInfo.lastPeriodDate}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Avg Cycle Length: {patientInfo.avgCycleLength}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Perido Irregularities: {patientInfo.periodIrregularities.join(", ")}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Allergies: {patientInfo.allergies.join(", ")}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Organs with Chronic Condition: {patientInfo.organsWithChronicConditions.join(", ")}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Medications : {patientInfo.medications.map(medication => `${medication.name} - ${medication.doseDescription}`).join(", ")}
+                                    </p>
+                                    <p className="text-lg font-semibold flex flex-row items-center gap-2">
+                                        Cancer Relatives: {patientInfo.cancerRelatives.join(", ")}
+                                    </p>
+                                </>
+                                :
+                                <>
+                                    <LoaderCircle size={48} className="animate-spin text-pink-600" />
+                                </>
+                            }
+                        </div>
+                    </DialogContent>
+                </Dialog>
+                :
+                <div className="flex w-full flex-col items-center text-black shadow-md justify-center px-3 py-1 rounded-b-full rounded-md scale-x-110 bg-pink-300 h-1/3">
+                    <h1 className="text-xl font-semibold flex flex-row items-center gap-3">
+                        {appointment.doctorFullName && <FaUserDoctor size={16} />}
+                        {appointment.patientFullName && <Person size={16} />}
+                        {appointment.doctorFullName}
+                        {appointment.patientFullName}
+                    </h1>
+                    <p className="text-lg flex flex-row gap-3 items-center">
+                        <MapPinned size={16} />
+                        {appointment.isOnline ? locationOnline : appointment.locationName}
+                    </p>
+                </div>
+            }
             <div className="flex flex-col items-center gap-2">
                 <div className="flex justify-center items-center gap-4">
                     <p className="text-base font-semibold flex flex-row items-center gap-2">

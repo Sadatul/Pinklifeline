@@ -101,11 +101,11 @@ export default function PrescriptionVaultPage() {
                     <div className="flex flex-row gap-2 flex-wrap w-full justify-evenly">
                         <label className="flex flex-col justify-evenly">
                             Doctor Name
-                            <input id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         <label className="flex flex-col justify-evenly">
                             Hospital Name
-                            <input id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            <input autoComplete="off" id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         {isMounted ?
                             <label className="flex flex-col gap-1">

@@ -44,6 +44,8 @@ export const shareReportUrl = `${baseUrl}/v1/reports/share`
 export const getReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/${reportId}` }
 export const getSharedReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/share/${reportId}` }
 export const getProfilePicUrl = `${baseUrl}/v1/infos/profile_picture`
+export const patientInfoUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/user-data/${appointment_id}` }
+export const getUserInfoUrl = (user_id, role ) => { return `${baseUrl}/v1/infos/${role}/${user_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -116,6 +118,7 @@ export const pagePaths = {
         addToVaultPage: "/dashboard/prescription/vault/add",
         prescriptionVaultPage: "/dashboard/prescription/vault",
         prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
+        userdetailsPage: "/dashboard/userdetails",
 
     },
     addConsultation: "/userdetails/addconsultation",

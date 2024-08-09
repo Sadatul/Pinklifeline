@@ -5,7 +5,7 @@ import { addDays, format } from "date-fns"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar, Clock, Infinity } from "lucide-react"
 import {
     Popover,
     PopoverContent,
@@ -13,19 +13,23 @@ import {
 } from "@/components/ui/popover"
 import ReactSelect from "react-select"
 import makeAnimated from 'react-select/animated';
-import { act, useEffect, useRef, useState } from "react"
+import { act, Suspense, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Pagination } from "@mui/material"
 import { addReportUrl, cleanString, generateFormattedDate, getImageDimensions, pagePaths, shareReportUrl } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { FaUserDoctor } from "react-icons/fa6"
-import { HospitalIcon, Key, Loader2 } from "lucide-react"
+import { HospitalIcon, Key, Loader2, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { set } from "lodash"
+import { Separator } from "@radix-ui/react-dropdown-menu"
+import Loading from "@/app/components/loading"
+import { useSearchParams } from "next/navigation"
 
-export default function SharedReportsPage() {
+function SharedReportsComponent() {
     const animatedComponents = makeAnimated();
+    const searchParams = useSearchParams()
     const [data, setData] = useState(null)
     const [imageDimension, setImageDimension] = useState(null)
     const [selectedReport, setSelectedReport] = useState(null)
@@ -63,11 +67,14 @@ export default function SharedReportsPage() {
                     page: currentPage - 1
                 }
             }).then((response) => {
-                console.log("Response from filter", response)
                 setData(response.data)
                 setLoading(false)
                 if (!isMounted) {
                     setIsMounted(true)
+                }
+                if (!selectedReport && searchParams.get("selectedReportId")) {
+                    console.log("Selected Report Id", searchParams.get("selectedReportId"))
+                    setSelectedReport(response.data.content.find((report) => String(report.reportId) === String(searchParams.get("selectedReportId"))))
                 }
             }).catch((error) => {
                 setLoading(false)
@@ -108,15 +115,15 @@ export default function SharedReportsPage() {
                     <div className="flex flex-row gap-2 flex-wrap w-full justify-evenly">
                         <label className="flex flex-col justify-evenly">
                             Doctor Name
-                            <input id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         <label className="flex flex-col justify-evenly">
                             Doctor Username
-                            <input id="search-doctorUsername" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            <input autoComplete="off" id="search-doctorUsername" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         <label className="flex flex-col justify-evenly">
                             Hospital Name
-                            <input id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            <input autoComplete="off" id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         {isMounted ?
                             <label className="flex flex-col gap-1">
@@ -204,7 +211,7 @@ export default function SharedReportsPage() {
                                     </h2>
                                 }
                                 {data?.content?.map((doc, index) => (
-                                    <div type='button' key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center" onClick={() => {
+                                    <div key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center cursor-pointer" onClick={() => {
                                         setSelectedReport(doc)
                                     }}>
                                         <div className="w-full h-40 rounded-l-md overflow-hidden flex justify-center relative">
@@ -215,7 +222,10 @@ export default function SharedReportsPage() {
                                                 alt="Blog Image"
                                             />
                                         </div>
-                                        <div className="flex flex-col justify-between">
+                                        <div className="flex flex-col justify-between w-full p-3">
+                                            <span className="text-lg text-gray-800 flex justify-center gap-1 items-center text-center w-full">
+                                                {doc.fullName}
+                                            </span>
                                             <span className="text-base text-gray-800 flex gap-1 items-center">
                                                 <FaUserDoctor size={16} />
                                                 {doc.doctorName}
@@ -225,16 +235,14 @@ export default function SharedReportsPage() {
                                                 {doc.hospitalName}
                                             </span>
                                         </div>
-                                        <div className="flex flex-row justify-between">
-                                            <span className="text-sm text-gray-800 flex gap-1 items-center">
+                                        <div className="flex flex-row justify-between gap-5 items-center">
+                                            <span className="text-sm text-black flex gap-1 items-center">
                                                 <CalendarIcon size={16} />
                                                 {format(doc.date, "LLL dd, y")}
                                             </span>
-                                        </div>
-                                        <div className="flex flex-row justify-between">
                                             <span className="text-sm text-gray-800 flex gap-1 items-center">
-                                                <Key size={20} />
-                                                {doc.keywords.join(", ")}
+                                                <Clock size={16} />
+                                                {doc.expirationTime ? `${doc.expirationTime} hrs` : <Infinity size={16} />}
                                             </span>
                                         </div>
                                     </div>
@@ -255,35 +263,38 @@ export default function SharedReportsPage() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col gap-2 w-full">
-                <div className="flex flex-row gap-2 w-full justify-between">
-                    <h2 className="text-lg">Selected Report</h2>
-                    <button className="bg-red-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => {
-                        setSelectedReport(null)
-                    }}>
-                        Remove Selected
-                    </button>
+            <div className="flex flex-col gap-2 w-full bg-purple-100 rounded-md">
+                <div className="flex flex-row gap-2 w-full justify-between px-5 py-2">
+                    <h2 className="text-2xl text-black">Selected Report</h2>
+                    {selectedReport &&
+                        <button className="bg-red-500 text-white rounded p-2 w-36 hover:scale-95" onClick={() => {
+                            setSelectedReport(null)
+                        }}>
+                            Remove Selected
+                        </button>
+                    }
                 </div>
-                <div className="flex flex-col gap-7 w-full bg-purple-50 rounded-md p-2">
+                <div className={cn("flex flex-col gap-7 w-full rounded-md p-2 overflow-hidden transition-[max-height] ease-in-out duration-500", selectedReport ? "max-h-full" : "max-h-12")}>
                     {selectedReport ?
                         <>
                             <div className="flex flex-col gap-4">
                                 <h2 className="text-xl font-semibold">Details</h2>
                                 <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
                                 <div className="flex flex-col gap-2">
-                                    <span className="text-lg flex gap-1 items-center">Doctor Name: {report.doctorName}</span>
-                                    <span className="text-lg flex gap-1 items-center">Hospital Name: {report.hospitalName}</span>
-                                    <span className="text-lg flex gap-1 items-center">Keywords: {report.keywords.join(", ")}</span>
-                                    <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {report.date}</span>
+                                    <span className="text-lg flex gap-1 items-center font-semibold">Shared By: {selectedReport.fullName}</span>
+                                    <span className="text-lg flex gap-1 items-center">Doctor Name: {selectedReport.doctorName}</span>
+                                    <span className="text-lg flex gap-1 items-center">Hospital Name: {selectedReport.hospitalName}</span>
+                                    <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {selectedReport.date}</span>
+                                    <span className="text-lg flex gap-1 items-center"> <Clock size={24} /> {selectedReport.expirationTime ? `${selectedReport.expirationTime} hrs` : <Infinity size={24} />}</span>
                                     <span className="text-xl font-semibold mt-2" >Summary</span>
                                     <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
-                                    <span className="text-lg flex-col gap-1 items-center">{report.summary}</span>
+                                    <span className="text-lg flex-col gap-1 items-center">{selectedReport.summary}</span>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-2 items-center">
                                 <h3 className="text-2xl font-semibold">Prescription/Report Image</h3>
                                 {imageDimension ?
-                                    <Image src={report.fileLink} alt="Prescription" width={imageDimension.width} height={imageDimension.height} className=" border-4 border-purple-200" />
+                                    <Image src={selectedReport.fileLink} alt="Prescription" width={imageDimension.width} height={imageDimension.height} className=" border-4 border-purple-200" />
                                     :
                                     <LoaderCircle size={44} className="text-purple-500 animate-spin" />
                                 }
@@ -294,5 +305,13 @@ export default function SharedReportsPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function SharedReportsPage() {
+    return (
+        <Suspense fallback={<Loading />}>
+            <SharedReportsComponent />
+        </Suspense>
     )
 }

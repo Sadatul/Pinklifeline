@@ -1,8 +1,8 @@
 'use client'
 
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
-import { useRef, useState } from "react"
+import { getUserInfoUrl, locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -29,9 +29,11 @@ import { Calendar } from "@/components/ui/calendar"
 import axiosInstance from "@/utils/axiosInstance"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "@/app/components/loading"
+import { set } from "lodash"
 
-export function EditUserDetailsPage() {
+export function EditPatientDetailsPage() {
     const sessionContext = useSessionContext()
+    const [userData, setUserData] = useState(null)
     const role = roles.patient
     const { register, handleSubmit, formState: { errors }, watch, getValues, trigger, setValue } = useForm();
     const cancerHistory = watch('cancerHistory');
@@ -65,6 +67,7 @@ export function EditUserDetailsPage() {
         heightFeet: getFeetFromCm(dummyData.height),
         heightInch: getInchFromCm(dummyData.height)
     })
+    const editedData = useRef(null)
     const [cancerRelatives, setCancerRelatives] = useState(userDataRef.current?.cancerRelatives || [])
     const [date, setDate] = useState(userDataRef.current?.lastPeriodDate ? new Date(userDataRef.current?.lastPeriodDate) : null);
     const [diagnosisDate, setDiagnosisDate] = useState(userDataRef.current?.diagnosisDate ? new Date(userDataRef.current?.diagnosisDate) : null);
@@ -78,6 +81,26 @@ export function EditUserDetailsPage() {
         lng: latlng[1]
     });
     const isInitialised = useRef(false);
+
+    useEffect(() => {
+        if (sessionContext.sessionData) {
+            axiosInstance.get(getUserInfoUrl(sessionContext.sessionData.userId, roles.patient)).then((response) => {
+                setUserData(response.data)
+                editedData.current = response.data
+            }).catch((error) => {
+                console.log(error)
+                toast.error("An error occured", {
+                    description: error.response?.data?.message
+                })
+            })
+        }
+    }, sessionContext.sessionData)
+
+    useEffect(()=>{
+        if(userData){
+            register("lastPeriodDate", { required: "Last Period Date is required" });
+        }
+    },[userData])
 
     if (!isInitialised.current) {
         register("lastPeriodDate", { required: "Last Period Date is required" });
@@ -174,19 +197,19 @@ export function EditUserDetailsPage() {
             <h1 className="text-2xl font-bold text-black">Update User Details</h1>
             <div className="flex flex-col w-11/12 bg-gray-100 rounded-md mt-5 gap-3 py-3 items-center">
                 <div className="flex flex-row justify-between px-5 items-center w-full">
-                    <label className="text-md font-semibold m-2">Full Name
+                    <div className="text-md font-semibold m-2">Full Name
                         <div className="w-full flex flex-col">
                             <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                             {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                         </div>
-                    </label>
-                    <label className="text-md font-semibold m-2 ">Weight(kg)
+                    </div>
+                    <div className="text-md font-semibold m-2 ">Weight(kg)
                         <div className="w-full flex flex-col">
                             <input defaultValue={userDataRef.current?.weight} type="number" className="number-input border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                             {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                         </div>
-                    </label>
-                    <label className="text-md font-semibold m-2 text-center">
+                    </div>
+                    <div className="text-md font-semibold m-2 text-center">
                         Height
                         <div className="flex gap-4 mt-2">
                             <div>
@@ -208,24 +231,24 @@ export function EditUserDetailsPage() {
                                 {errors.heightInch && <p className="text-red-500 text-sm">{errors.heightInch?.message}</p>}
                             </div>
                         </div>
-                    </label>
+                    </div>
                 </div>
 
                 <div className="flex justify-between w-full px-5">
                     <div>
-                        <label className="text-md font-semibold m-2 text-center">Cancer History:
+                        <div className="text-md font-semibold m-2 text-center">Cancer History:
                             <select defaultValue={userDataRef.current?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
-                        </label>
+                        </div>
                         {errors.cancerHistory && <span className="text-red-500 text-sm">{errors.cancerHistory?.message}</span>}
                     </div>
                     {cancerHistory === "Y" &&
                         <div className="flex items-center">
-                            <label className="text-md font-semibold m-2 text-center">Cancer Relatives:
+                            <div className="text-md font-semibold m-2 text-center">Cancer Relatives:
                                 <input className="border border-blue-500 rounded-md px-2" id="cancerRelatives" />
-                            </label>
+                            </div>
                             <Button
                                 onClick={() => {
                                     setCancerRelatives([...cancerRelatives, document.getElementById('cancerRelatives').value])
@@ -275,7 +298,7 @@ export function EditUserDetailsPage() {
                 </div>
                 <div className="flex justify-between w-full items-center px-5">
                     <div className="flex flex-col">
-                        <label className="text-md m-2 font-semibold text-center" >Last Period Date:
+                        <div className="text-md m-2 font-semibold text-center" >Last Period Date:
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -306,21 +329,21 @@ export function EditUserDetailsPage() {
                                     />
                                 </PopoverContent>
                             </Popover>
-                        </label>
+                        </div>
                         {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
                     </div>
 
                     <div className=" w-1/3 flex flex-col items-end">
-                        <label className="text-md font-semibold text-center flex flex-col items-end">Average Cycle Length (days):
+                        <div className="text-md font-semibold text-center flex flex-col items-end">Average Cycle Length (days):
                             <input defaultValue={userDataRef.current?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
-                        </label>
+                        </div>
                         {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                     </div>
                 </div>
                 {role === "ROLE_PATIENT" &&
                     <div className="flex justify-between w-full items-center px-5">
                         <div className="flex flex-col">
-                            <label className="text-md m-2 font-semibold text-center" >Diagnose Date:
+                            <div className="text-md m-2 font-semibold text-center" >Diagnose Date:
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -351,12 +374,12 @@ export function EditUserDetailsPage() {
                                         />
                                     </PopoverContent>
                                 </Popover>
-                            </label>
+                            </div>
                             {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
                         </div>
 
                         <div className=" w-1/3 flex flex-col items-end">
-                            <label className="text-md font-semibold m-2 text-center">Current Stage:
+                            <div className="text-md font-semibold m-2 text-center">Current Stage:
                                 <select defaultValue={userDataRef.current?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-28 ml-1 border rounded-lg bg-white border-blue-500 text-sm">
                                     <option value="cancerStage" disabled  >
                                         Current Cancer Stage
@@ -368,7 +391,7 @@ export function EditUserDetailsPage() {
                                     <option value="STAGE_4">Stage 4</option>
                                     <option value="SURVIVOR">Survivor</option>
                                 </select>
-                            </label>
+                            </div>
                             {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
                         </div>
                     </div>
@@ -377,9 +400,9 @@ export function EditUserDetailsPage() {
                 <div className="w-full px-5">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <label className="text-md font-semibold m-2 text-center">Period Irregularities:
+                            <div className="text-md font-semibold m-2 text-center">Period Irregularities:
                                 <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities" />
-                            </label>
+                            </div>
                             <TooltipProvider delayDuration={400}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -449,9 +472,9 @@ export function EditUserDetailsPage() {
                 <div className="w-full px-5">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <label className="text-md font-semibold m-2 text-center">Allergies
+                            <div className="text-md font-semibold m-2 text-center">Allergies
                                 <input className="border border-blue-500 rounded-md px-2 m-2" id="allergies" />
-                            </label>
+                            </div>
                             <TooltipProvider delayDuration={400}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -520,9 +543,9 @@ export function EditUserDetailsPage() {
                 <div className="w-full px-5">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <label className="text-md font-semibold text-center">Organs WithChronic Condition
+                            <div className="text-md font-semibold text-center">Organs WithChronic Condition
                                 <input className="border border-blue-500 rounded-md px-2 m-2" id="organsWithChronicCondition" />
-                            </label>
+                            </div>
                             <TooltipProvider delayDuration={400}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -591,12 +614,12 @@ export function EditUserDetailsPage() {
                 <div className="w-full px-5">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <label className="text-md font-semibold m-1 text-center gap-2" >Medicine Name
+                            <div className="text-md font-semibold m-1 text-center gap-2" >Medicine Name
                                 <input className="border border-blue-500 rounded-md px-2 ml-2" id="medicineName" />
-                            </label>
-                            <label className="text-md font-semibold m-1 text-center" >Dose description
+                            </div>
+                            <div className="text-md font-semibold m-1 text-center" >Dose description
                                 <input className="border border-blue-500 rounded-md px-2 ml-2" id="doseDescription" />
-                            </label>
+                            </div>
                             <TooltipProvider delayDuration={400}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
