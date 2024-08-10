@@ -40,7 +40,10 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
     function LocationMarker() {
         const map = useMapEvents({
             click(e) {
-                setCurrentPosition(e.latlng);
+                setCurrentPosition({
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng
+                });
                 console.log("e.latlng", e.latlng)
                 map.flyTo(e.latlng, map.getZoom());
             },

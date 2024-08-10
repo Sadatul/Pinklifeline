@@ -54,7 +54,7 @@ import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
 import { ChambersPage } from "./ChambersPage"
 
-export function EditDoctorDetailsPage() {
+export function EditDoctorDetailsPage({userData, setUserData}) {
     const userDataRef = useRef(null)
     const sessionContext = useSessionContext()
     useEffect(() => {

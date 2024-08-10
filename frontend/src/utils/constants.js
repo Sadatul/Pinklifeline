@@ -142,10 +142,12 @@ export const convertFtIncToCm = (ft, inch) => {
 }
 
 export const getFeetFromCm = (cm) => {
+    cm = Number(cm)
     return Math.floor(cm / 30.48)
 }
 
 export const getInchFromCm = (cm) => {
+    cm = Number(cm)
     const feet = getFeetFromCm(cm)
     return Math.floor((cm - (feet * 30.48)) / 2.54)
 }
