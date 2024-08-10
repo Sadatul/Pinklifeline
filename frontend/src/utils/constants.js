@@ -45,7 +45,7 @@ export const getReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/${
 export const getSharedReportByIdUrl = (reportId) => { return `${baseUrl}/v1/reports/share/${reportId}` }
 export const getProfilePicUrl = `${baseUrl}/v1/infos/profile_picture`
 export const patientInfoUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/user-data/${appointment_id}` }
-export const getUserInfoUrl = (user_id, role ) => { return `${baseUrl}/v1/infos/${role}/${user_id}` }
+export const getUserInfoUrl = (user_id, role) => { return `${baseUrl}/v1/infos/${role}/${user_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -140,6 +140,27 @@ export const rountToTwo = (num) => {
 export const convertFtIncToCm = (ft, inch) => {
     return rountToTwo((Number(ft) * 30.48) + (Number(inch) * 2.54))
 }
+
+export const getFeetFromCm = (cm) => {
+    return Math.floor(cm / 30.48)
+}
+
+export const getInchFromCm = (cm) => {
+    const feet = getFeetFromCm(cm)
+    return Math.floor((cm - (feet * 30.48)) / 2.54)
+}
+
+export const generateOptions = (start, end) => {
+    const options = [];
+    for (let i = start; i <= end; i++) {
+        options.push(
+            <option key={i} value={i}>
+                {i}
+            </option>
+        );
+    }
+    return options;
+};
 
 export const getImageDimensions = (url) => {
     return new Promise((resolve, reject) => {

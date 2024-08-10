@@ -8,7 +8,7 @@ import { pagePaths } from '@/utils/constants';
 import { LocateFixed } from 'lucide-react';
 import Loading from '../loading';
 
-export default function MapComponent({ position, setPosition, viewAll = false, nearByUsers, setNearByUsers, updating = false }) {
+export default function EditUserLocationMap({ editable, currentPosition, setCurrentPosition }) {
     const mapRef = useRef(null);
     const { coords } = useGeolocated({
         positionOptions: {
@@ -17,17 +17,6 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         userDecisionTimeout: 5000,
         watchLocationPermissionChange: true,
     });
-
-    useEffect(() => {
-        console.log("coords", coords)
-        if (coords && !position & !updating) {
-            console.log("Setting position to current location")
-            setPosition({
-                lat: coords.latitude,
-                lng: coords.longitude,
-            })
-        }
-    }, [coords, position, setPosition, updating])
 
     const MakrerUrl = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png';
     const customIcon = L.icon({
@@ -42,7 +31,6 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
         iconAnchor: [25, 50],
     });
 
-
     function LocationRefSetUp() {
         mapRef.current = useMap();
         console.log("mapRef", mapRef.current)
@@ -52,13 +40,13 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
     function LocationMarker() {
         const map = useMapEvents({
             click(e) {
-                setPosition(e.latlng);
+                setCurrentPosition(e.latlng);
                 console.log("e.latlng", e.latlng)
                 map.flyTo(e.latlng, map.getZoom());
             },
         });
-        return position === null ? null : (
-            <Marker position={position} icon={customIcon}>
+        return currentPosition === null ? null : (
+            <Marker position={currentPosition} icon={customIcon}>
             </Marker>
         );
     }
@@ -70,7 +58,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
             </div>
         )
     }
-    if (!position || !coords || (viewAll && !nearByUsers)) return <Loading chose='hand' />
+
     return (
         <div className='relative size-full'>
             <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md'
@@ -103,25 +91,13 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
                 }}
                     icon={customIconYou}>
                     <Popup>
-                        <Link href={pagePaths.inbox} className='text-gray-700 '>You</Link>
+                        <div className='text-gray-700 '>You</div>
                     </Popup>
                 </Marker>
                 <LocationRefSetUp />
-                {
-                    viewAll === true ?
-                        <>
-                            {nearByUsers?.map((user, index) => (
-                                <Marker key={index} position={user.location} icon={customIcon}>
-                                    <Popup>
-                                        <Link href={pagePaths.inbox}>{user.fullName}</Link>
-                                    </Popup>
-                                </Marker>
-                            ))}
-                        </>
-                        :
-                        <LocationMarker />
-                }
+                {editable && <LocationMarker />}
             </MapContainer>
         </div>
-    );
+    )
+
 }

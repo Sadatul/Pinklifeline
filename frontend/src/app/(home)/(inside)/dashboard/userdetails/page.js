@@ -1,9 +1,9 @@
 'use client'
 
-import { EditPatientDetailsPage } from "@/app/components/editUserDetails"
+import { EditUserDetailsPage } from "@/app/components/editUserDetails"
 
 export default function Page(){
     return (
-        <EditPatientDetailsPage />
+        <EditUserDetailsPage />
     )
 }
