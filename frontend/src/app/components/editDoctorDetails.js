@@ -54,171 +54,82 @@ import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
 import { ChambersPage } from "./ChambersPage"
 
-export function EditDoctorDetailsPage({userData, setUserData}) {
-    const userDataRef = useRef(null)
-    const sessionContext = useSessionContext()
-    useEffect(() => {
-        if (sessionContext.sessionData) {
-            // get doctor details.
-        }
-    }, [sessionContext.sessionData])
-
-    const saveForm = () => {
-        const userData = userDataRef.current
-        const loadingtoast = toast.loading("Updating infos")
-        let form_data;
-        form_data = {
-            fullName: userData?.fullName,
-            qualifications: userData?.qualifications.split(",").map((qualification) => qualification.trim()),
-            workplace: userData?.workplace,
-            department: userData?.department,
-            designation: userData?.designation,
-            contactNumber: userData?.contactNumber
-        }
-        axiosInstance.put(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role), form_data).then((res) => {
-            toast.dismiss(loadingtoast)
-            toast.success("Data updated")
-        }).catch((error) => {
-            toast.dismiss(loadingtoast)
-            toast.error("Error updating infos check internet or login credentials")
-        })
-    }
-    if (!sessionContext.sessionData) return <Loading chose="hand" />
-
-    return (
-        <div className="flex flex-col w-full items-center h-full gap-10">
-            <div className="flex flex-col w-full items-center rounded-md ">
-                <h1 className="text-2xl font-bold w-1/2 m-2 text-center text-gray-800">Doctor info
-                    <Separator className="w-full h-[1.5px] bg-gray-500 mb-5" />
-                </h1>
-                <DoctorInfoSection userDataRef={userDataRef} saveForm={saveForm} />
-            </div>
-            <div className="flex flex-col w-full items-center rounded-md ">
-                <h1 className="text-2xl font-bold w-1/2 text-center">Consultation Location
-                    <Separator className="w-full h-[1.5px] bg-gray-500 mb-5" />
-                </h1>
-                <ChambersPage />
-            </div>
-        </div>
-    )
-}
-
-function DoctorInfoSection({ userDataRef, saveForm }) {
-    const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
+export function EditDoctorDetailsPage({ userData, setUserData }) {
+    const [editedData, setEditedData] = useState(userData)
     const [editable, setEditable] = useState(false)
-
-    useEffect(() => {
-        register("doctorDocs", { required: "Document is required" });
-    }, [register]);
-
-    const onSubmit = (data) => {
-        userDataRef.current = { ...userDataRef.current, ...data }
-        saveForm()
-        setEditable(false)
-    }
+    const { register, handleSubmit, watch, formState: { errors } } = useForm()
 
     return (
-        <div className="flex flex-col items-center w-10/12 h-full gap-16 bg-gray-100 p-6 relative rounded-md">
-            {
-                editable ? (
-                    <div className="absolute top-5 right-14 gap-3">
-                        <Button className=" mx-1" onClick={handleSubmit(onSubmit)}>
-                            Save
-                        </Button>
-                        <Button variant="outline" className="mx-1" onClick={() => { setEditable(false) }}>
-                            Cancel
-                        </Button>
+        <div className="flex flex-col w-full h-full gap-5">
+            <h1 className="text-2xl font-bold">Edit Doctor Details</h1>
+            <div className="flex flex-col gap-3 relative">
+                <h2 className="text-lg font-semibold">Basic Information</h2>
+                <Separator className="bg-gray-700 h-[1.5px]" />
+                {editable ? (
+                    <div className="flex flex-col gap-3">
+                        <div>
+                            <div className="flex items-center gap-2">Full Name:
+                                <input type="text" defaultValue={editedData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            {errors.fullName && <span className="text-red-500">{errors.fullName.message}</span>}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">Designation:
+                                <input type="text" defaultValue={editedData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            {errors.designation && <span className="text-red-500">{errors.designation.message}</span>}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">Department:
+                                <input type="text" defaultValue={editedData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            {errors.department && <span className="text-red-500">{errors.department.message}</span>}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">Workplace:
+                                <input type="text" defaultValue={editedData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            {errors.workplace && <span className="text-red-500">{errors.workplace.message}</span>}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">Contact Number:
+                                <input type="number" defaultValue={editedData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            {errors.contactNumber && <span className="text-red-500">{errors.contactNumber.message}</span>}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">Qualifications:
+                                <textarea defaultValue={editedData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
+                                    required: "This field is required"
+                                })} />
+                            </div>
+                            <span className="text-sm text-gray-500">Separate each qualification with a comma</span>
+                            {errors.qualifications && <span className="text-red-500">{errors.qualifications.message}</span>}
+                        </div>
                     </div>
                 ) : (
-                    <Button className={"absolute top-5 right-14"} onClick={() => { setEditable(true) }}>
-                        Edit
-                    </Button>
-                )
-            }
-            <div className="flex flex-row justify-evenly items-center w-11/12">
-                <label className="text-md font-semibold mx-2">Full Name
-                    {editable ? (
-                        <div className="w-full flex flex-col">
-                            <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
-                        </div>
-                    ) : (
-                        <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.fullName || "Empty"}</p>
-                    )}
-                </label>
-            </div>
-            <div className="flex flex-row gap-5 justify-evenly items-strech w-11/12">
-                <label className="text-md font-semibold mx-2 ">Qualifications
-                    {
-                        editable ? (
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.qualifications} className="border-2 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.qualifications && <span className="text-red-500">{errors.qualifications?.message}</span>}
-                                <span className="text-sm text-gray-500">Add your qualifications separated by commas. Eg: MBBS, MD, DM</span>
-                            </div>
-                        ) : (
-                            <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.qualifications || "Empty"}</p>
-                        )
-                    }
-                </label>
-                <label className="text-md font-semibold mx-2 ">Work Place
-                    {
-                        editable ? (
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.workplace} className="border-2 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.workplace && <span className="text-red-500">{errors.workplace?.message}</span>}
-                            </div>
-                        ) : (
-                            <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.workplace || "Empty"}</p>
-                        )
-                    }
-                </label>
-            </div>
-            <div className="flex flex-row justify-evenly items-strech w-11/12">
-                <label className="text-md font-semibold mx-2 ">Department
-                    {
-                        editable ? (
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.department} className="border-2 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.department && <span className="text-red-500">{errors.department?.message}</span>}
-                            </div>
-                        ) : (
-                            <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.department || "Empty"}</p>
-                        )
-                    }
-                </label>
-                <label className="text-md font-semibold mx-2 ">Designation
-                    {
-                        editable ? (
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.designation} className="border-2 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.designation && <span className="text-red-500">{errors.designation?.message}</span>}
-                            </div>
-                        ) : (
-                            <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.designation || "Empty"}</p>
-                        )
-                    }
-                </label>
-                <label className="text-md font-semibold mx-2">Contact Number
-                    {
-                        editable ? (
-                            <div className="w-full flex flex-col">
-                                <input type="tel" defaultValue={userDataRef.current?.contactNumber} className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
-                                    required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
-                                    validate: (value) => {
-                                        return (value.length === 11 && /^\d+$/.test(value) && String(value).startsWith("01")) || "Invalid contact number"
-                                    }
-                                })} />
-                                {errors.contactNumber && <span className="text-red-500">{errors.contactNumber?.message}</span>}
-                                <span className="text-sm text-gray-500">Contact number for patients</span>
-                            </div>
-                        ) : (
-                            <p className="px-2 py-1 border border-gray-400 bg-gray-50 shadow-inner rounded">{userDataRef.current?.contactNumber || "Empty"}</p>
-                        )
-                    }
-                </label>
+                    <div className="flex flex-col gap-3">
+                        <span className="flex items-center gap-2">Full Name: {editedData.fullName}</span>
+                        <span className="flex items-center gap-2">Designation: {editedData.designation}</span>
+                        <span className="flex items-center gap-2">Department: {editedData.department}</span>
+                        <span className="flex items-center gap-2">Workplace: {editedData.workplace}</span>
+                        <span className="flex items-center gap-2">Contact Number: {editedData.contactNumber}</span>
+                        <span className="flex items-center gap-2">Qualifications: {editedData.qualifications.join(", ")}</span>
+                        <span className="flex items-center gap-2">Registration Number: {editedData.registrationNumber}</span>
+                        <span className="flex items-center gap-2">Verified: {editedData.isVerified === "Y" ? "Yes" : "No"}</span>
+                    </div>
+                )}
             </div>
         </div>
-
     )
 }
