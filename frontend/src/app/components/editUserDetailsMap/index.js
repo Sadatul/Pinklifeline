@@ -33,7 +33,6 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
 
     function LocationRefSetUp() {
         mapRef.current = useMap();
-        console.log("mapRef", mapRef.current)
         return null;
     }
 
@@ -79,11 +78,11 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
             <MapContainer
                 id='map'
                 style={{
-                    height: viewAll ? "100%" : "400px",
+                    height: "400px",
                     width: "100%",
                     zIndex: 0
                 }}
-                center={position} zoom={18} scrollWheelZoom={true}>
+                center={currentPosition} zoom={18} scrollWheelZoom={true}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -98,7 +97,11 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
                     </Popup>
                 </Marker>
                 <LocationRefSetUp />
-                {editable && <LocationMarker />}
+                {editable ?
+                    <LocationMarker />
+                    :
+                    <Marker position={currentPosition} icon={customIcon}></Marker>
+                }
             </MapContainer>
         </div>
     )

@@ -1,7 +1,7 @@
 'use client'
 
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { convertCmtoFeetInch, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
+import { convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import AddIcon from '@mui/icons-material/Add';
@@ -106,12 +106,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
     const getCurrentYear = () => new Date().getFullYear();
 
     const onSubmit = (data) => {
-        console.log("data", data)
         toast.loading("Updating user details")
         let form = {
             "fullName": data.fullName,
             "weight": data.weight,
-            "height": convertCmtoFeetInch(data.heightFeet, data.heightInch),
+            "height": convertFtIncToCm(data.heightFeet, data.heightInch),
             "cancerHistory": data.cancerHistory,
             "cancerRelatives": editedData.cancerRelatives,
             "lastPeriodDate": generateFormattedDate(data.lastPeriodDate),
@@ -126,9 +125,13 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
             form.diagnosisDate = generateFormattedDate(data.diagnosisDate)
             form.cancerStage = data.cancerStage
         }
+        console.log("Form", form)
         axiosInstance.put(updateUserDetailsUrl(sessionContext.sessionData.userId, isPatient ? roles.patient : roles.basicUser), form).then((response) => {
             setUserData({ ...userData, ...form })
-            setEditedData({ ...editedData, ...form })
+            setEditedData({ ...userData, ...form })
+            setEditable(false)
+            toast.dismiss()
+            console.log("Response", response)
         }).catch((error) => {
             console.log(error)
             toast.error("An error occured", {
@@ -402,7 +405,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                         :
                         <div className="flex flex-col justify-between w-full px-5 gap-3">
                             <div>
-                                <div className="text-md font-semibold">Cancer History:
+                                <div className="text-md font-semibold flex items-center gap-2">Cancer History:
                                     <span>{userData?.cancerHistory === "Y" ? "Yes" : "No"}</span>
                                 </div>
                             </div>
@@ -674,7 +677,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                 <h1 className="text-2xl font-bold text-black">Location</h1>
                 {currentPosition ?
                     <>
-                        <span className='absolute top-20 right-24 bg-white p-2 text-lg z-10 rounded-md shadow-md'>{"Lat: " + (Math.round((position?.lat + Number.EPSILON) * 10000) / 10000) + " Lng: " + (Math.round((position?.lng + Number.EPSILON) * 10000) / 10000)}</span>
+                        <span className='absolute top-20 right-24 bg-white p-2 text-lg z-10 rounded-md shadow-md'>{"Lat: " + (Math.round((currentPosition?.lat + Number.EPSILON) * 10000) / 10000) + " Lng: " + (Math.round((currentPosition?.lng + Number.EPSILON) * 10000) / 10000)}</span>
                         <EditUserMapView currentPosition={currentPosition} setCurrentPosition={setCurrentPosition} editable={editable} />
                     </>
                     :

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { getConsultationLocations, locationOnline, updateConsultationLocationUrl } from "@/utils/constants"
 import { cn } from "@/lib/utils"
-import { Banknote, Binary, Delete, HardDriveUploadIcon, Pencil, Recycle, RecycleIcon } from "lucide-react"
+import { Banknote, Binary, Delete, HardDriveUploadIcon, MapPinIcon, Pencil, Recycle, RecycleIcon } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
@@ -10,14 +10,6 @@ import axiosInstance from "@/utils/axiosInstance"
 import { toast } from "sonner"
 import { Button } from "@mui/material"
 
-const dummy = {
-    "workdays": "1110110",
-    "fees": 700,
-    "start": "07:43:23",
-    "location": "Rule 2nd phase, Khulna",
-    "end": "17:43:23",
-    "id": 1
-}
 
 export function ChambersPage({ className }) {
     const [consulations, setConsulations] = useState(null)
@@ -36,36 +28,28 @@ export function ChambersPage({ className }) {
     }, [sessionContext.sessionData, consulations])
 
     function deleteLocation(id) {
-        //code for delete is incomplete due to that bitch taking down my internet connection
+        //code for delete is incomplete due to that bitch shuting down my internet
         axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
             toast.success("Location deleted")
-            setConsulations(consulations.filter())
+            setConsulations(prev => prev.filter(consulation => consulation.id !== id))
         }).catch((error) => {
+            console.log("Error deletinng location")
             toast.error("Error occured. Check internet")
         })
     }
 
 
-    // if (!consulations) return <Loading chose="hand" />
+    if (!consulations) return <Loading chose="hand" />
     return (
-        <div className={cn("flex flex-col w-full rounded items-center bg-gray-100 gap-5 py-3", className)}>
-            <div className="flex flex-col rounded w-11/12">
+        <div className={cn("flex flex-col w-full rounded p-5 bg-gray-50 gap-5 py-3", className)}>
+            <h2 className="text-lg font-semibold">Consulation Locations</h2>
+            <Separator className="h-[1.5px] bg-gray-800" />
+            <div className="flex flex-col rounded w-full">
                 <div className="flex flex-col w-full">
                     {
-                        // consulations?.map((consulation, index) => {
-                        //     <ChamberCard key={index} location={consulation.location} startTime={consulation.start} endTime={consulation.end} fees={consulation.fees} workdayString={consulation.workdays} id={consulation.id} />
-                        // })
-                        <>
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                            <ChamberCard location={"consulation.location"} startTime={"00:00"} endTime={"00:00"} fees={100} workdayString={"0000110"} id={1} deleteLocation={deleteLocation} />
-                        </>
+                        consulations?.map((consulation, index) =>
+                            <ChamberCard key={index} location={consulation.location} startTime={consulation.start} endTime={consulation.end} fees={consulation.fees} workdayString={consulation.workdays} id={consulation.id} deleteLocation={deleteLocation} />
+                        )
                     }
                 </div>
             </div>
@@ -93,6 +77,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
         fees: fees,
         isOnline: location === locationOnline
     })
+    console.log("Data", data)
     const weekDays = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"]
     const workdaysFromBinaryString = (binaryString) => {
         let workdays = []
@@ -138,7 +123,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
             const headers = {
                 "Authorization": `Bearer ${sessionContext.sessionData.token}`
             }
-            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
+            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), updateData).then((res) => {
                 setData({
                     location: data.isOnline ? locationOnline : newLocation,
                     startTime: newStartTime,
@@ -147,6 +132,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                     fees: newFees
                 })
             }).catch((error) => {
+                console.log("Error updating location", error)
                 toast.error("Error updating location. Check Internet. Try again.")
             })
         }
@@ -167,8 +153,8 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                         </>
                     ) : (
                         <>
-                            <h1 className="text-lg font-semibold">{data.location}</h1>
-                            <p className="text-base font-semibold flex gap-2 items-center"><Banknote size={24} />{data.fees}</p>
+                            <h1 className="text-lg font-semibold flex gap-2 items-center"><MapPinIcon size={24} />{data.location}</h1>
+                            <p className="text-base font-semibold flex gap-2 items-end"><Banknote size={22} />{data.fees}</p>
                         </>
                     )}
             </div>
@@ -207,7 +193,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                         )
                 }
                 {editable ? (
-                    <div className="flex flex-row items-center mt-4">
+                    <div className="flex flex-row items-center mt-4 flex-wrap">
                         {availableDays.map((day, index) => (
                             <button type="button" key={index} className={cn("flex flex-row items-center border text-black mx-1 px-2 ", day.on ? "bg-gray-100" : "bg-red-400")}
                                 onClick={() => {
@@ -223,7 +209,7 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                 ) : (
                     <div className="flex flex-row items-center mt-4">
                         {availableDays.map((day, index) => (
-                            <div key={index} className={cn("flex flex-row items-center border text-black mx-2 bg-gray-100", day.on ? "" : "hidden")}>
+                            <div key={index} className={cn("flex flex-row items-center border text-black mx-2 bg-gray-100 rounded-md shadow-inner", day.on ? "" : "hidden")}>
                                 <span className="text-lg font-semibold mx-2">{day.day}</span>
                             </div>
                         ))}

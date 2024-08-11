@@ -46,6 +46,8 @@ export const getSharedReportByIdUrl = (reportId) => { return `${baseUrl}/v1/repo
 export const getProfilePicUrl = `${baseUrl}/v1/infos/profile_picture`
 export const patientInfoUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/user-data/${appointment_id}` }
 export const getUserInfoUrl = (user_id, role) => { return `${baseUrl}/v1/infos/${role}/${user_id}` }
+export const getDoctorBalance = `${baseUrl}/v1/infos/balance`
+export const getDoctorBalanceHistory = `${baseUrl}/v1/infos/balance/history`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -188,4 +190,17 @@ export const parseDate = (date) => {
         return null
     }
     return new Date(date)
+}
+
+//a function that takes two object and check if one is subset of the other checking the values of the keys
+export const isSubset = (subset, superset) => {
+    if (!subset || !superset) {
+        return false
+    }
+    for (const key in subset) {
+        if (subset[key] !== superset[key]) {
+            return false
+        }
+    }
+    return true
 }

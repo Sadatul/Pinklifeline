@@ -47,105 +47,143 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useStompContext } from "../context/stompContext"
 import { useRouter } from "next/navigation"
-import { addConsultationLocationUrl, locationOnline, pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
+import { addConsultationLocationUrl, isSubset, locationOnline, pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
 import { ChambersPage } from "./ChambersPage"
 
-export function EditDoctorDetailsPage({ userData, setUserData }) {
-    const [editable, setEditable] = useState(false)
+export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
+
     const { register, handleSubmit, watch, formState: { errors } } = useForm()
+
+    const onSubmitData = (data) => {
+        if (isSubset(data, userData)) {
+            console.log("No data change")
+            setEditable(false)
+            return
+        }
+        console.log("Data submitted", data)
+        toast.loading("Updating doctor details")
+        axiosInstance.put(userInfoRegUrlReq(userId, roles.doctor), {
+            ...data,
+            qualifications: data.qualifications.split(", ")
+        }).then((response) => {
+            console.log("Response", response)
+            setUserData({ ...userData, ...data, qualifications: data.qualifications.split(", ") })
+            toast.dismiss()
+            setEditable(false)
+        }).catch((error) => {
+            console.log("Error", error)
+            toast.dismiss()
+            toast.error("Doctor details update failed")
+        })
+    }
 
     return (
         <div className="flex flex-col w-full h-full gap-5 p-5">
             <h1 className="text-2xl font-bold">Edit Doctor Details</h1>
-            <div className="flex flex-col gap-3 relative bg-purple-50 p-5">
-                <div className="flex items-center gap-3 absolute top-5 right-5">
-                    {editable ? (
-                        <>
-                            <button className="bg-green-500 text-white px-3 py-1 rounded" onClick={handleSubmit()} >
-                                <Check size={20} />
-                            </button>
-                            <button className="bg-red-500 text-white px-3 py-1 rounded" onClick={setEditable(false)} >
-                                <X size={20} />
-                            </button>
-                        </>
-                    ):(
-                        <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setEditable(true)} >
-                            <Edit size={20} />
-                        </button>
-                    )}
-                </div>
-                <h2 className="text-lg font-semibold">Basic Information</h2>
-                <Separator className="bg-gray-700 h-[1.5px]" />
+            <DoctorPersonalInfo userData={userData} onSubmitData={onSubmitData} />
+            <ChambersPage />
+        </div>
+    )
+}
+
+function DoctorPersonalInfo({ userData, onSubmitData }) {
+    const [editable, setEditable] = useState(false)
+    const { register, handleSubmit, watch, formState: { errors } } = useForm()
+
+    return (
+        <div className="flex flex-col gap-3 relative bg-purple-50 p-5 rounded-md">
+            <div className="flex items-center gap-3 absolute top-5 right-5">
                 {editable ? (
-                    <div className="flex flex-col gap-3">
-                        <div>
-                            <div className="flex items-center gap-2">Full Name:
-                                <input type="text" defaultValue={userData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            {errors.fullName && <span className="text-red-500">{errors.fullName.message}</span>}
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">Designation:
-                                <input type="text" defaultValue={userData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            {errors.designation && <span className="text-red-500">{errors.designation.message}</span>}
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">Department:
-                                <input type="text" defaultValue={userData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            {errors.department && <span className="text-red-500">{errors.department.message}</span>}
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">Workplace:
-                                <input type="text" defaultValue={userData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            {errors.workplace && <span className="text-red-500">{errors.workplace.message}</span>}
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">Contact Number:
-                                <input type="number" defaultValue={userData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            {errors.contactNumber && <span className="text-red-500">{errors.contactNumber.message}</span>}
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">Qualifications:
-                                <textarea defaultValue={userData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
-                                    required: "This field is required"
-                                })} />
-                            </div>
-                            <span className="text-sm text-gray-500">Separate each qualification with a comma</span>
-                            {errors.qualifications && <span className="text-red-500">{errors.qualifications.message}</span>}
-                        </div>
-                    </div>
+                    <>
+                        <button className="bg-green-500 text-white px-3 py-1 rounded" onClick={() => {
+                            handleSubmit(onSubmitData)()
+                        }} >
+                            <Check size={20} />
+                        </button>
+                        <button className="bg-red-500 text-white px-3 py-1 rounded" onClick={() => {
+                            setEditable(false)
+                        }} >
+                            <X size={20} />
+                        </button>
+                    </>
                 ) : (
-                    <div className="flex flex-col gap-3">
-                        <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
-                        <span className="flex items-center gap-2">Designation: {userData.designation}</span>
-                        <span className="flex items-center gap-2">Department: {userData.department}</span>
-                        <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
-                        <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
-                        <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
-                        <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
-                        <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
-                    </div>
+                    <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => {
+                        setEditable(true)
+                    }} >
+                        <Edit size={20} />
+                    </button>
                 )}
             </div>
-            <ChambersPage />
+            <h2 className="text-lg font-semibold">Basic Information</h2>
+            <Separator className="bg-gray-700 h-[1.5px]" />
+            {editable ? (
+                <div className="flex flex-col gap-3">
+                    <div>
+                        <div className="flex items-center gap-2">Full Name:
+                            <input type="text" defaultValue={userData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        {errors.fullName && <span className="text-red-500">{errors.fullName.message}</span>}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">Designation:
+                            <input type="text" defaultValue={userData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        {errors.designation && <span className="text-red-500">{errors.designation.message}</span>}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">Department:
+                            <input type="text" defaultValue={userData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        {errors.department && <span className="text-red-500">{errors.department.message}</span>}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">Workplace:
+                            <input type="text" defaultValue={userData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        {errors.workplace && <span className="text-red-500">{errors.workplace.message}</span>}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">Contact Number:
+                            <input type="number" defaultValue={userData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        {errors.contactNumber && <span className="text-red-500">{errors.contactNumber.message}</span>}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">Qualifications:
+                            <textarea defaultValue={userData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
+                                required: "This field is required"
+                            })} />
+                        </div>
+                        <span className="text-sm text-gray-500">Separate each qualification with a comma</span>
+                        {errors.qualifications && <span className="text-red-500">{errors.qualifications.message}</span>}
+                    </div>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
+                    <span className="flex items-center gap-2">Designation: {userData.designation}</span>
+                    <span className="flex items-center gap-2">Department: {userData.department}</span>
+                    <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
+                    <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
+                    <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
+                    <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
+                    <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
+                </div>
+            )}
         </div>
     )
 }
