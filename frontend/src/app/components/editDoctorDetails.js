@@ -10,7 +10,7 @@ import Image from "next/image"
 import { useGeolocated } from "react-geolocated"
 import MapView from "@/app/components/map"
 import { format, set } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, Check, Edit, X } from "lucide-react"
 import AddIcon from '@mui/icons-material/Add';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -55,21 +55,36 @@ import Loading from "./loading"
 import { ChambersPage } from "./ChambersPage"
 
 export function EditDoctorDetailsPage({ userData, setUserData }) {
-    const [editedData, setEditedData] = useState(userData)
     const [editable, setEditable] = useState(false)
     const { register, handleSubmit, watch, formState: { errors } } = useForm()
 
     return (
-        <div className="flex flex-col w-full h-full gap-5">
+        <div className="flex flex-col w-full h-full gap-5 p-5">
             <h1 className="text-2xl font-bold">Edit Doctor Details</h1>
-            <div className="flex flex-col gap-3 relative">
+            <div className="flex flex-col gap-3 relative bg-purple-50 p-5">
+                <div className="flex items-center gap-3 absolute top-5 right-5">
+                    {editable ? (
+                        <>
+                            <button className="bg-green-500 text-white px-3 py-1 rounded" onClick={handleSubmit()} >
+                                <Check size={20} />
+                            </button>
+                            <button className="bg-red-500 text-white px-3 py-1 rounded" onClick={setEditable(false)} >
+                                <X size={20} />
+                            </button>
+                        </>
+                    ):(
+                        <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setEditable(true)} >
+                            <Edit size={20} />
+                        </button>
+                    )}
+                </div>
                 <h2 className="text-lg font-semibold">Basic Information</h2>
                 <Separator className="bg-gray-700 h-[1.5px]" />
                 {editable ? (
                     <div className="flex flex-col gap-3">
                         <div>
                             <div className="flex items-center gap-2">Full Name:
-                                <input type="text" defaultValue={editedData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
+                                <input type="text" defaultValue={userData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -77,7 +92,7 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">Designation:
-                                <input type="text" defaultValue={editedData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
+                                <input type="text" defaultValue={userData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -85,7 +100,7 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">Department:
-                                <input type="text" defaultValue={editedData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
+                                <input type="text" defaultValue={userData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -93,7 +108,7 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">Workplace:
-                                <input type="text" defaultValue={editedData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
+                                <input type="text" defaultValue={userData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -101,7 +116,7 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">Contact Number:
-                                <input type="number" defaultValue={editedData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
+                                <input type="number" defaultValue={userData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -109,7 +124,7 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">Qualifications:
-                                <textarea defaultValue={editedData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
+                                <textarea defaultValue={userData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
                                     required: "This field is required"
                                 })} />
                             </div>
@@ -119,17 +134,18 @@ export function EditDoctorDetailsPage({ userData, setUserData }) {
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        <span className="flex items-center gap-2">Full Name: {editedData.fullName}</span>
-                        <span className="flex items-center gap-2">Designation: {editedData.designation}</span>
-                        <span className="flex items-center gap-2">Department: {editedData.department}</span>
-                        <span className="flex items-center gap-2">Workplace: {editedData.workplace}</span>
-                        <span className="flex items-center gap-2">Contact Number: {editedData.contactNumber}</span>
-                        <span className="flex items-center gap-2">Qualifications: {editedData.qualifications.join(", ")}</span>
-                        <span className="flex items-center gap-2">Registration Number: {editedData.registrationNumber}</span>
-                        <span className="flex items-center gap-2">Verified: {editedData.isVerified === "Y" ? "Yes" : "No"}</span>
+                        <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
+                        <span className="flex items-center gap-2">Designation: {userData.designation}</span>
+                        <span className="flex items-center gap-2">Department: {userData.department}</span>
+                        <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
+                        <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
+                        <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
+                        <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
+                        <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
                     </div>
                 )}
             </div>
+            <ChambersPage />
         </div>
     )
 }

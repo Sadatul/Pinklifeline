@@ -25,12 +25,7 @@ export function ChambersPage({ className }) {
 
     useEffect(() => {
         if (sessionContext.sessionData && !consulations) {
-            const headers = {
-                "Authorization": `Bearer ${sessionContext.sessionData.token}`
-            }
-            axiosInstance.get(getConsultationLocations(sessionContext.sessionData.userId), {
-                headers: headers
-            }).then((res) => {
+            axiosInstance.get(getConsultationLocations(sessionContext.sessionData.userId)).then((res) => {
                 console.log(res)
                 setConsulations(res.data)
             }).catch((error) => {
@@ -42,13 +37,9 @@ export function ChambersPage({ className }) {
 
     function deleteLocation(id) {
         //code for delete is incomplete due to that bitch taking down my internet connection
-        const headers = {
-            "Authorization": `Bearer ${sessionContext.sessionData.token}`
-        }
-        axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), {
-            headers: headers
-        }).then((res) => {
+        axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
             toast.success("Location deleted")
+            setConsulations(consulations.filter())
         }).catch((error) => {
             toast.error("Error occured. Check internet")
         })
@@ -57,7 +48,7 @@ export function ChambersPage({ className }) {
 
     // if (!consulations) return <Loading chose="hand" />
     return (
-        <div className={cn("flex flex-col w-10/12 rounded items-center bg-gray-100 gap-5 py-3", className)}>
+        <div className={cn("flex flex-col w-full rounded items-center bg-gray-100 gap-5 py-3", className)}>
             <div className="flex flex-col rounded w-11/12">
                 <div className="flex flex-col w-full">
                     {
