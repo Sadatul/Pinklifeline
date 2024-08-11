@@ -1,8 +1,10 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.service.BalanceService;
 import com.sadi.pinklifeline.service.UserService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,11 @@ import java.util.Map;
 @RequestMapping("/v1/infos")
 public class UserInfoForOwnerHandlerV1 {
     private final UserService userService;
+    private final BalanceService balanceService;
 
-    public UserInfoForOwnerHandlerV1(UserService userService) {
+    public UserInfoForOwnerHandlerV1(UserService userService, BalanceService balanceService) {
         this.userService = userService;
+        this.balanceService = balanceService;
     }
 
     @GetMapping("/profile_picture")
@@ -52,6 +56,22 @@ public class UserInfoForOwnerHandlerV1 {
         User user = userService.getUserIfRegistered(id);
         Map<String, Object> response = new HashMap<>();
         userService.injectDoctorDetailsToMap(user.getDoctorDetails(), response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/balance")
+    public ResponseEntity<Map<String, Object>> getBalance(){
+        Integer balance = balanceService.getBalanceForUser();
+        Map<String, Object> response = new HashMap<>();
+        response.put("balance", balance);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/balance/history")
+    public ResponseEntity<Page<Map<String, Object>>> getBalanceHistory(
+            @RequestParam(required = false, defaultValue = "0") Integer pageNo
+    ){
+        Page<Map<String, Object>> response = balanceService.getBalanceHistoryForUser(pageNo);
         return ResponseEntity.ok(response);
     }
 }

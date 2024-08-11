@@ -63,6 +63,10 @@ public class User {
         this.isRegistrationComplete = isRegistrationComplete;
     }
 
+    public User(Long id){
+        this.id = id;
+    }
+
     @Column(table = "profile_pictures", name = "profile_picture", nullable = false)
     private String profilePicture;
 
