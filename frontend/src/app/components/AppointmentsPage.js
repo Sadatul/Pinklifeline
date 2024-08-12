@@ -34,7 +34,7 @@ import { Button, Pagination } from "@mui/material"
 
 export function AppointmentsPage() {
     const [disableCard, setDisableCard] = useState(false)
-    const [balance, setBalance] = useState(null)
+    const [balance, setBalance] = useState(10)
     const [balanceHistory, setBalanceHistory] = useState({
         content: [
             {
@@ -102,9 +102,10 @@ export function AppointmentsPage() {
             <div className="absolute top-7 right-10" >
                 <Popover >
                     <PopoverTrigger asChild>
-                        <Button disabled={balance === null} variant="outlined" color="primary">{balance === null ? <LoaderCircle size={24} className="animate-spin" /> : `Balance: ${balance}`}</Button>
+                        <Button disabled={balance === null} variant="outlined" color="primary">{balance === null ? <LoaderCircle size={24} className="animate-spin" /> : `Balance:`}</Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-96 flex flex-col gap-5 mr-5">
+                        <h1 className="w-full text-center text-lg">Balance: {balance}</h1>
                         <h1 className="w-full text-center text-lg">Balance History</h1>
                         <Separator />
                         <div className="flex flex-col gap-4 items-start w-full">

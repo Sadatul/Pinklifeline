@@ -218,7 +218,7 @@ export default function PrescriptionVaultPage() {
                                             </span>
                                         </div>
                                         <div className="flex flex-row justify-between">
-                                            <span className="text-sm text-gray-800 flex gap-1 items-center">
+                                            <span className="text-sm text-gray-800 flex gap-1 items-center line-clamp-2">
                                                 <Key size={20} />
                                                 {doc.keywords.join(", ")}
                                             </span>

@@ -174,7 +174,7 @@ If you don't find answer for a field then put null. I will parse your answer thr
                 <div className="flex flex-col flex-1 px-3 h-full items-center">
                     <h1 className="text-xl font-semibold">Extracted Text</h1>
                     <div className="relative w-full p-5 gap-2 flex flex-col items-center">
-                        <textarea value={extractedText} id='extracted-text' className='w-full min-h-96 bg-gray-100 rounded-md border-gray-500 shadow-inner flex flex-row items-center justify-center p-5' />
+                        <textarea value={extractedText || ""} id='extracted-text' className='w-full min-h-96 bg-gray-100 rounded-md border-gray-500 shadow-inner flex flex-row items-center justify-center p-5' />
                         {extractedText &&
                             <>
                                 <span className="  text-green-700 p-1 rounded-md text-lg">Text Extracted.</span>
