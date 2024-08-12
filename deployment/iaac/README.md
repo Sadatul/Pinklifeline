@@ -14,7 +14,7 @@ docker run -d --publish 3306:3306 --mount type=bind,source="$(pwd)"/cloudsql_pro
 ```bash
 kubectl create secret generic cloud-sql-secret --from-file=service_account.json=./cloudsql_proxy_key.json
 ```
-8. Replace redis host in the config map
+8. Replace redis host in the config map and the backend address based on static ip
 9. A secret.example.yaml is provided. Create a file named secret.yaml using the template of secret.example.yaml and fill the values with appropiate secrets.
 10. Now apply pinklifeline-config.yaml and secret.yaml
 11. Finally apply pinklifeline-app.yaml
