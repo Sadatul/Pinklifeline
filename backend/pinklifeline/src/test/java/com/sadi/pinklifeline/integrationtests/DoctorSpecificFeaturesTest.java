@@ -3,10 +3,15 @@ package com.sadi.pinklifeline.integrationtests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
+import com.sadi.pinklifeline.models.entities.DoctorReview;
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
+import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
+import com.sadi.pinklifeline.models.reqeusts.ReviewUpdateReq;
 import com.sadi.pinklifeline.repositories.DoctorConsultancyLocationsRepository;
+import com.sadi.pinklifeline.repositories.reviews.DoctorReviewsRepository;
 import com.sadi.pinklifeline.utils.DbCleaner;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +24,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.Instant;
 import java.util.List;
@@ -27,6 +33,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -48,6 +55,9 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
 
     @Autowired
     private DoctorConsultancyLocationsRepository locationsRepository;
+
+    @Autowired
+    private DoctorReviewsRepository reviewsRepository;
 
     @AfterEach
     public void cleanDb() {
@@ -121,6 +131,7 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         assertEquals(updateReq.getEnd(), updatedLoc.get().getEnd());
         assertEquals(updateReq.getWorkdays(), updatedLoc.get().getWorkdays());
         assertEquals(updateReq.getFees(), updatedLoc.get().getFees());
+        assertEquals(id, updatedLoc.get().getDoctorDetails().getUserId());
 
         String deleteToken = mint(id, List.of(Roles.ROLE_DOCTOR));
 
@@ -131,6 +142,92 @@ public class DoctorSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         if(deletedLoc.isPresent()) {
             fail("Deleted Doctor was not removed");
         }
+    }
+
+    @Test
+    @Sql("/test/doctor_specific_features_test/add2Doctors.sql")
+    public void doctorReviewAddUpdateDeleteTest() throws Exception {
+        Long id = 2L;
+        Long reviewId = 1L;
+        String token = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        String requestBody = """
+                {
+                  "id":3,
+                  "rating":5,
+                  "comment": "A very good doctor"
+                }
+                """;
+
+        ResultActions resultActions = mockMvc.perform(post("/v1/reviews/doctor/{id}", id).contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", String.format("Bearer %s", token))
+                        .content(requestBody));
+        resultActions.andExpect(status().isCreated());
+        String review = resultActions.andReturn().getResponse().getHeader("Location");
+        matchReviewSummary(resultActions, Arrays.array(0, 0, 0, 0, 1), 5.0, 1);
+
+        log.info("Added Doctor Review URI: {}", review);
+        RegisterReviewReq req = objectMapper.readValue(requestBody, RegisterReviewReq.class);
+        log.info("Doctor review Req: {}", req);
+        Optional<DoctorReview> rev = reviewsRepository.findById(reviewId);
+        if(rev.isEmpty()) {
+            fail("New Doctor Review was not added");
+        }
+        log.info("Newly added doctor review: {}", rev.get());
+
+        assertEquals(req.getComment(), rev.get().getComment());
+        assertEquals(req.getRating(), rev.get().getRating());
+        assertEquals(req.getId(), rev.get().getDoctorDetails().getUserId());
+        assertEquals(id, rev.get().getReviewer().getId());
+
+        String updateToken = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        String updateBody = """
+                {
+                  "rating":3,
+                  "comment": "Tata bye bye"
+                }
+                """;
+
+        resultActions = mockMvc.perform(put("/v1/reviews/doctor/{id}/{reviewId}", id, reviewId).contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", String.format("Bearer %s", updateToken))
+                .content(updateBody));
+        resultActions.andExpect(status().isOk());
+        matchReviewSummary(resultActions, Arrays.array(0, 0, 1, 0, 0), 3.0, 1);
+
+        ReviewUpdateReq updateReq = objectMapper.readValue(updateBody, ReviewUpdateReq.class);
+        log.info("Doctor review Update Req: {}", updateReq);
+        rev = reviewsRepository.findById(reviewId);
+        if(rev.isEmpty()) {
+            fail("Update review deleted the review");
+        }
+        log.info("Newly update doctor review: {}", rev.get());
+
+        assertEquals(updateReq.getComment(), rev.get().getComment());
+        assertEquals(updateReq.getRating(), rev.get().getRating());
+
+        String deleteToken = mint(id, List.of(Roles.ROLE_DOCTOR));
+
+        resultActions = mockMvc.perform(delete("/v1/reviews/doctor/{id}/{reviewId}", id, reviewId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", String.format("Bearer %s", deleteToken)));
+        resultActions.andExpect(status().isOk());
+        matchReviewSummary(resultActions, Arrays.array(0, 0, 0, 0, 0), 0.0, 0);
+        rev = reviewsRepository.findById(reviewId);
+        if(rev.isPresent()){
+            fail("Review was not deleted");
+        }
+    }
+
+    private void matchReviewSummary(ResultActions resultActions, Integer[] values, Double avg, Integer count) throws Exception {
+        resultActions.andExpect(jsonPath("$.count").value(count))
+                .andExpect(jsonPath("$.averageRating").value(avg))
+                .andExpect(jsonPath("$.ratingCount.length()").value(5))
+                .andExpect(jsonPath("$.ratingCount[0]").value(values[0]))
+                .andExpect(jsonPath("$.ratingCount[1]").value(values[1]))
+                .andExpect(jsonPath("$.ratingCount[2]").value(values[2]))
+                .andExpect(jsonPath("$.ratingCount[3]").value(values[3]))
+                .andExpect(jsonPath("$.ratingCount[4]").value(values[4]));
     }
 
     private String mint(Long id, List<Roles> roles){

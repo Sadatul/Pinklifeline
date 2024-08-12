@@ -8,9 +8,12 @@ import com.sadi.pinklifeline.models.reqeusts.UserVerificationRequest;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.service.JwtTokenService;
 import com.sadi.pinklifeline.service.UserRegistrationAndVerificationService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +30,11 @@ public class AuthControllerV1 {
 
     private final Logger logger = LoggerFactory.getLogger(AuthControllerV1.class);
 
+    @Value("${auth.jwt.timeout}")
+    private int cookieExpiration;
+
+    @Value("${auth.jwt.cookie.name}")
+    private String cookieName;
 
     public AuthControllerV1(JwtTokenService jwtTokenService, AuthenticationManager authenticationManager,
                             UserRegistrationAndVerificationService userRegVerService) {
@@ -36,11 +44,28 @@ public class AuthControllerV1 {
     }
 
     @PostMapping
-    public ResponseEntity<JwtTokenResponse> generateToken(@Valid @RequestBody JwtTokenRequest tokenRequest) {
+    public ResponseEntity<JwtTokenResponse> generateToken(@Valid @RequestBody JwtTokenRequest tokenRequest, HttpServletResponse response) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(tokenRequest.getUsername(), tokenRequest.getPassword());
         var authentication = authenticationManager.authenticate(authenticationToken);
         var tokenResponse = jwtTokenService.generateToken(authentication);
+        Cookie cookie = new Cookie(cookieName, tokenResponse.token());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(cookieExpiration); // 7 days
+        response.addCookie(cookie);
         return ResponseEntity.ok(tokenResponse);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        // Create a cookie with the same name, but with maxAge=0
+        logger.debug("Logout request received");
+        Cookie cookie = new Cookie(cookieName, "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // 7 days
+        response.addCookie(cookie);
+        return ResponseEntity.ok("Logout successful");
     }
 
     @PostMapping("/register")

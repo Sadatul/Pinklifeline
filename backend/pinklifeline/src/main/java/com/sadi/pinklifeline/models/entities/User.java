@@ -27,6 +27,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private  String username;
 
+    @Column(name = "full_name")
+    private  String fullName;
+
     @Column(nullable = false)
     private  String password;
 
@@ -53,6 +56,15 @@ public class User {
         this.password = password;
         this.roles = roles;
         this.isRegistrationComplete = YesNo.N;
+    }
+
+    public User(Long id, YesNo isRegistrationComplete){
+        this.id = id;
+        this.isRegistrationComplete = isRegistrationComplete;
+    }
+
+    public User(Long id){
+        this.id = id;
     }
 
     @Column(table = "profile_pictures", name = "profile_picture", nullable = false)

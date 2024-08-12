@@ -22,6 +22,8 @@ services:
   redis:
     image: redis/redis-stack:latest
     container_name: redis-stack
+    volumes:
+      - ${PWD}/redis-stack.conf:/redis-stack.conf
     ports:
       - "6379:6379"
       - "8001:8001"
@@ -46,6 +48,9 @@ services:
     # image: sadatul/pinklifeline_dev:0.0.1-SNAPSHOT
     container_name: backend
     environment:
+      - TZ=Asia/Dhaka
+      - BACKEND_HOST=http://localhost:8080
+      - FRONTEND_HOST=http://localhost:3000
       - DB_URL=mysql:3306/pinklifeline
       - DB_USERNAME=pinklifeline
       - DB_PASSWORD=pinklifeline
@@ -53,6 +58,10 @@ services:
       - REDIS_PORT=6379
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=pinklifeline
+      - GETSTREAM_API_KEY=${GETSTREAM_API_KEY}
+      - GETSTREAM_API_SECRET=${GETSTREAM_API_SECRET}
+      - SSLCOMMERZ_STORE_ID=${SSLCOMMERZ_STORE_ID}
+      - SSLCOMMERZ_STORE_PASSWD=${SSLCOMMERZ_STORE_PASSWD}
     ports:
       - "8080:8080"
     networks:

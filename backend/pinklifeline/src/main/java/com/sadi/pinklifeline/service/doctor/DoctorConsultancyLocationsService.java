@@ -1,16 +1,15 @@
-package com.sadi.pinklifeline.service.doctor.features;
+package com.sadi.pinklifeline.service.doctor;
 
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.reqeusts.DoctorLocationReq;
 import com.sadi.pinklifeline.repositories.DoctorConsultancyLocationsRepository;
-import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class DoctorConsultancyLocationsService {
@@ -44,6 +43,7 @@ public class DoctorConsultancyLocationsService {
         }
     }
 
+    @PreAuthorize("(#docId.toString() == authentication.name and hasRole('DOCTOR'))")
     public void updateLocation(DoctorLocationReq req, Long locId, Long docId) {
         DoctorConsultationLocation location = getLocation(locId);
         verifyLocationAccess(location, docId);
@@ -55,9 +55,26 @@ public class DoctorConsultancyLocationsService {
         locationsRepository.save(location);
     }
 
+    @PreAuthorize("(#docId.toString() == authentication.name and hasRole('DOCTOR'))")
     public void deleteLocation(Long locId, Long docId) {
         DoctorConsultationLocation location = getLocation(locId);
         verifyLocationAccess(location, docId);
         locationsRepository.delete(location);
+    }
+
+    public List<Map<String, Object>> getDoctorConsultationLocations(Long docId){
+        List<DoctorConsultationLocation> locations = locationsRepository.findByDoctorId(docId);
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (DoctorConsultationLocation location : locations) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", location.getId());
+            map.put("location", location.getLocation());
+            map.put("start", location.getStart());
+            map.put("end", location.getEnd());
+            map.put("workdays", location.getWorkdays());
+            map.put("fees", location.getFees());
+            res.add(map);
+        }
+        return res;
     }
 }

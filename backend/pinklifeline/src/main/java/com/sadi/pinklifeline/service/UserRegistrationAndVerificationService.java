@@ -1,7 +1,6 @@
 package com.sadi.pinklifeline.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sadi.pinklifeline.controllers.AuthControllerV1;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.exceptions.OtpMismatchException;
 import com.sadi.pinklifeline.exceptions.OtpTimedOutException;
@@ -11,8 +10,6 @@ import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import com.sadi.pinklifeline.repositories.UserVerificationRepository;
 import com.sadi.pinklifeline.utils.CodeGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +28,6 @@ public class UserRegistrationAndVerificationService {
     @Value("${verification.email.timeout}")
     private int optExpiration;
 
-    private final Logger logger = LoggerFactory.getLogger(AuthControllerV1.class);
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final UserRepository userRepository;

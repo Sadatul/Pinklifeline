@@ -37,8 +37,4 @@ public class ChatRoom {
         this.user2 = user2;
         messages = new ArrayList<>();
     }
-
-    public void addMessage(ChatMessage message) {
-        messages.add(message);
-    }
 }
