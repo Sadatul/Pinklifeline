@@ -160,8 +160,8 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                 )}
             </div>
             <h1 className="text-2xl font-bold text-black">Update User Details</h1>
-            <div className="flex flex-col w-11/12 bg-gray-100 rounded-md gap-3 py-3 items-start">
-                <div className="flex flex-row justify-between px-5 items-center w-full">
+            <div className="flex flex-row w-full bg-gray-100 p-4 rounded-md">
+                <div className="flex flex-col flex-1 gap-3">
                     <div className="text-md font-semibold">
                         {editable ?
                             <div className="flex flex-row items-center gap-2">Full Name
@@ -169,7 +169,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                             :
-                            <span className="text-lg ">Name: {userData.fullName}</span>
+                            <span className="text-md font-semibold ">Name: {userData.fullName}</span>
                         }
                     </div>
                     <div className="text-md font-semibold ">
@@ -179,10 +179,10 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                             :
-                            <span className="text-lg">Weight: {userData.weight} kg</span>
+                            <span className="text-md font-semibold">Weight: {userData.weight} kg</span>
                         }
                     </div>
-                    <div className="text-md font-semibold text-center">
+                    <div className="text-md font-semibold">
                         {editable ?
                             <div className="flex flex-row items-center gap-1">Height
                                 <div>
@@ -205,15 +205,13 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 </div>
                             </div>
                             :
-                            <span className="text-lg">Height: {getFeetFromCm(userData.height)} feet {getInchFromCm(userData.height)} inch</span>
+                            <span className="text-md font-semibold">Height: {getFeetFromCm(userData.height)} feet {getInchFromCm(userData.height)} inch</span>
                         }
                     </div>
-                    {!editable && <span className="text-lg font-semibold">Birth date: {userData.dob}</span>}
-                </div>
-                <div className="flex flex-row items-center justify-start px-5 gap-10">
+                    {!editable && <span className="text-md font-semibold">Birth date: {userData.dob}</span>}
                     {editable ?
                         <div className="flex flex-row gap-7">
-                            <div className="text-md font-semibold text-center flex gap-2 items-center" >Last Period Date:
+                            <div className="text-md font-semibold flex gap-2 items-center" >Last Period Date:
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -249,7 +247,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                         </div>
                         :
                         <div className="flex flex-col">
-                            <div className="text-md font-semibold text-center flex gap-2" >Last Period Date:
+                            <div className="text-md font-semibold flex gap-2" >Last Period Date:
                                 <span>{userData?.lastPeriodDate}</span>
                             </div>
                         </div>
@@ -257,64 +255,65 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     <div className="flex flex-row items-end">
                         {editable ?
                             <>
-                                <div className="text-md font-semibold text-center flex flex-row gap-2 items-end">Average Cycle Length (days):
+                                <div className="text-md font-semibold flex flex-row gap-2 items-end">Average Cycle Length (days):
                                     <input defaultValue={userData?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2 w-20" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
                                 </div>
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                             </>
                             :
-                            <div className="text-md font-semibold text-center">Average Cycle Length (days): {userData?.avgCycleLength}
+                            <div className="text-md font-semibold">Average Cycle Length (days): {userData?.avgCycleLength}
                             </div>
                         }
                     </div>
-                </div>
-                <div className="flex flex-col justify-start w-full items-start px-5 gap-5">
-                    {editable ?
-                        <div className="flex flex-col">
-                            <div className="text-md font-semibold text-center flex items-center gap-2" >Diagnose Date:
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                " justify-start text-left font-normal",
-                                                !editedData.diagnosisDate && "text-muted-foreground"
-                                            )}
-                                        >
-                                            <CalendarIcon className="h-4 w-4" />
-                                            {editedData.diagnosisDate ? format(editedData.diagnosisDate, "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={editedData.diagnosisDate}
-                                            onSelect={(selectedDate) => {
-                                                setEditedData({ ...editedData, diagnosisDate: selectedDate })
-                                                setValue("diagnosisDate", selectedDate)
-                                                trigger("diagnosisDate")
-                                            }}
-                                            disabled={(date) =>
-                                                date > new Date() || date < new Date("1950-01-01")
-                                            }
-                                            initialFocus
-                                            defaultValue={editedData?.diagnosisDate}
-                                        />
-                                    </PopoverContent>
-                                </Popover>
+                    <div className="flex flex-col justify-start w-full items-start  gap-5">
+                        {editable ?
+                            <div className="flex flex-col">
+                                <div className="text-md font-semibold flex items-center gap-2" >Diagnose Date:
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    " justify-start text-left font-normal",
+                                                    !editedData.diagnosisDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="h-4 w-4" />
+                                                {editedData.diagnosisDate ? format(editedData.diagnosisDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={editedData.diagnosisDate}
+                                                onSelect={(selectedDate) => {
+                                                    setEditedData({ ...editedData, diagnosisDate: selectedDate })
+                                                    setValue("diagnosisDate", selectedDate)
+                                                    trigger("diagnosisDate")
+                                                }}
+                                                disabled={(date) =>
+                                                    date > new Date() || date < new Date("1950-01-01")
+                                                }
+                                                initialFocus
+                                                defaultValue={editedData?.diagnosisDate}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
                             </div>
-                            {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
-                        </div>
-                        :
-                        <span className="text-md font-semibold text-center flex gap-2" >
-                            Diagnose Date: {userData?.diagnosisDate}
-                        </span>
-                    }
-
+                            :
+                            <span className="text-md font-semibold flex gap-2" >
+                                Diagnose Date: {userData?.diagnosisDate}
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div className="flex flex-col flex-1 gap-3">
                     <div className=" flex flex-col">
                         {editable ?
                             <>
-                                <div className="text-md font-semibold text-center flex items-center gap-2">Current Stage:
+                                <div className="text-md font-semibold flex items-center gap-2">Current Stage:
                                     <select defaultValue={userData?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-28 border rounded-lg bg-white border-blue-500 text-sm">
                                         <option value="cancerStage" disabled  >
                                             Current Cancer Stage
@@ -330,350 +329,352 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
                             </>
                             :
-                            <span className="text-md font-semibold text-center flex gap-1">
+                            <span className="text-md font-semibold flex gap-1">
                                 Current Stage: {userData?.cancerStage}
                             </span>
                         }
                     </div>
-                </div>
-                <div className="w-full">
-                    {editable ?
-                        <div className="flex flex-col justify-between w-full px-5 gap-3">
-                            <div>
-                                <div className="text-md font-semibold flex gap-2">Cancer History:
-                                    <select defaultValue={userData?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500">
-                                        <option value="N">No</option>
-                                        <option value="Y">Yes</option>
-                                    </select>
-                                </div>
-                                {errors.cancerHistory && <span className="text-red-500 text-sm">{errors.cancerHistory?.message}</span>}
-                            </div>
-                            {cancerHistory === "Y" &&
-                                <div className="flex items-center w-full justify-between gap-2">
-                                    <div className="flex items-center gap-5">
-                                        <div className="text-md font-semibold text-center gap-2 flex">Cancer Relatives:
-                                            <input className="border border-blue-500 rounded-md px-2" id="cancerRelatives" />
-                                        </div>
-                                        <Button
-                                            onClick={() => {
-                                                setEditedData({ ...editedData, cancerRelatives: [...editedData.cancerRelatives, document.getElementById('cancerRelatives').value] })
-                                                document.getElementById('cancerRelatives').value = ''
-                                                toast.message("Relative added", {
-                                                    description: "See added relatives to see all the relatives added so far"
-                                                })
-                                            }}
-                                            variant={"outline"}
-                                            className={cn(
-                                                " h-7 justify-start text-left font-normal",
-                                            )}>
-                                            <Plus />
-                                        </Button>
+                    <div className="w-full">
+                        {editable ?
+                            <div className="flex flex-col justify-between w-full  gap-3">
+                                <div>
+                                    <div className="text-md font-semibold flex gap-2">Cancer History:
+                                        <select defaultValue={userData?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500">
+                                            <option value="N">No</option>
+                                            <option value="Y">Yes</option>
+                                        </select>
                                     </div>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
+                                    {errors.cancerHistory && <span className="text-red-500 text-sm">{errors.cancerHistory?.message}</span>}
+                                </div>
+                                {cancerHistory === "Y" &&
+                                    <div className="flex items-center w-full justify-between gap-2">
+                                        <div className="flex items-center gap-5">
+                                            <div className="text-md font-semibold gap-2 flex">Cancer Relatives:
+                                                <input className="border border-blue-500 rounded-md px-2" id="cancerRelatives" />
+                                            </div>
                                             <Button
+                                                onClick={() => {
+                                                    setEditedData({ ...editedData, cancerRelatives: [...editedData.cancerRelatives, document.getElementById('cancerRelatives').value] })
+                                                    document.getElementById('cancerRelatives').value = ''
+                                                    toast.message("Relative added", {
+                                                        description: "See added relatives to see all the relatives added so far"
+                                                    })
+                                                }}
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-[160px] justify-start text-left font-normal",
-                                                )}
-                                            >Added Relatives</Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <ScrollArea className="rounded-md border h-52 min-w-64">
-                                                {editedData.cancerRelatives.map((relative, index) => (
-                                                    <div key={index} className="flex justify-between p-2 border-b border-gray-300">
-                                                        <span>{relative}</span>
-                                                        <Button
-                                                            onClick={() => {
-                                                                setEditedData({ ...editedData, cancerRelatives: editedData.cancerRelatives.filter((_, i) => i !== index) })
-                                                                toast.message("Relative removed")
-                                                            }}
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                " h-7 justify-start text-left font-normal",
-                                                            )}>
-                                                            <Minus className="text-red-500" />
-                                                        </Button>
-                                                    </div>
-                                                ))}
-                                            </ScrollArea >
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            }
-                        </div>
-                        :
-                        <div className="flex flex-col justify-between w-full px-5 gap-3">
-                            <div>
-                                <div className="text-md font-semibold flex items-center gap-2">Cancer History:
-                                    <span>{userData?.cancerHistory === "Y" ? "Yes" : "No"}</span>
-                                </div>
+                                                    " h-7 justify-start text-left font-normal",
+                                                )}>
+                                                <Plus />
+                                            </Button>
+                                        </div>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-[160px] justify-start text-left font-normal",
+                                                    )}
+                                                >Added Relatives</Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <ScrollArea className="rounded-md border h-52 min-w-64">
+                                                    {editedData.cancerRelatives.map((relative, index) => (
+                                                        <div key={index} className="flex justify-between p-2 border-b border-gray-300">
+                                                            <span>{relative}</span>
+                                                            <Button
+                                                                onClick={() => {
+                                                                    setEditedData({ ...editedData, cancerRelatives: editedData.cancerRelatives.filter((_, i) => i !== index) })
+                                                                    toast.message("Relative removed")
+                                                                }}
+                                                                variant={"outline"}
+                                                                className={cn(
+                                                                    " h-7 justify-start text-left font-normal",
+                                                                )}>
+                                                                <Minus className="text-red-500" />
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </ScrollArea >
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                }
                             </div>
-                            {userData?.cancerHistory === "Y" &&
-                                <div className="flex items-center">
-                                    <div className="text-md font-semibold text-center flex flex-row gap-1">Cancer Relatives: {userData?.cancerRelatives?.join(", ")}
+                            :
+                            <div className="flex flex-col justify-between w-full  gap-3">
+                                <div>
+                                    <div className="text-md font-semibold flex items-center gap-2">Cancer History:
+                                        <span>{userData?.cancerHistory === "Y" ? "Yes" : "No"}</span>
                                     </div>
                                 </div>
-                            }
-                        </div>
-                    }
-                </div>
-                <div className="w-full px-5">
-                    {editable ?
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-5">
-                                <div className="text-md font-semibold text-center flex items-center gap-2">Period Irregularities:
-                                    <input className="border border-blue-500 rounded-md px-2" id="periodIrregularities" />
-                                </div>
-                                <Button
-                                    onClick={() => {
-                                        if (!document.getElementById('periodIrregularities').value) return toast.error("Irregularity field is empty")
-                                        setEditedData({ ...editedData, periodIrregularities: [...editedData.periodIrregularities, document.getElementById('periodIrregularities').value] })
-                                        document.getElementById('periodIrregularities').value = ''
-                                        toast.message("Irregularity added", {
-                                            description: "See added irregularities to see all the relatives added so far"
-                                        })
-                                    }}
-                                    variant={"outline"}
-                                    className={cn(
-                                        " h-7 justify-start text-left font-normal",
-                                    )}>
-                                    <AddIcon fontSize="medium" />
-                                </Button>
+                                {userData?.cancerHistory === "Y" &&
+                                    <div className="flex items-center">
+                                        <div className="text-md font-semibold flex flex-row gap-1">Cancer Relatives: {userData?.cancerRelatives?.join(", ")}
+                                        </div>
+                                    </div>
+                                }
                             </div>
-                            <Popover>
-                                <PopoverTrigger asChild>
+                        }
+                    </div>
+                    <div className="w-full ">
+                        {editable ?
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-5">
+                                    <div className="text-md font-semibold flex items-center gap-2">Period Irregularities:
+                                        <input className="border border-blue-500 rounded-md px-2" id="periodIrregularities" />
+                                    </div>
                                     <Button
+                                        onClick={() => {
+                                            if (!document.getElementById('periodIrregularities').value) return toast.error("Irregularity field is empty")
+                                            setEditedData({ ...editedData, periodIrregularities: [...editedData.periodIrregularities, document.getElementById('periodIrregularities').value] })
+                                            document.getElementById('periodIrregularities').value = ''
+                                            toast.message("Irregularity added", {
+                                                description: "See added irregularities to see all the relatives added so far"
+                                            })
+                                        }}
                                         variant={"outline"}
                                         className={cn(
-                                            " justify-start text-left font-normal",
-                                        )}
-                                    >Added Irregularities</Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <ScrollArea className="rounded-md border h-52 min-w-64">
-                                        {editedData.periodIrregularities.map((irregularity, index) => (
-                                            <div key={index} className="flex justify-between p-2 border-b border-gray-300">
-                                                <span>{irregularity}</span>
-                                                <Button
-                                                    onClick={() => {
-                                                        setEditedData({ ...editedData, periodIrregularities: editedData.periodIrregularities.filter((_, i) => i !== index) })
-                                                        toast.message("Irregularity removed")
-                                                    }}
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        " h-7 justify-start text-left font-normal",
-                                                    )}>
-                                                    <RemoveIcon sx={{ color: red[500] }} />
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </ScrollArea >
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        :
-                        <div className="flex items-center justify-between w-full">
-                            <div className="text-md font-semibold text-center">Period Irregularities: {userData?.periodIrregularities?.join(", ")}
-                            </div>
-                        </div>
-                    }
-                </div>
-                <div className="w-full px-5">
-                    {editable ?
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-5">
-                                <div className="text-md font-semibold text-center flex items-center gap-2">Allergies
-                                    <input className="border border-blue-500 rounded-md px-2" id="allergies" />
-                                </div>
-                                <Button
-                                    onClick={() => {
-                                        if (!document.getElementById('allergies').value) return toast.error("Allergy field is empty")
-                                        setEditedData({ ...editedData, allergies: [...editedData.allergies, document.getElementById('allergies').value] })
-                                        document.getElementById('allergies').value = ''
-                                        toast.message("Allergy added", {
-                                            description: "See added allergies to see all the allergies added so far"
-                                        })
-                                    }}
-                                    variant={"outline"}
-                                    className={cn(
-                                        " h-7 justify-start text-left font-normal",
-                                    )}>
-                                    <AddIcon fontSize="medium" />
-                                </Button>
-                            </div>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-[160px] justify-start text-left font-normal",
+                                            " h-7 justify-start text-left font-normal",
                                         )}>
-                                        Added Allergies
+                                        <AddIcon fontSize="medium" />
                                     </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <ScrollArea className="rounded-md border h-52 min-w-64">
-                                        {editedData.allergies.map((allergy, index) => (
-                                            <div key={index} className="flex justify-between p-2 border-b border-gray-300">
-                                                <span>{allergy}</span>
-                                                <Button
-                                                    onClick={() => {
-                                                        setEditedData({ ...editedData, allergies: editedData.allergies.filter((_, i) => i !== index) })
-                                                        toast.message("Allergy removed")
-                                                    }}
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        " h-7 justify-start text-left font-normal",
-                                                    )}>
-                                                    <RemoveIcon sx={{ color: red[500] }} />
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </ScrollArea >
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        :
-                        <div className="flex items-center justify-between w-full">
-                            <div className="text-md font-semibold text-center">
-                                Allergies: {userData?.allergies?.join(", ")}
-                            </div>
-                        </div>
-                    }
-                </div>
-                <div className="w-full px-5">
-                    {editable ?
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-5">
-                                <div className="text-md font-semibold text-center flex items-center gap-2">Organs WithChronic Condition
-                                    <input className="border border-blue-500 rounded-md px-2" id="organsWithChronicCondition" />
                                 </div>
-                                <Button
-                                    onClick={() => {
-                                        if (!document.getElementById('organsWithChronicCondition').value) return toast.error("Organ field is empty")
-                                        setEditedData({ ...editedData, organsWithChronicConditions: [...editedData.organsWithChronicCondition, document.getElementById('organsWithChronicCondition').value] })
-                                        document.getElementById('organsWithChronicCondition').value = ''
-                                        toast.message("Organ added", {
-                                            description: "See added Organs to see all the Organs added so far"
-                                        })
-                                    }}
-                                    variant={"outline"}
-                                    className={cn(
-                                        " h-7 justify-start text-left font-normal",
-                                    )}>
-                                    <AddIcon fontSize="medium" />
-                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                " justify-start text-left font-normal",
+                                            )}
+                                        >Added Irregularities</Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <ScrollArea className="rounded-md border h-52 min-w-64">
+                                            {editedData.periodIrregularities.map((irregularity, index) => (
+                                                <div key={index} className="flex justify-between p-2 border-b border-gray-300">
+                                                    <span>{irregularity}</span>
+                                                    <Button
+                                                        onClick={() => {
+                                                            setEditedData({ ...editedData, periodIrregularities: editedData.periodIrregularities.filter((_, i) => i !== index) })
+                                                            toast.message("Irregularity removed")
+                                                        }}
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            " h-7 justify-start text-left font-normal",
+                                                        )}>
+                                                        <RemoveIcon sx={{ color: red[500] }} />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </ScrollArea >
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                            <Popover>
-                                <PopoverTrigger asChild>
+                            :
+                            <div className="flex items-center justify-between w-full">
+                                <div className="text-md font-semibold">Period Irregularities: {userData?.periodIrregularities?.join(", ")}
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div className="w-full ">
+                        {editable ?
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-5">
+                                    <div className="text-md font-semibold flex items-center gap-2">Allergies
+                                        <input className="border border-blue-500 rounded-md px-2" id="allergies" />
+                                    </div>
                                     <Button
+                                        onClick={() => {
+                                            if (!document.getElementById('allergies').value) return toast.error("Allergy field is empty")
+                                            setEditedData({ ...editedData, allergies: [...editedData.allergies, document.getElementById('allergies').value] })
+                                            document.getElementById('allergies').value = ''
+                                            toast.message("Allergy added", {
+                                                description: "See added allergies to see all the allergies added so far"
+                                            })
+                                        }}
                                         variant={"outline"}
                                         className={cn(
-                                            "w-[160px] justify-start text-left font-normal",
+                                            " h-7 justify-start text-left font-normal",
                                         )}>
-                                        Added Organs
+                                        <AddIcon fontSize="medium" />
                                     </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <ScrollArea className="rounded-md border h-52 min-w-64">
-                                        {editedData.organsWithChronicConditions.map((organ, index) => (
-                                            <div key={index} className="flex justify-between p-2 border-b border-gray-300">
-                                                <span>{organ}</span>
-                                                <Button
-                                                    onClick={() => {
-                                                        setEditedData({ ...editedData, organsWithChronicConditions: editedData.organsWithChronicConditions.filter((_, i) => i !== index) })
-                                                        toast.message("Organ removed")
-                                                    }}
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        " h-7 justify-start text-left font-normal",
-                                                    )}>
-                                                    <RemoveIcon sx={{ color: red[500] }} />
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </ScrollArea >
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        :
-                        <div className="flex items-center justify-between w-full">
-                            <div className="text-md font-semibold text-center">Organs With Chronic Condition: {userData?.organsWithChronicConditions?.join(", ")}
-                            </div>
-                        </div>
-                    }
-                </div>
-                <div className="w-full px-5">
-                    {editable ?
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                                <div className="text-md font-semibold text-center flex items-center gap-2" >Medicine Name
-                                    <input className="border border-blue-500 rounded-md px-2" id="medicineName" />
                                 </div>
-                                <div className="text-md font-semibold text-center flex items-center gap-2" >Dose description
-                                    <input className="border border-blue-500 rounded-md px-2" id="doseDescription" />
-                                </div>
-                                <Button
-                                    onClick={() => {
-                                        if (!document.getElementById('medicineName').value || !document.getElementById('doseDescription').value) return toast.error("Both Medication fields are required")
-                                        setEditedData({ ...editedData, medications: [...editedData.medications, { name: document.getElementById('medicineName').value, doseDescription: document.getElementById('doseDescription').value }] })
-                                        document.getElementById('medicineName').value = ''
-                                        document.getElementById('doseDescription').value = ''
-                                        toast.message("Medicine added", {
-                                            description: "See added Medicines to see all the Medicines added so far"
-                                        })
-                                    }}
-                                    variant={"outline"}
-                                    className={cn(
-                                        " h-7 justify-start text-left font-normal",
-                                    )}>
-                                    <AddIcon fontSize="medium" />
-                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[160px] justify-start text-left font-normal",
+                                            )}>
+                                            Added Allergies
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <ScrollArea className="rounded-md border h-52 min-w-64">
+                                            {editedData.allergies.map((allergy, index) => (
+                                                <div key={index} className="flex justify-between p-2 border-b border-gray-300">
+                                                    <span>{allergy}</span>
+                                                    <Button
+                                                        onClick={() => {
+                                                            setEditedData({ ...editedData, allergies: editedData.allergies.filter((_, i) => i !== index) })
+                                                            toast.message("Allergy removed")
+                                                        }}
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            " h-7 justify-start text-left font-normal",
+                                                        )}>
+                                                        <RemoveIcon sx={{ color: red[500] }} />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </ScrollArea >
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                            <Popover>
-                                <PopoverTrigger asChild>
+                            :
+                            <div className="flex items-center justify-between w-full">
+                                <div className="text-md font-semibold">
+                                    Allergies: {userData?.allergies?.join(", ")}
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div className="w-full ">
+                        {editable ?
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-5">
+                                    <div className="text-md font-semibold flex items-center gap-2">Organs WithChronic Condition
+                                        <input className="border border-blue-500 rounded-md px-2" id="organsWithChronicCondition" />
+                                    </div>
                                     <Button
+                                        onClick={() => {
+                                            if (!document.getElementById('organsWithChronicCondition').value) return toast.error("Organ field is empty")
+                                            setEditedData({ ...editedData, organsWithChronicConditions: [...editedData.organsWithChronicCondition, document.getElementById('organsWithChronicCondition').value] })
+                                            document.getElementById('organsWithChronicCondition').value = ''
+                                            toast.message("Organ added", {
+                                                description: "See added Organs to see all the Organs added so far"
+                                            })
+                                        }}
                                         variant={"outline"}
                                         className={cn(
-                                            "w-[160px] justify-start text-left font-normal",
-                                        )}
-                                    >Added Medications</Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <ScrollArea className="rounded-md border h-52 min-w-96">
-                                        {editedData.medications.map((medication, index) => (
-                                            <div key={index} className="flex justify-between flex-wrap p-1 border-b border-gray-300 w-full">
-                                                <span>{medication.name}</span>
-                                                <Separator className="bg-pink-500  w-[2px] h-5 " orientation="vertical" />
-                                                <ScrollableContainer style={{ display: 'flex', flexWrap: 'wrap', width: '10rem' }}>{medication.doseDescription}
-                                                </ScrollableContainer>
-                                                <Button
-                                                    onClick={() => {
-                                                        setEditedData({ ...editedData, medications: editedData.medications.filter((_, i) => i !== index) })
-                                                        toast.message("Medication removed")
-                                                    }}
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        " h-7 justify-start text-left font-normal",
-                                                    )}>
-                                                    <RemoveIcon sx={{ color: red[500] }} />
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </ScrollArea >
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        :
-                        <div className="flex items-center justify-between w-full">
-                            <div className="text-md font-semibold text-center">Medications: {userData?.medications?.map(medication => `${medication.name}(${medication.doseDescription})`).join(", ")}
+                                            " h-7 justify-start text-left font-normal",
+                                        )}>
+                                        <AddIcon fontSize="medium" />
+                                    </Button>
+                                </div>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[160px] justify-start text-left font-normal",
+                                            )}>
+                                            Added Organs
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <ScrollArea className="rounded-md border h-52 min-w-64">
+                                            {editedData.organsWithChronicConditions.map((organ, index) => (
+                                                <div key={index} className="flex justify-between p-2 border-b border-gray-300">
+                                                    <span>{organ}</span>
+                                                    <Button
+                                                        onClick={() => {
+                                                            setEditedData({ ...editedData, organsWithChronicConditions: editedData.organsWithChronicConditions.filter((_, i) => i !== index) })
+                                                            toast.message("Organ removed")
+                                                        }}
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            " h-7 justify-start text-left font-normal",
+                                                        )}>
+                                                        <RemoveIcon sx={{ color: red[500] }} />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </ScrollArea >
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                        </div>
-                    }
+                            :
+                            <div className="flex items-center justify-between w-full">
+                                <div className="text-md font-semibold">Organs With Chronic Condition: {userData?.organsWithChronicConditions?.join(", ")}
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div className="w-full ">
+                        {editable ?
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-md font-semibold flex items-center gap-2" >Medicine Name
+                                            <input className="border border-blue-500 rounded-md px-2" id="medicineName" />
+                                        </div>
+                                        <div className="text-md font-semibold flex items-center gap-2" >Dose description
+                                            <input className="border border-blue-500 rounded-md px-2" id="doseDescription" />
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={() => {
+                                            if (!document.getElementById('medicineName').value || !document.getElementById('doseDescription').value) return toast.error("Both Medication fields are required")
+                                            setEditedData({ ...editedData, medications: [...editedData.medications, { name: document.getElementById('medicineName').value, doseDescription: document.getElementById('doseDescription').value }] })
+                                            document.getElementById('medicineName').value = ''
+                                            document.getElementById('doseDescription').value = ''
+                                            toast.message("Medicine added", {
+                                                description: "See added Medicines to see all the Medicines added so far"
+                                            })
+                                        }}
+                                        variant={"outline"}
+                                        className={cn(
+                                            " h-7 justify-start text-left font-normal",
+                                        )}>
+                                        <AddIcon fontSize="medium" />
+                                    </Button>
+                                </div>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[160px] justify-start text-left font-normal",
+                                            )}
+                                        >Added Medications</Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <ScrollArea className="rounded-md border h-52 min-w-96">
+                                            {editedData.medications.map((medication, index) => (
+                                                <div key={index} className="flex justify-between flex-wrap p-1 border-b border-gray-300 w-full">
+                                                    <span>{medication.name}</span>
+                                                    <Separator className="bg-pink-500  w-[2px] h-5 " orientation="vertical" />
+                                                    <ScrollableContainer style={{ display: 'flex', flexWrap: 'wrap', width: '10rem' }}>{medication.doseDescription}
+                                                    </ScrollableContainer>
+                                                    <Button
+                                                        onClick={() => {
+                                                            setEditedData({ ...editedData, medications: editedData.medications.filter((_, i) => i !== index) })
+                                                            toast.message("Medication removed")
+                                                        }}
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            " h-7 justify-start text-left font-normal",
+                                                        )}>
+                                                        <RemoveIcon sx={{ color: red[500] }} />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </ScrollArea >
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                            :
+                            <div className="flex items-center justify-between w-full">
+                                <div className="text-md font-semibold">Medications: {userData?.medications?.map(medication => `${medication.name}(${medication.doseDescription})`).join(", ")}
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-            <div className="flex flex-col items-center justify-center w-11/12 border border-gray-500 bg-gray-100 relative rounded-md p-3">
+            <div className="flex flex-col items-center justify-center w-full border border-gray-500 bg-gray-100 relative rounded-md p-3">
                 <h1 className="text-2xl font-bold text-black">Location</h1>
                 {currentPosition ?
                     <>

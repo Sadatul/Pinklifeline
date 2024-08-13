@@ -173,15 +173,20 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col gap-3">
-                    <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
-                    <span className="flex items-center gap-2">Designation: {userData.designation}</span>
-                    <span className="flex items-center gap-2">Department: {userData.department}</span>
-                    <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
-                    <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
-                    <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
-                    <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
-                    <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
+                <div className="flex flex-row w-full gap-5">
+                    <div className="flex flex-col flex-1 gap-3">
+                        <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
+                        <span className="flex items-center gap-2">Designation: {userData.designation}</span>
+                        <span className="flex items-center gap-2">Department: {userData.department}</span>
+                        <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
+                    </div>
+                    <Separator orientation="vertical" className="w-[3px] bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 rounded-t-full rounded-b-full" /> 
+                    <div className="flex flex-col flex-1 gap-3">
+                        <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
+                        <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
+                        <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
+                        <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
+                    </div>
                 </div>
             )}
         </div>
