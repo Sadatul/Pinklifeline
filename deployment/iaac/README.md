@@ -9,10 +9,13 @@ docker run -d --publish 3306:3306 --mount type=bind,source="$(pwd)"/cloudsql_pro
 3. Added a backend.tf so that terraform sends the state file to the backend.
 4. Ran ```terraform init -migrate-state``` to migrate to the bucket.
 5. Ran ```terraform apply``` to create all the necessary resources
-6. From the output you can find the 'the static ip', the host and port for redis. also 'cloudsql_proxy_key.json' will be generated.
-7. Need to create a secret for the using cloudsql_auth_proxy 
+6. From the output you can find the 'the static ip', the host and port for redis. also 'cloudsql_proxy_key.json' and secret_accessor_key.json will be generated.
+7. Need to create a secret for the using cloudsql_auth_proxy and accessing secret_manager 
 ```bash
 kubectl create secret generic cloud-sql-secret --from-file=service_account.json=./cloudsql_proxy_key.json
+```
+```
+kubectl create secret generic sm-secret --from-file=sm-sa.json=./secret_accessor_key.json
 ```
 8. Replace redis host in the config map and the backend address based on static ip
 9. A secret.example.yaml is provided. Create a file named secret.yaml using the template of secret.example.yaml and fill the values with appropiate secrets.
@@ -26,3 +29,11 @@ kubectl create secret generic cloud-sql-secret --from-file=service_account.json=
 1. Delete "backend.tf"
 2. Run ```terraform init -migrate-state``` to migrate to the bucket.
 3. Remember to delete the bucket in cloud and also to remove storage admin role from user.
+
+## Latest update -> Things to do to get started
+1. Create a file based on .env.example with name .env. We will use this file to generate variables for our terraform. After creating .env file, run the following command, it will generate the necessary environment varialbes.
+```export $(grep -v '^#' .env | xargs)``` 
+To verify -> you can use this command ```env | grep TF_VAR_```
+2. Run ```terraform apply```. This should bring up the infrastructure and also deploy the kubernetes deployment, service and ingress.
+3. To eliminate everything, you can run ```terraform destroy```, will bring down the entire infrastructure
+4. To delete the environment varibles you can use, ```unset "${!TF_VAR_@}"```
