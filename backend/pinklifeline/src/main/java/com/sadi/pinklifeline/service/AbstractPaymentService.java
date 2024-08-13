@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 @Slf4j
 public abstract class AbstractPaymentService {
     private final SslcommerzClientService sslcommerzClientService;
-
     public AbstractPaymentService(SslcommerzClientService sslcommerzClientService) {
         this.sslcommerzClientService = sslcommerzClientService;
     }
@@ -21,6 +20,7 @@ public abstract class AbstractPaymentService {
     public abstract void updatePaymentStatus(Long id);
     public abstract Integer getTotalAmount(Long id);
     public abstract void validateResourceForPayment(Long id);
+    public abstract void addBalanceToUsers(Long resourceId);
     public InitiatePaymentRes initiatePayment(Long id, String type, InitiatePaymentReq req) {
         validateResourceForPayment(id);
         SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, type, getTotalAmount(id).doubleValue(), req.getCustomerName(),
@@ -47,6 +47,7 @@ public abstract class AbstractPaymentService {
             return ResponseEntity.accepted().build();
         }
         updatePaymentStatus(id);
+        addBalanceToUsers(id);
         return ResponseEntity.ok().build();
     }
 }

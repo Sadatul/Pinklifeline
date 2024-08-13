@@ -8,16 +8,15 @@ import com.sadi.pinklifeline.externals.sslcommerz.SslcommerzClientService;
 import com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentDoctorDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentUserDTO;
-import com.sadi.pinklifeline.models.entities.Appointment;
-import com.sadi.pinklifeline.models.entities.DoctorConsultationLocation;
-import com.sadi.pinklifeline.models.entities.DoctorDetails;
-import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.entities.*;
 import com.sadi.pinklifeline.models.reqeusts.RegisterAppointmentReq;
 import com.sadi.pinklifeline.repositories.AppointmentRepository;
+import com.sadi.pinklifeline.repositories.BalanceHistoryRepository;
 import com.sadi.pinklifeline.service.doctor.DoctorConsultancyLocationsService;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -32,13 +31,20 @@ public class AppointmentService extends AbstractPaymentService{
     private final UserService userService;
     private final DoctorsInfoService doctorsInfoService;
     private final DoctorConsultancyLocationsService locationsService;
+    private final BalanceHistoryRepository balanceHistoryRepository;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, UserService userService, DoctorsInfoService doctorsInfoService, DoctorConsultancyLocationsService locationsService, SslcommerzClientService sslcommerzClientService) {
+    @Value("${service.charge.appointments}")
+    private float serviceChargeAppointments;
+
+    public AppointmentService(AppointmentRepository appointmentRepository, UserService userService,
+                              DoctorsInfoService doctorsInfoService, DoctorConsultancyLocationsService locationsService,
+                              SslcommerzClientService sslcommerzClientService, BalanceHistoryRepository balanceHistoryRepository) {
         super(sslcommerzClientService);
         this.appointmentRepository = appointmentRepository;
         this.userService = userService;
         this.doctorsInfoService = doctorsInfoService;
         this.locationsService = locationsService;
+        this.balanceHistoryRepository = balanceHistoryRepository;
     }
 
     public Appointment getAppointment(Long id){
@@ -149,6 +155,24 @@ public class AppointmentService extends AbstractPaymentService{
                     "Payment for appointment with id: %d and status %s cannot be accepted", id, appointment.getStatus()
             ));
         }
+    }
+
+    @Override
+    public void addBalanceToUsers(Long resourceId) {
+        Long doctorId = getAppointment(resourceId).getDoctor().getUserId();
+        Integer fees = getTotalAmount(resourceId);
+        Integer adminFees =  Math.round(fees * serviceChargeAppointments);
+        Integer doctorFees = fees - adminFees;
+        BalanceHistory doctorBalance = new BalanceHistory(new User(doctorId),
+                    String.format("Payment of %d received for appointment", doctorFees),
+                    doctorFees
+                    );
+        BalanceHistory adminBalance = new BalanceHistory(new User(1L),
+                String.format("Payment of %d received for appointment", adminFees),
+                adminFees
+                );
+        balanceHistoryRepository.save(doctorBalance);
+        balanceHistoryRepository.save(adminBalance);
     }
 
     @Override

@@ -1115,3 +1115,36 @@ status: create(201)
   "hospitalName": "American Medical, Belgium"
 }
 ```
+## Get Balance for User
+```Endpoint: /v1/infos/balance```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "balance": 900
+}
+```
+## Get balance history for user: Paginated
+```Endpoint: /v1/infos/balance/history```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+[
+  {
+    "description": "Payment of 450 received for appointment",
+    "id": 3,
+    "value": 450,
+    "timestamp": "2024-08-11T12:11:02"
+  },
+  {
+    "description": "Payment of 450 received for appointment",
+    "id": 1,
+    "value": 450,
+    "timestamp": "2024-08-11T10:19:23"
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* *THIS BODY IS PAGINATED*. Check paginated Request.
