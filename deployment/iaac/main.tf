@@ -20,7 +20,7 @@ resource "google_sql_database" "pinklifeline_database" {
 }
 
 resource "google_sql_user" "pinklifeline_database_uesr" {
-  name     = "pinklifeline"
+  name     = var.database_user_username
   instance = google_sql_database_instance.pinklifeline_database_instance.name
   password = var.database_user_password
   host     = "%"
@@ -49,6 +49,7 @@ resource "google_project_iam_member" "cloudsql_client_for_proxy" {
 
 resource "google_service_account_key" "cloudsql_proxy_key" {
   service_account_id = google_service_account.cloudsql_proxy_sa.name
+  depends_on         = [google_project_iam_member.cloudsql_client_for_proxy]
 }
 
 output "cloudsql_proxy_key" {
@@ -70,6 +71,32 @@ variable "cluster_location" {
 resource "google_service_account" "kubernetes_sa" {
   account_id   = "pinklifeline-kubernetese-sa"
   display_name = "Pinklifeline K8s Service Account"
+}
+
+resource "google_project_iam_member" "secret_accessor_for_k8s_sa" {
+  project = "pinklifeline"
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.kubernetes_sa.email}"
+}
+
+resource "google_service_account_key" "secret_accessor_key" {
+  service_account_id = google_service_account.kubernetes_sa.name
+  depends_on         = [google_project_iam_member.secret_accessor_for_k8s_sa]
+}
+
+resource "local_file" "secret_accessor_key_file" {
+  content_base64  = google_service_account_key.secret_accessor_key.private_key
+  filename        = "${path.module}/secret_accessor_key.json"
+  file_permission = "0600"
+}
+
+resource "google_project_service" "secret_manager_api" {
+  service = "secretmanager.googleapis.com"
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
 }
 
 resource "google_container_cluster" "pinklifeline_cluster" {

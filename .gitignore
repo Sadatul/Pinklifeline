@@ -4,4 +4,5 @@ deployment/iaac/terraform.tfstate
 deployment/iaac/terraform.tfstate.backup
 deployment/iaac/.terraform.lock.hcl
 deployment/iaac/cloudsql_proxy_key.json
+deployment/iaac/secret_accessor_key.json
 deployment/k8s/secret.yaml

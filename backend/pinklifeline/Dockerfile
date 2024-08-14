@@ -12,4 +12,7 @@ RUN mvn -f /home/app/pom.xml clean package -DskipTests
 FROM maven:3.9.7-eclipse-temurin-21-alpine
 EXPOSE 8080
 COPY --from=build /home/app/target/*.jar pinklifeline.jar
+ARG profile=dev
+RUN echo "profile: ${profile}"
+ENV spring_profiles_active=${profile}
 ENTRYPOINT ["sh", "-c", "java -jar /pinklifeline.jar"]
