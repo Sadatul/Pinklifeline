@@ -49,6 +49,7 @@ resource "google_project_iam_member" "cloudsql_client_for_proxy" {
 
 resource "google_service_account_key" "cloudsql_proxy_key" {
   service_account_id = google_service_account.cloudsql_proxy_sa.name
+  depends_on         = [google_project_iam_member.cloudsql_client_for_proxy]
 }
 
 output "cloudsql_proxy_key" {
@@ -80,6 +81,7 @@ resource "google_project_iam_member" "secret_accessor_for_k8s_sa" {
 
 resource "google_service_account_key" "secret_accessor_key" {
   service_account_id = google_service_account.kubernetes_sa.name
+  depends_on         = [google_project_iam_member.secret_accessor_for_k8s_sa]
 }
 
 resource "local_file" "secret_accessor_key_file" {

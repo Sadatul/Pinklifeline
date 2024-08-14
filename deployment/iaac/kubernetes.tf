@@ -73,7 +73,11 @@ resource "kubernetes_manifest" "backend_deployment" {
     google_container_cluster.pinklifeline_cluster,
     kubernetes_config_map.pinklifeline-config,
     kubernetes_secret.sm_secret,
-    kubernetes_secret.cloud_sql_secret
+    kubernetes_secret.cloud_sql_secret,
+    google_sql_database.pinklifeline_database,
+    google_sql_user.pinklifeline_database_uesr,
+    google_project_service.sqladmin-api,
+    google_redis_instance.pinklifeline_redis_instance
   ]
 }
 

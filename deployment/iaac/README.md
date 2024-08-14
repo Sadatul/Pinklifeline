@@ -34,6 +34,9 @@ kubectl create secret generic sm-secret --from-file=sm-sa.json=./secret_accessor
 1. Create a file based on .env.example with name .env. We will use this file to generate variables for our terraform. After creating .env file, run the following command, it will generate the necessary environment varialbes.
 ```export $(grep -v '^#' .env | xargs)``` 
 To verify -> you can use this command ```env | grep TF_VAR_```
-2. Run ```terraform apply```. This should bring up the infrastructure and also deploy the kubernetes deployment, service and ingress.
-3. To eliminate everything, you can run ```terraform destroy```, will bring down the entire infrastructure
-4. To delete the environment varibles you can use, ```unset "${!TF_VAR_@}"```
+2. Run ```terraform apply -target=google_container_cluster.pinklifeline_cluster```. This will create the kubernets cluster and kubernetes service account. We are creating it first because in the next step, with terraform apply will create deployments in the cluster too.
+3. Run ```terraform apply```. This should bring up the infrastructure and also deploy the kubernetes deployment, service and ingress.
+
+## Latest update -> Bring down everything
+1. To eliminate everything, you can run ```terraform destroy```, will bring down the entire infrastructure
+2. To delete the environment varibles you can use, ```unset "${!TF_VAR_@}"```
