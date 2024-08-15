@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { LoaderCircle } from "lucide-react";
 import { useRef, useState } from "react";
@@ -7,12 +9,9 @@ import { useRef, useState } from "react";
 // import selfTestAnimationMuted from "../../../../../../public/selftest/selttestanimationmuted.mp4"
 
 export default function SelfTestPage() {
-    const responses = useRef({
-        question1: '',
-        question2: '',
-        question3: '',
-        question4: '',
-    });
+    const responses = useRef(['', '', '', '']);
+    const [questionCompletedCount, setQuestionCompletedCount] = useState(0);
+    const questionsArray = ["1. Have you noticed any changes in size or shape of your breast or nipples?", "2. Have you noticed any skin redness, rashes, dimpling, or puckering?", "3. After raising your arms, have you noticed any changes?", "4. Have you felt any lumps or painful areas?"];
 
     const [resultState, setResultState] = useState(null);
 
@@ -38,11 +37,11 @@ export default function SelfTestPage() {
         else {
             document.getElementById("errormsg").innerText = "";
         }
-        if(question1 === "yes" || question2 === "yes" || question3 === "yes" || question4 === "yes") {
+        if (responses.current.includes("yes")) {
             setResultState("loading");
             timer = setTimeout(() => {
                 setResultState("warn");
-            }, 3000);
+            }, 2000);
         }
         else {
             setResultState("loading");
@@ -55,30 +54,91 @@ export default function SelfTestPage() {
         }
     };
     return (
-        <div className="flex flex-col p-4 w-full gap-4">
+        <div className="flex flex-col p-4 w-full gap-2 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-400 via-gray-400 to-gray-300">
             <h1 className="text-2xl font-bold">Self Test Page</h1>
-            <div className="flex flex-col gap-3 w-10/12">
-                <video controls autoPlay loop muted>
-                    <source src={"/selftest/selttestanimationmuted.mp4"} />
-                </video>
+            <div className="flex flex-col w-full items-center">
+                <div className="flex flex-row gap-1 px-5 justify-evenly w-full h-14 bg-gradient-to-t from-zinc-500 via-zinc-700 to-zinc-800 items-center rounded-l-2xl" style={{
+                    clipPath: "polygon(80% 0, 100% 50%, 80% 100%, 0 100%, 0 50%, 0 0)"
+                }}>
+                    <div className="flex flex-row justify-evenly h-14 w-1/2 mt-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} class="w-14 h-14 bg-gray-200" style={{
+                                clipPath: "polygon(69% 20%, 100% 50%, 65% 74%, 0 74%, 25% 50%, 0 20%);"
+                            }}></div>
+                        ))}
+                        <span className="text-4xl font-semibold text-white mt-1">
+                            {questionCompletedCount}/4
+                        </span>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-1 p-2 w-8/12 items-center flex-wrap mr-40 bg-purple-50 rounded-md">
+                    <video className="w-full" controls autoPlay loop muted>
+                        <source src="/path/to/your/video.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                    <div className="flex flex-col flex-1 ">
+                        <div className="flex flex-col w-full bg-gray-200 p-3 rounded-md gap-5">
+                            <div className="text-lg gap-2 flex flex-col">
+                                <span className="">
+                                    {questionsArray[questionCompletedCount]}
+                                </span>
+                                <select id="questionSelect" value={responses.current[questionCompletedCount]} className="px-2 py-1 border rounded border-purple-900" onChange={(e)=>{
+
+                                }} >
+                                    <option disabled value="">Select an option</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-row justify-between">
+                                <Button variant="outline" >
+                                    Previous
+                                </Button>
+                                <span id="errormsg" className="text-lg font-semibold text-red-500"></span>
+                                <Button onClick={() => {
+                                    if (document.getElementById("questionSelect").value === "") {
+                                        document.getElementById("errormsg").innerText = "Please answer the question";
+                                        return;
+                                    }
+                                    else if (questionCompletedCount < 3) {
+                                        document.getElementById("errormsg").innerText = "";
+                                        responses.current[questionCompletedCount] = document.getElementById("questionSelect").value;
+                                        setQuestionCompletedCount(prev => prev + 1);
+                                    }
+                                    else if (questionCompletedCount === 3) {
+                                        document.getElementById("errormsg").innerText = "";
+                                        responses.current[questionCompletedCount] = document.getElementById("questionSelect").value;
+                                        handleSubmit();
+                                    }
+                                }}>
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="flex flex-col gap-3 w-full p-3 bg-purple-50 rounded-md">
-                <h1 className="text-xl font-bold">Self Test Instructions</h1>
-                <span className="text-lg">1. Check for change size and shape of breast and nipples. This includes if nipples have sunken or inverted and wether any fluid is coming from nipples </span>
-                <span className="text-lg">2. Check your skin for any redness, rashes, dimpling or puckering</span>
-                <span className="text-lg">3. Now raise your arms and look for the same changes.</span>
-                <span className="text-lg">4. Feel for any lumps or painful areas</span>
-                <span className="text-xl font-semibold">See Video above for demo</span>
-            </div>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-blue-50 p-4 rounded-md">
+            <Dialog open={resultState !== null} onOpenChange={(e) => {
+                if (e === false) {
+                    setResultState(null);
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Suggestion
+                        </DialogTitle>
+                        <DialogDescription>
+
+                        </DialogDescription>
+                    </DialogHeader>
+                    {resultState === "loading" && <LoaderCircle size={50} className="text-blue-500 animate-spin" />}
+                    {resultState === "warn" && <span className="text-xl text-red-600 font-bold">Please consult a doctor.</span>}
+                    {resultState === "nowarn" && <span className="text-xl text-green-600 font-bold">You are safe.</span>}
+                </DialogContent>
+            </Dialog>
+            {/* <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-blue-50 p-4 rounded-md">
                 <div className="">
-                    <label className="text-lg flex items-center gap-2">1. Have you noticed any changes in size or shape of your breast or nipples?
-                        <select id="question-1" defaultValue={""} className="px-2 py-1 border rounded border-purple-900">
-                            <option disabled value="">Select an option</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </label>
                 </div>
                 <div className="">
                     <label className="text-lg flex items-center gap-2">2. Have you noticed any skin redness, rashes, dimpling, or puckering?
@@ -109,15 +169,8 @@ export default function SelfTestPage() {
                 </div>
                 <span id="errormsg" className="text-lg text-red-500"></span>
                 <button type="submit" className="bg-blue-500 text-white p-2 rounded w-20">Submit</button>
-            </form>
-            <div className={cn("flex flex-col items-center gap-3 w-full p-3 rounded-md", (resultState === null) && "hidden", (resultState === "loading") && "bg-purple-100", (resultState === "warn") && "bg-red-100", (resultState === "nowarn") && "bg-green-100")}>
-                <h2 className="text-lg font-bold">
-                    Suggestions
-                </h2>
-                {resultState === "loading" && <LoaderCircle size={50} className="animate-spin text-blue-600" />}
-                {resultState === "warn" && <span className="text-gray-800 text-lg font-semibold">Please see a doctor for further examination.</span>}
-                {resultState === "nowarn" && <span className="text-gray-800 text-lg font-semibold">Your answers do not indicate a need for immediate concern. Continue regular self-checks and consult a doctor if you notice any changes.</span>}
-            </div>
+            </form> */}
+
         </div>
     )
 }
