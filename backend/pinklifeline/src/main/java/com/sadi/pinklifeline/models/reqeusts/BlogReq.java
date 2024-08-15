@@ -15,6 +15,6 @@ public class BlogReq {
     private String title;
 
     @NotNull
-    @Size(min = 1, max = 1200, message = "Content length must be within 1 to 1200 chars")
+    @Size(min = 1, max = 65535, message = "Content length must be within 1 to 65535 chars")
     private String content;
 }

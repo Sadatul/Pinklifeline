@@ -3,7 +3,7 @@ CREATE TABLE blogs
     id           BIGINT AUTO_INCREMENT NOT NULL,
     author_id    BIGINT                NOT NULL,
     title        VARCHAR(255)          NOT NULL,
-    content      VARCHAR(1200)         NOT NULL,
+    content      TEXT                  NOT NULL,
     upvote_count INT                   NOT NULL,
     created_at   datetime              NOT NULL,
     CONSTRAINT pk_blogs PRIMARY KEY (id)
