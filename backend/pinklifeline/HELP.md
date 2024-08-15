@@ -1140,3 +1140,133 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>**
 * *THIS BODY IS PAGINATED*. Check paginated Request.
+
+## Add Blog
+``` Endpoint: POST /v1/blogs```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "title": "Basic Cancer Surgery",
+  "content": "Lorem ipsum odor amet, consectetuer adipiscing elit. s. ligula."
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* Add blog request can be sent only by doctors
+* None of the above fields can be null. Must provide each one.
+* Title is limited to 255 characters and body is limited to 1200 characters
+
+## Update Blog
+``` Endpoint: PUT /v1/blogs/{blog_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+  "title": "Basic Cancer Surgery",
+  "content": "Lorem ipsum odor amet, consectetuer adipiscing elit. s. ligula."
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* Add blog request can be sent only by doctors
+* None of the above fields can be null. Must provide each one.
+* Title is limited to 255 characters and body is limited to 1200 characters
+* Remember whatever you send here will directly replace in database. So if you want to keep some fields with previous data you must send that previous data.
+
+##  Delete blog
+``` Endpoint: DELETE /v1/blogs/{blog_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+
+## Vote or Un-Vote Blog
+``` Endpoint: PUT /v1/blogs/{blog_id}/vote```
+<br>
+<br>
+```Response status: ok(200)```
+### Sample Return Body
+```
+{
+  "voteChange": -1
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* This endpoint works like a toggle. If a vote for this blog_id with current user already exists it will remove the vote, and you will get a -1 as response. But if you a vote doesn't exist for the blog_id by the current user, then a vote will be added to the blog and you will get a 1 as response.
+
+## GET Blogs: Paginated
+``` Endpoint: GET /v1/blogs```
+```Response status: ok(200)```
+<br><br>
+``` Query params: docId=1```
+<br>
+``` Query params: doctorName=Morshad```
+<br>
+``` Query params: title=lsfjsldfj```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sortType=TIME```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can filter result based on the query parameters
+* You can omit any one without any issues.
+* sorType can have two values ```TIME or VOTES```. By default, TIME will be selected. You can sort based on creation time or votes by using this parameter.
+* sortDirection can have two values ```ASC or DESC```. By default, DESC is selected.
+* If sortType and sortDirection is omitted, the result will be sorted in descending order of creation time.
+* Here PageNo. is the number of page you want to load in a paginated response. If pageNo. is omitted, 0 index or first page will be sent. Remember pageNo. must be 0 indexed meaning fist page starts at zero.
+
+### Response Body.content
+**<span style="color:red">Note: This is paginated. You will find this list inside "content" field</span>**
+```
+[
+  {
+    "id": 4,
+    "title": "Basic Cancer Surgery",
+    "content": "Lorem ipsum odor amet, consectetuer adipiscing eli",
+    "voteId": null,
+    "author": "Dr. QQW Ahmed",
+    "authorId": 4,
+    "upvoteCount": 0,
+    "createdAt": "2024-08-15T12:46:33"
+   }
+]
+```
+**<span style="color:red">Notes:</span>**
+* Here we are only returning the first 100 chars of the content via the content field.
+* If voteId is null that means the current user hasn't voted for this blog. If it has a value(Long), then the user has voted for this blog. 
+
+## Get Blog info by Id
+```Endpoint: /v1/blogs/{blog_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "createdAt": "2024-08-15T00:32:15",
+  "authorQualifications":["MBBS", "DO"],
+  "authorDesignation": "Head",
+  "authorName": "Dr. Rahima Begum",
+  "authorDepartment": "Cancer",
+  "voted": true,
+  "id": 2,
+  "title": "Basics of breast cancer",
+  "authorId": 3,
+  "authorWorkplace": "Rajshahi Medical College",
+  "upVoteCount": 2,
+  "content": "Try to get treatment as soon as possible"
+}
+```
+**<span style="color:red">Notes:</span>**
+* voted true means user has voted for this blog, false means user hasn't voted for this blog.

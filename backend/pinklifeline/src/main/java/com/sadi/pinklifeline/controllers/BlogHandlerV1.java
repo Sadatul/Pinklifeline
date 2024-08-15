@@ -21,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,11 +58,11 @@ public class BlogHandlerV1 {
     }
 
     @PutMapping("/{id}/vote")
-    public ResponseEntity<Void> voteBlog(
+    public ResponseEntity<Map<Object, Object>> voteBlog(
             @PathVariable Long id){
         log.debug("vote for blog with id: {}", id);
-        blogHandlerService.voteBlog(id);
-        return ResponseEntity.noContent().build();
+        int val = blogHandlerService.voteBlog(id);
+        return ResponseEntity.ok(Collections.singletonMap("voteChange", val));
     }
 
     @DeleteMapping("/{id}")

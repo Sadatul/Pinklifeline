@@ -96,23 +96,27 @@ public class BlogHandlerService {
         blogRepository.delete(blog);
     }
 
-    public void voteBlog(Long id) {
+    public int voteBlog(Long id) {
         Long voterId = SecurityUtils.getOwnerID();
         Blog blog = getBlog(id);
         User user = userService.getUserIfRegisteredOnlyId(voterId);
         Optional<BlogVote> voteEntry = getVoteEntryForBlog(id, voterId);
         Integer voteCount = blog.getUpvoteCount();
+        int returnVal;
         if(voteEntry.isPresent()){
             blogVoteRepository.delete(voteEntry.get());
             voteCount--;
+            returnVal = -1;
         }
         else{
             BlogVote vote = new BlogVote(blog, user);
             blogVoteRepository.save(vote);
             voteCount++;
+            returnVal = 1;
         }
         blog.setUpvoteCount(voteCount);
         blogRepository.save(blog);
+        return returnVal;
     }
 
     public Optional<BlogVote> getVoteEntryForBlog(Long id, Long voterId) {
