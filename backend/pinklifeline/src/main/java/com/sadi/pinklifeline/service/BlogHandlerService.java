@@ -149,6 +149,7 @@ public class BlogHandlerService {
                 cb.substring(root.get("content"), 1, shortContentSize),
                 voteIdSubQuery.alias("voteId"),
                 root.get("author").get("fullName"),
+                root.get("author").get("userId"),
                 root.get("upvoteCount"),
                 root.get("createdAt")
         ));
