@@ -109,7 +109,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
         String res = mockMvc.perform(get("/v1/reports")
                 .header("Authorization", String.format("Bearer %s", token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(4))
+                .andExpect(jsonPath("$.page.totalElements").value(4))
                 .andReturn().getResponse().getContentAsString();
 
         log.info("Response for first query: {}", res);
@@ -121,7 +121,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                         .param("startDate", "2024-02-08")
                         .param("keywords", "liver,kidney"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].id").value(4))
                 .andReturn().getResponse().getContentAsString();
 
@@ -189,7 +189,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
         res = mockMvc.perform(get("/v1/reports/share")
                         .header("Authorization", String.format("Bearer %s", shareToken)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].id").value(newSharedReportId))
                 .andReturn().getResponse().getContentAsString();
         log.info("Shared reports for user {}", res);
@@ -206,7 +206,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
         res = mockMvc.perform(get("/v1/reports/share")
                         .header("Authorization", String.format("Bearer %s", doctorToken)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].id").value(newSharedReportId))
                 .andReturn().getResponse().getContentAsString();
 

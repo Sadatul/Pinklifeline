@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -67,7 +68,7 @@ public class ReportHandlerV1 {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Map<String, Object>>> getReports(
+    public ResponseEntity<PagedModel<Map<String, Object>>> getReports(
             @RequestParam(required = false, defaultValue = "1000-01-01") LocalDate startDate,
             @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
             @RequestParam(required = false) String keywords,
@@ -98,7 +99,7 @@ public class ReportHandlerV1 {
             reportMapList.add(reportMap);
         }
         Page<Map<String, Object>> result = new PageImpl<>(reportMapList, pageable, page.getTotalElements());
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new PagedModel<>(result));
     }
 
     @GetMapping("/{id}")
@@ -139,7 +140,7 @@ public class ReportHandlerV1 {
     }
 
     @GetMapping("/share")
-    public ResponseEntity<Page<SharedReportDTO>> getSharedReportsFiltered(
+    public ResponseEntity<PagedModel<SharedReportDTO>> getSharedReportsFiltered(
             @RequestParam(required = false, defaultValue = "1000-01-01") LocalDate startDate,
             @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
             @RequestParam(required = false) String keywords,
@@ -162,7 +163,7 @@ public class ReportHandlerV1 {
         else {
             reports = sharedReportFilterService.filterShareReportsForUser(spec, pageable);
         }
-        return ResponseEntity.ok(reports);
+        return ResponseEntity.ok(new PagedModel<>(reports));
     }
 
     @GetMapping("/{reportId}/share")

@@ -744,31 +744,23 @@ status: create(201)
 ## Paginated Responses
 ```
 {
-  "totalElements": 2,
-  "totalPages": 1,
-  "pageable":{
-      "pageNumber": 0,
-      "pageSize": 2,
-      "sort":[],
-      "offset": 0,
-      "paged": true,
-      "unpaged": false
-  },
-  "first": true,
-  "last": true,
-  "size": 2,
-  "content":<Actual Response body. Should be a list>,
-  "number": 0,
-  "sort":[],
-  "numberOfElements": 2,
-  "empty": false
+  "content":[<Actual Response body. Should be a list>],
+  "page":{
+    "size": 2,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
 }
 ```
 **<span style="color:red">Notes:</span>**
 * Every paginated response will have this structure
 * In the title if you see :Paginated. That means this response has pagination
-* Any title with ": Paginated" will have a response boyd. That body will found in the "content" field
-* The elements are very self explanatory. numberOfElements means the number of elements in the current page. totalElements mean total number of elements found. first will true if it is the first page. last will be true if it is the last page.
+* Any title with ": Paginated" will have a response body. That body will found in the "content" field
+* page.size -> means the size of each page
+* page.number -> page number (starts with 0)
+* totalElements -> Number of total elements
+* totalPages -> Number of totalPages
 
 ## GET Reports: Paginated
 ``` Endpoint: GET /v1/reports```
