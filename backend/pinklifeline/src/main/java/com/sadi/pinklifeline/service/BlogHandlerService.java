@@ -100,7 +100,7 @@ public class BlogHandlerService {
         Long voterId = SecurityUtils.getOwnerID();
         Blog blog = getBlog(id);
         User user = userService.getUserIfRegisteredOnlyId(voterId);
-        Optional<BlogVote> voteEntry = blogVoteRepository.findByBlogIdAndUserId(id, voterId);
+        Optional<BlogVote> voteEntry = getVoteEntryForBlog(id, voterId);
         Integer voteCount = blog.getUpvoteCount();
         if(voteEntry.isPresent()){
             blogVoteRepository.delete(voteEntry.get());
@@ -113,6 +113,10 @@ public class BlogHandlerService {
         }
         blog.setUpvoteCount(voteCount);
         blogRepository.save(blog);
+    }
+
+    public Optional<BlogVote> getVoteEntryForBlog(Long id, Long voterId) {
+        return blogVoteRepository.findByBlogIdAndUserId(id, voterId);
     }
 
     public Page<BlogsRes> filterBlogs(Specification<Blog> spec, Pageable pageable){
@@ -182,5 +186,12 @@ public class BlogHandlerService {
             spec = spec.and(BlogSpecification.sortByTimestamp(sortDirection));
         }
         return spec;
+    }
+
+    public Blog getBlogWithAuthor(Long id) {
+        return blogRepository.findBLogWithAuthorById(id).orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Blog with id %s not found", id)
+            )
+        );
     }
 }

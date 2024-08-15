@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.models.entities.Blog;
 import com.sadi.pinklifeline.models.reqeusts.BlogReq;
 import com.sadi.pinklifeline.models.responses.BlogsRes;
 import com.sadi.pinklifeline.service.BlogHandlerService;
+import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/blogs")
@@ -87,5 +90,29 @@ public class BlogHandlerV1 {
                 doctorName, sortType, sortDirection);
         Page<BlogsRes> res = blogHandlerService.filterBlogs(spec, pageable);
         return ResponseEntity.ok(new PagedModel<>(res));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getBlog(
+            @PathVariable Long id){
+        log.debug("get req for blog with id: {}", id);
+        Long userId = SecurityUtils.getOwnerID();
+
+        Blog blog = blogHandlerService.getBlogWithAuthor(id);
+        Map<String, Object> res = new HashMap<>();
+        res.put("id", blog.getId());
+        res.put("title", blog.getTitle());
+        res.put("content", blog.getContent());
+        res.put("authorId", blog.getAuthor().getUserId());
+        res.put("authorName", blog.getAuthor().getFullName());
+        res.put("authorDepartment", blog.getAuthor().getDepartment());
+        res.put("authorWorkplace", blog.getAuthor().getWorkplace());
+        res.put("authorDesignation", blog.getAuthor().getDesignation());
+        res.put("authorQualifications", blog.getAuthor().getQualifications());
+        res.put("upVoteCount", blog.getUpvoteCount());
+        res.put("createdAt", blog.getCreatedAt());
+        res.put("voted", blogHandlerService.getVoteEntryForBlog(id, userId).isPresent());
+
+        return ResponseEntity.ok(res);
     }
 }
