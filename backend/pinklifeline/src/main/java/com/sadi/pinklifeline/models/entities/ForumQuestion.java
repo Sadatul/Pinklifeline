@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,4 +44,19 @@ public class ForumQuestion {
             indexes = @Index(name = "index_forum_tags_tag", columnList = "tag"))
     @Column(name = "tag", nullable = false)
     private List<String> tags;
+
+    public ForumQuestion() {
+        voteCount = 0;
+        createdAt = LocalDateTime.now();
+        tags = new ArrayList<>();
+    }
+
+    public ForumQuestion(User user, String title, String body, List<String> tags) {
+        this.user = user;
+        this.title = title;
+        this.body = body;
+        this.tags = tags;
+        this.voteCount = 0;
+        this.createdAt = LocalDateTime.now();
+    }
 }

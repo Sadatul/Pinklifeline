@@ -42,4 +42,9 @@ public class ForumAnswer {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    public ForumAnswer() {
+        voteCount = 0;
+        createdAt = LocalDateTime.now();
+    }
 }

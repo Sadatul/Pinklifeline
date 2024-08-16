@@ -29,4 +29,10 @@ public class ForumQuestionVote {
 
     @Column(nullable = false)
     private Integer value;
+
+    public ForumQuestionVote(User user, ForumQuestion question, Integer value) {
+        this.user = user;
+        this.question = question;
+        this.value = value;
+    }
 }
