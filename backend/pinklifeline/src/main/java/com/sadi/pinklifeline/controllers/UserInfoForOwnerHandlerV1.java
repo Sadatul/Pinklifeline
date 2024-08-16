@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.service.BalanceService;
 import com.sadi.pinklifeline.service.UserService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -68,10 +69,10 @@ public class UserInfoForOwnerHandlerV1 {
     }
 
     @GetMapping("/balance/history")
-    public ResponseEntity<Page<Map<String, Object>>> getBalanceHistory(
+    public ResponseEntity<PagedModel<Map<String, Object>>> getBalanceHistory(
             @RequestParam(required = false, defaultValue = "0") Integer pageNo
     ){
         Page<Map<String, Object>> response = balanceService.getBalanceHistoryForUser(pageNo);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PagedModel<>(response));
     }
 }
