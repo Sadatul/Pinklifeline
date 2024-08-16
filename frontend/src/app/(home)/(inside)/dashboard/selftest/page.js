@@ -134,9 +134,11 @@ export default function SelfTestPage() {
 
                         </DialogDescription>
                     </DialogHeader>
-                    {resultState === "loading" && <LoaderCircle size={50} className="text-blue-500 animate-spin" />}
-                    {resultState === "warn" && <span className="text-xl text-red-600 font-bold">Please consult a doctor.</span>}
-                    {resultState === "nowarn" && <span className="text-xl text-green-600 font-bold">You are safe.</span>}
+                    <div className="flex flex-col gap-4 items-center justify-center">
+                        {resultState === "loading" && <LoaderCircle size={50} className="text-blue-500 animate-spin" />}
+                        {resultState === "warn" && <span className="text-xl text-red-600 font-bold">Please consult a doctor.</span>}
+                        {resultState === "nowarn" && <span className="text-xl text-green-600 font-bold">You are safe.</span>}
+                    </div>
                 </DialogContent>
             </Dialog>
             {/* <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-blue-50 p-4 rounded-md">
