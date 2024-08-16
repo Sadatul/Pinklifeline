@@ -60,7 +60,9 @@ public class SecurityConfig {
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .bearerTokenResolver(new CookieBearerTokenResolver(cookieName))
                         .jwt(jwt -> jwt
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(cookieName)) // Last we had added this entrypoint... If any issues occurs its like due to this.
+                )
                 .build();
     }
 
