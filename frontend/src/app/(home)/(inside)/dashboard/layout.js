@@ -4,7 +4,7 @@ import ScrollableContainer from "@/app/components/StyledScrollbar"
 
 export default function Layout({ children }) {
     return (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden text-black">
             {/* Sidebar */}
             <div className="w-64 h-full bg-[#96394C] items-center flex flex-col p-4 mr-[2px] rounded-r-lg"
                 style={{

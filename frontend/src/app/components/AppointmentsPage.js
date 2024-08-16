@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Banknote, BanknoteIcon, CalendarCheck, CalendarIcon, Check, CircleCheck, CircleX, Clock, Clock1, Clock10, Clock11, Clock12, Clock2, Clock3, Clock4, Clock5, Clock6, Clock7, Clock8, Clock9, LoaderCircle, MapPinned, MessageCircleQuestion, Phone, X } from "lucide-react"
+import { Banknote, BanknoteIcon, CalendarCheck, CalendarIcon, Check, CircleCheck, CircleX, Clock, Clock1, Clock10, Clock11, Clock12, Clock2, Clock3, Clock4, Clock5, Clock6, Clock7, Clock8, Clock9, ExternalLinkIcon, LoaderCircle, MapPinned, MessageCircleQuestion, Phone, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { FaUserDoctor } from "react-icons/fa6";
 import ScrollableContainer from "./StyledScrollbar"
@@ -31,27 +31,12 @@ import { Badge } from "@/components/ui/badge"
 import { useStreamVideoClient } from "@stream-io/video-react-sdk"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button, Pagination } from "@mui/material"
+import Link from "next/link"
 
 export function AppointmentsPage() {
     const [disableCard, setDisableCard] = useState(false)
-    const [balance, setBalance] = useState(10)
-    const [balanceHistory, setBalanceHistory] = useState({
-        content: [
-            {
-                "description": "Payment of 450 received for appointment",
-                "id": 3,
-                "value": 450,
-                "timestamp": "2024-08-11T12:11:02"
-            },
-            {
-                "description": "Payment of 450 received for appointment",
-                "id": 1,
-                "value": 450,
-                "timestamp": "2024-08-11T10:19:23"
-            }
-        ],
-        totalPages: 1
-    })
+    const [balance, setBalance] = useState(null)
+    const [balanceLoading, setBalanceLoading] = useState(false)
     const [balanceHistoryPageNo, setBalanceHistoryPageNo] = useState(1)
     const [requestedAppointments, setRequestedAppointments] = useState([])
     const [appointments, setAppointments] = useState([])
@@ -77,68 +62,48 @@ export function AppointmentsPage() {
     }, [sessionContext.sessionData, fetchAgain])
 
     useEffect(() => {
-        axiosInstance.get(getDoctorBalance).then((res) => {
-            setBalance(res?.data?.balance)
-        }).catch((error) => {
-            console.log("Error fetching balance", error)
-        })
-    }, [])
+        console.log("balance", balance === null)
+        if (sessionContext.sessionData) {
+            console.log("Session Data", sessionContext.sessionData)
+        }
+    }, [sessionContext.sessionData])
 
-    useEffect(() => {
-        axiosInstance.get(getDoctorBalanceHistory, {
-            params: {
-                pageNo: balanceHistoryPageNo - 1
-            }
-        }).then((res) => {
-            setBalanceHistory(res?.data)
-        }).catch((error) => {
-            console.log("Error fetching balance history", error)
-        })
-    }, [balanceHistoryPageNo])
-
+    if (!sessionContext.sessionData) return <Loading />
 
     return (
         <div className="flex flex-col items-center h-full bg-white relative gap-5">
-            <div className="absolute top-7 right-10" >
-                <Popover >
-                    <PopoverTrigger asChild>
-                        <Button disabled={balance === null} variant="outlined" color="primary">{balance === null ? <LoaderCircle size={24} className="animate-spin" /> : `Balance:`}</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-96 flex flex-col gap-5 mr-5">
-                        <h1 className="w-full text-center text-lg">Balance: {balance}</h1>
-                        <h1 className="w-full text-center text-lg">Balance History</h1>
-                        <Separator />
-                        <div className="flex flex-col gap-4 items-start w-full">
-                            {balanceHistory.content.map((history, index) => (
-                                <div className="flex flex-col justify-between w-full" key={index}>
-                                    <div className="flex flex-row justify-between w-full">
-                                        <p className="text-lg font-semibold flex items-center gap-1"><BanknoteIcon size={20} />{history.value}</p>
-                                        <p className="text-lg font-semibold flex items-center gap-2">
-                                            <span className="flex items-center gap-1">
-                                                <CalendarCheck size={20} />{history.timestamp.split("T")[0]}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={20} />{history.timestamp.split("T")[1]}</span>
-                                        </p>
-                                    </div>
-                                    <p className="text-base">{history.description}</p>
-                                    <Separator className="w-full bg-gray-400 h-[1.5px] mt-1" />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex flex-row justify-center items-center gap-2 mt-3">
-                            <Pagination
-                                count={balanceHistory?.totalPages}
-                                page={balanceHistoryPageNo}
-                                onChange={(event, page) => setBalanceHistoryPageNo(page)}
-                                variant="outlined"
-                                color="secondary"
-                                shape="rounded"
-                                boundaryCount={2} />
-                        </div>
-                    </PopoverContent>
-                </Popover>
-            </div>
+            {(sessionContext.sessionData.role === roles.doctor) &&
+                <div className="absolute top-7 right-10" >
+                    <div className="flex flex-row w-40 shadow-inner bg-gray-200  items-center justify-center p-1 ">
+                        {(balance !== null) ?
+                            <div className="flex items-center w-full justify-between px-3">
+                                <span className="text-sm font-semibold">Balance: {balance}</span>
+                                <Link target='_blank' href={pagePaths.dashboardPages.balanceHitoryPage}>
+                                    <ExternalLinkIcon size={24} className="cursor-pointer" />
+                                </Link>
+                            </div>
+                            :
+                            <>
+                                {balanceLoading ? <LoaderCircle size={24} className="animate-spin text-pink-600" />
+                                    :
+                                    <button className="text-base text-pink-800"
+                                        onClick={() => {
+                                            setBalanceLoading(true)
+                                            console.log("Fetching balance")
+                                            axiosInstance.get(getDoctorBalance).then((res) => {
+                                                console.log("Balance", res?.data?.balance)
+                                                setBalance(res?.data?.balance)
+                                            }).catch((error) => {
+                                                console.log("Error fetching balance", error)
+                                            })
+                                        }} >
+                                        Click to see balance
+                                    </button>
+                                }
+                            </>
+                        }
+                    </div>
+                </div>}
             <h1 className="text-2xl font-bold mt-4">Appointments Page</h1>
             <div className={cn("flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-11/12 relative flex-wrap", (currentAppointments?.length > 0) ? "" : "hidden")}>
                 <span className="absolute flex rounded-full size-3 z-40 -top-1 -right-2 items-center justify-center">

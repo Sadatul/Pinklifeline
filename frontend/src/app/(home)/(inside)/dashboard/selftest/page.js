@@ -131,7 +131,6 @@ export default function SelfTestPage() {
                             Suggestion
                         </DialogTitle>
                         <DialogDescription>
-
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-4 items-center justify-center">
@@ -141,40 +140,6 @@ export default function SelfTestPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-            {/* <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-blue-50 p-4 rounded-md">
-                <div className="">
-                </div>
-                <div className="">
-                    <label className="text-lg flex items-center gap-2">2. Have you noticed any skin redness, rashes, dimpling, or puckering?
-                        <select id="question-2" defaultValue={""} className="px-2 py-1 border rounded border-purple-900">
-                            <option disabled value="">Select an option</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </label>
-                </div>
-                <div className="">
-                    <label className="text-lg flex items-center gap-2">3. After raising your arms, have you noticed any changes?
-                        <select id="question-3" defaultValue={""} className="px-2 py-1 border rounded border-purple-900">
-                            <option disabled value="">Select an option</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </label>
-                </div>
-                <div className="">
-                    <label className="text-lg flex items-center gap-2">4. Have you felt any lumps or painful areas?
-                        <select id="question-4" defaultValue={""} className="px-2 py-1 border rounded border-purple-900">
-                            <option disabled value="">Select an option</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </label>
-                </div>
-                <span id="errormsg" className="text-lg text-red-500"></span>
-                <button type="submit" className="bg-blue-500 text-white p-2 rounded w-20">Submit</button>
-            </form> */}
-
         </div>
     )
 }

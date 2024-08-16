@@ -121,7 +121,8 @@ export const pagePaths = {
         prescriptionVaultPage: "/dashboard/prescription/vault",
         prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
         userdetailsPage: "/dashboard/userdetails",
-
+        selfTestPage: "/dashboard/selftest",
+        balanceHitoryPage: "/dashboard/balanceHistory",
     },
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` },

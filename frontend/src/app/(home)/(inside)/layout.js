@@ -58,7 +58,7 @@ export default function Layout({ children }) {
     return (
         <PrimeReactProvider value={{ ripple: true }}>
             <StompContextProvider>
-                <div className="w-screen h-screen flex flex-col">
+                <div className="w-screen h-screen flex flex-col text-black">
                     <nav id="navbar" className="bg-zinc-100 h-14 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink shadow" >
                         <Link href={"/"} className=" pt-3 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
                             <Image loading="lazy" className="hidden md:block mr-5 shrink animate-bounce delay-700" src={logoIcon.src} alt="logo" width={35} height={35} />
