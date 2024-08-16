@@ -1,4 +1,4 @@
-package com.sadi.pinklifeline.controllers;
+package com.sadi.pinklifeline.controllers.forum;
 
 import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.models.entities.ForumQuestion;
@@ -59,7 +59,7 @@ public class ForumQuestionHandlerV1 {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable Long id){
-        log.debug("delete blog with id: {}", id);
+        log.debug("delete forum question with id: {}", id);
         questionHandlerService.deleteForumQuestion(id);
         return ResponseEntity.noContent().build();
     }
@@ -68,7 +68,7 @@ public class ForumQuestionHandlerV1 {
     public ResponseEntity<Map<Object, Object>> voteQuestion(
             @PathVariable Long id,
             @Valid @RequestBody VoteReq req){
-        log.debug("vote req received for id: {}, req: {}", id, req);
+        log.debug("vote req received for forum question: id: {}, req: {}", id, req);
         int val = questionHandlerService.castVote(req, id);
         return ResponseEntity.ok(Collections.singletonMap("voteChange", val));
     }
@@ -84,7 +84,7 @@ public class ForumQuestionHandlerV1 {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             @RequestParam(required = false, defaultValue = "0") Integer pageNo
     ){
-        log.debug("Req to get blogs");
+        log.debug("Req to get forum questions");
         Pageable pageable = PageRequest.of(pageNo, forumPageSize);
         List<String> tagList = tags != null ?
                 Arrays.asList(tags.split(",")) : new ArrayList<>();
@@ -98,6 +98,7 @@ public class ForumQuestionHandlerV1 {
     @GetMapping("/{id}")
     public ResponseEntity<ForumQuestionFullRes> getForumQuestion(
             @PathVariable Long id){
+        log.debug("get forum question with id: {}", id);
         return ResponseEntity.ok(questionHandlerService.getFullQuestion(id));
     }
 }

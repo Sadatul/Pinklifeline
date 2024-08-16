@@ -25,8 +25,14 @@ public class ForumAnswerVote {
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
     @JoinColumn(name = "forum_answer_id", nullable = false)
-    private ForumAnswer question;
+    private ForumAnswer answer;
 
     @Column(nullable = false)
     private Integer value;
+
+    public ForumAnswerVote(User user, ForumAnswer answer, Integer value) {
+        this.user = user;
+        this.answer = answer;
+        this.value = value;
+    }
 }

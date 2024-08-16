@@ -47,4 +47,13 @@ public class ForumAnswer {
         voteCount = 0;
         createdAt = LocalDateTime.now();
     }
+
+    public ForumAnswer(User user, ForumQuestion question, ForumAnswer parentAnswer, String body) {
+        this.user = user;
+        this.question = question;
+        this.parentAnswer = parentAnswer;
+        this.body = body;
+        voteCount = 0;
+        createdAt = LocalDateTime.now();
+    }
 }
