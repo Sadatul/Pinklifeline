@@ -92,7 +92,7 @@ public class ForumQuestionHandlerService {
         Long userId = SecurityUtils.getOwnerID();
         ForumQuestion question = getForumQuestion(id);
         User user = userService.getUserIfRegisteredOnlyId(userId);
-        Optional<ForumQuestionVote> vote = forumQuestionVoteRepository.findByQuestionIdAndUserId(id, userId);
+        Optional<ForumQuestionVote> vote = getVoteEntryByQuestionIdAndUserId(id, userId);
 
         int returnVal;
         if (req.getVoteType().equals(VoteType.UNVOTE)) {
@@ -132,6 +132,10 @@ public class ForumQuestionHandlerService {
         question.setVoteCount(question.getVoteCount() + returnVal);
         forumQuestionRepository.save(question);
         return returnVal;
+    }
+
+    public Optional<ForumQuestionVote> getVoteEntryByQuestionIdAndUserId(Long id, Long userId) {
+        return forumQuestionVoteRepository.findByQuestionIdAndUserId(id, userId);
     }
 
     public Specification<ForumQuestion> getSpecification(LocalDateTime startDate, LocalDateTime endDate,

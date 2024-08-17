@@ -93,7 +93,7 @@ public class ForumAnswerHandlerService {
         Long userId = SecurityUtils.getOwnerID();
         ForumAnswer answer = getForumAnswer(id);
         User user = userService.getUserIfRegisteredOnlyId(userId);
-        Optional<ForumAnswerVote> vote = forumAnswerVoteRepository.findByAnswerIdAndUserId(id, userId);
+        Optional<ForumAnswerVote> vote = getVoteEntryByAnswerIdAndUserId(id, userId);
 
         int returnVal;
         if (req.getVoteType().equals(VoteType.UNVOTE)) {
@@ -133,6 +133,10 @@ public class ForumAnswerHandlerService {
         answer.setVoteCount(answer.getVoteCount() + returnVal);
         forumAnswerRepository.save(answer);
         return returnVal;
+    }
+
+    public Optional<ForumAnswerVote> getVoteEntryByAnswerIdAndUserId(Long id, Long userId) {
+        return forumAnswerVoteRepository.findByAnswerIdAndUserId(id, userId);
     }
 
     public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort) {

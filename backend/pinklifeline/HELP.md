@@ -1162,7 +1162,7 @@ status: create(201)
 **<span style="color:red">Notes:</span>**
 * Add blog request can be sent only by doctors
 * None of the above fields can be null. Must provide each one.
-* Title is limited to 255 characters and body is limited to 1200 characters
+* Title is limited to 255 characters and body is limited to 65535 characters
 
 ## Update Blog
 ``` Endpoint: PUT /v1/blogs/{blog_id}```
@@ -1180,7 +1180,7 @@ status: create(201)
 **<span style="color:red">Notes:</span>**
 * Add blog request can be sent only by doctors
 * None of the above fields can be null. Must provide each one.
-* Title is limited to 255 characters and body is limited to 1200 characters
+* Title is limited to 255 characters and body is limited to 65535 characters
 * Remember whatever you send here will directly replace in database. So if you want to keep some fields with previous data you must send that previous data.
 
 ##  Delete blog
@@ -1275,3 +1275,237 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>**
 * voted true means user has voted for this blog, false means user hasn't voted for this blog.
+
+## Add Forum Question
+``` Endpoint: POST /v1/forum```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "title": "Basic Cancer Surgery",
+  "body": "Lorem ipsum odor amet, consectetuer adipiscing elit. s. ligula.",
+  "tags": ["Digital", "Social Media"]
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* Title is limited to 255 characters and body is limited to 65535 characters
+
+## Update Forum Question
+``` Endpoint: PUT /v1/forum/{forum_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+  "title": "Basic Cancer Surgery",
+  "body": "Lorem ipsum odor amet, consectetuer adipiscing elit. s. ligula.",
+  "tags": ["Digital", "Social Media"]
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* Title is limited to 255 characters and body is limited to 65535 characters
+* Remember whatever you send here will directly replace in database. So if you want to keep some fields with previous data you must send that previous data.
+
+##  Delete Forum Question
+``` Endpoint: DELETE /v1/forum/{forum_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+
+## Vote or Un-Vote Forum Question
+``` Endpoint: PUT /v1/forum/{forum_id}/vote```
+<br>
+<br>
+```Response status: ok(200)```
+### Sample Body
+```
+{
+  "voteType":"DOWNVOTE"
+}
+```
+### Sample Return Body
+```
+{
+  "voteChange": -1
+}
+```
+**<span style="color:red">Notes:</span>**
+* There are three voteType
+  * UPVOTE
+  * DOWNVOTE
+  * UNVOTE (Removes existing vote)
+* "voteChange" specifies the amount of change you should see in the voteCount
+## GET Forum Questions: Paginated
+``` Endpoint: GET /v1/forum```
+```Response status: ok(200)```
+<br><br>
+``` Query params: userId=1```
+<br>
+``` Query params: tags=cancer,hospital```
+<br>
+``` Query params: title=lsfjsldfj```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sortType=TIME```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can filter result based on the query parameters
+* You can omit any one without any issues.
+* "tags" comma separated tags with no spaces in between. A result will only be shown once all the tags are present the forum quesiton.
+* sortType can have two values ```TIME or VOTES```. By default, TIME will be selected. You can sort based on creation time or votes by using this parameter.
+* sortDirection can have two values ```ASC or DESC```. By default, DESC is selected.
+* If sortType and sortDirection is omitted, the result will be sorted in descending order of creation time.
+* Here PageNo. is the number of page you want to load in a paginated response. If pageNo. is omitted, 0 index or first page will be sent. Remember pageNo. must be 0 indexed meaning fist page starts at zero.
+
+### Response Body.content
+**<span style="color:red">Note: This is paginated. You will find this list inside "content" field</span>**
+```
+[
+  {
+    "id": 3,
+    "title": "Cancer Patient Diet",
+    "voteByUser": null,
+    "author": "Sadatul",
+    "authorId": 2,
+    "authorProfilePicture": "aussieman",
+    "voteCount": 0,
+    "createdAt": "2024-03-16T20:59:42"
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* If voteByUser is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+
+## Get Forum Question Info by Id
+```Endpoint: /v1/forum/{forum_id}```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+  "id": 4,
+  "title": "Istanbul Complex Treatment",
+  "body": "m libero natoque hac hendrerit nibh amet, torquent ornare.",
+  "voteByUser": null,
+  "author": "Sadatul",
+  "authorId": 2,
+  "authorProfilePicture": "aussieman",
+  "voteCount": 1,
+  "createdAt": "2024-06-16T21:00:06",
+  "tags":["Hospital", "Heart"]
+```
+**<span style="color:red">Notes:</span>**
+* If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+## Add Forum Answer
+``` Endpoint: POST /v1/forum/answers```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "questionId": 4,
+  "parentId": 1,
+  "body": "Very good Reply to 10"
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* If parentId is omitted or null, then the answer will be registered as a root answer. If it has a answerId that refers to another answer in the same question, then it will be registered as an reply.
+* "body" is limited to 65535 characters
+
+## Update Forum Answer
+``` Endpoint: PUT /v1/forum/answers/{answer_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+  "body": "Lorem ipsum odor amet, consectetuer adipiscing elit. s. ligula."
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* "body" is limited to 65535 characters
+##  Delete Forum Answer
+``` Endpoint: DELETE /v1/forum/answers/{answer_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+
+## Vote or Un-Vote Forum Answer
+``` Endpoint: PUT /v1/forum/answers/{answer_id}/vote```
+<br>
+<br>
+```Response status: ok(200)```
+### Sample Body
+```
+{
+  "voteType":"DOWNVOTE"
+}
+```
+### Sample Return Body
+```
+{
+  "voteChange": -1
+}
+```
+**<span style="color:red">Notes:</span>**
+* There are three voteType
+  * UPVOTE
+  * DOWNVOTE
+  * UNVOTE (Removes existing vote)
+* "voteChange" specifies the amount of change you should see in the voteCount
+## GET Forum Answers by QuestionId
+``` Endpoint: GET /v1/forum/answers```
+<br><br>
+```Response status: ok(200)```
+<br><br>
+``` Query params: questionId=1 (required)```
+<br>
+``` Query params: parentId=2```
+<br>
+``` Query params: sortType=TIME```
+<br>
+``` Query params: sortDirection=ASC```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* "questionId" is required but parentId can be omitted. If parentId is omitted, you will get the direct answers. And If you provide a valid parentId, then you will get the replies to the parent
+* Remember you can't put null in parentId, if you want to get root answers you must omit parentId.
+* sortType can have two values ```TIME or VOTES```. By default, TIME will be selected. You can sort based on creation time or votes by using this parameter.
+* sortDirection can have two values ```ASC or DESC```. By default, DESC is selected.
+* If sortType and sortDirection is omitted, the result will be sorted in descending order of creation time.
+
+### Response Body.content
+```
+[
+  {
+    "id": 10,
+    "body": "Very good Reply to 8",
+    "parentId": 8,
+    "voteByUser": null,
+    "author": "Dr. QQW Ahmed",
+    "authorId": 4,
+    "authorProfilePicture": null,
+    "voteCount": 1,
+    "createdAt": "2024-08-17T07:56:27",
+    "numberOfReplies": 1
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+* "numberOfReplies" says the number of reply this particular answer had.
