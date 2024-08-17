@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ForumQuestionSpecification {
@@ -33,9 +34,9 @@ public class ForumQuestionSpecification {
     public static Specification<ForumQuestion> withTags(List<String> tags) {
         return (root, query, cb) -> {
             if (tags != null && !tags.isEmpty()) {
-                List<String> lowercaseTags = tags.stream()
+                Set<String> lowercaseTags = tags.stream()
                         .map(String::toLowerCase)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
                 Subquery<Long> subquery = query.subquery(Long.class);
                 Root<ForumQuestion> subRoot = subquery.correlate(root);
@@ -44,7 +45,7 @@ public class ForumQuestionSpecification {
                 subquery.select(cb.countDistinct(tagJoin))
                         .where(cb.lower(tagJoin).in(lowercaseTags));
 
-                return cb.equal(subquery, (long) tags.size());
+                return cb.equal(subquery, (long) lowercaseTags.size());
             }
             return null;
         };

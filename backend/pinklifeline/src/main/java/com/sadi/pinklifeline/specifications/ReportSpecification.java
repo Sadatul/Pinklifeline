@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReportSpecification {
@@ -25,9 +26,9 @@ public class ReportSpecification {
     public static Specification<Report> withKeywords(List<String> keywords) {
         return (root, query, cb) -> {
             if (keywords != null && !keywords.isEmpty()) {
-                List<String> lowercaseKeywords = keywords.stream()
+                Set<String> lowercaseKeywords = keywords.stream()
                         .map(String::toLowerCase)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
                 Subquery<Long> subquery = query.subquery(Long.class);
                 Root<Report> subRoot = subquery.correlate(root);
@@ -36,7 +37,7 @@ public class ReportSpecification {
                 subquery.select(cb.countDistinct(keywordJoin))
                         .where(cb.lower(keywordJoin).in(lowercaseKeywords));
 
-                return cb.equal(subquery, (long) keywords.size());
+                return cb.equal(subquery, (long) lowercaseKeywords.size());
             }
             return null;
         };
