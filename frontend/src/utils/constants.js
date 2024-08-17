@@ -48,6 +48,7 @@ export const patientInfoUrl = (appointment_id) => { return `${baseUrl}/v1/appoin
 export const getUserInfoUrl = (user_id, role) => { return `${baseUrl}/v1/infos/${role}/${user_id}` }
 export const getDoctorBalance = `${baseUrl}/v1/infos/balance`
 export const getDoctorBalanceHistory = `${baseUrl}/v1/infos/balance/history`
+export const blogsUrl = `${baseUrl}/v1/blogs`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -124,6 +125,9 @@ export const pagePaths = {
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
     },
+    blogsPage : "/blogs",
+    blogPageById : (id) => { return `/blogs/${id}` },
+    addBlogPage :"blogs/add",
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` },
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
@@ -205,3 +209,5 @@ export const isSubset = (subset, superset) => {
     }
     return true
 }
+
+//Content in blog will be of two parts. one for cover  and then another for the image
