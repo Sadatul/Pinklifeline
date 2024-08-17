@@ -1,5 +1,7 @@
 package com.sadi.pinklifeline.models.reqeusts;
 
+import com.sadi.pinklifeline.utils.BasicUtils;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -8,6 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,4 +27,10 @@ public class ForumQuestionReq {
 
     @NotNull
     private List<String> tags;
+
+    @AssertTrue(message = "Can't consist of duplicate tags")
+    public boolean isDuplicate() {
+        Set<String> set = BasicUtils.convertToLowerCaseFromListToSet(tags);
+        return set.size() == tags.size();
+    }
 }

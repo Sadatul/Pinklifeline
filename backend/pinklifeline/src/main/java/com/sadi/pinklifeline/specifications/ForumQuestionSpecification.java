@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.specifications;
 
 import com.sadi.pinklifeline.models.entities.ForumQuestion;
+import com.sadi.pinklifeline.utils.BasicUtils;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -10,7 +11,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ForumQuestionSpecification {
     public static Specification<ForumQuestion> withTitle(String title) {
@@ -34,9 +34,7 @@ public class ForumQuestionSpecification {
     public static Specification<ForumQuestion> withTags(List<String> tags) {
         return (root, query, cb) -> {
             if (tags != null && !tags.isEmpty()) {
-                Set<String> lowercaseTags = tags.stream()
-                        .map(String::toLowerCase)
-                        .collect(Collectors.toSet());
+                Set<String> lowercaseTags = BasicUtils.convertToLowerCaseFromListToSet(tags);
 
                 Subquery<Long> subquery = query.subquery(Long.class);
                 Root<ForumQuestion> subRoot = subquery.correlate(root);

@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.specifications;
 
 import com.sadi.pinklifeline.models.entities.Report;
+import com.sadi.pinklifeline.utils.BasicUtils;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -10,7 +11,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ReportSpecification {
 
@@ -26,9 +26,7 @@ public class ReportSpecification {
     public static Specification<Report> withKeywords(List<String> keywords) {
         return (root, query, cb) -> {
             if (keywords != null && !keywords.isEmpty()) {
-                Set<String> lowercaseKeywords = keywords.stream()
-                        .map(String::toLowerCase)
-                        .collect(Collectors.toSet());
+                Set<String> lowercaseKeywords = BasicUtils.convertToLowerCaseFromListToSet(keywords);
 
                 Subquery<Long> subquery = query.subquery(Long.class);
                 Root<Report> subRoot = subquery.correlate(root);
