@@ -1,8 +1,10 @@
 package com.sadi.pinklifeline.controllers.forum;
 
+import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.models.reqeusts.ForumAnswerReq;
 
 import com.sadi.pinklifeline.models.reqeusts.VoteReq;
+import com.sadi.pinklifeline.models.responses.ForumAnswerRes;
 import com.sadi.pinklifeline.service.forum.ForumAnswerHandlerService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -10,12 +12,14 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -62,6 +66,18 @@ public class ForumAnswerHandlerV1 {
         log.debug("vote req received for forum answer: id: {}, req: {}", id, req);
         int val = forumAnswerHandlerService.castVote(req, id);
         return ResponseEntity.ok(Collections.singletonMap("voteChange", val));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ForumAnswerRes>> getAnswersForQuestion(
+            @RequestParam Long questionId,
+            @RequestParam(required = false) Long parentId,
+            @RequestParam(required = false, defaultValue = "TIME") BlogSortType sortType,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
+    ){
+        Sort sort = Sort.by(sortDirection, (sortType.equals(BlogSortType.VOTES) ? "voteCount" : "createdAt"));
+        List<ForumAnswerRes> answers = forumAnswerHandlerService.getForumAnswerWithAuthorData(questionId, parentId, sort);
+        return ResponseEntity.ok(answers);
     }
 
     @Data

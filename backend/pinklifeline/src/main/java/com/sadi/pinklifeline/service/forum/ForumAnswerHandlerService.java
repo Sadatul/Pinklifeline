@@ -8,14 +8,17 @@ import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.entities.*;
 import com.sadi.pinklifeline.models.reqeusts.ForumAnswerReq;
 import com.sadi.pinklifeline.models.reqeusts.VoteReq;
+import com.sadi.pinklifeline.models.responses.ForumAnswerRes;
 import com.sadi.pinklifeline.repositories.forum.ForumAnswerRepository;
 import com.sadi.pinklifeline.repositories.forum.ForumAnswerVoteRepository;
 import com.sadi.pinklifeline.service.UserService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -130,5 +133,10 @@ public class ForumAnswerHandlerService {
         answer.setVoteCount(answer.getVoteCount() + returnVal);
         forumAnswerRepository.save(answer);
         return returnVal;
+    }
+
+    public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort) {
+        Long userId = SecurityUtils.getOwnerID();
+        return forumAnswerRepository.findByQuestionId(questionId, userId, parentId, sort);
     }
 }
