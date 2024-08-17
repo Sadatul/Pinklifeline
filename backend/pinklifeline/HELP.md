@@ -1243,6 +1243,7 @@ status: create(201)
     "voteId": null,
     "author": "Dr. QQW Ahmed",
     "authorId": 4,
+    authorProfilePicture": null,
     "upvoteCount": 0,
     "createdAt": "2024-08-15T12:46:33"
    }
@@ -1259,22 +1260,23 @@ status: create(201)
 ### Response Body
 ```
 {
-  "createdAt": "2024-08-15T00:32:15",
-  "authorQualifications":["MBBS", "DO"],
-  "authorDesignation": "Head",
-  "authorName": "Dr. Rahima Begum",
-  "authorDepartment": "Cancer",
-  "voted": true,
-  "id": 2,
-  "title": "Basics of breast cancer",
+  "id": 3,
+  "title": "Basic Cancer Surgery",
+  "content": "Vel tincidunt ligula egestas neque praesent consequat venenatis.",
+  "voteId": null,
   "authorId": 3,
+  "authorName": "Dr. Rahima Begum",
+  "authorProfilePicture": "Nana",
+  "authorDepartment": "Cancer",
   "authorWorkplace": "Rajshahi Medical College",
-  "upVoteCount": 2,
-  "content": "Try to get treatment as soon as possible"
+  "authorDesignation": "Head",
+  "authorQualifications":["MBBS", "DO"],
+  "upvoteCount": 0,
+  "createdAt": "2024-08-16T09:00:51"
 }
 ```
 **<span style="color:red">Notes:</span>**
-* voted true means user has voted for this blog, false means user hasn't voted for this blog.
+* If voteId is null that means the current user hasn't voted for this blog. If it has a value(Long), then the user has voted for this blog.
 
 ## Add Forum Question
 ``` Endpoint: POST /v1/forum```
