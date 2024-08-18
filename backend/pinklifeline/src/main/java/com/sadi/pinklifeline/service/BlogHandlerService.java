@@ -4,9 +4,11 @@ import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.entities.*;
 import com.sadi.pinklifeline.models.reqeusts.BlogReq;
+import com.sadi.pinklifeline.models.responses.BlogFullRes;
 import com.sadi.pinklifeline.models.responses.BlogsRes;
 import com.sadi.pinklifeline.repositories.BlogRepository;
 import com.sadi.pinklifeline.repositories.BlogVoteRepository;
+import com.sadi.pinklifeline.repositories.DoctorDetailsRepository;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import com.sadi.pinklifeline.specifications.BlogSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
@@ -36,6 +38,7 @@ public class BlogHandlerService {
     final private BlogVoteRepository blogVoteRepository;
     final private DoctorsInfoService doctorsInfoService;
     final private UserService userService;
+    private final DoctorDetailsRepository doctorDetailsRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -45,11 +48,12 @@ public class BlogHandlerService {
 
 
     public BlogHandlerService(BlogRepository blogRepository, BlogVoteRepository blogVoteRepository,
-                              DoctorsInfoService doctorsInfoService, UserService userService) {
+                              DoctorsInfoService doctorsInfoService, UserService userService, DoctorDetailsRepository doctorDetailsRepository) {
         this.blogRepository = blogRepository;
         this.blogVoteRepository = blogVoteRepository;
         this.doctorsInfoService = doctorsInfoService;
         this.userService = userService;
+        this.doctorDetailsRepository = doctorDetailsRepository;
     }
 
     public Blog getBlog(Long id){
@@ -129,9 +133,9 @@ public class BlogHandlerService {
         CriteriaQuery<BlogsRes> cq = cb.createQuery(BlogsRes.class);
 
         Root<Blog> root = cq.from(Blog.class);
+
         Subquery<Long> voteIdSubQuery = cq.subquery(Long.class);
         Root<BlogVote> blogVoteRoot = voteIdSubQuery.from(BlogVote.class);
-
         voteIdSubQuery.select(blogVoteRoot.get("id"));
         voteIdSubQuery.where(
                 cb.equal(blogVoteRoot.get("blog").get("id"), root.get("id")),
@@ -154,6 +158,7 @@ public class BlogHandlerService {
                 voteIdSubQuery.alias("voteId"),
                 root.get("author").get("fullName"),
                 root.get("author").get("userId"),
+                root.get("author").get("user").get("profilePicture"),
                 root.get("upvoteCount"),
                 root.get("createdAt")
         ));
@@ -193,10 +198,12 @@ public class BlogHandlerService {
         return spec;
     }
 
-    public Blog getBlogWithAuthor(Long id) {
-        return blogRepository.findBLogWithAuthorById(id).orElseThrow(() -> new ResourceNotFoundException(
-                String.format("Blog with id %s not found", id)
-            )
-        );
+    public BlogFullRes getBlogFullRes(Long id){
+        Long userId = SecurityUtils.getOwnerID();
+        BlogFullRes blogFullRes = blogRepository.findBlogFullResById(id, userId).orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Blog with id: %s not found", id)
+        ));
+        blogFullRes.setAuthorQualifications(doctorDetailsRepository.getDoctorQualificationsById(blogFullRes.getAuthorId()));
+        return blogFullRes;
     }
 }

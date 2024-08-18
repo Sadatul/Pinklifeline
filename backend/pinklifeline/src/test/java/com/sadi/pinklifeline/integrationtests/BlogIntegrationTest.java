@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 import java.time.Instant;
 import java.util.List;
@@ -173,8 +174,8 @@ public class BlogIntegrationTest extends AbstractBaseIntegrationTest{
                 .header("Authorization", String.format("Bearer %s", userToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authorId").value(docId))
-                .andExpect(jsonPath("$.upVoteCount").value(0))
-                .andExpect(jsonPath("$.voted").value(false))
+                .andExpect(jsonPath("$.upvoteCount").value(0))
+                .andExpect(jsonPath("$.voteId", nullValue()))
                 .andReturn().getResponse().getContentAsString();
         log.info("Response for second query for blog (get blog by id): {}", res);
         // Delete Blog Test

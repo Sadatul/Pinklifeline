@@ -3,9 +3,9 @@ package com.sadi.pinklifeline.controllers;
 import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.models.entities.Blog;
 import com.sadi.pinklifeline.models.reqeusts.BlogReq;
+import com.sadi.pinklifeline.models.responses.BlogFullRes;
 import com.sadi.pinklifeline.models.responses.BlogsRes;
 import com.sadi.pinklifeline.service.BlogHandlerService;
-import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -94,26 +93,9 @@ public class BlogHandlerV1 {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getBlog(
+    public ResponseEntity<BlogFullRes> getFullBlog(
             @PathVariable Long id){
-        log.debug("get req for blog with id: {}", id);
-        Long userId = SecurityUtils.getOwnerID();
-
-        Blog blog = blogHandlerService.getBlogWithAuthor(id);
-        Map<String, Object> res = new HashMap<>();
-        res.put("id", blog.getId());
-        res.put("title", blog.getTitle());
-        res.put("content", blog.getContent());
-        res.put("authorId", blog.getAuthor().getUserId());
-        res.put("authorName", blog.getAuthor().getFullName());
-        res.put("authorDepartment", blog.getAuthor().getDepartment());
-        res.put("authorWorkplace", blog.getAuthor().getWorkplace());
-        res.put("authorDesignation", blog.getAuthor().getDesignation());
-        res.put("authorQualifications", blog.getAuthor().getQualifications());
-        res.put("upVoteCount", blog.getUpvoteCount());
-        res.put("createdAt", blog.getCreatedAt());
-        res.put("voted", blogHandlerService.getVoteEntryForBlog(id, userId).isPresent());
-
-        return ResponseEntity.ok(res);
+        log.debug("get blog with id: {}", id);
+        return ResponseEntity.ok(blogHandlerService.getBlogFullRes(id));
     }
 }
