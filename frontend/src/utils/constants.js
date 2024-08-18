@@ -51,6 +51,7 @@ export const getDoctorBalanceHistory = `${baseUrl}/v1/infos/balance/history`
 export const blogsUrl = `${baseUrl}/v1/blogs`
 export const blogByIdUrl = (id) => { return `${baseUrl}/v1/blogs/${id}` }
 export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}/vote` }
+export const forumQuestionsUrl = `${baseUrl}/v1/forum`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -128,6 +129,8 @@ export const pagePaths = {
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
     },
+    forumPage: "/forum",
+    askQuestionPage: "/forum/askquestion",
     blogsPage: "/blogs",
     blogPageById: (id) => { return `/blogs/${id}` },
     addBlogPage: "blogs/add",

@@ -10,11 +10,12 @@ import { CalendarClock, CalendarDays, Clock, ThumbsUpIcon, LinkIcon, Check } fro
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 
 export default function BlogPage() {
     const params = useParams()
+    const editor = useRef(null);
     const [blog, setBlog] = useState({
         "id": 3,
         "title": "Basic Cancer Surgery",

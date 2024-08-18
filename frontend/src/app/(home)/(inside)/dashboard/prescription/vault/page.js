@@ -17,11 +17,12 @@ import { act, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Pagination } from "@mui/material"
-import { addReportUrl, cleanString, generateFormattedDate, pagePaths } from "@/utils/constants"
+import { addReportUrl, capitalizeFirstLetter, cleanString, generateFormattedDate, pagePaths } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { FaUserDoctor } from "react-icons/fa6"
 import { HospitalIcon, Key, Loader2 } from "lucide-react"
 import Link from "next/link"
+import CreatableSelect from 'react-select/creatable'
 
 export default function PrescriptionVaultPage() {
     const animatedComponents = makeAnimated();
@@ -30,12 +31,12 @@ export default function PrescriptionVaultPage() {
     const selectedKeywords = useRef([])
     const [currentPage, setCurrentPage] = useState(1)
     const [isMounted, setIsMounted] = useState(false)
-    const keyWordsOption = [
+    const [keyWordsOption, setKeyWordsOption] = useState([
         { value: 'kidney', label: 'Kidney' },
         { value: 'acl', label: 'ACL' },
         { value: 'knee', label: 'Knee' },
         { value: 'pain', label: 'Pain' },
-    ]
+    ])
     const [dateRange, setDateRange] = useState({
         from: null,
         to: null,
@@ -110,7 +111,7 @@ export default function PrescriptionVaultPage() {
                         {isMounted ?
                             <label className="flex flex-col gap-1">
                                 Select Keywords
-                                <ReactSelect className="w-64 border-purple-500 border rounded"
+                                <CreatableSelect className="w-64 border-purple-500 border rounded"
                                     id="search-keywords"
                                     options={keyWordsOption}
                                     isMulti={true}
@@ -119,6 +120,10 @@ export default function PrescriptionVaultPage() {
                                     onChange={(newValue, actionMeta) => {
                                         console.log(newValue, actionMeta)
                                         selectedKeywords.current = newValue
+                                    }}
+                                    onCreateOption={(keyword) => {
+                                        setKeyWordsOption(prev => [...prev, { value: keyword, label: capitalizeFirstLetter(keyword) }])
+                                        selectedKeywords.current = [...selectedKeywords.current, { value: keyword, label: capitalizeFirstLetter(keyword) }]
                                     }}
                                 />
                             </label>

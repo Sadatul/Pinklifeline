@@ -1,5 +1,6 @@
 'use client'
 
+import makeAnimated from 'react-select/animated';
 import { useEffect, useRef, useState } from "react"
 import { createWorker } from 'tesseract.js';
 import { FileUploader } from "react-drag-drop-files"
@@ -21,6 +22,7 @@ import { Dialog, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Di
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import Loading from './loading';
 
 export function AddPrescriptionPage() {
     const storage = getStorage(firebase_app)
@@ -230,7 +232,6 @@ If you don't find answer for a field then put null. I will parse your answer thr
         </div>
     )
 }
-
 export function PrescriptionDescriptionComponent({ report, setReport, setFetchAgain }) {
     const [imageDimension, setImageDimension] = useState(null)
     const [editable, setEditable] = useState(false)
@@ -238,6 +239,8 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
     const [selectedOptions, setSelectedOptions] = useState(defaultOptions)
     const [shareDialogOpen, setShareDialogOpen] = useState(false)
     const [showShareinfo, setShowShareInfo] = useState(false)
+    const [isMounted, setIsMounted] = useState(false)
+    const animatedComponents = makeAnimated();
 
     useEffect(() => {
         const fetchImageDimensions = async () => {
@@ -250,6 +253,10 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
         };
         fetchImageDimensions();
     }, [report.fileLink])
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const handleUpdateReport = () => {
         const doctorName = document.getElementById("reportDoctorName").value
@@ -307,6 +314,8 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
             })
         }
     }
+
+    if (!isMounted) return <Loading />
 
     return (
         <div className="flex flex-col gap-5 p-2 w-full">
@@ -429,6 +438,8 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                             isMulti={true}
                                             defaultValue={defaultOptions}
                                             value={selectedOptions}
+                                            closeMenuOnSelect={false}
+                                            components={animatedComponents}
                                             options={defaultOptions}
                                             onCreateOption={(keyword) => {
                                                 setDefaultOptions([...defaultOptions, { label: capitalizeFirstLetter(keyword), value: keyword }])

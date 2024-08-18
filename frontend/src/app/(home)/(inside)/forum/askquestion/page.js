@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -31,195 +31,93 @@ import { toast } from "sonner";
 import { set } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { blogsUrl, pagePaths } from "@/utils/constants";
+import { capitalizeFirstLetter, forumQuestionsUrl, pagePaths } from "@/utils/constants";
 import axiosInstance from "@/utils/axiosInstance";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { LinkIcon, Trash2 } from "lucide-react";
+import CreatableSelect from 'react-select/creatable'
+import makeAnimated from 'react-select/animated';
+import Loading from "@/app/components/loading";
 
-import dynamic from "next/dynamic";
+export default function AskQuestionPage() {
+    const [selectedTags, setSelectedTags] = useState([]);
+    const [options, setOptions] = useState([]);
+    const [isMounted, setIsMounted] = useState(false)
+    const animatedComponents = makeAnimated();
 
-const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
-export default function AddBlogPage() {
-    const config = useMemo(() => ({
-        readonly: false,
-        height: "480px",
-        placeholder: "Type your blog content here...",
-        spellcheck: true,
-        useNativeTooltip: true,
-    }), []);
-    const [content, setContent] = useState("");
-    const [coverImage, setCoverImage] = useState(null);
-    const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState(null);
-    const storage = getStorage(firebase_app)
-    const [imageUploaded, setImageUploaded] = useState(false)
-    const [coverImageUrl, setCoverImageUrl] = useState(null)
-    const fileTypes = ["JPEG", "PNG", "JPG"];
-
-    const handleFileChange = (file) => {
-        if (!file) return;
-        setCoverImage(file)
-        setCoverImagePreviewUrl(URL.createObjectURL(file))
-    }
-
-    const handleUpload = async () => {
-        if (!coverImage) return;
-        const uploadingToast = toast.loading("Uploading image", {
-            duration: Infinity
-        })
-        const filePath = `coverImage/${new Date().toString()}/${coverImage.name}`;
-        const storageRef = ref(storage, filePath);
-        const uploadTask = uploadBytesResumable(storageRef, coverImage);
-        setImageUploaded(true)
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            },
-            (error) => {
-                toast.error("Error uploading image", {
-                    description: "Please try again later",
-                });
-                setImageUploaded(false)
-            },
-            async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                setCoverImageUrl(downloadURL)
-                toast.dismiss()
-                toast.success("Image uploaded successfully")
-            }
-        );
-    }
-
-    const handleDelete = async (imageUrl) => {
-        try {
-            // Create a reference to the file to delete
-            const storage = getStorage(); // Initialize Firebase storage instance
-            const fileRef = ref(storage, imageUrl);
-
-            // Delete the file
-            await deleteObject(fileRef);
-
-            // Show success message
-            setCoverImageUrl(null);
-            setCoverImage(null);
-            setCoverImagePreviewUrl(null);
-            setImageUploaded(false);
-            toast.success("Image deleted successfully");
-        } catch (error) {
-            // Handle any errors
-            toast.error("Error deleting image", {
-                description: "Please try again later",
-            });
-        }
-    }
+    if (!isMounted) return <Loading chose="hand" />
 
     return (
         <div className="flex flex-col w-full h-full items-center gap-3 p-3 overflow-x-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 via-gray-200 to-gray-300 relative">
-            <div className="absolute top-3 right-6 w-fit h-fit flex items-center gap-3">
-                <Link href={pagePaths.blogsPage} target='_self' className="p-2 hover:scale-95 bg-gray-200 rounded-lg border border-black shadow-inner" >
+            <h1 className="text-2xl font-bold">Ask Question</h1>
+            <div className="flex flex-row w-10/12 gap-8 text-lg py-3 px-2 rounded bg-purple-100 flex-wrap">
+                <div className="flex flex-row gap-3 flex-1">
+                    <span className="">Question Title</span>
+                    <div className="flex flex-col gap-1">
+                        <input id="question-title" type="text" autoComplete="off" className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-96" onChange={(e) => {
+                            const title = e.target.value
+                            document.getElementById("title-characters").textContent = `Max characters 255(${title.length}/255)`
+                        }} />
+                        <span id="title-characters" className="text-sm text-gray-500">{`Max characters 255(0/255)`}</span>
+                    </div>
+                </div>
+                <div className="flex flex-row gap-3 flex-1">
+                    <span className="">Add Tags</span>
+                    <CreatableSelect
+                        isMulti={true}
+                        options={options}
+                        onChange={(value) => {
+                            setSelectedTags(value)
+                        }}
+                        components={animatedComponents}
+                        closeMenuOnSelect={false}
+                        onCreateOption={(keyword) => {
+                            if (options.find((option) => option.value === keyword)) return
+                            setOptions([...options, { value: keyword, label: keyword }])
+                            setSelectedTags([...selectedTags, { value: keyword, label: keyword }])
+                        }}
+                        value={selectedTags}
+                        className="min-w-64 -translate-y-1"
+                    />
+                </div>
+                <Vault />
+            </div>
+            <textarea id="question-content" className="w-10/12 h-96 border border-gray-500 rounded-lg p-2 shadow-inner" />
+            <span className="text-base text-gray-900">Use the vault to upload any file and refer in text with url.</span>
+            <div className="w-8/12 flex flex-row justify-between h-fit items-center gap-3">
+                <Link href={pagePaths.forumPage} target='_self' className="p-2 hover:scale-95 bg-orange-200 rounded-lg border border-black shadow-inner" >
                     Cancel
                 </Link>
                 <Button className="hover:scale-95" onClick={() => {
-                    console.log("Post")
-                    console.log(content)
-                    const title = document.getElementById("blog-title").value
-                    const coverText = document.getElementById("blog-cover-text").value
-                    const coverImageLink = coverImageUrl
-                    const blogContent = `${coverImageLink}@@@${coverText}@@@${content}`
-                    axiosInstance.post(blogsUrl, {
+                    const title = document.getElementById("question-title").value
+                    const tags = selectedTags.map((tag) => tag.value)
+                    const content = document.getElementById("question-content").value
+                    //remove duplicates ignoring case
+                    const uniqueTags = [...new Set(tags.map((tag) => tag.toLowerCase()))]
+                    const data = {
                         title: title,
-                        content: blogContent,
-                    }).then((res) => {
-                        toast.success("Blog posted successfully")
-                        window.open(pagePaths.blogsPage, "_self")
+                        content: content,
+                        tags: uniqueTags.map(tag => capitalizeFirstLetter(tag.toLowerCase())),
+                    }
+                    console.log(data)
+                    axiosInstance.post(forumQuestionsUrl, data).then((res) => {
+                        toast.success("Question posted successfully")
+                        window.location.href = pagePaths.forumPage
                     }).catch((err) => {
+                        toast.error("Error posting question", {
+                            description: "Please try again later",
+                        })
                         console.log(err)
                     })
                 }}>
-                    Post
+                    Ask Question
                 </Button>
 
             </div>
-            <h1 className="text-2xl font-bold">Add Blog</h1>
-            <div className="flex flex-row w-full gap-8 text-lg py-3 px-2 rounded bg-purple-100 items-center">
-                <div className="flex flex-row items-center gap-3">
-                    Blog Title
-                    <input id="blog-title" type="text" className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-72" />
-                </div>
-                <div className="flex flex-row items-center gap-3">
-                    Add cover text
-                    <div className="flex flex-col gap-1 translate-y-3">
-                        <textarea maxLength={200} id="blog-cover-text" className="border w-80 text-sm border-gray-500 p-2 shadow-inner rounded"
-                            onChange={(e) => {
-                                if (e.target.value.length === 0) {
-                                    document.getElementById("cover-text-characters").innerText = `Max 200 characters`
-                                    return
-                                }
-                                document.getElementById("cover-text-characters").innerText = `Max 200 characters(${e.target.value.length}/200)`
-                            }}
-                        />
-                        <span id="cover-text-characters" className="text-sm text-gray-500">Max 200 characters</span>
-                    </div>
-                </div>
-                <AlertDialog >
-                    <AlertDialogTrigger asChild>
-                        <Button className="px-2 py-0">{imageUploaded ? "Uploaded" : "Upload"} Cover Picture</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>{imageUploaded ? "Uploaded" : "Upload"} Cover Picture</AlertDialogTitle>
-                            <AlertDialogDescription asChild>
-                                <div className="flex flex-col items-center justify-evenly flex-1">
-                                    <div className={cn("w-96 border rounded-lg border-purple-500", imageUploaded ? "h-80" : "h-96")}>
-                                        {coverImagePreviewUrl && (
-                                            <div className="flex flex-col justify-center items-center">
-                                                <div className="flex flex-col items-center m-4 p-6 bg-white rounded-lg shadow-md border-2 border-dashed border-gray-300 w-full">
-                                                    <Image width={250} objectFit='scale-down' height={250} src={coverImagePreviewUrl || ""} alt="Preview" className="rounded-lg" />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {!imageUploaded &&
-                                            <FileUploader handleChange={handleFileChange}
-                                                multiple={false}
-                                                types={fileTypes}
-                                                name="file"
-                                                onTypeError={() => {
-                                                    toast.error("Invalid file type", {
-                                                        description: "Only jpg or png files are allowed",
-                                                    })
-                                                }}
-                                            />}
-                                        <input hidden id="file"></input>
-                                    </div>
-                                </div>
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="m-2">
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction disabled={(imageUploaded && !coverImageUrl)} onClick={() => {
-                                if (coverImageUrl) {
-                                    handleDelete(coverImageUrl)
-                                }
-                                else {
-                                    handleUpload()
-                                }
-                            }}>
-                                {coverImageUrl ? "Delete" : "Upload"}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                <Vault />
-            </div>
-            <JoditEditor
-                config={config}
-                onBlur={(newContent) => setContent(newContent)}
-                tabIndex={-1}
-                value={content}
-                className="w-full"
-            />
-
         </div>
     )
 }
@@ -238,7 +136,7 @@ function Vault() {
                 <SheetHeader>
                     <SheetTitle>File Vault</SheetTitle>
                     <SheetDescription>
-                        Upload you images and files and use them in your blog with link
+                        Upload you images and files and refer in you question with link
                     </SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col mt-5">
@@ -246,7 +144,7 @@ function Vault() {
                         if (!file) return;
                         const type = file.type
                         console.log(type)
-                        const filePath = `blogVault/${new Date().toString()}/${file.name}`;
+                        const filePath = `questionVault/${new Date().toString()}/${file.name}`;
                         const storageRef = ref(storage, filePath);
                         const uploadTask = uploadBytesResumable(storageRef, file);
                         uploadTask.on(
