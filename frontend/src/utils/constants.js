@@ -131,6 +131,7 @@ export const pagePaths = {
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
+    questionPageById: (id) => { return `/forum/question/${id}` },
     blogsPage: "/blogs",
     blogPageById: (id) => { return `/blogs/${id}` },
     addBlogPage: "blogs/add",
@@ -189,11 +190,11 @@ export const getImageDimensions = (url) => {
 };
 
 export const capitalizeFirstLetter = (string) => {
-    string = String(string)
     if (!string) {
         return null
     }
-    return string.charAt(0).toUpperCase() + string.slice(1);
+    string = String(string)
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
 }
 
 export const parseDate = (date) => {

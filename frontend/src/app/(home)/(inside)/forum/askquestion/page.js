@@ -63,30 +63,37 @@ export default function AskQuestionPage() {
                             document.getElementById("title-characters").textContent = `Max characters 255(${title.length}/255)`
                         }} />
                         <span id="title-characters" className="text-sm text-gray-500">{`Max characters 255(0/255)`}</span>
+                        <span id="error-msg-title" className="text-sm text-red-500 hidden">Thsi field is required</span>
                     </div>
                 </div>
                 <div className="flex flex-row gap-3 flex-1">
                     <span className="">Add Tags</span>
-                    <CreatableSelect
-                        isMulti={true}
-                        options={options}
-                        onChange={(value) => {
-                            setSelectedTags(value)
-                        }}
-                        components={animatedComponents}
-                        closeMenuOnSelect={false}
-                        onCreateOption={(keyword) => {
-                            if (options.find((option) => option.value === keyword)) return
-                            setOptions([...options, { value: keyword, label: keyword }])
-                            setSelectedTags([...selectedTags, { value: keyword, label: keyword }])
-                        }}
-                        value={selectedTags}
-                        className="min-w-64 -translate-y-1"
-                    />
+                    <div>
+                        <CreatableSelect
+                            isMulti={true}
+                            options={options}
+                            onChange={(value) => {
+                                setSelectedTags(value)
+                            }}
+                            components={animatedComponents}
+                            closeMenuOnSelect={false}
+                            onCreateOption={(keyword) => {
+                                if (options.find((option) => option.value === keyword)) return
+                                setOptions([...options, { value: keyword, label: keyword }])
+                                setSelectedTags([...selectedTags, { value: keyword, label: keyword }])
+                            }}
+                            value={selectedTags}
+                            className="min-w-64 -translate-y-1"
+                        />
+                        <span id="error-msg-tags" className="text-sm text-red-500 hidden">Thsi field is required</span>
+                    </div>
                 </div>
                 <Vault />
             </div>
-            <textarea id="question-content" className="w-10/12 h-96 border border-gray-500 rounded-lg p-2 shadow-inner" />
+            <div className="w-full flex flex-col justify-center items-center">
+                <textarea id="question-content" className="w-10/12 h-96 border border-gray-500 rounded-lg p-2 shadow-inner" />
+                <span id="error-msg-content" className="text-sm text-red-500 hidden">Thsi field is required</span>
+            </div>
             <span className="text-base text-gray-900">Use the vault to upload any file and refer in text with url.</span>
             <div className="w-8/12 flex flex-row justify-between h-fit items-center gap-3">
                 <Link href={pagePaths.forumPage} target='_self' className="p-2 hover:scale-95 bg-orange-200 rounded-lg border border-black shadow-inner" >
@@ -96,11 +103,30 @@ export default function AskQuestionPage() {
                     const title = document.getElementById("question-title").value
                     const tags = selectedTags.map((tag) => tag.value)
                     const content = document.getElementById("question-content").value
+                    if (!title) {
+                        document.getElementById("error-msg-title").classList.remove("hidden")
+                    }
+                    else {
+                        document.getElementById("error-msg-title").classList.add("hidden")
+                    }
+                    if (!tags.length) {
+                        document.getElementById("error-msg-tags").classList.remove("hidden")
+                    }
+                    else {
+                        document.getElementById("error-msg-tags").classList.add("hidden")
+                    }
+                    if (!content) {
+                        document.getElementById("error-msg-content").classList.remove("hidden")
+                    }
+                    else {
+                        document.getElementById("error-msg-content").classList.add("hidden")
+                    }
+                    if (!title || !tags.length || !content) return
                     //remove duplicates ignoring case
                     const uniqueTags = [...new Set(tags.map((tag) => tag.toLowerCase()))]
                     const data = {
                         title: title,
-                        content: content,
+                        body: content,
                         tags: uniqueTags.map(tag => capitalizeFirstLetter(tag.toLowerCase())),
                     }
                     console.log(data)
@@ -123,7 +149,10 @@ export default function AskQuestionPage() {
 }
 
 function Vault() {
-    const [vaultData, setVaultData] = useState([])
+    const [vaultData, setVaultData] = useState([{
+        type: "image/jpeg",
+        url: "https://firebasestorage.googleapis.com/v0/b/javafest-87433.appspot.com/o/questionVault%2FMon%20Aug%2019%202024%2003%3A08%3A49%20GMT%2B0600%20(Bangladesh%20Standard%20Time)%2Fpacifier-96504_640.jpg?alt=media&token=0e62749e-8afe-407d-a209-279144f77c1a"
+    }])
     const storage = getStorage(firebase_app)
     return (
         <Sheet >
@@ -174,54 +203,56 @@ function Vault() {
                         }}
                     />
                 </div>
-                <ScrollableContainer className="overflow-x-hidden h-[500px] mt-5 mb-3 overflow-y-auto">
+                <ScrollableContainer className="overflow-x-auto h-[500px] mt-5 mb-3 overflow-y-auto">
                     {vaultData.map((data, index) => {
                         return (
                             <div key={index} className="flex flex-col w-full gap-3 p-2 bg-gray-100 rounded-lg">
-                                <div className="flex flex-row items-center gap-3 p-1 justify-between">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="text-lg font-semibold flex items-center gap-6 relative">
+                                <div className="flex flex-row items-center gap-3 p-1 justify-between w-full">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <div className="text-lg font-semibold flex items-center gap-2 relative w-full">
                                             {data.type}
-                                            <button id="copy-button" className="rounded-full p-2 text-black bg-pink-300" onClick={() => {
-                                                navigator.clipboard.writeText(data.url)
-                                                if (!document.getElementById("copy-button")) return
-                                                document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`
-                                                document.getElementById("copy-button").classList.remove("bg-pink-300")
-                                                document.getElementById("copy-button").classList.add("bg-gray-300")
-                                                if (!document.getElementById("copy-response-message")) return
-                                                document.getElementById("copy-response-message").classList.remove("hidden")
-                                                const timer = setTimeout(() => {
+                                            <div className="flex flex-row flex-1 gap-2 justify-between">
+                                                <button id="copy-button" className="rounded-full p-2 text-black bg-pink-300 scale-75" onClick={() => {
+                                                    navigator.clipboard.writeText(data.url)
                                                     if (!document.getElementById("copy-button")) return
-                                                    document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
-                                                    document.getElementById("copy-button").classList.remove("bg-gray-300")
-                                                    document.getElementById("copy-button").classList.add("bg-pink-300")
+                                                    document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`
+                                                    document.getElementById("copy-button").classList.remove("bg-pink-300")
+                                                    document.getElementById("copy-button").classList.add("bg-gray-300")
                                                     if (!document.getElementById("copy-response-message")) return
-                                                    document.getElementById("copy-response-message").classList.add("hidden")
-                                                }, 5000)
-                                                return () => clearTimeout(timer)
-                                            }}>
-                                                <LinkIcon size={20} />
-                                            </button>
-                                            <span id="copy-response-message" className="p-1 absolute w-28 text-center left-40 bg-green-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
+                                                    document.getElementById("copy-response-message").classList.remove("hidden")
+                                                    const timer = setTimeout(() => {
+                                                        if (!document.getElementById("copy-button")) return
+                                                        document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+                                                        document.getElementById("copy-button").classList.remove("bg-gray-300")
+                                                        document.getElementById("copy-button").classList.add("bg-pink-300")
+                                                        if (!document.getElementById("copy-response-message")) return
+                                                        document.getElementById("copy-response-message").classList.add("hidden")
+                                                    }, 5000)
+                                                    return () => clearTimeout(timer)
+                                                }}>
+                                                    <LinkIcon size={20} />
+                                                </button>
+                                                <span id="copy-response-message" className="p-1 absolute w-28 text-center left-40 bg-green-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
+                                                <button className="hover:scale-90 scale-95 bg-red-500 text-white p-1 rounded-full px-2 w-fit" onClick={() => {
+                                                    // Create a reference to the file to delete
+                                                    const fileRef = ref(storage, data.url);
+                                                    // Delete the file
+                                                    deleteObject(fileRef).then((res) => {
+                                                        const newData = vaultData.filter((_, i) => i !== index)
+                                                        setVaultData(newData)
+                                                    }).catch((err) => {
+                                                        console.log(err)
+                                                    })
+                                                }}>
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <span className="text-sm text-gray-500" style={{
+                                        {/* <span className="text-sm text-gray-500" style={{
                                             wordWrap: 'break-word',
                                             overflowWrap: 'break-word',
-                                        }}>File Url : {data.url}</span>
+                                        }}>File Url : {data.url}</span> */}
                                     </div>
-                                    <button className="hover:scale-95 bg-red-500 text-white p-1 rounded-lg" onClick={() => {
-                                        // Create a reference to the file to delete
-                                        const fileRef = ref(storage, data.url);
-                                        // Delete the file
-                                        deleteObject(fileRef).then((res) => {
-                                            const newData = vaultData.filter((_, i) => i !== index)
-                                            setVaultData(newData)
-                                        }).catch((err) => {
-                                            console.log(err)
-                                        })
-                                    }}>
-                                        <Trash2 size={28} />
-                                    </button>
                                 </div>
                                 {data.type.includes("image") && <Image sizes="100vw" width={0} height={0} style={{ width: '100%', height: 'auto' }} src={data.url} alt="Vault Image" />}
                             </div>

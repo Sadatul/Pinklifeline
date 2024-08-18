@@ -92,6 +92,7 @@ export default function BlogsPage() {
         doctorName: null,
         dateRange: null,
         sortDirection: null,
+        sortType: null,
     })
 
     function displayDate(date) {
@@ -182,8 +183,15 @@ export default function BlogsPage() {
                                         </Popover>
                                     </div>
                                     <div className="flex flex-row gap-2 items-center text-black text-lg">
+                                        Sort Type
+                                        <select id="sortType" defaultValue={"TIME"} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                            <option value="TIME">Time</option>
+                                            <option value="VOTES">Vote</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-row gap-2 items-center text-black text-lg">
                                         Sort
-                                        <select id="sortDirection" className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                        <select id="sortDirection" defaultValue={"ASC"} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
                                             <option value="ASC">Ascending</option>
                                             <option value="DESC">Descending</option>
                                         </select>
@@ -195,8 +203,9 @@ export default function BlogsPage() {
                                         <Button className="bg-red-500 text-white hover:text-red-500 hover:scale-95 hover:border hover:border-red-500" size="lg" variant={"outline"} onClick={() => {
                                             document.getElementById('doctorName').value = '';
                                             document.getElementById('sortDirection').value = 'ASC';
+                                            document.getElementById('sortType').value = 'TIME';
                                             setDateRange({ from: null, to: null });
-                                            setFilter({ doctorName: null, dateRange: null, sortDirection: null });
+                                            setFilter({ doctorName: null, dateRange: null, sortDirection: null, sortType: null });
                                         }}>
                                             Reset
                                         </Button>
@@ -205,6 +214,7 @@ export default function BlogsPage() {
                                                 doctorName: document.getElementById('doctorName').value,
                                                 dateRange: dateRange,
                                                 sortDirection: document.getElementById('sortDirection').value,
+                                                sortType: document.getElementById('sortType').value,
                                             });
                                         }} className="hover:scale-95 hover:border hover:bg-white shadow-inner hover:text-black">
                                             Apply
