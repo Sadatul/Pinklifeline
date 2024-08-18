@@ -87,8 +87,34 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
         setImageFile(file)
         userDataRef.current = { ...userDataRef.current, profilePicturePreview: URL.createObjectURL(file) }
     }
-    C
-
+    const handleUpload = async () => {
+        if (!imageFile) return;
+        const uploadingToast = toast.loading("Uploading image", {
+            duration: Infinity
+        })
+        const filePath = `profileImages/${new Date().toString()}/${imageFile.name}`;
+        const storageRef = ref(storage, filePath);
+        const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        setImageUploaded(true)
+        uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            },
+            (error) => {
+                toast.error("Error uploading image", {
+                    description: "Please try again later",
+                });
+                setImageUploaded(false)
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                userDataRef.current = { ...userDataRef.current, profilePictureUrl: downloadURL }
+                toast.dismiss(uploadingToast)
+                toast.success("Image uploaded successfully")
+            }
+        );
+    }
 
     const validateForm = async () => {
         const result = await trigger();

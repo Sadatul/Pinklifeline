@@ -49,6 +49,8 @@ export const getUserInfoUrl = (user_id, role) => { return `${baseUrl}/v1/infos/$
 export const getDoctorBalance = `${baseUrl}/v1/infos/balance`
 export const getDoctorBalanceHistory = `${baseUrl}/v1/infos/balance/history`
 export const blogsUrl = `${baseUrl}/v1/blogs`
+export const blogByIdUrl = (id) => { return `${baseUrl}/v1/blogs/${id}` }
+export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}/vote` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -102,6 +104,7 @@ export function generateFormattedDate(date) {
 }
 
 export const pagePaths = {
+    baseUrl: baseUrl,
     login: "/reglogin",
     register: "/reglogin",
     verifyotp: (email) => {
@@ -125,9 +128,9 @@ export const pagePaths = {
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
     },
-    blogsPage : "/blogs",
-    blogPageById : (id) => { return `/blogs/${id}` },
-    addBlogPage :"blogs/add",
+    blogsPage: "/blogs",
+    blogPageById: (id) => { return `/blogs/${id}` },
+    addBlogPage: "blogs/add",
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` },
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
