@@ -123,3 +123,43 @@ resource "google_secret_manager_secret_version" "sslcommerz_store_passwd_version
   secret      = google_secret_manager_secret.sslcommerz_store_passwd.id
   secret_data = var.sslcommerz_store_passwd
 }
+
+resource "tls_private_key" "rsa_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+data "external" "convert_to_pkcs8" {
+  program = ["bash", "-c", <<EOT
+    echo "{\"pkcs8_key\": \"$(echo "${tls_private_key.rsa_key.private_key_pem}" | openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt | base64 -w 0)\"}"
+  EOT
+  ]
+}
+
+resource "google_secret_manager_secret" "rsa_public_key" {
+  provider  = google
+  secret_id = "rsa_public_key"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secret_manager_api]
+}
+
+resource "google_secret_manager_secret_version" "rsa_public_key_version" {
+  secret      = google_secret_manager_secret.rsa_public_key.id
+  secret_data = tls_private_key.rsa_key.public_key_pem
+}
+
+resource "google_secret_manager_secret" "rsa_private_key" {
+  provider  = google
+  secret_id = "rsa_private_key"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secret_manager_api]
+}
+
+resource "google_secret_manager_secret_version" "rsa_private_key_version" {
+  secret      = google_secret_manager_secret.rsa_private_key.id
+  secret_data = base64decode(data.external.convert_to_pkcs8.result.pkcs8_key)
+}
