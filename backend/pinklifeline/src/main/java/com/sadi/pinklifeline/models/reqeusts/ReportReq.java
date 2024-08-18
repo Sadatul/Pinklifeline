@@ -1,5 +1,7 @@
 package com.sadi.pinklifeline.models.reqeusts;
 
+import com.sadi.pinklifeline.utils.BasicUtils;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -33,4 +36,10 @@ public class ReportReq {
 
     @NotNull
     private List<String> keywords;
+
+    @AssertTrue(message = "Can't consist of duplicate keywords")
+    public boolean isDuplicate() {
+        Set<String> set = BasicUtils.convertToLowerCaseFromListToSet(keywords);
+        return set.size() == keywords.size();
+    }
 }
