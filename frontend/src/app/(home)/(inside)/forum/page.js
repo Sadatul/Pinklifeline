@@ -23,7 +23,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { avatarAang, pagePaths } from "@/utils/constants";
+import { avatarAang, displayDate, pagePaths } from "@/utils/constants";
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import babyImage from "../../../../../public/babyImage.jpg"
@@ -34,11 +34,12 @@ import Avatar from "@/app/components/avatar";
 import makeAnimated from 'react-select/animated';
 import CreatableSelect from 'react-select/creatable'
 import Loading from "@/app/components/loading";
+import axiosInstance from "@/utils/axiosInstance";
 
 export default function ForumPage() {
     const searchParams = useSearchParams();
     const animatedComponents = makeAnimated();
-    const searchTerms = searchParams.get('search') || '';
+    const [searchTerms, setSearchTerms] = useState(null);
     const [loadingQuestions, setLoadingQuestions] = useState(true);
     const [pageInfo, setPageInfo] = useState()
     const [isMounted, setIsMounted] = useState(false);
@@ -78,26 +79,10 @@ export default function ForumPage() {
     const [tagOptions, setTagOptions] = useState([])
     const [selectedTags, setSelectedTags] = useState([])
 
-    function displayDate(date) {
-        const currentDate = new Date();
-        const givenDate = new Date(date);
-        const difference = differenceInDays(currentDate, givenDate);
-
-        // Check if the date is within the last 7 days
-        if (difference < 7) {
-            // Display how many days ago
-            return formatDistanceToNow(givenDate, { addSuffix: true });
-        } else {
-            // Display the formatted date in "Friday, 12 August, 2023" format
-            return format(givenDate, 'EEEE, dd MMMM, yyyy');
-        }
-    }
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoadingQuestions(false);
-        }, 1000);
         setIsMounted(true);
+        // axiosInstance.get()
         return () => clearTimeout(timer);
     }, [])
 

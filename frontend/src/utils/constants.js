@@ -1,4 +1,5 @@
 import { PatientLivePrescriptionPage } from "@/app/components/livePrescription";
+import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
@@ -52,6 +53,8 @@ export const blogsUrl = `${baseUrl}/v1/blogs`
 export const blogByIdUrl = (id) => { return `${baseUrl}/v1/blogs/${id}` }
 export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}/vote` }
 export const forumQuestionsUrl = `${baseUrl}/v1/forum`
+export const forumQuestionvoteUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}/vote` }
+export const forumAnswerVote = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}/vote` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -63,6 +66,8 @@ export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/av
 export const emptyAvatar = "/emptyAvatar.png"
 
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
+
+export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
 
 export const sessionDataItem = "sessionData"
 
@@ -138,8 +143,18 @@ export const pagePaths = {
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` },
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
+    redirectUserToProfileWithId: (userId) => { return `/profile/redirect?userId?${userId}` },
 }
 
+export const voteStates = {
+    upvote: 1,
+    downvote: -1,
+}
+export const voteTypes = {
+    upvote: "UPVOTE",
+    downvote: "DOWNVOTE",
+    unvote: "UNVOTE",
+}
 
 export const convertCmtoFeetInch = (cm) => {
     const feet = Math.floor(cm / 30.48)
@@ -215,6 +230,21 @@ export const isSubset = (subset, superset) => {
         }
     }
     return true
+}
+
+export function displayDate(date) {
+    const currentDate = new Date();
+    const givenDate = new Date(date);
+    const difference = differenceInDays(currentDate, givenDate);
+
+    // Check if the date is within the last 7 days
+    if (difference < 7) {
+        // Display how many days ago
+        return formatDistanceToNow(givenDate, { addSuffix: true });
+    } else {
+        // Display the formatted date in "Friday, 12 August, 2023" format
+        return format(givenDate, 'EEEE, dd MMMM, yyyy');
+    }
 }
 
 //Content in blog will be of two parts. one for cover  and then another for the image
