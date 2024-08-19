@@ -139,8 +139,7 @@ public class ForumAnswerHandlerService {
         return forumAnswerVoteRepository.findByAnswerIdAndUserId(id, userId);
     }
 
-    public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort) {
-        Long userId = SecurityUtils.getOwnerID();
+    public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort, Long userId) {
         return forumAnswerRepository.findByQuestionId(questionId, userId, parentId, sort);
     }
 }

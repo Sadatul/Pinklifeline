@@ -1219,7 +1219,11 @@ status: create(201)
 * This endpoint works like a toggle. If a vote for this blog_id with current user already exists it will remove the vote, and you will get a -1 as response. But if you a vote doesn't exist for the blog_id by the current user, then a vote will be added to the blog and you will get a 1 as response.
 
 ## GET Blogs: Paginated
-``` Endpoint: GET /v1/blogs```
+```
+Endpoint: GET
+    registered user: /v1/blogs
+    anonymous user: /v1/anonymous/blogs
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: docId=1```
@@ -1268,8 +1272,11 @@ status: create(201)
 * If voteId is null that means the current user hasn't voted for this blog. If it has a value(Long), then the user has voted for this blog. 
 
 ## Get Blog info by Id
-```Endpoint: /v1/blogs/{blog_id}```
-<br><br>
+```
+Endpoints: GET 
+    registered users: /v1/blogs/{blog_id}
+    anonymous users: /v1/anonymous/blogs/{blog_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
@@ -1358,7 +1365,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Questions: Paginated
-``` Endpoint: GET /v1/forum```
+``` 
+Endpoints: GET
+    registered users: /v1/forum
+    anonymous users: /v1/anonymous/forum
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: userId=1```
@@ -1406,8 +1417,11 @@ status: create(201)
 * If voteByUser is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 
 ## Get Forum Question Info by Id
-```Endpoint: /v1/forum/{forum_id}```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/{forum_id}
+    anonymous users: /v1/anonymous/forum/{forum_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
@@ -1486,8 +1500,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Answers by QuestionId
-``` Endpoint: GET /v1/forum/answers```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/answers
+    anonymous users: /v1/anonymous/forum/answers
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: questionId=1 (required)```

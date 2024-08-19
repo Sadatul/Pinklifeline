@@ -7,6 +7,7 @@ import com.sadi.pinklifeline.models.reqeusts.VoteReq;
 import com.sadi.pinklifeline.models.responses.ForumQuestionFullRes;
 import com.sadi.pinklifeline.models.responses.ForumQuestionsRes;
 import com.sadi.pinklifeline.service.forum.ForumQuestionHandlerService;
+import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +92,7 @@ public class ForumQuestionHandlerV1 {
         Specification<ForumQuestion> spec = questionHandlerService.getSpecification(startDate.atStartOfDay(),
                 endDate.atTime(23, 59), userId, title,
                 tagList, sortType, sortDirection);
-        Page<ForumQuestionsRes> res = questionHandlerService.filterQuestions(spec, pageable);
+        Page<ForumQuestionsRes> res = questionHandlerService.filterQuestions(spec, pageable, Optional.of(SecurityUtils.getOwnerID()));
         return ResponseEntity.ok(new PagedModel<>(res));
     }
 
@@ -99,6 +100,6 @@ public class ForumQuestionHandlerV1 {
     public ResponseEntity<ForumQuestionFullRes> getForumQuestion(
             @PathVariable Long id){
         log.debug("get forum question with id: {}", id);
-        return ResponseEntity.ok(questionHandlerService.getFullQuestion(id));
+        return ResponseEntity.ok(questionHandlerService.getFullQuestion(id, SecurityUtils.getOwnerID()));
     }
 }

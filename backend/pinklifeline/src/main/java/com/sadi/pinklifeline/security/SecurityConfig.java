@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/hello/healthy").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/payment/*/*/ssl-redirect").permitAll()
-//                        .requestMatchers("/ws").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/anonymous/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)

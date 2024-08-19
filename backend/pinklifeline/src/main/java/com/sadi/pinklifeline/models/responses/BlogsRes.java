@@ -35,4 +35,17 @@ public class BlogsRes {
         this.upvoteCount = upvoteCount;
         this.createdAt = createdAt;
     }
+
+    public BlogsRes(Long id, String title, String content,
+                    String author, Long authorId, String authorProfilePicture,
+                    Integer upvoteCount, LocalDateTime createdAt) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.author = author;
+        this.authorId = authorId;
+        this.authorProfilePicture = authorProfilePicture;
+        this.upvoteCount = upvoteCount;
+        this.createdAt = createdAt;
+    }
 }

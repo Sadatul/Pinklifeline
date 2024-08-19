@@ -6,6 +6,7 @@ import com.sadi.pinklifeline.models.reqeusts.ForumAnswerReq;
 import com.sadi.pinklifeline.models.reqeusts.VoteReq;
 import com.sadi.pinklifeline.models.responses.ForumAnswerRes;
 import com.sadi.pinklifeline.service.forum.ForumAnswerHandlerService;
+import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -76,7 +77,8 @@ public class ForumAnswerHandlerV1 {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ){
         Sort sort = Sort.by(sortDirection, (sortType.equals(BlogSortType.VOTES) ? "voteCount" : "createdAt"));
-        List<ForumAnswerRes> answers = forumAnswerHandlerService.getForumAnswerWithAuthorData(questionId, parentId, sort);
+        List<ForumAnswerRes> answers = forumAnswerHandlerService.getForumAnswerWithAuthorData(questionId, parentId, sort,
+                SecurityUtils.getOwnerID());
         return ResponseEntity.ok(answers);
     }
 
