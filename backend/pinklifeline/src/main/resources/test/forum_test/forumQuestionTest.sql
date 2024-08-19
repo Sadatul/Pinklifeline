@@ -2,7 +2,7 @@ INSERT IGNORE INTO users VALUES (17, '17@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y
 INSERT IGNORE INTO pinklifeline.profile_pictures VALUES (17, 'someprofilepicture');
 INSERT IGNORE INTO pinklifeline.user_roles VALUES (17, 'ROLE_PATIENT');
 INSERT IGNORE INTO pinklifeline.basic_users_details VALUES (17, 'Faria Islam', '2000-08-28', '55', '50', 'N', '2024-05-28', 7);
-INSERT IGNORE INTO pinklifeline.patient_specific_details VALUES (17, 'STAGE_0', '2024-05-28', '883cf1760bfffff');
+INSERT IGNORE INTO pinklifeline.patient_specific_details VALUES (17, 'STAGE_0', '2024-05-28', '883cf1760bfffff', true);
 
 INSERT IGNORE INTO users VALUES (18, '18@gmail.com', 'dsjflasjdfljlsdfjldsf', 'Y', 'Raka Vai');
 INSERT IGNORE INTO pinklifeline.user_roles VALUES (18, 'ROLE_DOCTOR');

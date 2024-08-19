@@ -117,6 +117,20 @@ need to be passed, then pass an empty list like this:
 ```allergies:[]```
 * If ```cancerHistory: "N"```, remember cancerRelatives must be an empty list.
 
+## Update LocationShare status
+``` Endpoint: PUT /v1/ROLE_PATIENT/toggle-location-share```
+<br><br>
+```Response status: ok(200)```
+### Sample Return Object
+```
+{
+  "locationShare": false
+}
+```
+**<span style="color:red">Notes:</span>**
+* "locationShare" is the latest status of the locationShare. This endpoint works like a toggle.
+
+
 ## Get Nearby Users
 ``` Endpoint: GET /v1/ROLE_PATIENT/nearby/{id}```
 ### Sample Return Object

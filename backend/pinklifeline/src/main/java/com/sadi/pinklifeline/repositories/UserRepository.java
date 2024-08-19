@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     void updateProfilePictureById(Long id, String path);
 
     @Query("select new com.sadi.pinklifeline.models.responses.NearbyUserRes(u.id, u.basicUser.fullName, u.patientSpecificDetails.location) " +
-            "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id")
+            "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id and u.patientSpecificDetails.locationShare = true")
     List<NearbyUserRes> findNearbyUsers(List<String> locations, Long id);
 
     @Query("select new User(u.id, u.isRegistrationComplete) from User u where u.id = :id")
