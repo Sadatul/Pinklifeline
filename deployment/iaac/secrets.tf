@@ -124,6 +124,20 @@ resource "google_secret_manager_secret_version" "sslcommerz_store_passwd_version
   secret_data = var.sslcommerz_store_passwd
 }
 
+resource "google_secret_manager_secret" "email_password" {
+  provider  = google
+  secret_id = "email_password"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secret_manager_api]
+}
+
+resource "google_secret_manager_secret_version" "email_password_version" {
+  secret      = google_secret_manager_secret.email_password.id
+  secret_data = var.email_password
+}
+
 resource "tls_private_key" "rsa_key" {
   algorithm = "RSA"
   rsa_bits  = 2048

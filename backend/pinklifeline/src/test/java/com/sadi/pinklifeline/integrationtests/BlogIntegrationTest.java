@@ -188,6 +188,28 @@ public class BlogIntegrationTest extends AbstractBaseIntegrationTest{
         if(deletedBlog.isPresent()){
             fail("Blog was not deleted");
         }
+        // Anonymous user tests
+        Long existingBlogId = 1L;
+        res = mockMvc.perform(get("/v1/anonymous/blogs")
+                        .param("doctorName", "Raka")
+                        .param("title", "how")
+                        .param("startDate", "2024-05-01")
+                        .param("endDate", "2024-05-30"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(existingBlogId))
+                .andExpect(jsonPath("$.content[0].upvoteCount").value(0))
+                .andExpect(jsonPath("$.content[0].voteId", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for first query for blog by anonymous: {}", res);
+        res = mockMvc.perform(get("/v1/anonymous/blogs/{existingBlogId}", existingBlogId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authorId").value(docId))
+                .andExpect(jsonPath("$.upvoteCount").value(0))
+                .andExpect(jsonPath("$.voteId", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+        log.info("Response for second query for blog (get blog by id) by anonymous: {}", res);
     }
 
     private void assertBlog(BlogReq req, Blog blog) {

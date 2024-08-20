@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -209,6 +210,29 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
         if(deletedQuestion.isPresent()){
             fail("Forum Question was not deleted");
         }
+        // Anonymous Test
+        Long existingForumQuestion = 1L;
+        res = mockMvc.perform(get("/v1/anonymous/forum")
+                        .param("title", "how")
+                        .param("tags", "cancer,treatment")
+                        .param("startDate", "2024-05-01")
+                        .param("endDate", "2024-05-30"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(existingForumQuestion))
+                .andExpect(jsonPath("$.content[0].voteCount").value(0))
+                .andExpect(jsonPath("$.content[0].voteByUser", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for first query for forum question by anonymous user: {}", res);
+
+        res = mockMvc.perform(get("/v1/anonymous/forum/{existingForumQuestion}", existingForumQuestion))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authorId").value(docId))
+                .andExpect(jsonPath("$.voteCount").value(0))
+                .andExpect(jsonPath("$.voteByUser", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+        log.info("Response for second query for forum question (get question by id): {}", res);
     }
 
     @Test
@@ -305,6 +329,35 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
                 .andReturn().getResponse().getContentAsString();
 
         log.info("Response for first query for forum answer: {}", res);
+
+        mockMvc.perform(put("/v1/forum/answers/{newAnswerId}/vote", newAnswerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                          {
+                            "voteType":"DOWNVOTE"
+                          }
+                        """)
+                        .header("Authorization", String.format("Bearer %s", userToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.voteChange").value(-2));
+        voteEntry = forumAnswerHandlerService.getVoteEntryByAnswerIdAndUserId(newAnswerId, userId);
+        if(voteEntry.isEmpty()){
+            fail("Vote was not registered for Forum answer");
+        }
+        log.info("Vote answer body: {}", voteEntry.get());
+        assertEquals(newVoteId, voteEntry.get().getId());
+        assertEquals(-1, voteEntry.get().getValue());
+
+        res = mockMvc.perform(get("/v1/forum/answers/{newAnswerId}", newAnswerId)
+                .header("Authorization", String.format("Bearer %s", userToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(newAnswerId))
+                .andExpect(jsonPath("$.voteCount").value(-1))
+                .andExpect(jsonPath("$.voteByUser").value(-1))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for second query for forum answer: {}", res);
+
         // Delete Answer
         String deleteToken = mint(docId, List.of(Roles.ROLE_DOCTOR));
         mockMvc.perform(delete("/v1/forum/answers/{newAnswerId}", newAnswerId)
@@ -315,6 +368,26 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
         if(deletedAnswer.isPresent()){
             fail("Answer was not deleted");
         }
+        // Anonymous user test
+        Long existingAnswerId = 1L;
+        res = mockMvc.perform(get("/v1/anonymous/forum/answers")
+                        .param("questionId", questionId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(existingAnswerId))
+                .andExpect(jsonPath("$[0].voteCount").value(0))
+                .andExpect(jsonPath("$[0].voteByUser", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+        log.info("Response for query for answers by anonymous user: {}", res);
+
+        res = mockMvc.perform(get("/v1/anonymous/forum/answers/{id}", existingAnswerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingAnswerId))
+                .andExpect(jsonPath("$.voteCount").value(0))
+                .andExpect(jsonPath("$.voteByUser", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for answer by id by anonymous user: {}", res);
     }
 
     private void assertForumQuestion(ForumQuestionReq req, ForumQuestion question){

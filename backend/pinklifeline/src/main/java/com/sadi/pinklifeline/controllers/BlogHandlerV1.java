@@ -6,6 +6,7 @@ import com.sadi.pinklifeline.models.reqeusts.BlogReq;
 import com.sadi.pinklifeline.models.responses.BlogFullRes;
 import com.sadi.pinklifeline.models.responses.BlogsRes;
 import com.sadi.pinklifeline.service.BlogHandlerService;
+import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/v1/blogs")
@@ -88,7 +90,7 @@ public class BlogHandlerV1 {
         Specification<Blog> spec = blogHandlerService.getSpecification(startDate.atStartOfDay(),
                 endDate.atTime(23, 59), docId, title,
                 doctorName, sortType, sortDirection);
-        Page<BlogsRes> res = blogHandlerService.filterBlogs(spec, pageable);
+        Page<BlogsRes> res = blogHandlerService.filterBlogs(spec, pageable, Optional.of(SecurityUtils.getOwnerID()));
         return ResponseEntity.ok(new PagedModel<>(res));
     }
 
@@ -96,6 +98,6 @@ public class BlogHandlerV1 {
     public ResponseEntity<BlogFullRes> getFullBlog(
             @PathVariable Long id){
         log.debug("get blog with id: {}", id);
-        return ResponseEntity.ok(blogHandlerService.getBlogFullRes(id));
+        return ResponseEntity.ok(blogHandlerService.getBlogFullRes(id, SecurityUtils.getOwnerID()));
     }
 }

@@ -117,6 +117,20 @@ need to be passed, then pass an empty list like this:
 ```allergies:[]```
 * If ```cancerHistory: "N"```, remember cancerRelatives must be an empty list.
 
+## Update LocationShare status
+``` Endpoint: PUT /v1/ROLE_PATIENT/toggle-location-share```
+<br><br>
+```Response status: ok(200)```
+### Sample Return Object
+```
+{
+  "locationShare": false
+}
+```
+**<span style="color:red">Notes:</span>**
+* "locationShare" is the latest status of the locationShare. This endpoint works like a toggle.
+
+
 ## Get Nearby Users
 ``` Endpoint: GET /v1/ROLE_PATIENT/nearby/{id}```
 ### Sample Return Object
@@ -1205,7 +1219,11 @@ status: create(201)
 * This endpoint works like a toggle. If a vote for this blog_id with current user already exists it will remove the vote, and you will get a -1 as response. But if you a vote doesn't exist for the blog_id by the current user, then a vote will be added to the blog and you will get a 1 as response.
 
 ## GET Blogs: Paginated
-``` Endpoint: GET /v1/blogs```
+```
+Endpoint: GET
+    registered user: /v1/blogs
+    anonymous user: /v1/anonymous/blogs
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: docId=1```
@@ -1254,8 +1272,11 @@ status: create(201)
 * If voteId is null that means the current user hasn't voted for this blog. If it has a value(Long), then the user has voted for this blog. 
 
 ## Get Blog info by Id
-```Endpoint: /v1/blogs/{blog_id}```
-<br><br>
+```
+Endpoints: GET 
+    registered users: /v1/blogs/{blog_id}
+    anonymous users: /v1/anonymous/blogs/{blog_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
@@ -1344,7 +1365,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Questions: Paginated
-``` Endpoint: GET /v1/forum```
+``` 
+Endpoints: GET
+    registered users: /v1/forum
+    anonymous users: /v1/anonymous/forum
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: userId=1```
@@ -1392,11 +1417,15 @@ status: create(201)
 * If voteByUser is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 
 ## Get Forum Question Info by Id
-```Endpoint: /v1/forum/{forum_id}```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/{forum_id}
+    anonymous users: /v1/anonymous/forum/{forum_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
+{
   "id": 4,
   "title": "Istanbul Complex Treatment",
   "body": "m libero natoque hac hendrerit nibh amet, torquent ornare.",
@@ -1407,6 +1436,7 @@ status: create(201)
   "voteCount": 1,
   "createdAt": "2024-06-16T21:00:06",
   "tags":["Hospital", "Heart"]
+}
 ```
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
@@ -1472,8 +1502,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Answers by QuestionId
-``` Endpoint: GET /v1/forum/answers```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/answers
+    anonymous users: /v1/anonymous/forum/answers
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: questionId=1 (required)```
@@ -1498,6 +1531,7 @@ status: create(201)
     "id": 10,
     "body": "Very good Reply to 8",
     "parentId": 8,
+    "questionId": 5,
     "voteByUser": null,
     "author": "Dr. QQW Ahmed",
     "authorId": 4,
@@ -1511,3 +1545,145 @@ status: create(201)
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 * "numberOfReplies" says the number of reply this particular answer had.
+
+## GET Forum Answers by answerId
+```
+Endpoints: GET
+    registered users: /v1/forum/answers/{answerId}
+    anonymous users: /v1/anonymous/forum/answers/{answerId}
+```
+```Response status: ok(200)```
+### Response Body
+```
+[
+  {
+    "id": 10,
+    "body": "Very good Reply to 8",
+    "parentId": 8,
+    "questionId": 5,
+    "voteByUser": null,
+    "author": "Dr. QQW Ahmed",
+    "authorId": 4,
+    "authorProfilePicture": null,
+    "voteCount": 1,
+    "createdAt": "2024-08-17T07:56:27",
+    "numberOfReplies": 1
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+* "numberOfReplies" says the number of reply this particular answer had.
+## Add Complaint
+``` Endpoint: POST /v1/complaints```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "resourceId": 5,
+  "type": "BLOG",
+  "category": "Mis-information",
+  "description": "This question is filled with mis-information"
+}
+```
+**<span style="color:red">Notes:</span>**
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* "category" is limited to 100 chars
+* "description" is limited to 300 chars
+
+## Get complaints: Only for admin: Paginated
+```
+Endpoints: GET /v1/ROLE_ADMIN/complaints
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: category=nudity```
+<br>
+``` Query params: type=BLOG```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* The result is sorted based on field "createdAt"
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* sortDirection can have two values ```ASC or DESC```. By default, ASC is selected.
+
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "createdAt": "2024-08-19T22:18:24",
+    "resourceId": 3,
+    "description": "This was very offensive content",
+    "id": 1,
+    "type": "BLOG",
+    "category": "Sexual content"
+  }
+]
+```
+##  Resolve Complaint: Only for admin
+``` Endpoint: /v1/ROLE_ADMIN/complaints/{complaint_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+``` Query params: violation=false```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Here "violation" parameter is what the admin passes. If it true then admin found violation for the complaint.
+* If violation is false, the user who made the complaint will get an email, mentioning that no violation was found
+* If violation is true, then the resource will be deleted, author will be notified that his content was deleted via email and also the user will be get mail that the complaint was resolved.
+## Get Unverified Doctors: Only for admin: Paginated
+```
+Endpoints: GET /v1/ROLE_ADMIN/unverified/doctors
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: fullName=adil```
+<br>
+``` Query params: regNo=sdfasdfsdfsdf```
+<br>
+``` Query params: workplace=hospital```
+<br>
+``` Query params: department=cancer```
+<br>
+``` Query params: designation=ata```
+<br>
+``` Query params: contactNumber=01711573136```
+<br>
+``` Query params: qualifications=fcps,mbbs```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "qualifications":["MBBS", "DO"],
+    "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+    "contactNumber": "01730445524",
+    "fullName": "Dr. Rahima Begum",
+    "id": 3,
+    "designation": "Head",
+    "department": "Cancer",
+    "workplace": "Rajshahi Medical College"
+  }
+]
+```
+## Verify Doctor: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/verify/doctors/{docId}
+```
+```Response status: noContent(204)```

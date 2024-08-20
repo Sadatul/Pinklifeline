@@ -163,20 +163,11 @@ public class ForumQuestionHandlerService {
         return spec;
     }
 
-    public Page<ForumQuestionsRes> filterQuestions(Specification<ForumQuestion> spec, Pageable pageable) {
-        Long userId = SecurityUtils.getOwnerID();
+    public Page<ForumQuestionsRes> filterQuestions(Specification<ForumQuestion> spec, Pageable pageable, Optional<Long> userId) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ForumQuestionsRes> cq = cb.createQuery(ForumQuestionsRes.class);
-
         Root<ForumQuestion> root = cq.from(ForumQuestion.class);
-        Subquery<Long> voteValueSubQuery = cq.subquery(Long.class);
-        Root<ForumQuestionVote> forumQuestionVoteRoot = voteValueSubQuery.from(ForumQuestionVote.class);
 
-        voteValueSubQuery.select(forumQuestionVoteRoot.get("value"));
-        voteValueSubQuery.where(
-                cb.equal(forumQuestionVoteRoot.get("question").get("id"), root.get("id")),
-                cb.equal(forumQuestionVoteRoot.get("user").get("id"), userId)
-        );
 
         List<Predicate> predicates = new ArrayList<>();
         if (spec != null) {
@@ -187,16 +178,10 @@ public class ForumQuestionHandlerService {
         }
         cq.where(predicates.toArray(new Predicate[0]));
 
-        cq.select(cb.construct(ForumQuestionsRes.class,
-                root.get("id"),
-                root.get("title"),
-                voteValueSubQuery.alias("voteByUser"),
-                root.get("user").get("fullName"),
-                root.get("user").get("id"),
-                root.get("user").get("profilePicture"),
-                root.get("voteCount"),
-                root.get("createdAt")
-        ));
+        if(userId.isPresent())
+            getSelectForRegisteredUsers(cq, cb, root, userId.get());
+        else
+            getSelectForAnonymousUsers(cq, cb, root);
 
         TypedQuery<ForumQuestionsRes> query = entityManager.createQuery(cq);
         query.setFirstResult((int) pageable.getOffset());
@@ -208,8 +193,40 @@ public class ForumQuestionHandlerService {
         return new PageImpl<>(result, pageable, total);
     }
 
-    public ForumQuestionFullRes getFullQuestion(Long id){
-        Long userId = SecurityUtils.getOwnerID();
+    private void getSelectForAnonymousUsers(CriteriaQuery<ForumQuestionsRes> cq, CriteriaBuilder cb, Root<ForumQuestion> root) {
+        cq.select(cb.construct(ForumQuestionsRes.class,
+                root.get("id"),
+                root.get("title"),
+                root.get("user").get("fullName"),
+                root.get("user").get("id"),
+                root.get("user").get("profilePicture"),
+                root.get("voteCount"),
+                root.get("createdAt")
+        ));
+    }
+
+    private static void getSelectForRegisteredUsers(CriteriaQuery<ForumQuestionsRes> cq, CriteriaBuilder cb, Root<ForumQuestion> root, Long userId) {
+        Subquery<Long> voteValueSubQuery = cq.subquery(Long.class);
+        Root<ForumQuestionVote> forumQuestionVoteRoot = voteValueSubQuery.from(ForumQuestionVote.class);
+        voteValueSubQuery.select(forumQuestionVoteRoot.get("value"));
+        voteValueSubQuery.where(
+                cb.equal(forumQuestionVoteRoot.get("question").get("id"), root.get("id")),
+                cb.equal(forumQuestionVoteRoot.get("user").get("id"), userId)
+        );
+
+        cq.select(cb.construct(ForumQuestionsRes.class,
+                root.get("id"),
+                root.get("title"),
+                voteValueSubQuery.alias("voteByUser"),
+                root.get("user").get("fullName"),
+                root.get("user").get("id"),
+                root.get("user").get("profilePicture"),
+                root.get("voteCount"),
+                root.get("createdAt")
+        ));
+    }
+
+    public ForumQuestionFullRes getFullQuestion(Long id, Long userId){
         ForumQuestionFullRes forumQuestionFullRes = forumQuestionRepository.getForumQuestionFullResById(id, userId).orElseThrow(() -> new ResourceNotFoundException(
                 String.format("Question with id: %s not found", id)
         ));

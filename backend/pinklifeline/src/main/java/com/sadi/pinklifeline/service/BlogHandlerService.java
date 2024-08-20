@@ -127,20 +127,12 @@ public class BlogHandlerService {
         return blogVoteRepository.findByBlogIdAndUserId(id, voterId);
     }
 
-    public Page<BlogsRes> filterBlogs(Specification<Blog> spec, Pageable pageable){
-        Long userId = SecurityUtils.getOwnerID();
+    public Page<BlogsRes> filterBlogs(Specification<Blog> spec, Pageable pageable, Optional<Long> userId){
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BlogsRes> cq = cb.createQuery(BlogsRes.class);
 
         Root<Blog> root = cq.from(Blog.class);
 
-        Subquery<Long> voteIdSubQuery = cq.subquery(Long.class);
-        Root<BlogVote> blogVoteRoot = voteIdSubQuery.from(BlogVote.class);
-        voteIdSubQuery.select(blogVoteRoot.get("id"));
-        voteIdSubQuery.where(
-                cb.equal(blogVoteRoot.get("blog").get("id"), root.get("id")),
-                cb.equal(blogVoteRoot.get("user").get("id"), userId)
-        );
 
         List<Predicate> predicates = new ArrayList<>();
         if (spec != null) {
@@ -150,6 +142,43 @@ public class BlogHandlerService {
             }
         }
         cq.where(predicates.toArray(new Predicate[0]));
+
+        if(userId.isPresent())
+            querySelectForRegisteredUser(cq, cb, root, userId.get());
+        else
+            querySelectForAnonymousUser(cq, cb, root);
+
+        TypedQuery<BlogsRes> query = entityManager.createQuery(cq);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<BlogsRes> result =  query.getResultList();
+        assert spec != null;
+        long total = blogRepository.count(spec);
+        return new PageImpl<>(result, pageable, total);
+    }
+
+    private void querySelectForAnonymousUser(CriteriaQuery<BlogsRes> cq, CriteriaBuilder cb, Root<Blog> root) {
+        cq.select(cb.construct(BlogsRes.class,
+                root.get("id"),
+                root.get("title"),
+                cb.substring(root.get("content"), 1, shortContentSize),
+                root.get("author").get("fullName"),
+                root.get("author").get("userId"),
+                root.get("author").get("user").get("profilePicture"),
+                root.get("upvoteCount"),
+                root.get("createdAt")
+        ));
+    }
+
+    private void querySelectForRegisteredUser(CriteriaQuery<BlogsRes> cq, CriteriaBuilder cb, Root<Blog> root, Long userId) {
+        Subquery<Long> voteIdSubQuery = cq.subquery(Long.class);
+        Root<BlogVote> blogVoteRoot = voteIdSubQuery.from(BlogVote.class);
+        voteIdSubQuery.select(blogVoteRoot.get("id"));
+        voteIdSubQuery.where(
+                cb.equal(blogVoteRoot.get("blog").get("id"), root.get("id")),
+                cb.equal(blogVoteRoot.get("user").get("id"), userId)
+        );
 
         cq.select(cb.construct(BlogsRes.class,
                 root.get("id"),
@@ -162,15 +191,6 @@ public class BlogHandlerService {
                 root.get("upvoteCount"),
                 root.get("createdAt")
         ));
-
-        TypedQuery<BlogsRes> query = entityManager.createQuery(cq);
-        query.setFirstResult((int) pageable.getOffset());
-        query.setMaxResults(pageable.getPageSize());
-
-        List<BlogsRes> result =  query.getResultList();
-        assert spec != null;
-        long total = blogRepository.count(spec);
-        return new PageImpl<>(result, pageable, total);
     }
 
     public Specification<Blog> getSpecification(LocalDateTime startDate, LocalDateTime endDate,
@@ -198,8 +218,7 @@ public class BlogHandlerService {
         return spec;
     }
 
-    public BlogFullRes getBlogFullRes(Long id){
-        Long userId = SecurityUtils.getOwnerID();
+    public BlogFullRes getBlogFullRes(Long id, Long userId){
         BlogFullRes blogFullRes = blogRepository.findBlogFullResById(id, userId).orElseThrow(() -> new ResourceNotFoundException(
                 String.format("Blog with id: %s not found", id)
         ));

@@ -34,4 +34,16 @@ public class ForumQuestionsRes {
         this.voteCount = voteCount;
         this.createdAt = createdAt;
     }
+
+    public ForumQuestionsRes(Long id, String title, String author,
+                             Long authorId, String authorProfilePicture,
+                             Integer voteCount, LocalDateTime createdAt) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.authorId = authorId;
+        this.authorProfilePicture = authorProfilePicture;
+        this.voteCount = voteCount;
+        this.createdAt = createdAt;
+    }
 }

@@ -139,8 +139,14 @@ public class ForumAnswerHandlerService {
         return forumAnswerVoteRepository.findByAnswerIdAndUserId(id, userId);
     }
 
-    public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort) {
-        Long userId = SecurityUtils.getOwnerID();
+    public List<ForumAnswerRes> getForumAnswerWithAuthorData(Long questionId, Long parentId, Sort sort, Long userId) {
         return forumAnswerRepository.findByQuestionId(questionId, userId, parentId, sort);
+    }
+
+    public ForumAnswerRes getForumAnswerResById(Long id, Long userId) {
+        return forumAnswerRepository.findForumAnswerResById(id, userId).orElseThrow(() -> new ResourceNotFoundException(
+                String.format("ForumAnswer with id: %d doesn't exist", id)
+                )
+        );
     }
 }
