@@ -1642,3 +1642,48 @@ Endpoints: GET /v1/ROLE_ADMIN/complaints
 * Here "violation" parameter is what the admin passes. If it true then admin found violation for the complaint.
 * If violation is false, the user who made the complaint will get an email, mentioning that no violation was found
 * If violation is true, then the resource will be deleted, author will be notified that his content was deleted via email and also the user will be get mail that the complaint was resolved.
+## Get Unverified Doctors: Only for admin: Paginated
+```
+Endpoints: GET /v1/ROLE_ADMIN/unverified/doctors
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: fullName=adil```
+<br>
+``` Query params: regNo=sdfasdfsdfsdf```
+<br>
+``` Query params: workplace=hospital```
+<br>
+``` Query params: department=cancer```
+<br>
+``` Query params: designation=ata```
+<br>
+``` Query params: contactNumber=01711573136```
+<br>
+``` Query params: qualifications=fcps,mbbs```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "qualifications":["MBBS", "DO"],
+    "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+    "contactNumber": "01730445524",
+    "fullName": "Dr. Rahima Begum",
+    "id": 3,
+    "designation": "Head",
+    "department": "Cancer",
+    "workplace": "Rajshahi Medical College"
+  }
+]
+```
+## Verify Doctor: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/verify/doctors/{docId}
+```
+```Response status: noContent(204)```
