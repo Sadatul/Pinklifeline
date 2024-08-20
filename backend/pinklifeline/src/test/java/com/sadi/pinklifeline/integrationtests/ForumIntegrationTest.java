@@ -329,6 +329,35 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
                 .andReturn().getResponse().getContentAsString();
 
         log.info("Response for first query for forum answer: {}", res);
+
+        mockMvc.perform(put("/v1/forum/answers/{newAnswerId}/vote", newAnswerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                          {
+                            "voteType":"DOWNVOTE"
+                          }
+                        """)
+                        .header("Authorization", String.format("Bearer %s", userToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.voteChange").value(-2));
+        voteEntry = forumAnswerHandlerService.getVoteEntryByAnswerIdAndUserId(newAnswerId, userId);
+        if(voteEntry.isEmpty()){
+            fail("Vote was not registered for Forum answer");
+        }
+        log.info("Vote answer body: {}", voteEntry.get());
+        assertEquals(newVoteId, voteEntry.get().getId());
+        assertEquals(-1, voteEntry.get().getValue());
+
+        res = mockMvc.perform(get("/v1/forum/answers/{newAnswerId}", newAnswerId)
+                .header("Authorization", String.format("Bearer %s", userToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(newAnswerId))
+                .andExpect(jsonPath("$.voteCount").value(-1))
+                .andExpect(jsonPath("$.voteByUser").value(-1))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for second query for forum answer: {}", res);
+
         // Delete Answer
         String deleteToken = mint(docId, List.of(Roles.ROLE_DOCTOR));
         mockMvc.perform(delete("/v1/forum/answers/{newAnswerId}", newAnswerId)
@@ -349,7 +378,16 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
                 .andExpect(jsonPath("$[0].voteCount").value(0))
                 .andExpect(jsonPath("$[0].voteByUser", nullValue()))
                 .andReturn().getResponse().getContentAsString();
-        log.info("Response for first query for forum answer by anonymous user: {}", res);
+        log.info("Response for query for answers by anonymous user: {}", res);
+
+        res = mockMvc.perform(get("/v1/anonymous/forum/answers/{id}", existingAnswerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingAnswerId))
+                .andExpect(jsonPath("$.voteCount").value(0))
+                .andExpect(jsonPath("$.voteByUser", nullValue()))
+                .andReturn().getResponse().getContentAsString();
+
+        log.info("Response for answer by id by anonymous user: {}", res);
     }
 
     private void assertForumQuestion(ForumQuestionReq req, ForumQuestion question){

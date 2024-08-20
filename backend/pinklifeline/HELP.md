@@ -1425,6 +1425,7 @@ Endpoints: GET
 ```Response status: ok(200)```
 ### Response Body
 ```
+{
   "id": 4,
   "title": "Istanbul Complex Treatment",
   "body": "m libero natoque hac hendrerit nibh amet, torquent ornare.",
@@ -1435,6 +1436,7 @@ Endpoints: GET
   "voteCount": 1,
   "createdAt": "2024-06-16T21:00:06",
   "tags":["Hospital", "Heart"]
+}
 ```
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
@@ -1529,6 +1531,7 @@ Endpoints: GET
     "id": 10,
     "body": "Very good Reply to 8",
     "parentId": 8,
+    "questionId": 5,
     "voteByUser": null,
     "author": "Dr. QQW Ahmed",
     "authorId": 4,
@@ -1542,3 +1545,100 @@ Endpoints: GET
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 * "numberOfReplies" says the number of reply this particular answer had.
+
+## GET Forum Answers by answerId
+```
+Endpoints: GET
+    registered users: /v1/forum/answers/{answerId}
+    anonymous users: /v1/anonymous/forum/answers/{answerId}
+```
+```Response status: ok(200)```
+### Response Body
+```
+[
+  {
+    "id": 10,
+    "body": "Very good Reply to 8",
+    "parentId": 8,
+    "questionId": 5,
+    "voteByUser": null,
+    "author": "Dr. QQW Ahmed",
+    "authorId": 4,
+    "authorProfilePicture": null,
+    "voteCount": 1,
+    "createdAt": "2024-08-17T07:56:27",
+    "numberOfReplies": 1
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+* "numberOfReplies" says the number of reply this particular answer had.
+## Add Complaint
+``` Endpoint: POST /v1/complaints```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "resourceId": 5,
+  "type": "BLOG",
+  "category": "Mis-information",
+  "description": "This question is filled with mis-information"
+}
+```
+**<span style="color:red">Notes:</span>**
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* "category" is limited to 100 chars
+* "description" is limited to 300 chars
+
+## Get complaints: Only for admin: Paginated
+```
+Endpoints: GET /v1/ROLE_ADMIN/complaints
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: category=nudity```
+<br>
+``` Query params: type=BLOG```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* The result is sorted based on field "createdAt"
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* sortDirection can have two values ```ASC or DESC```. By default, ASC is selected.
+
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "createdAt": "2024-08-19T22:18:24",
+    "resourceId": 3,
+    "description": "This was very offensive content",
+    "id": 1,
+    "type": "BLOG",
+    "category": "Sexual content"
+  }
+]
+```
+##  Resolve Complaint: Only for admin
+``` Endpoint: /v1/ROLE_ADMIN/complaints/{complaint_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+``` Query params: violation=false```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Here "violation" parameter is what the admin passes. If it true then admin found violation for the complaint.
+* If violation is false, the user who made the complaint will get an email, mentioning that no violation was found
+* If violation is true, then the resource will be deleted, author will be notified that his content was deleted via email and also the user will be get mail that the complaint was resolved.

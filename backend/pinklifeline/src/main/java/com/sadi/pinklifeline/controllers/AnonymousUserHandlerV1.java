@@ -112,4 +112,10 @@ public class AnonymousUserHandlerV1 {
                 null);
         return ResponseEntity.ok(answers);
     }
+
+    @GetMapping("/forum/answers/{id}")
+    public ResponseEntity<ForumAnswerRes> getForumAnswer(@PathVariable Long id){
+        ForumAnswerRes answer = forumAnswerHandlerService.getForumAnswerResById(id, null);
+        return ResponseEntity.ok(answer);
+    }
 }

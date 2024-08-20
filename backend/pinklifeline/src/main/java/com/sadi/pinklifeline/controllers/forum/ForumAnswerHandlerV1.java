@@ -82,6 +82,12 @@ public class ForumAnswerHandlerV1 {
         return ResponseEntity.ok(answers);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ForumAnswerRes> forumAnswer(@PathVariable Long id){
+        ForumAnswerRes answer = forumAnswerHandlerService.getForumAnswerResById(id, SecurityUtils.getOwnerID());
+        return ResponseEntity.ok(answer);
+    }
+
     @Data
     @NoArgsConstructor
     public static class ForumAnswerUpdateReq {
