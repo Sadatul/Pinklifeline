@@ -1,4 +1,3 @@
-import { PatientLivePrescriptionPage } from "@/app/components/livePrescription";
 import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 
 const baseUrl = 'http://localhost:8080';
@@ -53,8 +52,11 @@ export const blogsUrl = `${baseUrl}/v1/blogs`
 export const blogByIdUrl = (id) => { return `${baseUrl}/v1/blogs/${id}` }
 export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}/vote` }
 export const forumQuestionsUrl = `${baseUrl}/v1/forum`
+export const forumQuestionByIdUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}` }
 export const forumQuestionvoteUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}/vote` }
 export const forumAnswerVote = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}/vote` }
+export const forumAnswers = `${baseUrl}/v1/forum/answers`
+export const forumAnswersById = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -137,13 +139,16 @@ export const pagePaths = {
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
     questionPageById: (id) => { return `/forum/question/${id}` },
+    updateQuestionById: (id) => { return `/forum/question/${id}/update` },
     blogsPage: "/blogs",
     blogPageById: (id) => { return `/blogs/${id}` },
+    updateBlogById: (id) => { return `/blogs/${id}/update` },
     addBlogPage: "blogs/add",
     addConsultation: "/userdetails/addconsultation",
     userProfile: (userId) => { return `/profile/user/${userId}` },
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
     redirectUserToProfileWithId: (userId) => { return `/profile/redirect?userId?${userId}` },
+    reportPage: "/reports",
 }
 
 export const voteStates = {
@@ -233,6 +238,9 @@ export const isSubset = (subset, superset) => {
 }
 
 export function displayDate(date) {
+    if (!date) {
+        return null;
+    }
     const currentDate = new Date();
     const givenDate = new Date(date);
     const difference = differenceInDays(currentDate, givenDate);
@@ -247,4 +255,4 @@ export function displayDate(date) {
     }
 }
 
-//Content in blog will be of two parts. one for cover  and then another for the image
+// const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`

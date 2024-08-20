@@ -19,11 +19,11 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { avatarAang, pagePaths } from "@/utils/constants";
+import { avatarAang, blogsUrl, generateFormattedDate, pagePaths } from "@/utils/constants";
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import babyImage from "../../../../../public/babyImage.jpg"
@@ -31,6 +31,7 @@ import Image from "next/image";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { Pagination } from "@mui/material";
 import Avatar from "@/app/components/avatar";
+import axiosInstance from "@/utils/axiosInstance";
 
 export default function BlogsPage() {
     const searchParams = useSearchParams();
@@ -38,61 +39,21 @@ export default function BlogsPage() {
     const searchTerms = searchParams.get('search') || '';
     const [loadingBlogs, setLoadingBlogs] = useState(true);
     const [pageInfo, setPageInfo] = useState()
-    const [blogs, setBlogs] = useState([{
-        "id": 4,
-        "title": "Basic Cancer Surgery",
-        "content": "Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli piscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli ",
-        "voteId": null,
-        "author": "Dr. QQW Ahmed",
-        "authorId": 4,
-        "upvoteCount": 0,
-        "createdAt": "2024-08-15T12:46:33"
-    }, {
-        "id": 4,
-        "title": "Basic Cancer Surgery",
-        "content": "Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli piscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli ",
-        "voteId": null,
-        "author": "Dr. QQW Ahmed",
-        "authorId": 4,
-        "upvoteCount": 0,
-        "createdAt": "2024-08-15T12:46:33"
-    }, {
-        "id": 4,
-        "title": "Basic Cancer Surgery",
-        "content": "Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli piscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli ",
-        "voteId": null,
-        "author": "Dr. QQW Ahmed",
-        "authorId": 4,
-        "upvoteCount": 0,
-        "createdAt": "2024-08-15T12:46:33"
-    }, {
-        "id": 4,
-        "title": "Basic Cancer Surgery",
-        "content": "Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli piscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli ",
-        "voteId": null,
-        "author": "Dr. QQW Ahmed",
-        "authorId": 4,
-        "upvoteCount": 0,
-        "createdAt": "2024-08-15T12:46:33"
-    }, {
-        "id": 4,
-        "title": "Basic Cancer Surgery",
-        "content": "Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli piscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli Lorem ipsum odor amet, consectetuer adipiscing eli ",
-        "voteId": null,
-        "author": "Dr. QQW Ahmed",
-        "authorId": 4,
-        "upvoteCount": 0,
-        "createdAt": "2024-08-15T12:46:33"
-    },]);
+    const [blogs, setBlogs] = useState([]);
+    const [trendingBlogs, setTrendingBlogs] = useState([]);
     const [dateRange, setDateRange] = useState({
         from: null,
         to: null,
     })
     const [filter, setFilter] = useState({
+        docId: null,
         doctorName: null,
-        dateRange: null,
-        sortDirection: null,
-        sortType: null,
+        title: null,
+        startDate: null,
+        endDate: null,
+        sortType: "TIME",
+        sortDirection: "ASC",
+        pageNo: 0,
     })
 
     function displayDate(date) {
@@ -111,10 +72,51 @@ export default function BlogsPage() {
     }
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        axiosInstance.get(blogsUrl, { params: filter }).then((response) => {
+            console.log(response.data);
+            setBlogs(response.data.content.map(blog => {
+                const content = blog.content.match(/<covertext>(.*?)<\/covertext>/s)
+                const coverImage = blog.content.match(/<coverimage>(.*?)<\/coverimage>/s)
+                return {
+                    ...blog,
+                    content: content ? content[1] : null,
+                    coverImage: coverImage ? coverImage[1] : null,
+                }
+            }));
+            setPageInfo(response.data.page);
+        }).catch((error) => {
+            console.log(error);
+        }).finally(() => {
             setLoadingBlogs(false);
-        }, 1000);
+        })
+    }, [filter])
+
+    useEffect(() => {
+        axiosInstance.get(blogsUrl, {
+            params: {
+                endDate: generateFormattedDate(new Date()),
+                startDate: generateFormattedDate(new Date(new Date().setDate(new Date().getDate() - 7))),
+                sortType: 'VOTES',
+                sortDirection: 'DESC',
+            }
+        }).then((response) => {
+            console.log(response.data);
+            setTrendingBlogs(response.data.content.slice(0, 7).map(blog => {
+                return {
+                    id: blog.id,
+                    title: blog.title,
+                }
+            }));
+        }).catch((error) => {
+            console.log(error);
+        }).finally(() => {
+            setLoadingBlogs(false);
+        })
     }, [])
+
+    useEffect(() => {
+        console.log("filter", filter);
+    }, [filter])
 
     return (
         <ScrollableContainer className="flex flex-col w-full gap-3 p-5 overflow-x-hidden h-full">
@@ -122,9 +124,13 @@ export default function BlogsPage() {
                 <h1 className="text-3xl font-bold">Blogs</h1>
                 <div className="flex flex-row w-full justify-between gap-5">
                     <div className="relative flex items-center gap-5">
-                        <input type="text" placeholder="Search titles..." className="pl-8 pr-4 py-1 border rounded border-purple-500 shadow-inner min-w-96 text-black" defaultValue={searchTerms} />
+                        <input type="text" placeholder="Search titles..." className="pl-8 pr-4 py-1 border rounded border-purple-500 shadow-inner min-w-96 text-black" id="search-title-field" defaultValue={filter.title} />
                         <SearchIcon size={20} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-700" />
-                        <button onClick={() => { console.log(filter) }} className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1">Search</button>
+                        <button className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1" onClick={() => {
+                            setFilter({ ...filter, title: document.getElementById('search-title-field').value });
+                        }}>
+                            Search
+                        </button>
                         <Sheet>
                             <SheetTrigger asChild>
                                 <button className="bg-gray-600 border-b-gray-900 hover:scale-95 px-3 py-1 rounded text-white">
@@ -138,10 +144,14 @@ export default function BlogsPage() {
                                         Add other filters to your search
                                     </SheetDescription>
                                 </SheetHeader>
-                                <div className="flex flex-col gap-5 p-5 text-lg">
+                                <div className="flex flex-col gap-5 p-5 text-lg flex-1">
                                     <div className="flex flex-col gap-2">
                                         Doctor Name
                                         <input defaultValue={filter.doctorName || ""} autoComplete="off" id="doctorName" className="border shadow-inner border-purple-500 min-w-72 rounded px-2" />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        Doctor Id
+                                        <input type="number" defaultValue={filter.doctorName || ""} autoComplete="off" id="doctorId" className="border shadow-inner border-purple-500 min-w-72 rounded px-2 number-input" />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         Start Date - End Date
@@ -184,14 +194,14 @@ export default function BlogsPage() {
                                     </div>
                                     <div className="flex flex-row gap-2 items-center text-black text-lg">
                                         Sort Type
-                                        <select id="sortType" defaultValue={"TIME"} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                        <select id="sortType" defaultValue={filter.sortType} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
                                             <option value="TIME">Time</option>
                                             <option value="VOTES">Vote</option>
                                         </select>
                                     </div>
                                     <div className="flex flex-row gap-2 items-center text-black text-lg">
                                         Sort
-                                        <select id="sortDirection" defaultValue={"ASC"} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                        <select id="sortDirection" defaultValue={filter.sortDirection} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
                                             <option value="ASC">Ascending</option>
                                             <option value="DESC">Descending</option>
                                         </select>
@@ -211,10 +221,13 @@ export default function BlogsPage() {
                                         </Button>
                                         <Button size="lg" onClick={() => {
                                             setFilter({
+                                                ...filter,
+                                                docId: document.getElementById('doctorId').value,
                                                 doctorName: document.getElementById('doctorName').value,
-                                                dateRange: dateRange,
-                                                sortDirection: document.getElementById('sortDirection').value,
                                                 sortType: document.getElementById('sortType').value,
+                                                sortDirection: document.getElementById('sortDirection').value,
+                                                startDate: generateFormattedDate(dateRange.from),
+                                                endDate: generateFormattedDate(dateRange.to),
                                             });
                                         }} className="hover:scale-95 hover:border hover:bg-white shadow-inner hover:text-black">
                                             Apply
@@ -230,37 +243,54 @@ export default function BlogsPage() {
                 </div>
             </div>
             <Separator className="h-[2.5px] bg-gradient-to-b from-purple-200 to-purple-700" />
-            <div className="flex flex-col w-full gap-5 h-full">
+            <div className="flex flex-col w-full gap-5 flex-grow">
                 <div className="flex flex-row gap-5 w-full flex-1 py-3">
-                    <div className="flex flex-col gap-2 flex-1">
-                        {loadingBlogs ? <LoaderIcon size={64} className="text-purple-800 mx-auto animate-spin" /> :
-                            <div className="flex flex-col gap-5 rounded p-3">
-                                {blogs.map((blog, index) => (
-                                    <>
-                                        <div key={index} className={cn("flex flex-row justify-between gap-2 p-5 rounded bg-gradient-to-r from-indigo-100 to-transparent to-75%")}>
-                                            <div className="flex flex-col gap-2 flex-1 p-1">
-                                                <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
-                                                <div className="flex flex-row items-center gap-3">
-                                                    <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-base hover:underline mr-5 gap-1 flex items-center">
-                                                        <Avatar avatarImgScr={avatarAang} size={32} />
-                                                        {blog.author}
-                                                    </Link>
-                                                    <p className="text-sm">{displayDate(blog.createdAt)}</p>
-                                                    <span className="flex items-center gap-1">
-                                                        <ThumbsUp size={20} className="text-pink-700" />
-                                                        <span className="text-sm">{blog.upvoteCount}</span>
-                                                    </span>
+                    <div className="flex flex-col gap-2 flex-1 justify-between">
+                        <div className="flex flex-col flex-1">
+                            {loadingBlogs ? <LoaderIcon size={64} className="text-purple-800 mx-auto animate-spin" /> :
+                                <div className="flex flex-col gap-5 rounded p-3">
+                                    {
+                                        blogs.map((blog, index) => (
+                                            <React.Fragment key={index}>
+                                                <div className={cn("flex flex-row justify-between gap-2 p-5 rounded bg-gradient-to-r from-indigo-100 to-transparent to-75%")}>
+                                                    <div className="flex flex-col gap-2 flex-1 p-1">
+                                                        <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
+                                                        <div className="flex flex-row items-center gap-3">
+                                                            <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-base hover:underline mr-5 gap-1 flex items-center">
+                                                                <Avatar avatarImgScr={blog.authorProfilePicture} size={32} />
+                                                                {blog.author}
+                                                            </Link>
+                                                            <p className="text-sm">{displayDate(blog.createdAt)}</p>
+                                                            <span className="flex items-center gap-1">
+                                                                <ThumbsUp size={20} className="text-pink-700" />
+                                                                <span className="text-sm">{blog.upvoteCount}</span>
+                                                            </span>
+                                                        </div>
+                                                        {blog.content && <p className="text-lg line-clamp-3 break-all">{blog.content}</p>}
+                                                    </div>
+                                                    {blog.coverImage && <Image src={blog.coverImage} alt="babyImage" width={200} height={200} />}
                                                 </div>
-                                                <p className="text-lg line-clamp-3">{blog.content}</p>
-                                            </div>
-                                            <Image src={babyImage.src} alt="babyImage" width={200} height={200} />
-                                        </div>
-                                        <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
-                                    </>
-                                ))}
-                            </div>
-                        }
-                        <Pagination count={10} shape="rounded" className="m-auto" />
+                                                <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
+                                            </React.Fragment>
+                                        ))
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div className="w-full h-fit flex flex-col justify-center items-center">
+                            {(pageInfo?.totalPages > 0) &&
+                                <Pagination
+                                    count={pageInfo?.totalPages}
+                                    shape="rounded"
+                                    className="m-auto"
+                                    showLastButton
+                                    page={filter.pageNo + 1}
+                                    onChange={(event, value) => {
+                                        setFilter(prev => ({ ...prev, pageNo: value - 1 }))
+                                    }}
+                                />
+                            }
+                        </div>
                     </div>
                     <Separator orientation="vertical" className="bg-gray-500 w-[1.5px] h-full" />
                     <div className="flex flex-col gap-4 w-3/12 bg-gradient-to-b from-zinc-100 to-transparent rounded p-3">
@@ -279,29 +309,18 @@ export default function BlogsPage() {
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Health issues</Badge>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2 w-full">
+                        <div className="flex flex-col gap-2 w-full items-center">
                             <h2 className="text-2xl font-bold flex items-center gap-2 text-blue-600">
-                                Popular writers
+                                Trending Blogs
                                 <PenLine size={24} className="text-purple-800 translate-y-1" />
                             </h2>
                             <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
-                            <div className="flex flex-col gap-3 items-start p-3 text-lg">
-                                <div className="flex flex-row gap-2 items-center">
-                                    <Avatar avatarImgScr={avatarAang} size={32} />
-                                    <Link href={pagePaths.doctorProfile(4)} className="hover:underline">Dr. QQW Ahmed</Link>
-                                </div>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <Avatar avatarImgScr={avatarAang} size={32} />
-                                    <Link href={pagePaths.doctorProfile(5)} className="hover:underline">Dr. ZZZ Ahmed</Link>
-                                </div>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <Avatar avatarImgScr={avatarAang} size={32} />
-                                    <Link href={pagePaths.doctorProfile(6)} className="hover:underline">Dr. YYY Ahmed</Link>
-                                </div>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <Avatar avatarImgScr={avatarAang} size={32} />
-                                    <Link href={pagePaths.doctorProfile(7)} className="hover:underline">Dr. XXX Ahmed</Link>
-                                </div>
+                            <div className="flex flex-col gap-3 items-start p-3 text-lg w-full">
+                                {trendingBlogs.map((blog, index) => (
+                                    <Link key={index} href={pagePaths.blogPageById(blog.id)} className="hover:underline text-blue-500 break-all text-wrap">
+                                        {blog.title}
+                                    </Link>
+                                ))}
                             </div>
                         </div>
                     </div>

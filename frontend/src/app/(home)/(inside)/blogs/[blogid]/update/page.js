@@ -21,15 +21,17 @@ import { toast } from "sonner";
 import { set } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { blogsUrl, pagePaths } from "@/utils/constants";
+import { blogByIdUrl, blogsUrl, pagePaths } from "@/utils/constants";
 import axiosInstance from "@/utils/axiosInstance";
 import { Vault } from "@/app/components/firebaseVault";
 
 import dynamic from "next/dynamic";
+import { useParams } from "next/navigation";
+import Loading from "@/app/components/loading";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-export default function AddBlogPage() {
+export default function UpdateBlogPage() {
     const config = useMemo(() => ({
         readonly: false,
         height: "480px",
@@ -37,6 +39,11 @@ export default function AddBlogPage() {
         spellcheck: true,
         useNativeTooltip: true,
     }), []);
+    const params = useParams();
+    const [loading, setLoading] = useState(true);
+    const [coverText, setCoverText] = useState("");
+    const [coverImage, setCoverImage] = useState("");
+    const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [charCount, setCharCount] = useState(0);
 
@@ -55,8 +62,28 @@ export default function AddBlogPage() {
     };
 
     useEffect(() => {
-        console.log("char count", charCount);
-    }, [charCount]);
+        axiosInstance.get(blogByIdUrl(params.blogid)).then((res) => {
+            console.log(res.data)
+            const cover = res.data.content.match(/<covertext>(.*?)<\/covertext>/s);
+            const image = res.data.content.match(/<coverimage>(.*?)<\/coverimage>/s);
+            const content = res.data.content.match(/<content>(.*?)<\/content>/s);
+            setCoverText(cover ? cover[1] : "");
+            setCoverImage(image ? image[1] : "");
+            setContent(content ? content[1] : "");
+            setTitle(res.data.title);
+            handleContentChange(content ? content[1] : "");
+        }).catch((err) => {
+            console.log(err)
+            if (err?.response?.status === 404) {
+                toast.error("Blog not found")
+                window.location.href = pagePaths.blogsPage
+            }
+        }).finally(() => {
+            setLoading(false)
+        })
+    }, []);
+
+    if (loading) return <Loading />
 
     return (
         <div className="flex flex-col w-full h-full items-center gap-2 px-3 py-1 overflow-x-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 via-gray-200 to-gray-300 relative">
@@ -81,7 +108,7 @@ export default function AddBlogPage() {
                     const coverImageLink = document.getElementById("blog-cover-image").value
                     const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`
                     console.log(blogContent)
-                    axiosInstance.post(blogsUrl, {
+                    axiosInstance.put(blogByIdUrl(params.blogid), {
                         title: title,
                         content: blogContent,
                     }).then((res) => {
@@ -91,7 +118,7 @@ export default function AddBlogPage() {
                         console.log(err)
                     })
                 }}>
-                    Post
+                    Update
                 </Button>
 
             </div>
@@ -99,13 +126,13 @@ export default function AddBlogPage() {
             <div className="flex flex-row w-10/12 gap-8 text-lg py-2 px-5 rounded bg-purple-100 items-center justify-between scale-y-90 flex-wrap">
                 <div className="flex flex-col items-start gap-1 flex-wrap">
                     Blog Title
-                    <input id="blog-title" type="text" className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-72" />
+                    <input id="blog-title" type="text" defaultValue={title} className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-72" />
                     <span id="error-title-msg" className="text-sm text-red-500 hidden">Title cannot be empty</span>
                 </div>
                 <div className="flex flex-col items-start gap-1 flex-wrap">
                     {"Add cover text (optional)"}
                     <div className="flex flex-col gap-1 translate-y-3">
-                        <textarea maxLength={200} id="blog-cover-text" className="border w-80 text-sm border-gray-500 p-2 shadow-inner rounded"
+                        <textarea maxLength={200} id="blog-cover-text" defaultValue={coverText} className="border w-80 text-sm border-gray-500 p-2 shadow-inner rounded"
                             onChange={(e) => {
                                 if (e.target.value.length === 0) {
                                     document.getElementById("cover-text-characters").innerText = `Max 200 characters`
@@ -119,7 +146,7 @@ export default function AddBlogPage() {
                 </div>
                 <div className="flex flex-col items-start gap-1">
                     {"Cover Image Url (optional)"}
-                    <input id="blog-cover-image" type="text" className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-72" />
+                    <input id="blog-cover-image" type="text" defaultValue={coverImage} className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-72" />
                 </div>
             </div>
             <JoditEditor
