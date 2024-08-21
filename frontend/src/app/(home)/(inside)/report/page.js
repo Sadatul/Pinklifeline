@@ -25,6 +25,7 @@ function Report() {
             </div>
         )
     }
+
     return (
         <div className={cn("m-auto flex flex-col items-center h-full w-full p-5", radicalGradient, "from-gray-200 to-gray-100")}>
             <div className="w-10/12 flex flex-col p-3 bg-white rounded-lg shadow items-start gap-4">
