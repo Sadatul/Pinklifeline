@@ -54,10 +54,10 @@ ALTER TABLE pinklifeline.hospital_reviews_comments
     ADD CONSTRAINT FK_HOSPITAL_REVIEWS_COMMENTS_ON_REVIEW_ID FOREIGN KEY (review_id) REFERENCES hospital_reviews (id);
 
 ALTER TABLE hospital_tests
-    ADD CONSTRAINT FK_HOSPITAL_TESTS_ON_HOSPITAL FOREIGN KEY (hospital_id) REFERENCES hospitals (id);
+    ADD CONSTRAINT FK_HOSPITAL_TESTS_ON_HOSPITAL FOREIGN KEY (hospital_id) REFERENCES hospitals (id) ON DELETE CASCADE;
 
 ALTER TABLE hospital_tests
-    ADD CONSTRAINT FK_HOSPITAL_TESTS_ON_TEST FOREIGN KEY (test_id) REFERENCES medical_tests (id);
+    ADD CONSTRAINT FK_HOSPITAL_TESTS_ON_TEST FOREIGN KEY (test_id) REFERENCES medical_tests (id) ON DELETE CASCADE;
 
 CREATE INDEX index_hospitals_name ON hospitals (name);
 

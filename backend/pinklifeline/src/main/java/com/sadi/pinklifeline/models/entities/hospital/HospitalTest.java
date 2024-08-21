@@ -2,12 +2,14 @@ package com.sadi.pinklifeline.models.entities.hospital;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @ToString
 @Table(name = "hospital_tests")
 public class HospitalTest {
@@ -27,4 +29,10 @@ public class HospitalTest {
 
     @Column(nullable = false)
     private Integer fee;
+
+    public HospitalTest(Hospital hospital, MedicalTest test, Integer fee) {
+        this.hospital = hospital;
+        this.test = test;
+        this.fee = fee;
+    }
 }
