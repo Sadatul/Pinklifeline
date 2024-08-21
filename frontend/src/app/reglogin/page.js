@@ -113,7 +113,7 @@ export default function LoginRegister() {
                 <Separator className="bg-purple-400 m-2 w-80" />
                 <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input type="email" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
+                    <input type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
                         {...register("email", {
                             required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }})} />
                     {errors.email && <span className="text-red-500">{errors.email?.message}</span>}

@@ -6,7 +6,7 @@ import axiosInstance from "@/utils/axiosInstance"
 import { complaintUrl, generateOptionsFromArray, pagePaths, radicalGradient, reportCategories, ReportTypes } from "@/utils/constants"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import { toast } from "sonner"
 
 function Report() {

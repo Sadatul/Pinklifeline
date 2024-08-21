@@ -41,6 +41,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "encoding": "^0.1.13",
     "firebase": "^10.12.2",
     "framer-motion": "^11.2.11",
     "h3-js": "^4.1.0",

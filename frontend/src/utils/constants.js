@@ -49,17 +49,26 @@ export const getUserInfoUrl = (user_id, role) => { return `${baseUrl}/v1/infos/$
 export const getDoctorBalance = `${baseUrl}/v1/infos/balance`
 export const getDoctorBalanceHistory = `${baseUrl}/v1/infos/balance/history`
 export const blogsUrl = `${baseUrl}/v1/blogs`
+export const blogsAnonymousUrl = `${baseUrl}/v1/anonymous/blogs`
 export const blogByIdUrl = (id) => { return `${baseUrl}/v1/blogs/${id}` }
+export const blogByIdAnonymousUrl = (blog_id) => { return `${baseUrl}/v1/anonymous/blogs/${blog_id}` }
 export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}/vote` }
 export const forumQuestionsUrl = `${baseUrl}/v1/forum`
+export const forumQuestionsAnonymousUrl = `${baseUrl}/v1/anonymous/forum`
 export const forumQuestionByIdUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}` }
+export const forumQuestionByIdAnonymousUrl = (forum_id) => { return `${baseUrl}/v1/anonymous/forum/${forum_id}` }
 export const forumQuestionvoteUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}/vote` }
 export const forumAnsById = (answerId) => { return `${baseUrl}/v1/forum/answers/${answerId}` }
 export const forumAnswerVote = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}/vote` }
 export const forumAnswers = `${baseUrl}/v1/forum/answers`
+export const forumAnswersAnonymous = `${baseUrl}/v1/anonymous/forum/answers`
 export const forumAnswersById = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}` }
+export const forumAnswersByIdAnonymous = (answer_id) => { return `${baseUrl}/v1/anonymous/forum/answers/${answer_id}` }
 export const complaintUrl = `${baseUrl}/v1/complaints`
+export const getComplaints = `${baseUrl}/v1/ROLE_ADMIN/complaints`
 export const resolveComplaint = (complaint_id) => { return `${baseUrl}/v1/ROLE_ADMIN/complaints/${complaint_id}` }
+export const unverifiedDoctors = `${baseUrl}/v1/ROLE_ADMIN/unverified/doctors`
+export const verifyDoctor = (docId) => { return `${baseUrl}/v1/ROLE_ADMIN/verify/doctors/${docId}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -75,6 +84,7 @@ export const messageImageUploaPath = (roomId, userId, fileName) => { return `mes
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
 
 export const sessionDataItem = "sessionData"
+export const reportAnalysisThreshold = 0.85
 
 export const roles = {
     basicUser: "ROLE_BASICUSER",
@@ -152,7 +162,8 @@ export const pagePaths = {
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
     redirectUserToProfileWithId: (userId) => { return `/profile/redirect?userId?${userId}` },
     reportPage: (id, type) => { return `/report?contentId=${id}&contentType=${type}` },
-    complaintDetailsPage: (complaintId, type, resourceId) => { return `/complaints/${complaintId}?type=${type}&resourceId=${resourceId}` },
+    complaintsPage: "/admin/complaints",
+    complaintDetailsPage: (complaintId, type, resourceId) => { return `/admin/complaints/${complaintId}?type=${type}&resourceId=${resourceId}` },
 }
 
 export const ReportTypes = {

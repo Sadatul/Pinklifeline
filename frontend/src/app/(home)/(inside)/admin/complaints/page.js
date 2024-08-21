@@ -6,7 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { complaintUrl, pagePaths, radicalGradient, reportCategories, ReportTypes, resolveComplaint } from "@/utils/constants"
+import { complaintUrl, getComplaints, pagePaths, radicalGradient, reportCategories, ReportTypes, resolveComplaint } from "@/utils/constants"
+import { Pagination } from "@mui/material"
 import { format } from "date-fns"
 import { CalendarIcon, Check, ExternalLink, Loader2, X } from "lucide-react"
 import Link from "next/link"
@@ -77,7 +78,7 @@ export default function ComplaintsPage() {
     useEffect(() => {
         if (fetchAgain) {
             setLoadingComplaints(true)
-            axiosInstance.get(complaintUrl, {
+            axiosInstance.get(getComplaints, {
                 params: filter
             }).then((response) => {
                 setComplaints(response.data.content)
@@ -92,7 +93,7 @@ export default function ComplaintsPage() {
     }, [filter, fetchAgain])
 
     const handleViolated = (complaintId, isViolated) => {
-        axiosInstance.get(resolveComplaint(complaintId), {
+        axiosInstance.delete(resolveComplaint(complaintId), {
             params: {
                 violation: isViolated
             }
@@ -187,46 +188,64 @@ export default function ComplaintsPage() {
                     </select>
                 </div>
                 <Separator className="h-[2px] w-full bg-black bg-opacity-60" />
-                <div className="flex flex-col gap-4 w-full min-h-60 items-center bg-white p-3 rounded">
-                    {loadingComplaints ? (
-                        <Loader2 size={48} className="text-gray-700 m-auto animate-spin" />
-                    ) : (
-                        <>
-                            {complaints.map((complaint, index) => (
-                                <React.Fragment key={index}>
-                                    <div className="flex flex-col gap-1 w-10/12">
-                                        <div className="flex flex-row justify-between items-center">
-                                            <Link href={pagePaths.complaintDetailsPage(complaint.id, complaint.type, complaint.resourceId)} className="text-lg font-semibold flex items-center gap-2 hover:underline">
-                                                {complaint.type}
-                                                <ExternalLink size={20} className="text-gray-700" />
-                                            </Link>
-                                            <h3 className="text-sm font-normal">{format(new Date(complaint.createdAt), "EEEE hh:mm a, LLL dd, y")}</h3>
+                <div className="flex flex-col gap-4 w-full min-h-60 items-center bg-white p-3 rounded justify-between">
+                    <div className="flex flex-col w-full items-center">
+                        {loadingComplaints ? (
+                            <Loader2 size={48} className="text-gray-700 m-auto animate-spin" />
+                        ) : (
+                            <>
+                                {complaints.map((complaint, index) => (
+                                    <React.Fragment key={index}>
+                                        <div className="flex flex-col gap-1 w-10/12">
+                                            <div className="flex flex-row justify-between items-center">
+                                                <Link href={pagePaths.complaintDetailsPage(complaint.id, complaint.type, complaint.resourceId)} className="text-lg font-semibold flex items-center gap-2 hover:underline">
+                                                    {complaint.type}
+                                                    <ExternalLink size={20} className="text-gray-700" />
+                                                </Link>
+                                                <h3 className="text-sm font-normal">{format(new Date(complaint.createdAt), "EEEE hh:mm a, LLL dd, y")}</h3>
+                                            </div>
+                                            <div className="flex flex-row justify-between items-center">
+                                                <h3 className="text-base font-normal">{complaint.category}</h3>
+                                                <h3 className="text-base font-normal">Resource ID: {complaint.resourceId}</h3>
+                                            </div>
+                                            <p className="text-base font-normal text-wrap break-all">{complaint.description}</p>
+                                            <div className="flex flex-row justify-end gap-10">
+                                                <button className="rounded w-fit px-2 b py-1order text-sm bg-green-300 text-black shadow-inner hover:scale-95" onClick={() => {
+                                                    handleViolated(complaint.id, false)
+                                                }}>
+                                                    Not Violated
+                                                </button>
+                                                <button className="rounded w-fit px-2 py-1 border text-sm bg-red-300 text-black shadow-inner hover:scale-95" onClick={() => {
+                                                    handleViolated(complaint.id, true)
+                                                }}>
+                                                    Violated
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-row justify-between items-center">
-                                            <h3 className="text-base font-normal">{complaint.category}</h3>
-                                            <h3 className="text-base font-normal">Resource ID: {complaint.resourceId}</h3>
-                                        </div>
-                                        <p className="text-base font-normal text-wrap break-all">{complaint.description}</p>
-                                        <div className="flex flex-row justify-end gap-10">
-                                            <button className="rounded w-fit px-2 b py-1order text-sm bg-green-300 text-black shadow-inner hover:scale-95" onClick={() => {
-                                                handleViolated(complaint.id, false)
-                                            }}>
-                                                Not Violated
-                                            </button>
-                                            <button className="rounded w-fit px-2 py-1 border text-sm bg-red-300 text-black shadow-inner hover:scale-95" onClick={() => {
-                                                handleViolated(complaint.id, true)
-                                            }}>
-                                                Violated
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {index !== complaints.length - 1 &&
-                                        <Separator className="h-[2px] w-full bg-gray-300" />
-                                    }
-                                </React.Fragment>
-                            ))}
-                        </>
-                    )}
+                                        {index !== complaints.length - 1 &&
+                                            <Separator className="h-[2px] w-full bg-gray-300" />
+                                        }
+                                    </React.Fragment>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-2 items-center w-full">
+                        <Separator className="w-11/12 h-[1.5px] bg-gray-600" />
+                        <Pagination
+                            count={pageInfo?.totalPages}
+                            showFirstButton
+                            showLastButton
+                            variant="outlined"
+                            page={filter.pageNo + 1}
+                            onChange={(e, page) => {
+                                setFilter({
+                                    ...filter,
+                                    pageNo: page - 1
+                                })
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
