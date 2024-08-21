@@ -81,7 +81,7 @@ export default function UpdateBlogPage() {
         }).finally(() => {
             setLoading(false)
         })
-    }, []);
+    }, [params.blogid]);
 
     if (loading) return <Loading />
 

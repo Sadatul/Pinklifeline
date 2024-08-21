@@ -5,7 +5,7 @@ import Loading from "@/app/components/loading"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Separator } from "@/components/ui/separator"
 import axiosInstance from "@/utils/axiosInstance"
-import { avatarAang, blogByIdUrl, blogVoteUrl, pagePaths } from "@/utils/constants"
+import { avatarAang, blogByIdUrl, blogVoteUrl, pagePaths, ReportTypes } from "@/utils/constants"
 import { format } from "date-fns"
 import { CalendarClock, CalendarDays, Clock, ThumbsUpIcon, LinkIcon, Check, Ellipsis } from "lucide-react"
 import Image from "next/image"
@@ -46,7 +46,7 @@ export default function BlogPage() {
         }).finally(() => {
             setLoading(false)
         })
-    }, [])
+    }, [params.blogid])
 
     if (loading || !blog) return <Loading chose="hand" />
     if (blog === 404) return <h1 className="text-4xl text-center font-bold text-gray-800 m-auto">Blog Not Found</h1>
@@ -152,7 +152,7 @@ export default function BlogPage() {
                                         </>
                                     }
                                     <DropdownMenuItem>
-                                        <Link href={pagePaths.reportPage} className="flex items-center w-full">
+                                        <Link href={pagePaths.reportPage(blog.id, ReportTypes.blog)} className="flex items-center w-full">
                                             Report
                                         </Link>
                                     </DropdownMenuItem>

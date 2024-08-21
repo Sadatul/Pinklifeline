@@ -57,6 +57,7 @@ export const forumQuestionvoteUrl = (forum_id) => { return `${baseUrl}/v1/forum/
 export const forumAnswerVote = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}/vote` }
 export const forumAnswers = `${baseUrl}/v1/forum/answers`
 export const forumAnswersById = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}` }
+export const complaintUrl = `${baseUrl}/v1/complaints`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -148,7 +149,13 @@ export const pagePaths = {
     userProfile: (userId) => { return `/profile/user/${userId}` },
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
     redirectUserToProfileWithId: (userId) => { return `/profile/redirect?userId?${userId}` },
-    reportPage: "/reports",
+    reportPage: (id, type) => { return `/report?contentId=${id}&contentType=${type}` },
+}
+
+export const ReportTypes = {
+    blog: "BLOG",
+    forumQuestion: "FORUM_QUESTION",
+    forumAnswer: "FORUM_ANSWER",
 }
 
 export const voteStates = {
@@ -197,6 +204,18 @@ export const generateOptions = (start, end) => {
     }
     return options;
 };
+
+export const generateOptionsFromArray = (optionList) => {
+    const options = [];
+    for (let i = 0; i < optionList.length; i++) {
+        options.push(
+            <option key={i} value={optionList[i].value}>
+                {optionList[i].label}
+            </option>
+        )
+    }
+    return options;
+}
 
 export const getImageDimensions = (url) => {
     return new Promise((resolve, reject) => {
@@ -256,3 +275,25 @@ export function displayDate(date) {
 }
 
 // const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`
+
+export const reportCategories = [
+    { label: "Spam", toxicityModelLabel: null },
+    { label: "Harassment", toxicityModelLabel: "identity_attack" },
+    { label: "Inappropriate Content", toxicityModelLabel: "insult" },
+    { label: "Misinformation", toxicityModelLabel: null },
+    { label: "Off-topic", toxicityModelLabel: null },
+    { label: "Plagiarism", toxicityModelLabel: null },
+    { label: "Hate Speech", toxicityModelLabel: "threat" },
+    { label: "Privacy Violation", toxicityModelLabel: null },
+    { label: "Malicious Links", toxicityModelLabel: null },
+    { label: "Duplicate Answer", toxicityModelLabel: null },
+
+    // TensorFlow.js toxicity model labels
+    { label: "Identity Attack", toxicityModelLabel: "identity_attack" },
+    { label: "Insult", toxicityModelLabel: "insult" },
+    { label: "Obscene", toxicityModelLabel: "obscene" },
+    { label: "Severe Toxicity", toxicityModelLabel: "severe_toxicity" },
+    { label: "Sexual Harassment", toxicityModelLabel: "sexual_explicit" },
+    { label: "Threat", toxicityModelLabel: "threat" },
+    { label: "Toxicity", toxicityModelLabel: "toxicity" }
+];

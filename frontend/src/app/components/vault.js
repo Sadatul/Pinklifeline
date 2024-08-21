@@ -500,7 +500,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                         <DialogHeader>
                                             <DialogTitle>Revoke Report</DialogTitle>
                                             <DialogDescription>
-                                                Are you sure you want to revoke this report's access?
+                                                Are you sure you want to revoke this report&apos;s access?
                                             </DialogDescription>
                                         </DialogHeader>
                                         <DialogFooter>

@@ -61,13 +61,6 @@ export function AppointmentsPage() {
         }
     }, [sessionContext.sessionData, fetchAgain])
 
-    useEffect(() => {
-        console.log("balance", balance === null)
-        if (sessionContext.sessionData) {
-            console.log("Session Data", sessionContext.sessionData)
-        }
-    }, [sessionContext.sessionData])
-
     if (!sessionContext.sessionData) return <Loading />
 
     return (

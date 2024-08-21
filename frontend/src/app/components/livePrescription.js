@@ -395,16 +395,17 @@ export function PatientLivePrescriptionPage() {
                     console.log('Received message')
                     console.log(message)
                     if (sessionContext.sessionData.userId === message.receiverId && callId.current === message.callId) {
-                        setPrescriptionData({
-                            ...prescriptionData,
+                        setPrescriptionData(prev => ({
+                            ...prev,
                             prescription: {
+                                ...prev.prescription,
                                 analysis: message.analysis,
                                 medications: message.medications,
                                 tests: message.tests,
                                 weight: message.weight,
                                 height: message.height
                             }
-                        })
+                        }))
                     }
                     else {
                         console.log("Mismatch callId or recieverId. Refresh with correct credential")
@@ -452,7 +453,7 @@ export function PatientLivePrescriptionPage() {
                 </button>
                 <div id="prescriptionSection" className="flex flex-col flex-1 items-center gap-5 w-full p-5">
                     <h1 className="text-2xl font-semibold">
-                        {prescriptionData.prescription.doctorName.startsWith("Dr.")?prescriptionData?.prescription?.doctorName : `Dr. ${prescriptionData?.prescription?.doctorName}`}
+                        {prescriptionData.prescription.doctorName.startsWith("Dr.") ? prescriptionData?.prescription?.doctorName : `Dr. ${prescriptionData?.prescription?.doctorName}`}
                     </h1>
                     <h1 className="text-xl font-semibold">Patient Details</h1>
                     <Separator className="h-[1.5px] w-1/2" />

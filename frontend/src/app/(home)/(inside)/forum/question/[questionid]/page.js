@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/utils/axiosInstance";
-import { avatarAang, displayDate, forumAnswers, forumAnswersById, forumAnswerVote, forumQuestionByIdUrl, forumQuestionsUrl, forumQuestionvoteUrl, pagePaths, radicalGradient, voteStates, voteTypes } from "@/utils/constants";
+import { avatarAang, displayDate, forumAnswers, forumAnswersById, forumAnswerVote, forumQuestionByIdUrl, forumQuestionsUrl, forumQuestionvoteUrl, pagePaths, radicalGradient, ReportTypes, voteStates, voteTypes } from "@/utils/constants";
 import firebase_app from "@/utils/firebaseConfig";
 import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { ArrowRight, CalendarClockIcon, CornerDownRight, CornerLeftUp, Ellipsis, Filter, LinkIcon, Loader, Loader2, LoaderIcon, MessageCircle, SearchX, Send, SendHorizonal, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
@@ -43,7 +43,7 @@ export default function QuestionThreadPage() {
                 console.log("error getting related questions", error)
             })
         }
-    }, [questionTags])
+    }, [params.questionid,questionTags])
 
 
     if (notFound) {
@@ -135,7 +135,7 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
         }).finally(() => {
             setLoadingQuestion(false)
         })
-    }, [])
+    }, [params.questionid])
 
     useEffect(() => {
         if (giveAnswer && textareaRef.current) {
@@ -206,7 +206,7 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                         }
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
-                            <Link href={pagePaths.reportPage} className="flex items-center w-full">
+                            <Link href={pagePaths.reportPage(questionInfo.id, ReportTypes.forumQuestion)} className="flex items-center w-full">
                                 Report
                             </Link>
                         </DropdownMenuItem>
@@ -327,7 +327,7 @@ const AnswerSection = React.memo(
                     setLoadingAns(false)
                 })
             }
-        }, [isMounted])
+        }, [params.questionid,isMounted])
 
         useEffect(() => {
             if (fetchRepliesAgain) {
@@ -445,7 +445,7 @@ const Answer = React.memo(
                     setFetchRepliesAgain(false)
                 })
             }
-        }, [fetchRepliesAgain])
+        }, [fetchRepliesAgain, answer?.id, params.questionid])
 
         useEffect(() => {
             if (!showReplies && mutableAnswer.numberOfReplies > 0) {
@@ -580,7 +580,7 @@ const Answer = React.memo(
                                                 }
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem>
-                                                    <Link href={pagePaths.reportPage} className="flex items-center w-full">
+                                                    <Link href={pagePaths.reportPage(answer.id, ReportTypes.forumAnswer)} className="flex items-center w-full">
                                                         Report
                                                     </Link>
                                                 </DropdownMenuItem>

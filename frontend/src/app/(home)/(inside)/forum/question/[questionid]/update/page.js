@@ -57,7 +57,7 @@ export default function UpdateQuestionPage() {
         }).finally(() => {
             setLoading(false)
         })
-    }, [])
+    }, [params.questionid])
 
     if (!isMounted || loading) return <Loading chose="hand" />
 

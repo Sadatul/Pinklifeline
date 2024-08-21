@@ -28,7 +28,7 @@ export default function ReportDescriptionPage() {
                 }
             })
         }
-    }, [fetchAgain])
+    }, [params.reportid,fetchAgain])
 
     if (forbidded) return <h1 className="m-auto text-5xl flex items-end gap-2">< Ban size={44} className="text-red-600" /> Forbidden < Ban size={44} className="text-red-600" /> </h1>
     if (!report) return <Loading />
