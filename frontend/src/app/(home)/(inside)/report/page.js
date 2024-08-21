@@ -18,6 +18,11 @@ function Report() {
         return type === ReportTypes.blog || type === ReportTypes.forumQuestion || type === ReportTypes.forumAnswer
     }
 
+    const [dateRange, setDateRange] = useState({
+        from: null,
+        to: null,
+    })
+
     if (!id || !type || !checkType(type)) {
         return (
             <div className="text-center m-auto flex flex-row justify-center items-center h-full w-full text-3xl text-red-500">

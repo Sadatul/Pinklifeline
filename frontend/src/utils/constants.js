@@ -54,10 +54,12 @@ export const blogVoteUrl = (blog_id) => { return `${baseUrl}/v1/blogs/${blog_id}
 export const forumQuestionsUrl = `${baseUrl}/v1/forum`
 export const forumQuestionByIdUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}` }
 export const forumQuestionvoteUrl = (forum_id) => { return `${baseUrl}/v1/forum/${forum_id}/vote` }
+export const forumAnsById = (answerId) => { return `${baseUrl}/v1/forum/answers/${answerId}` }
 export const forumAnswerVote = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}/vote` }
 export const forumAnswers = `${baseUrl}/v1/forum/answers`
 export const forumAnswersById = (answer_id) => { return `${baseUrl}/v1/forum/answers/${answer_id}` }
 export const complaintUrl = `${baseUrl}/v1/complaints`
+export const resolveComplaint = (complaint_id) => { return `${baseUrl}/v1/ROLE_ADMIN/complaints/${complaint_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -150,6 +152,7 @@ export const pagePaths = {
     doctorProfile: (doctorId) => { return `/profile/doctor/${doctorId}` },
     redirectUserToProfileWithId: (userId) => { return `/profile/redirect?userId?${userId}` },
     reportPage: (id, type) => { return `/report?contentId=${id}&contentType=${type}` },
+    complaintDetailsPage: (complaintId, type, resourceId) => { return `/complaints/${complaintId}?type=${type}&resourceId=${resourceId}` },
 }
 
 export const ReportTypes = {
@@ -270,7 +273,7 @@ export function displayDate(date) {
         return formatDistanceToNow(givenDate, { addSuffix: true });
     } else {
         // Display the formatted date in "Friday, 12 August, 2023" format
-        return format(givenDate, 'EEEE, dd MMMM, yyyy');
+        return format(givenDate, "EEEE hh:mm a, dd MMMM, yyyy");
     }
 }
 
