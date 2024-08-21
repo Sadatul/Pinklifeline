@@ -2,6 +2,7 @@ package com.sadi.pinklifeline.models.entities.hospital;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -13,6 +14,7 @@ import lombok.ToString;
         @Index(name = "index_hospitals_name", columnList = "name"),
         @Index(name = "index_hospitals_location", columnList = "location")
 })
+@NoArgsConstructor
 public class Hospital {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +34,12 @@ public class Hospital {
 
     @Column(nullable = false)
     private String email;
+
+    public Hospital(String name, String description, String location, String contactNumber, String email) {
+        this.name = name;
+        this.description = description;
+        this.location = location;
+        this.contactNumber = contactNumber;
+        this.email = email;
+    }
 }
