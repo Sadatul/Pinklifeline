@@ -5,9 +5,16 @@ import com.sadi.pinklifeline.models.entities.hospital.MedicalTest;
 import com.sadi.pinklifeline.models.reqeusts.MedicalTestReq;
 import com.sadi.pinklifeline.repositories.hospital.MedicalTestRepository;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 public class MedicalTestHandlerService {
     private final MedicalTestRepository medicalTestRepository;
@@ -41,5 +48,22 @@ public class MedicalTestHandlerService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteMedicalTest(Long id) {
         medicalTestRepository.delete(getMedicalTest(id));
+    }
+
+    public List<Map<String, Object>> getMedicalTests(String name, Long id, boolean desc) {
+        String namePattern = name == null ? null : String.format("%%%s%%", name);
+        List<Object[]> objectList = medicalTestRepository.findMedicalTests(namePattern, id, desc);
+        return objectList.stream()
+                .map(val -> {
+                    List<Object[]> entries = new ArrayList<>(List.of(
+                            new Object[]{"id", val[0]},
+                            new Object[]{"name", val[1]}
+                    ));
+                    if (desc) {
+                        entries.add(new Object[]{"description", val[2]});
+                    }
+                    return entries.stream()
+                            .collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+                }).toList();
     }
 }

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Set;
+
 @Entity
 @Getter
 @Setter
@@ -34,6 +36,10 @@ public class Hospital {
 
     @Column(nullable = false)
     private String email;
+
+    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private Set<HospitalTest> tests;
 
     public Hospital(String name, String description, String location, String contactNumber, String email) {
         this.name = name;

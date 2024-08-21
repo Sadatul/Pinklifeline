@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -44,5 +46,14 @@ public class MedicalTestHandlerV1 {
         log.debug("delete medicalTest with id: {}", id);
         medicalTestHandlerService.deleteMedicalTest(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/anonymous/medical-tests")
+    public ResponseEntity<List<Map<String, Object>>> getMedicalTests(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false, defaultValue = "false") Boolean desc
+    ) {
+        return ResponseEntity.ok(medicalTestHandlerService.getMedicalTests(name, id, desc));
     }
 }

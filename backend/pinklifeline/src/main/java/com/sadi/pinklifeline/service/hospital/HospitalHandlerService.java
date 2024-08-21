@@ -10,9 +10,19 @@ import com.sadi.pinklifeline.models.reqeusts.HospitalReq;
 import com.sadi.pinklifeline.models.reqeusts.HospitalTestReq;
 import com.sadi.pinklifeline.repositories.hospital.HospitalRepository;
 import com.sadi.pinklifeline.repositories.hospital.HospitalTestRepository;
+import com.sadi.pinklifeline.specifications.HospitalSpecification;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class HospitalHandlerService {
@@ -90,5 +100,48 @@ public class HospitalHandlerService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteTestFromHospital(Long id) {
         hospitalTestRepository.delete(getHospitalTest(id));
+    }
+
+    public Specification<Hospital> getSpecification(Long id, String name, String location, Set<Long> testIds){
+        Specification<Hospital> spec = Specification.where(null);
+
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(HospitalSpecification.withName(name));
+        }
+
+        if (location != null && !location.isEmpty()) {
+            spec = spec.and(HospitalSpecification.withLocation(location));
+        }
+
+        if (testIds != null && !testIds.isEmpty()) {
+            spec = spec.and(HospitalSpecification.withTests(testIds));
+        }
+
+        if (id != null){
+            spec = spec.and(HospitalSpecification.withId(id));
+        }
+
+        return spec;
+    }
+
+    public Page<Hospital> getHospitals(Specification<Hospital> spec, Pageable pageable) {
+        return hospitalRepository.findAll(spec, pageable);
+    }
+
+    public List<Map<String, Object>> getTestByHospital(Long hospitalId, String name, Set<Long> testIds) {
+        String namePattern = name == null ? null : String.format("%%%s%%", name);
+        List<Object[]> objectList = hospitalTestRepository.findMedicalTestByHospitalId(hospitalId, namePattern, testIds);
+        return objectList.stream().map((val) -> Stream.of(new Object[][] {
+                {"id", val[0]},
+                {"name", val[1]},
+                {"description", val[2]},
+                {"testId", val[3]},
+                {"fee", val[4]}
+        }).collect(Collectors.toMap((data) -> (String) data[0], (data) -> data[1]))).toList();
+    }
+
+    public Map<Long, Object> getFeesForComparison(Set<Long> hospitalIdSet, Long testId) {
+        Object[][] res = hospitalTestRepository.getFeesByTestIdInHospitalIdSet(hospitalIdSet, testId);
+        return Stream.of(res).collect(Collectors.toMap((data) -> (Long) data[0], (data) -> data[1]));
     }
 }
