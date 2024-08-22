@@ -84,6 +84,7 @@ public class UserService {
         response.put("cancerStage", patient.getCancerStage());
         response.put("diagnosisDate", patient.getDiagnosisDate());
         response.put("location", patient.getLocation());
+        response.put("locationShare", patient.getLocationShare());
     }
 
     public void injectDoctorDetailsToMap(DoctorDetails doctorDetails, Map<String, Object> response){

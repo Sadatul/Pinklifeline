@@ -1125,7 +1125,8 @@ status: create(201)
   "height": 25.0,
   "cancerStage": "SURVIVOR",
   "diagnosisDate": "2020-08-03",
-  "location": "sdfasdfdsfsdfjsdfjfds"
+  "location": "sdfasdfdsfsdfjsdfjfds",
+  "locationShare": true
 }
 ```
 ## Get a Report By Id
@@ -1668,9 +1669,9 @@ Endpoints: GET /v1/ROLE_ADMIN/complaints
 * Here "violation" parameter is what the admin passes. If it true then admin found violation for the complaint.
 * If violation is false, the user who made the complaint will get an email, mentioning that no violation was found
 * If violation is true, then the resource will be deleted, author will be notified that his content was deleted via email and also the user will be get mail that the complaint was resolved.
-## Get Unverified Doctors: Only for admin: Paginated
+## Get Doctors
 ```
-Endpoints: GET /v1/ROLE_ADMIN/unverified/doctors
+Endpoints: GET /v1/doctors
 ```
 ```Response status: ok(200)```
 <br><br>
@@ -1688,10 +1689,14 @@ Endpoints: GET /v1/ROLE_ADMIN/unverified/doctors
 <br>
 ``` Query params: qualifications=fcps,mbbs```
 <br>
+``` Query params: isVerified=Y```
+<br>
 ``` Query params: pageNo=0```
 <br><br>
 **<span style="color:red">Notes:</span>**
 * Any one of them can be omitted.
+* "isVerified" can only have two values Y or N. isVerified=Y, user get verified doctors. If isVerified=N user gets unverified doctors.
+* Only admin can get unverified doctors. So, only admin can make a request with isVerified=N. By default, isVerified=Y
 ### Response Body.content
 **<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
 ```
@@ -1918,11 +1923,14 @@ Endpoints: GET /v1/anonymous/hospitals/tests
 ``` Query params: sortDirection=ASC```
 <br>
 ``` Query params: pageNo=0```
+<br>
+``` Query params: pageSize=0```
 <br><br>
 **<span style="color:red">Notes:</span>**
 * hospitalId is required, must be provided.
 * By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
 * Here testIds work a bit differently, if it is omitted all the tests under the hospital will be returned. But if testIds is not null, then only tests mention in list will be returned if they are available in the hospital.
+* "pageSize" is by default 10 but can be changes as needed.
 ### Response Body.content
 **<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
 ```
