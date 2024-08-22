@@ -30,6 +30,10 @@ public class DoctorsInfoService {
         ));
     }
 
+    public boolean existsById(Long id) {
+        return doctorRepository.existsById(id);
+    }
+
     public DoctorDetails getDoctorIfVerified(Long id) {
         DoctorDetails doctorDetails = getDoctor(id);
         if(doctorDetails.getIsVerified() == YesNo.N){

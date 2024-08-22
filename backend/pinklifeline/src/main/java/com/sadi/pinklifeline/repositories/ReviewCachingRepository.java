@@ -14,8 +14,9 @@ public class ReviewCachingRepository {
     private final RedisTemplate<String, String> userRedisTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${cache.reviews.doctor}")
-    private String cachePrefixDoctor;
+    @Value("${cache.reviews.prefix}")
+    private String cachePrefix;
+
 
     @Value("${cache.expiration.days}")
     private Integer cacheExpirationDays;
@@ -43,10 +44,7 @@ public class ReviewCachingRepository {
     }
 
     private String getReviewPrefix(String type) {
-        if(type.equalsIgnoreCase("doctor")){
-            return cachePrefixDoctor;
-        }
-        return "cache:default";
+        return String.format("%s:%s:", cachePrefix, type);
     }
 
     public Optional<Long[]> addReviewRatingCountPairUpdate(Integer rating, Long id, String type)

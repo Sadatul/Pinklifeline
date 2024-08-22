@@ -17,12 +17,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/ROLE_ADMIN")
-public class AdminHandlerV1 {
+public class VerificationHandler {
     private final DoctorsInfoService doctorsInfoService;
     @Value("${unverified.page-size}")
     private int pageSize;
 
-    public AdminHandlerV1(DoctorsInfoService doctorsInfoService) {
+    public VerificationHandler(DoctorsInfoService doctorsInfoService) {
         this.doctorsInfoService = doctorsInfoService;
     }
 

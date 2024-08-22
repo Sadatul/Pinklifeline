@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @ToString
 @Table(name = "hospital_reviews")
 @SecondaryTable(
@@ -43,6 +42,17 @@ public class HospitalReview implements Review {
 
     @Column(table = "hospital_reviews_comments", name = "comment", nullable = false)
     private String comment;
+
+    public HospitalReview(Hospital hospital, User reviewer, Integer rating) {
+        this.hospital = hospital;
+        this.reviewer = reviewer;
+        this.rating = rating;
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public HospitalReview() {
+        timestamp = LocalDateTime.now();
+    }
 
     @Override
     public Long getReviewerId() {

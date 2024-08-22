@@ -273,10 +273,10 @@ need to be passed, then pass an empty list like this:
 ## Delete Doctor Consultation Location
 ``` Endpoint: DELETE /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
 
-## Add Doctor Review
-``` Endpoint: POST /v1/reviews/doctor/{id}``` \
+## Add Review
+``` Endpoint: POST /v1/reviews/{type}/{id}``` \
 
-**Note: Here id means the user who is providing the review**
+**Note: Here id means the user who is providing the review, type can be hospital or doctor**
 ### Sample Body
 ```
 {
@@ -307,15 +307,15 @@ need to be passed, then pass an empty list like this:
 }
 ```
 **<span style="color:red">Notes:</span>**
-* count -> total number of reviews for the doctor to which the review was added
-* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* count -> total number of reviews for the type to which the review was added
+* averageRating -> The average rating (after the new review was added) of the resource to which the review was added.
 * ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 * This response will be also returned for each review update and delete, the info will be the latest info after performing the update.
 
 ## Update Doctor Review
-``` Endpoint: PUT /v1/reviews/doctor/{id}/{review_id}``` \
+``` Endpoint: PUT /v1/reviews/{type}/{id}/{review_id}``` \
 
-**Note: Here id means the user who is providing the review**
+**Note: Here id means the user who is providing the review, type can be hospital or doctor**
 ### Sample Body
 ```
 {
@@ -348,8 +348,9 @@ need to be passed, then pass an empty list like this:
 * ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Delete Doctor Review
-``` Endpoint: DELETE /v1/reviews/doctor/{id}/{review_id}``` \
+``` Endpoint: DELETE /v1/reviews/{type}/{id}/{review_id}``` \
 
+**Note: Here id means the user who is providing the review. Type can be hospital or doctor**
 ### Response Body
 ```
 {
@@ -676,8 +677,11 @@ status: create(201)
   "profilePicture": "kaka"
 }
 ```
-## Get reviews for doctors
-``` Endpoint: GET /v1/reviews/doctor/{id}```
+## Get reviews
+``` Endpoint: GET /v1/reviews/(type)/{id}```
+<br><br>
+**Type can be hospital or doctor**
+### Response Body:
 ```
 [
   {
@@ -702,6 +706,28 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>** <br>
 * Reviews will be sorted based on time**
+## Get review summary
+``` Endpoint: GET /v1/reviews/(type)/{id}/summary```
+<br><br>
+**Note: Type can be hospital or doctor**
+### Response Body:
+```
+{
+    "count": 3,
+    "averageRating": 2.6666666666666665,
+    "ratingCount":[
+        1,
+        0,
+        1,
+        1,
+        0
+    ]
+}
+```
+**<span style="color:red">Notes:</span>**
+* count -> total number of reviews for the doctor to which the review was added
+* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Add Report
 ``` Endpoint: POST /v1/reports```
@@ -1687,3 +1713,248 @@ Endpoints: GET /v1/ROLE_ADMIN/unverified/doctors
 Endpoints: PUT /v1/ROLE_ADMIN/verify/doctors/{docId}
 ```
 ```Response status: noContent(204)```
+
+## Add Hospital: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/hospitals
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "name": "City Medical College, Khulna",
+  "description": "A hospital with all kinds of facilities",
+  "location": "Moylapota, Khulna",
+  "contactNumber": "01738223344",
+  "email": "infos@gazimedicalcollege.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name", "location" and "email" can't be larger than 255 chars log.
+* "email" can't be larger than 30 chars log.
+
+## Update Hospital: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/hospitals/{hospital_id}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "name": "City Medical College, Khulna",
+  "description": "A hospital with all kinds of facilities",
+  "location": "Moylapota, Khulna",
+  "contactNumber": "01738223344",
+  "email": "infos@gazimedicalcollege.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name", "location" and "email" can't be larger than 255 chars log.
+* "email" can't be larger than 30 chars log.
+
+## Delete Hospital: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/hospitals/{hospital_id}
+```
+```Response status: noContent(204)```
+## Add Medical Test: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/medical-tests
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "name": "UltraSonoGraphy",
+  "description": "A very important test for heart patients"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name" can't be larger than 255 chars log.
+
+## Update Medical Test: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/medical-tests/{test_id}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "name": "ECG-Advanced",
+  "description": "A very important test for patients"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name" can't be larger than 255 chars log.
+
+## DELETE Medical Test: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/medical-tests/{test_id}
+```
+```Response status: noContent(204)```
+## Add Test to Hospital: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/hospitals/tests
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "hospitalId": 3,
+  "testId": 5,
+  "fee": 2000
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+
+## Update Test to Hospital: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/hospitals/tests/{hospitalTestId}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "fee": 2000
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+
+## Delete Test to Hospital: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/hospitals/tests/{hospitalTestId}
+```
+```Response status: noContent(204)```
+## Get Hospitals: Paginated
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: name=adil```
+<br>
+``` Query params: location=sdfasdfsdfsdf```
+<br>
+``` Query params: id=1```
+<br>
+``` Query params: testIds=2,3```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* testIds is list of MedicalTest ids. If not null, the query returns only the hospitals that has all the testIds available
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "name": "City Medical College, Khulna",
+    "contactNumber": "01738223344",
+    "description": "A hospital with all kinds of facilities",
+    "location": "Moylapota, Khulna",
+    "id": 5,
+    "email": "infos@gazimedicalcollege.com"
+  },
+]
+```
+## Get Medical Tests
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/medical-tests
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: name=adil```
+<br>
+``` Query params: id=1```
+<br>
+``` Query params: desc=false```
+<br>
+``` Query params: sortDirection=ASC```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* desc by default is false, meaning description won't be sent with the body. But if desc is set true then description will be send the response body for each test
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "name": "CT-scan",
+    "description": "A very important test for heart patients",
+    "id": 4
+  }
+]
+```
+## Get Hospitals Tests by hospitalId: Paginated
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals/tests
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: hospitalId=1 (REQUIRED)```
+<br>
+``` Query params: name=adil```
+<br>
+``` Query params: testIds=2,3```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* hospitalId is required, must be provided.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* Here testIds work a bit differently, if it is omitted all the tests under the hospital will be returned. But if testIds is not null, then only tests mention in list will be returned if they are available in the hospital.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "fee": 2000,
+    "name": "CT-scan",
+    "description": "A very important test for heart patients",
+    "testId": 4,
+    "id": 7
+  }
+]
+```
+## Get Tests Fee in hospital for comparison
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals/compare
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: testId=1```
+<br>
+``` Query params: hospitalIds=2,3```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* testId is required.
+* hospitalIds is a list of hospitalId. If the test mentioned in the testId is available in the hospitalIds list then its fee will be returned.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+{
+  "3": 2000,
+  "4": 3000
+}
+```
