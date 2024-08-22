@@ -123,11 +123,12 @@ public class HospitalHandlerV1 {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String testIds,
             @RequestParam(required = false, defaultValue = "ASC") Sort.Direction sortDirection,
-            @RequestParam(required = false, defaultValue = "0") Integer pageNo
+            @RequestParam(required = false, defaultValue = "0") Integer pageNo,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSizeForHosTests
     ) {
         Set<Long> testIdSet = testIds != null ? Arrays.stream(testIds.split(","))
                 .map(Long::parseLong).collect(Collectors.toSet()) : null;
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection, "test.name"));
+        Pageable pageable = PageRequest.of(pageNo, pageSizeForHosTests, Sort.by(sortDirection, "test.name"));
         Page<Object[]> hospitalTestPage = hospitalHandlerService.getTestByHospital(hospitalId, name, testIdSet, pageable);
 
         List<Map<String, Object>> content = hospitalTestPage.getContent().stream().map((val) -> Stream.of(new Object[][] {

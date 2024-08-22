@@ -37,7 +37,7 @@ public class ReviewsHandlerV1 {
             @PathVariable(name = "type") String type,
             @PathVariable(name = "user_id") Long userId,
             @Valid @RequestBody RegisterReviewReq req) throws JsonProcessingException {
-        log.debug("Post request on doctor review received: {}", req);
+        log.debug("Post request on {} review received: {}", type, req);
         AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
         Pair<Long, ReviewSummaryRes> pair = reviewsService.addReview(req, userId, type);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
@@ -51,7 +51,7 @@ public class ReviewsHandlerV1 {
             @PathVariable(name = "user_id") Long userId,
             @PathVariable(name = "review_id") Long reviewId,
             @Valid @RequestBody ReviewUpdateReq req) throws JsonProcessingException {
-        log.debug("Put request on doctor review received: {}", req);
+        log.debug("Put request on {} review received: {}", type, req);
         AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
         ReviewSummaryRes res = reviewsService.updateReview(req, userId, reviewId, type);
         return ResponseEntity.ok(res);
@@ -62,7 +62,7 @@ public class ReviewsHandlerV1 {
             @PathVariable(name = "type") String type,
             @PathVariable(name = "user_id") Long userId,
             @PathVariable(name = "review_id") Long reviewId) throws JsonProcessingException {
-        log.debug("Delete request on doctor review received: {}", reviewId);
+        log.debug("Delete request on {} review received: {}", type,reviewId);
         AbstractReviewHandlerService reviewsService = reviewHandlerServiceFactory(type);
         ReviewSummaryRes res = reviewsService.deleteReview(userId, reviewId, type);
         return ResponseEntity.ok(res);
