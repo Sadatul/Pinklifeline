@@ -65,7 +65,7 @@ export default function DoctorsVerifyPage() {
             setLoading(true)
         }
         axiosInstance.get(unverifiedDoctors, { params: filter }).then((res) => {
-            // setDoctors(res.data?.content)
+            setDoctors(res.data?.content)
             setPageInfo(res.data?.page)
         }).catch((err) => {
             console.log(err)
@@ -81,7 +81,7 @@ export default function DoctorsVerifyPage() {
                 setLoading(true)
             }
             axiosInstance.get(unverifiedDoctors, { params: filter }).then((res) => {
-                // setDoctors(res.data?.content)
+                setDoctors(res.data?.content)
                 setPageInfo(res.data?.page)
             }).catch((err) => {
                 console.log(err)
