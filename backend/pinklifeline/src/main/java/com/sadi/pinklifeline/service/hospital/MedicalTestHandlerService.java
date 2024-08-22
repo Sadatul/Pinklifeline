@@ -6,6 +6,7 @@ import com.sadi.pinklifeline.models.reqeusts.MedicalTestReq;
 import com.sadi.pinklifeline.repositories.hospital.MedicalTestRepository;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -50,9 +51,9 @@ public class MedicalTestHandlerService {
         medicalTestRepository.delete(getMedicalTest(id));
     }
 
-    public List<Map<String, Object>> getMedicalTests(String name, Long id, boolean desc) {
+    public List<Map<String, Object>> getMedicalTests(String name, Long id, boolean desc, Sort sort) {
         String namePattern = name == null ? null : String.format("%%%s%%", name);
-        List<Object[]> objectList = medicalTestRepository.findMedicalTests(namePattern, id, desc);
+        List<Object[]> objectList = medicalTestRepository.findMedicalTests(namePattern, id, desc, sort);
         return objectList.stream()
                 .map(val -> {
                     List<Object[]> entries = new ArrayList<>(List.of(

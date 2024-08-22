@@ -18,7 +18,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,16 +127,10 @@ public class HospitalHandlerService {
         return hospitalRepository.findAll(spec, pageable);
     }
 
-    public List<Map<String, Object>> getTestByHospital(Long hospitalId, String name, Set<Long> testIds) {
+    public Page<Object[]> getTestByHospital(Long hospitalId, String name, Set<Long> testIds, Pageable pageable) {
         String namePattern = name == null ? null : String.format("%%%s%%", name);
-        List<Object[]> objectList = hospitalTestRepository.findMedicalTestByHospitalId(hospitalId, namePattern, testIds);
-        return objectList.stream().map((val) -> Stream.of(new Object[][] {
-                {"id", val[0]},
-                {"name", val[1]},
-                {"description", val[2]},
-                {"testId", val[3]},
-                {"fee", val[4]}
-        }).collect(Collectors.toMap((data) -> (String) data[0], (data) -> data[1]))).toList();
+        return hospitalTestRepository.findMedicalTestByHospitalId(hospitalId, namePattern,
+                testIds, pageable);
     }
 
     public Map<Long, Object> getFeesForComparison(Set<Long> hospitalIdSet, Long testId) {

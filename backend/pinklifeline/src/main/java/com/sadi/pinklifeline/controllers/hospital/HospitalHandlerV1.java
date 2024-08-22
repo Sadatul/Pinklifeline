@@ -118,14 +118,27 @@ public class HospitalHandlerV1 {
     }
 
     @GetMapping("/anonymous/hospitals/tests")
-    public ResponseEntity<List<Map<String, Object>>> getMedicalTests(
+    public ResponseEntity<PagedModel<Map<String, Object>>> getMedicalTests(
             @RequestParam Long hospitalId,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String testIds
+            @RequestParam(required = false) String testIds,
+            @RequestParam(required = false, defaultValue = "ASC") Sort.Direction sortDirection,
+            @RequestParam(required = false, defaultValue = "0") Integer pageNo
     ) {
         Set<Long> testIdSet = testIds != null ? Arrays.stream(testIds.split(","))
                 .map(Long::parseLong).collect(Collectors.toSet()) : null;
-        return ResponseEntity.ok(hospitalHandlerService.getTestByHospital(hospitalId, name, testIdSet));
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection, "test.name"));
+        Page<Object[]> hospitalTestPage = hospitalHandlerService.getTestByHospital(hospitalId, name, testIdSet, pageable);
+
+        List<Map<String, Object>> content = hospitalTestPage.getContent().stream().map((val) -> Stream.of(new Object[][] {
+                {"id", val[0]},
+                {"name", val[1]},
+                {"description", val[2]},
+                {"testId", val[3]},
+                {"fee", val[4]}
+        }).collect(Collectors.toMap((data) -> (String) data[0], (data) -> data[1]))).toList();
+        Page<Map<String, Object>> res = new PageImpl<>(content, pageable, hospitalTestPage.getTotalElements());
+        return ResponseEntity.ok(new PagedModel<>(res));
     }
 
     @GetMapping("/anonymous/hospitals/compare")

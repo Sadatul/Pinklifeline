@@ -4,6 +4,7 @@ import com.sadi.pinklifeline.models.reqeusts.MedicalTestReq;
 import com.sadi.pinklifeline.service.hospital.MedicalTestHandlerService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -52,8 +53,9 @@ public class MedicalTestHandlerV1 {
     public ResponseEntity<List<Map<String, Object>>> getMedicalTests(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long id,
+            @RequestParam(required = false, defaultValue = "ASC") Sort.Direction sortDirection,
             @RequestParam(required = false, defaultValue = "false") Boolean desc
     ) {
-        return ResponseEntity.ok(medicalTestHandlerService.getMedicalTests(name, id, desc));
+        return ResponseEntity.ok(medicalTestHandlerService.getMedicalTests(name, id, desc, Sort.by(sortDirection,"name")));
     }
 }
