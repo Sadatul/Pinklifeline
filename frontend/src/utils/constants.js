@@ -69,6 +69,16 @@ export const getComplaints = `${baseUrl}/v1/ROLE_ADMIN/complaints`
 export const resolveComplaint = (complaint_id) => { return `${baseUrl}/v1/ROLE_ADMIN/complaints/${complaint_id}` }
 export const unverifiedDoctors = `${baseUrl}/v1/ROLE_ADMIN/unverified/doctors`
 export const verifyDoctor = (docId) => { return `${baseUrl}/v1/ROLE_ADMIN/verify/doctors/${docId}` }
+export const hospitalsAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals`
+export const hospitalByIdUrl = (hospital_id) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/${hospital_id}` }
+export const hospitalsAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals`
+export const medicalTestAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/medical-tests`
+export const medicalTestByIdAdminUrl = (test_id) => { return `${baseUrl}/v1/ROLE_ADMIN/medical-tests/${test_id}` }
+export const getMedicalTestAnonymousUrl = `${baseUrl}/v1/anonymous/medical-tests`
+export const getHospitalsAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals`
+export const medicalTestHospitalAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals/tests`
+export const medicalTestHospitalByIdAdminUrl = (hospitalTestId) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/tests/${hospitalTestId}` }
+export const medicalTestHospitalAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals/tests`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -91,7 +101,8 @@ export const roles = {
     patient: "ROLE_PATIENT",
     doctor: "ROLE_DOCTOR",
     nurse: "ROLE_NURSE",
-    doctorProfile: "doctor"
+    doctorProfile: "doctor",
+    admin: "ROLE_ADMIN",
 }
 
 export const appointmentStatus = {
@@ -164,6 +175,9 @@ export const pagePaths = {
     reportPage: (id, type) => { return `/report?contentId=${id}&contentType=${type}` },
     complaintsPage: "/admin/complaints",
     complaintDetailsPage: (complaintId, type, resourceId) => { return `/admin/complaints/${complaintId}?type=${type}&resourceId=${resourceId}` },
+    unverifiedDoctorsPageForAdmin: "/admin/doctors",
+    hospitalsPage: "/admin/hospitals",
+    addHospitalPage: "/admin/hospitals/add",
 }
 
 export const ReportTypes = {

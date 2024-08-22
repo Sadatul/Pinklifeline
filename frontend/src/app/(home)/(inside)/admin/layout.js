@@ -17,7 +17,7 @@ export default function Layout({ children }) {
                     <button className="text-gray-800 hover:bg-opacity-75 hover:text-gray-100 hover:bg-gray-500 px-10 py-1 text-xl rounded-md mb-2 text-left flex flex-row">Logout</button>
                 </div>
             </div>
-            <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden">
+            <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden break-all">
                 {children}
             </ScrollableContainer>
         </div>
