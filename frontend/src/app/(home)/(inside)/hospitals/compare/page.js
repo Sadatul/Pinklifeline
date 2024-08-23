@@ -125,6 +125,7 @@ function ComparePageComponent() {
                         <div className="flex flex-col w-72 bg-white rounded-md relative">
                             <input autoComplete="off" id="hospitalOne" type="text" placeholder="Hospital One" className="h-8 border border-gray-600 focus:ring-0 focus:outline-none rounded p-2 shadow-inner" onChange={(e) => {
                                 setHospitalIdOne(null)
+                                setHospitalOne(null)
                                 setSearchHospitalOne(e.target.value)
                             }} />
                             {(searchHospitalOne !== "" && !hospital_id_one) &&
@@ -134,6 +135,7 @@ function ComparePageComponent() {
                                         <div className="p-2 border-b border-gray-600 flex flex-col gap-1 cursor-pointer" key={index} onClick={(e) => {
                                             setHospitalIdOne(option.id)
                                             document.getElementById("hospitalOne").value = option.name
+                                            setHospitalIdOne(option)
                                         }}>
                                             <span className="text-base text-slate-800">{option.name}</span>
                                             <span className="text-sm text-slate-600">{option.location}</span>
@@ -149,6 +151,7 @@ function ComparePageComponent() {
                             <input autoComplete="off" id="hospitalTwo" type="text" placeholder="Hospital Two" className="h-8 border border-gray-600 focus:ring-0 focus:outline-nTwo rounded p-2 shadow-inner" onChange={(e) => {
                                 setHospitalIdTwo(null)
                                 setSearchHospitalTwo(e.target.value)
+                                setHospitalTwo(null)
                             }} />
                             {(searchHospitalTwo !== "" && !hospital_id_two) &&
                                 <div className="absolute top-8 right-0 left-0 w-72 rounded-b-md bg-white border border-gray-600 z-20">
@@ -157,6 +160,7 @@ function ComparePageComponent() {
                                         <div className="p-2 border-b border-gray-600 flex flex-col gap-1 cursor-pointer" key={index} onClick={(e) => {
                                             setHospitalIdTwo(option.id)
                                             document.getElementById("hospitalTwo").value = option.name
+                                            setHospitalTwo(option)
                                         }}>
                                             <span className="text-base text-slate-800">{option.name}</span>
                                             <span className="text-sm text-slate-600">{option.location}</span>
@@ -220,7 +224,8 @@ function ComparePageComponent() {
                     {hospitalOneData &&
                         <div className="flex flex-col gap-3 flex-1 p-2 px-4">
                             <div className="flex flex-col w-full gap-1">
-                                Hospital One
+                                <span className="text-base text-slate-800">{hospitalOne?.name}</span>
+                                <span className="text-sm text-slate-700">{hospitalOne?.location}</span>
                                 <Separator className="w-1/5" />
                             </div>
                             <TestsComponent tests={hospitalOneData} />
@@ -231,7 +236,8 @@ function ComparePageComponent() {
                     {hospitalTwoData &&
                         <div className="flex flex-col gap-3 flex-1 p-2 px-4">
                             <div className="flex flex-col w-full gap-1">
-                                Hospital Two
+                                <span className="text-base text-slate-800">{hospitalTwo?.name}</span>
+                                <span className="text-sm text-slate-700">{hospitalTwo?.location}</span>
                                 <Separator className="w-1/5" />
                             </div>
                             <TestsComponent tests={hospitalTwoData} />

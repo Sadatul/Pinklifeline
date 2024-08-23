@@ -79,6 +79,7 @@ export const getHospitalsAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals`
 export const medicalTestHospitalAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals/tests`
 export const medicalTestHospitalByIdAdminUrl = (hospitalTestId) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/tests/${hospitalTestId}` }
 export const medicalTestHospitalAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals/tests`
+export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/compare`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
