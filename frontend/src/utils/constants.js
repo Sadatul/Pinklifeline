@@ -315,7 +315,7 @@ export function alignArrays(testA, testB) {
     testA.sort((a, b) => (a.testId ?? Infinity) - (b.testId ?? Infinity));
     testB.sort((a, b) => (a.testId ?? Infinity) - (b.testId ?? Infinity));
 
-    
+
     // Step 2: Initialize pointers and result arrays
     let pointerA = 0;
     let pointerB = 0;
@@ -364,7 +364,19 @@ export function alignArrays(testA, testB) {
     return { resultA, resultB };
 }
 
+export function generatePairs(elements) {
+    const pairs = [];
+    const n = elements.length;
 
+    // Loop to generate combinations of two from the array
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            pairs.push([elements[i], elements[j]]);
+        }
+    }
+    
+    return pairs;
+}
 
 // const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`
 
