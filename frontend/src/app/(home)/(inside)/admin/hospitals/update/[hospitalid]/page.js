@@ -30,7 +30,7 @@ export default function UpdateHospitalInfoPage() {
         }
     }, [params.hospitalid])
 
-    if (loading) <Loading />
+    if (loading) return <Loading />
     if (!hospital) return <div className="m-auto text-2xl">Not Found</div>
 
     return (

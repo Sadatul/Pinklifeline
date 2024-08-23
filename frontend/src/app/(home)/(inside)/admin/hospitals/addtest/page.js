@@ -1,5 +1,6 @@
 'use client'
 import Loading from "@/app/components/loading"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAdminUrl, medicalTestHospitalAnonymousUrl, medicalTestHospitalByIdAdminUrl, radicalGradient } from "@/utils/constants"
@@ -122,14 +123,14 @@ function AddTest() {
                         <h2 className="text-lg font-bold text-slate-900">Add Test</h2>
                         <Separator className="w-1/4 h-[1.5px] bg-gray-400" />
                         <div className="flex flex-row gap-10 w-full flex-wrap items-start">
-                            <div className="flex flex-col gap-0  rounded-md w-72 border border-gray-600 break-all text-base">
-                                <input autoComplete="off" id="search-box-test" type="text" placeholder="Search Test" className="w-full border border-gray-600 px-2 py-1 rounded-md " onChange={(e) => {
+                            <div className="flex flex-col gap-0  rounded-md w-72 border border-gray-600 break-all text-base relative">
+                                <input autoComplete="off" id="search-box-test" type="text" placeholder="Search Test" className="w-full border border-gray-600 px-2 py-1 rounded-md h-8" onChange={(e) => {
                                     setSearchTest(e.target.value)
                                     document.getElementById("test-error").innerText = ""
                                     console.log("searching")
                                 }} />
                                 {(searchTest !== "" && testOptions && !selectedTest) &&
-                                    <div className="flex flex-col gap-2 w-full p-2">
+                                    <div className="flex flex-col gap-2 w-full p-2 absolute left-0 right-0 top-8 z-30 bg-white border-x border-b rounded border-gray-600 ">
                                         {loadingTest && <Loader size={16} className="animate-spin m-auto" />}
                                         {(testOptions.length === 0 && !loadingTest) && <p className="text-base text-slate-900">No tests found</p>}
                                         {testOptions?.map((test, index) => (
@@ -195,13 +196,14 @@ function AddTest() {
                         </div>
                         <div className="flex flex-col gap-2 w-full">
                             {addedTests.map((test, index) => (
-                                <div className="flex flex-col gap-2 w-full " key={index}>
+                                <div className="flex flex-col gap-4 w-full " key={index}>
                                     <AddedTest test={test} setLoadingAddedTests={setLoadingAddedTests} />
                                     {(index !== addedTests.length - 1) && <Separator className="w-full h-[1.5px] bg-gray-400" />}
                                 </div>
                             ))}
                         </div>
                         <div className="flex flex-col w-full gap-2 px-3">
+                            <Separator className="w-full h-[1.5px] bg-gray-400" />
                             <Pagination
                                 count={pageInfo?.totalPages}
                                 page={currentPage.current}
@@ -216,7 +218,6 @@ function AddTest() {
                                 color="secondary"
                                 variant="outlined"
                             />
-                            <Separator className="w-full h-[1.5px] bg-gray-400" />
                         </div>
                     </div>
                 </div>
@@ -233,13 +234,22 @@ function AddedTest({ test, setLoadingAddedTests }) {
     return (
         <div className="flex flex-row gap-2 w-full justify-between">
             <div className="flex flex-row gap-2">
-                <p className="text-lg text-slate-900">{mutableTest.name}</p>
-                {!editabled &&
-                    <p className="text-lg text-slate-900">{mutableTest.fee}</p>
-                }
-                {editabled &&
-                    <input ref={testFeeRef} type="number" defaultValue={mutableTest.fee} className="border border-gray-500 number-input px-2 py-1 rounded-md" />
-                }
+                <div className="flex flex-col gap-3 ">
+                    <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <p className="text-lg text-slate-900 w-fit">{mutableTest.name}</p>
+                            </TooltipTrigger>
+                            <TooltipContent sideOffset={10} side="right">{mutableTest.description}</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    {!editabled &&
+                        <p className="text-lg text-slate-900">{mutableTest.fee} TK</p>
+                    }
+                    {editabled &&
+                        <input ref={testFeeRef} type="number" defaultValue={mutableTest.fee} className="border border-gray-500 number-input px-2 py-1 rounded-md" />
+                    }
+                </div>
             </div>
             <div className="flex flex-row gap-4">
                 {!editabled &&
@@ -251,31 +261,31 @@ function AddedTest({ test, setLoadingAddedTests }) {
                     </button>
                 }
                 {editabled &&
-                <div className="flex flex-row gap-2">
-                    <button className="flex flex-row gap-2 items-center bg-green-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base"
-                        onClick={() => {
-                            axiosInstance.put(medicalTestHospitalByIdAdminUrl(mutableTest.id), {
-                                fee: testFeeRef.current.value
-                            }).then((response) => {
-                                setMutableTest({
-                                    ...mutableTest,
+                    <div className="flex flex-row gap-2">
+                        <button className="flex flex-row gap-2 items-center bg-green-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base"
+                            onClick={() => {
+                                axiosInstance.put(medicalTestHospitalByIdAdminUrl(mutableTest.id), {
                                     fee: testFeeRef.current.value
+                                }).then((response) => {
+                                    setMutableTest({
+                                        ...mutableTest,
+                                        fee: testFeeRef.current.value
+                                    })
+                                    setEditabled(false)
+                                    toast.success("Test updated successfully")
+                                }).catch((error) => {
+                                    console.log(error)
                                 })
+                            }}>
+                            Save
+                        </button>
+                        <button className="flex flex-row gap-2 items-center bg-gray-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base"
+                            onClick={() => {
                                 setEditabled(false)
-                                toast.success("Test updated successfully")
-                            }).catch((error) => {
-                                console.log(error)
-                            })
-                        }}>
-                        Save
-                    </button>
-                    <button className="flex flex-row gap-2 items-center bg-gray-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base"
-                        onClick={() => {
-                            setEditabled(false)
-                        }}>
-                        Cancel
-                    </button>
-                </div>
+                            }}>
+                            Cancel
+                        </button>
+                    </div>
                 }
                 <button className="flex flex-row gap-2 items-center bg-red-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base" onClick={() => {
                     axiosInstance.delete(medicalTestHospitalByIdAdminUrl(mutableTest.id)).then((response) => {

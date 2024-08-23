@@ -67,7 +67,7 @@ export const forumAnswersByIdAnonymous = (answer_id) => { return `${baseUrl}/v1/
 export const complaintUrl = `${baseUrl}/v1/complaints`
 export const getComplaints = `${baseUrl}/v1/ROLE_ADMIN/complaints`
 export const resolveComplaint = (complaint_id) => { return `${baseUrl}/v1/ROLE_ADMIN/complaints/${complaint_id}` }
-export const unverifiedDoctors = `${baseUrl}/v1/ROLE_ADMIN/unverified/doctors`
+export const unverifiedDoctors = `${baseUrl}/v1/doctors`
 export const verifyDoctor = (docId) => { return `${baseUrl}/v1/ROLE_ADMIN/verify/doctors/${docId}` }
 export const hospitalsAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals`
 export const hospitalByIdUrl = (hospital_id) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/${hospital_id}` }
@@ -178,6 +178,12 @@ export const pagePaths = {
     unverifiedDoctorsPageForAdmin: "/admin/doctors",
     hospitalsPage: "/admin/hospitals",
     addHospitalPage: "/admin/hospitals/add",
+    updateHospitalsPage: (hospitalId) => { return `/admin/hospitals/update/${hospitalId}` },
+    allHospitalsPageAdmin: "/admin/medical-tests",
+    allHospitalsPage: "/hospitals",
+    hospitalByIdPage: (hospitalId) => { return `/hospitals/details/${hospitalId}` },
+    compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
+    addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
 }
 
 export const ReportTypes = {
@@ -301,6 +307,63 @@ export function displayDate(date) {
         return format(givenDate, "EEEE hh:mm a, dd MMMM, yyyy");
     }
 }
+
+
+export function alignArrays(testA, testB) {
+    // Step 1: Sort both arrays by 'id'
+    testA.sort((a, b) => (a.testId ?? Infinity) - (b.testId ?? Infinity));
+    testB.sort((a, b) => (a.testId ?? Infinity) - (b.testId ?? Infinity));
+
+    
+    // Step 2: Initialize pointers and result arrays
+    let pointerA = 0;
+    let pointerB = 0;
+    const resultA = [];
+    const resultB = [];
+
+    // Step 3: Traverse both arrays and align elements
+    while (pointerA < testA.length && pointerB < testB.length) {
+        const elementA = testA[pointerA];
+        const elementB = testB[pointerB];
+
+        if (elementA.testId === elementB.testId) {
+            // Matching elements
+            resultA.push(elementA);
+            resultB.push(elementB);
+            pointerA++;
+            pointerB++;
+        } else if ((elementA.testId ?? Infinity) < (elementB.testId ?? Infinity)) {
+            // Element in testA does not match, add dummy to resultB
+            resultA.push(elementA);
+            resultB.push({ testId: null, name: "Does not exist" });
+            pointerA++;
+        } else {
+            // Element in testB does not match, add dummy to resultA
+            resultA.push({ testId: null, name: "Does not exist" });
+            resultB.push(elementB);
+            pointerB++;
+        }
+    }
+
+    // Step 4: Handle remaining elements in testA
+    while (pointerA < testA.length) {
+        resultA.push(testA[pointerA]);
+        resultB.push({ testId: null, name: "Does not exist" });
+        pointerA++;
+    }
+
+    // Step 4: Handle remaining elements in testB
+    while (pointerB < testB.length) {
+        resultA.push({ testId: null, name: "Does not exist" });
+        resultB.push(testB[pointerB]);
+        pointerB++;
+    }
+    console.log(resultA, resultB)
+
+    return { resultA, resultB };
+}
+
+
 
 // const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`
 
