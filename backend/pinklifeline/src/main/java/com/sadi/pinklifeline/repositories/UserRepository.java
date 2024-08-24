@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.repositories;
 
 import com.sadi.pinklifeline.enums.Roles;
+import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
 import com.sadi.pinklifeline.models.responses.NearbyUserRes;
 import com.sadi.pinklifeline.models.entities.User;
 import jakarta.transaction.Transactional;
@@ -40,4 +41,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("select u.username from User u where u.id = :id")
     Optional<String> findUsernameById(Long id);
+
+    @Query("select new com.sadi.pinklifeline.models.dtos.UserTokenDTO(u.id, u.username, s.subscriptionType, s.expiryDate) from User u left join Subscription s on u.id = s.userId where u.username = :username")
+    Optional<UserTokenDTO> findUserTokenDTOByUsername(String username);
 }

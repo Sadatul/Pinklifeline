@@ -9,9 +9,9 @@ public class SecurityUtils {
         return Long.parseLong(owner);
     }
 
-    public static Boolean isPaidAccount(){
+    public static Boolean isSubscribedAccount(){
         Jwt principal = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return principal.getClaimAsBoolean("paid");
+        return principal.getClaimAsBoolean("subscribed");
     }
 
 

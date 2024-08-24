@@ -1,6 +1,6 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,8 +41,10 @@ public class JwtTokenService {
         var scope = authentication.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(" "));
-        User user = userRepository.findByUsername(authentication.getName())
+        UserTokenDTO user = userRepository.findUserTokenDTOByUsername(authentication.getName())
                     .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        user.setRoles(userRepository.getRolesById(user.getId()));
+        boolean isSubscribed = user.getExpiryDate() != null && LocalDateTime.now().isBefore(user.getExpiryDate());
         var claims = JwtClaimsSet.builder()
                                 .issuer(issuer)
                                 .issuedAt(Instant.now())
@@ -49,9 +52,9 @@ public class JwtTokenService {
                                 .expiresAt(Instant.now().plusSeconds(timeout))
                                 .subject(user.getId().toString())
                                 .claim("scp", scope)
-                                .claim("paid", true)
+                                .claim("subscribed", isSubscribed)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return new JwtTokenResponse(token, user.getId(), user.getUsername(), user.getRoles());
+        return new JwtTokenResponse(token, user.getId(), user.getUsername(), isSubscribed, user.getRoles());
     }
 }
