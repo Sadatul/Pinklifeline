@@ -80,7 +80,7 @@ public class UserService {
         response.put("avgCycleLength", basicUserDetails.getAvgCycleLength());
         response.put("periodIrregularities", basicUserDetails.getPeriodIrregularities());
         response.put("allergies", basicUserDetails.getAllergies());
-        response.put("organsWithChronicConditions", basicUserDetails.getOrgansWithChronicCondition());
+        response.put("organsWithChronicCondition", basicUserDetails.getOrgansWithChronicCondition());
         response.put("medications", basicUserDetails.getMedications());
     }
 

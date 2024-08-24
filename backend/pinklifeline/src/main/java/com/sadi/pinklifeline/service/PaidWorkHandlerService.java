@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.PaidWorkQueryStatus;
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
@@ -88,6 +89,33 @@ public class PaidWorkHandlerService {
         paidWorkRepository.save(paidWork);
     }
 
+    public Map<String, String> finishPaidWork(Long id) {
+        Long userId = SecurityUtils.getOwnerID();
+        PaidWork paidWork = getPaidWork(id);
+
+        if (!Objects.equals(paidWork.getUser().getId(), userId)) {
+            throw new AuthorizationDeniedException(
+                    String.format("User with id:%d doesn't have access to the paidWork with id: %d"
+                            , userId, paidWork.getId()),
+                    () -> false);
+        }
+        if (!Objects.equals(paidWork.getStatus(), PaidWorkStatus.ACCEPTED)){
+            throw new BadRequestFromUserException(
+                    String.format("Work with status %s can't be finished", paidWork.getStatus())
+            );
+        }
+
+        paidWork.setStatus(PaidWorkStatus.FINISHED);
+        paidWorkRepository.save(paidWork);
+
+        String username = userService.getUsernameById(paidWork.getHealCareProvider().getUserId());
+        return Stream.of(new Object[][]{
+                {"username", username},
+                {"title", paidWork.getTitle()},
+                {"description", paidWork.getDescription()},
+        }).collect(Collectors.toMap((val) -> (String) val[0], (val) -> (String) val[1]));
+    }
+
     public void deletePaidWork(Long id) {
         Long userId = SecurityUtils.getOwnerID();
         PaidWork paidWork = getPaidWork(id);
@@ -99,6 +127,7 @@ public class PaidWorkHandlerService {
     public Map<String, String> reservePaidWork(Long id) {
         Long userId = SecurityUtils.getOwnerID();
         DoctorDetails doctor = doctorsInfoService.getDoctorIfVerified(userId);
+        SecurityUtils.throwExceptionIfNotSubscribed();
 
         PaidWork paidWork = getPaidWorkWithLock(id);
         if(!Objects.equals(paidWork.getStatus(), PaidWorkStatus.POSTED)){
@@ -151,14 +180,14 @@ public class PaidWorkHandlerService {
 
     public Specification<PaidWork> getSpecification(LocalDateTime startDate, LocalDateTime endDate,
                                                     Long userId, Long providerId, String address, List<String> tags,
-                                                    PaidWorkStatus status) {
+                                                    PaidWorkQueryStatus status) {
         Specification<PaidWork> spec = Specification.where(null);
 
         if (startDate != null && endDate != null) {
             spec = spec.and(PaidWorkSpecification.withDateBetween(startDate, endDate));
         }
-        if (status != null) {
-           spec = spec.and(PaidWorkSpecification.withStatus(status));
+        if (status != null && !status.equals(PaidWorkQueryStatus.ALL)) {
+           spec = spec.and(PaidWorkSpecification.withStatus(PaidWorkStatus.valueOf(status.name())));
         }
         if (address != null && !address.isEmpty()) {
             spec = spec.and(PaidWorkSpecification.withAddress(address));
