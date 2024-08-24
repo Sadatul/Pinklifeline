@@ -1,37 +1,41 @@
 'use client'
 import { useEffect, useState } from "react"
-import { getConsultationLocations, locationOnline, updateConsultationLocationUrl } from "@/utils/constants"
+import { getConsultationLocations, locationOnline, pagePaths, updateConsultationLocationUrl } from "@/utils/constants"
 import { cn } from "@/lib/utils"
-import { Banknote, Binary, Delete, HardDriveUploadIcon, MapPinIcon, Pencil, Recycle, RecycleIcon } from "lucide-react"
+import { Banknote, Binary, Delete, ExternalLink, HardDriveUploadIcon, MapPinIcon, Pencil, Recycle, RecycleIcon } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
 import axiosInstance from "@/utils/axiosInstance"
 import { toast } from "sonner"
 import { Button } from "@mui/material"
+import Link from "next/link"
 
 
 export function ChambersPage({ className }) {
     const [consulations, setConsulations] = useState(null)
     const sessionContext = useSessionContext()
+    const [fetching, setFetching] = useState(true)
 
     useEffect(() => {
-        if (sessionContext.sessionData && !consulations) {
+        if (sessionContext.sessionData && fetching) {
             axiosInstance.get(getConsultationLocations(sessionContext.sessionData.userId)).then((res) => {
                 console.log(res)
                 setConsulations(res.data)
             }).catch((error) => {
                 toast.error("Error occured fetching locations. Try again. Check internet")
+            }).finally(() => {
+                setFetching(false)
             })
         }
 
-    }, [sessionContext.sessionData, consulations])
+    }, [sessionContext.sessionData, fetching])
 
     function deleteLocation(id) {
         //code for delete is incomplete due to that bitch shuting down my internet
         axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
             toast.success("Location deleted")
-            setConsulations(prev => prev.filter(consulation => consulation.id !== id))
+            setFetching(true)
         }).catch((error) => {
             console.log("Error deletinng location")
             toast.error("Error occured. Check internet")
@@ -42,7 +46,14 @@ export function ChambersPage({ className }) {
     if (!consulations) return <Loading chose="hand" />
     return (
         <div className={cn("flex flex-col w-full rounded p-5 bg-gray-50 gap-5 py-3", className)}>
-            <h2 className="text-lg font-semibold">Consulation Locations</h2>
+            <div className="flex flex-row justify-between px-4 items-center">
+                <h2 className="text-lg font-semibold">Consulation Locations</h2>
+                <button className="p-2 flex flex-row gap-1 text-base items-center hover:underline" onClick={() => {
+                    window.open(pagePaths.addConsultation, "_blank")
+                }}>
+                    Add Location <ExternalLink size={20} className="text-gray-700 hover:underline" />
+                </button>
+            </div>
             <Separator className="h-[1.5px] bg-gray-800" />
             <div className="flex flex-col rounded w-full">
                 <div className="flex flex-col w-full">
@@ -109,6 +120,17 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
         let newFees = document.getElementById("fees-input").value
         let newStartTime = document.getElementById("startTime-input").value
         let newEndTime = document.getElementById("endTime-input").value
+        // if start time is greater than end time then swap but the time is in 24 hour format and string so need to consider that and parse it
+        const startHour = parseInt(newStartTime.split(":")[0])
+        const endHour = parseInt(newEndTime.split(":")[0])
+        if (startHour > endHour) {
+            return
+        }
+        const startMinute = parseInt(newStartTime.split(":")[1])
+        const endMinute = parseInt(newEndTime.split(":")[1])
+        if (startHour === endHour && startMinute > endMinute) {
+            return
+        }
         let newWorkdayString = workdaysToBinaryString(availableDays)
         console.log(newFees)
         if (availableDays.find(day => day.on) && newLocation !== "" && newFees !== "" && isNumber(newFees) && newStartTime !== "" && newEndTime !== "" && newWorkdayString !== "") {
@@ -229,7 +251,9 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                         <HardDriveUploadIcon size={16} />
                         Save</button>
                 )}
-                <button className="border-2 border-red-500 bg-red-50 px-3 py-1 rounded-md hover:scale-95 gap-2">
+                <button className="border-2 border-red-500 bg-red-50 px-3 py-1 rounded-md hover:scale-95 gap-2" onClick={() => {
+                    deleteLocation(id)
+                }}>
                     Delete
                 </button>
             </div>

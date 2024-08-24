@@ -10,13 +10,14 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { getProfilePicUrl, pagePaths, testingAvatar } from "@/utils/constants";
+import { getProfilePicUrl, logoutUrlReq, pagePaths, testingAvatar } from "@/utils/constants";
 import { PrimeReactProvider } from 'primereact/api';
 import { StompContextProvider } from "@/app/context/stompContext";
 
 import { SocketInitializer } from "../../components/stompInitializer";
 import axiosInstance from "@/utils/axiosInstance";
 import { useSessionContext } from "@/app/context/sessionContext";
+import ScrollableContainer from "@/app/components/StyledScrollbar";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
@@ -43,6 +44,7 @@ export default function Layout({ children }) {
                     if (res.data.profilePicture && res.data.profilePicture !== "") {
                         sessionStorage.setItem("profilePicLink", res.data.profilePicture)
                         setProfilePic(res.data.profilePicture)
+                        console.log("profilepic", res.data.profilePicture)
                     }
                 }).catch((error) => {
                     console.log("error getting profilepic", error)
@@ -50,6 +52,7 @@ export default function Layout({ children }) {
             }
             else {
                 setProfilePic(profilePicLink)
+                console.log("profilepic", profilePicLink)
             }
         }
     }, [sessionContext.sessionData])
@@ -73,22 +76,33 @@ export default function Layout({ children }) {
                             <Link href="#blog" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
                             <Link href="#forum" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
                         </div>
-                        <div className="flex flex-shrink flex-row justify-center items-center mr-28">
+                        <div className="flex flex-shrink flex-row justify-center items-center mr-28 h-full">
                             <Popover>
                                 <PopoverTrigger >
-                                    <Avatar avatarImgScr={profilePic} size={44} className={"border-2 shadow-md"} />
+                                    <Avatar avatarImgSrc={profilePic} size={50} />
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
                                     <div className="w-32 rounded-md py-2 flex flex-col justify-between items-center">
-                                        <Link className="text-center p-1 m-1 text-black hover:scale-105 transition ease-in w-full" href="/profile">Profile</Link>
-                                        <Link className="text-center p-1 m-1 font-semibold hover:scale-105 transition ease-in w-5/6 rounded bg-red-300 text-black" href={pagePaths.login}>Logout</Link>
+                                        <Link className="text-center p-1 m-1 text-black hover:scale-105 transition ease-in w-full" href={pagePaths.dashboardPages.userdetailsPage}>Profile</Link>
+                                        <Link className="text-center p-1 m-1 text-black hover:scale-105 transition ease-in w-full" href={pagePaths.dashboardPages.profilePicPage}>Profile Pic</Link>
+                                        <button className="text-center p-1 m-1 font-semibold hover:scale-105 transition ease-in w-5/6 rounded bg-red-300 text-black" onClick={() => {
+                                            axiosInstance.get(logoutUrlReq).then((res) => {
+                                                window.location.href = "/"
+                                            }).catch((error) => {
+                                                console.log("error logging out", error)
+                                            })
+                                        }}>
+                                            Logout
+                                        </button>
                                     </div>
                                 </PopoverContent>
                             </Popover>
                         </div>
                     </nav>
                     {/* <SocketInitializer /> */}
-                    {children}
+                    <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto rounded-l-lg overflow-x-hidden">
+                        {children}
+                    </ScrollableContainer>
                 </div>
             </StompContextProvider>
         </PrimeReactProvider>

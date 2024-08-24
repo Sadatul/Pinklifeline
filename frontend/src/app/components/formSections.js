@@ -336,13 +336,22 @@ export function DoctorChamberLocationSection({ }) {
 
     const saveLocation = () => {
         console.log("saving location")
-        const savingLocationToast = toast.loading("Saving location")
         const loacationForm = {
             location: isOnline ? locationOnline : userDataRef.current.location,
             start: userDataRef.current.startTime + ":00",
             end: userDataRef.current.endTime + ":00",
             workdays: userDataRef.current.workdaysString,
             fees: userDataRef.current.fees
+        }
+        if (parseInt(loacationForm.start.split(":")[0]) > parseInt(loacationForm.end.split(":")[0])) {
+            toast.dismiss()
+            toast.error("Start time should be less than end time")
+            return
+        }
+        if (parseInt(loacationForm.start.split(":")[0]) === parseInt(loacationForm.end.split(":")[0]) && parseInt(loacationForm.start.split(":")[1]) >= parseInt(loacationForm.end.split(":")[1])) {
+            toast.dismiss()
+            toast.error("Start time should be less than end time")
+            return
         }
         axiosInstance.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm).then((response) => {
             console.log(response.data)

@@ -10,6 +10,7 @@ import axiosInstance from "@/utils/axiosInstance"
 import { getDoctorProfileDetailsUrl, getDoctorsUrl, getHospitalsAnonymousUrl, pagePaths, radicalGradient, round } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { Loader, Loader2, Search, Star, StarHalf } from "lucide-react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 
@@ -17,32 +18,12 @@ import { Suspense, useEffect, useState } from "react"
 function SearchComponent() {
     const searchParams = useSearchParams()
     const query = searchParams.get('query')
-    const [doctors, setDoctors] = useState([
-        {
-            "qualifications": ["MBBS", "DO"],
-            "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-            "contactNumber": "01730445524",
-            "fullName": "Dr. Rahima Begum",
-            "id": 3,
-            "designation": "Head",
-            "department": "Cancer",
-            "workplace": "Rajshahi Medical College"
-        }
-    ])
+    const [doctors, setDoctors] = useState([])
     const [doctorsPageInfo, setDoctorsPageInfo] = useState({
         number: 0,
         totalPages: 0,
     })
-    const [hospitals, setHospitals] = useState([
-        {
-            "name": "City Medical College, Khulna",
-            "contactNumber": "01738223344",
-            "description": "A hospital with all kinds of facilities",
-            "location": "Moylapota, Khulna",
-            "id": 5,
-            "email": "infos@gazimedicalcollege.com"
-        },
-    ])
+    const [hospitals, setHospitals] = useState([])
     const [hospitalsPageInfo, setHospitalsPageInfo] = useState({
         number: 0,
         totalPages: 0,
@@ -279,7 +260,7 @@ function Doctors({ doctors, pageInfo, setDoctorFilter, loadingDoctors }) {
                     <HoverCard >
                         <HoverCardTrigger asChild>
                             <div className="flex flex-col gap-2 items-start w-fit">
-                                <span className="text-lg font-semibold text-slate-900">{doctor.fullName}</span>
+                                <Link href={pagePaths.doctorProfile(doctor?.id)} className="text-lg font-semibold text-slate-900 hover:underline">{doctor.fullName}</Link>
                                 <span className="text-base text-slate-700">{doctor.workplace}</span>
                             </div>
                         </HoverCardTrigger>
@@ -416,7 +397,7 @@ function Hospitals({ hospitals, pageInfo, setHospitalFilter, loadingHospitals })
                     <HoverCard>
                         <HoverCardTrigger asChild>
                             <div className="flex flex-col gap-2 items-start w-fit">
-                                <span className="text-lg font-semibold text-slate-900">{hospital.name}</span>
+                                <Link href={pagePaths.hospitalByIdPage(hospital?.id)} className="text-lg font-semibold text-slate-900 hover:underline">{hospital.name}</Link>
                                 <span className="text-base text-slate-700">{hospital.location}</span>
                             </div>
                         </HoverCardTrigger>

@@ -2,6 +2,7 @@ import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
+export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
 export const otpUrlReq = `${baseUrl}/v1/auth/verify`;
 export const userInfoRegUrlReq = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` };
@@ -160,6 +161,7 @@ export const pagePaths = {
         prescriptionVaultPage: "/dashboard/prescription/vault",
         prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
         userdetailsPage: "/dashboard/userdetails",
+        profilePicPage : "/dashboard/userdetails/profilepic",
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
     },

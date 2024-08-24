@@ -83,7 +83,7 @@ export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
 
     return (
         <div className="flex flex-col w-full h-full gap-5 p-5">
-            <h1 className="text-2xl font-bold">Edit Doctor Details</h1>
+            <h1 className="text-2xl font-bold">Doctor Details</h1>
             <DoctorPersonalInfo userData={userData} onSubmitData={onSubmitData} />
             <ChambersPage />
         </div>
@@ -123,7 +123,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
             {editable ? (
                 <div className="flex flex-col gap-3">
                     <div>
-                        <div className="flex items-center gap-2">Full Name:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Full Name:
+                            </span>
                             <input type="text" defaultValue={userData.fullName} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("fullName", {
                                 required: "This field is required"
                             })} />
@@ -131,7 +134,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                         {errors.fullName && <span className="text-red-500">{errors.fullName.message}</span>}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">Designation:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Designation:
+                            </span>
                             <input type="text" defaultValue={userData.designation} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("designation", {
                                 required: "This field is required"
                             })} />
@@ -139,7 +145,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                         {errors.designation && <span className="text-red-500">{errors.designation.message}</span>}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">Department:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Department:
+                            </span>
                             <input type="text" defaultValue={userData.department} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("department", {
                                 required: "This field is required"
                             })} />
@@ -147,7 +156,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                         {errors.department && <span className="text-red-500">{errors.department.message}</span>}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">Workplace:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Workplace:
+                            </span>
                             <input type="text" defaultValue={userData.workplace} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("workplace", {
                                 required: "This field is required"
                             })} />
@@ -155,7 +167,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                         {errors.workplace && <span className="text-red-500">{errors.workplace.message}</span>}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">Contact Number:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Contact Number:
+                            </span>
                             <input type="number" defaultValue={userData.contactNumber} className="px-3 py-1 rounded border border-blue-900 shadow-inner number-input" {...register("contactNumber", {
                                 required: "This field is required"
                             })} />
@@ -163,7 +178,10 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
                         {errors.contactNumber && <span className="text-red-500">{errors.contactNumber.message}</span>}
                     </div>
                     <div>
-                        <div className="flex items-center gap-2">Qualifications:
+                        <div className="flex items-center gap-2">
+                            <span className="text-base">
+                                Qualifications:
+                            </span>
                             <textarea defaultValue={userData.qualifications.join(", ")} className="px-3 py-1 rounded border border-blue-900 shadow-inner" {...register("qualifications", {
                                 required: "This field is required"
                             })} />
@@ -175,17 +193,41 @@ function DoctorPersonalInfo({ userData, onSubmitData }) {
             ) : (
                 <div className="flex flex-row w-full gap-5">
                     <div className="flex flex-col flex-1 gap-3">
-                        <span className="flex items-center gap-2">Full Name: {userData.fullName}</span>
-                        <span className="flex items-center gap-2">Designation: {userData.designation}</span>
-                        <span className="flex items-center gap-2">Department: {userData.department}</span>
-                        <span className="flex items-center gap-2">Workplace: {userData.workplace}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Full Name </span>
+                            <span className="text-balance">: {userData.fullName}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Designation </span>
+                            <span className="text-balance">: {userData.designation}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Department </span>
+                            <span className="text-balance">: {userData.department}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Workplace </span>
+                            <span className="text-balance">: {userData.workplace}</span>
+                        </div>
                     </div>
-                    <Separator orientation="vertical" className="w-[3px] bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 rounded-t-full rounded-b-full" /> 
+                    <Separator orientation="vertical" className="w-[3px] bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 rounded-t-full rounded-b-full" />
                     <div className="flex flex-col flex-1 gap-3">
-                        <span className="flex items-center gap-2">Contact Number: {userData.contactNumber}</span>
-                        <span className="flex items-center gap-2">Qualifications: {userData.qualifications.join(", ")}</span>
-                        <span className="flex items-center gap-2">Registration Number: {userData.registrationNumber}</span>
-                        <span className="flex items-center gap-2">Verified: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Contact No. </span>
+                            <span className="text-balance">: {userData.contactNumber}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Reg No. </span>
+                            <span className="text-balance">: {userData.registrationNumber}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Qualifications </span>
+                            <span className="text-balance">: {userData.qualifications.join(", ")}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-base font-semibold text-gray-700 w-28"> Verified </span>
+                            <span className="text-balance">: {userData.isVerified === "Y" ? "Yes" : "No"}</span>
+                        </div>
                     </div>
                 </div>
             )}

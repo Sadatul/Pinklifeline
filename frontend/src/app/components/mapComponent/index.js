@@ -103,7 +103,7 @@ export default function MapComponent({ position, setPosition, viewAll = false, n
                 }}
                     icon={customIconYou}>
                     <Popup>
-                        <Link href={pagePaths.inbox} className='text-gray-700 '>You</Link>
+                        <Link href={pagePaths.dashboardPages.userdetailsPage} className='text-gray-700 '>You</Link>
                     </Popup>
                 </Marker>
                 <LocationRefSetUp />

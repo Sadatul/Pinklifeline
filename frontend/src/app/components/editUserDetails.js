@@ -34,7 +34,7 @@ import EditUserMapView from "./editUserdetailsmapComponent"
 
 const dummyData = {
     "allergies": ["Peanut"],
-    "organsWithChronicConditions": ["Heart", "Throat"],
+    "organsWithChronicCondition": ["Heart", "Throat"],
     "cancerRelatives": ["Aunt", "Samiha"],
     "fullName": "Sadatul",
     "weight": 58.0,
@@ -73,6 +73,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
         lng: latlng[1]
     });
     const initializd = useRef(false)
+    console.log("User Data", userData)
 
     useEffect(() => {
         if (sessionContext.sessionData) {
@@ -103,8 +104,6 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
         }
     }, [editedData])
 
-    const getCurrentYear = () => new Date().getFullYear();
-
     const onSubmit = (data) => {
         toast.loading("Updating user details")
         let form = {
@@ -117,7 +116,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
             "avgCycleLength": data.avgCycleLength,
             "periodIrregularities": editedData.periodIrregularities,
             "allergies": editedData.allergies,
-            "organsWithChronicConditions": editedData.organsWithChronicConditions,
+            "organsWithChronicCondition": editedData.organsWithChronicCondition,
             "medications": editedData.medications
         }
         if (isPatient) {
@@ -159,7 +158,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     </button>
                 )}
             </div>
-            <h1 className="text-2xl font-bold text-black">Update User Details</h1>
+            <h1 className="text-2xl font-bold text-black">User Details</h1>
             <div className="flex flex-row w-full bg-gray-100 p-4 rounded-md">
                 <div className="flex flex-col flex-1 gap-3">
                     <div className="text-md font-semibold">
@@ -169,7 +168,14 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                             :
-                            <span className="text-md font-semibold ">Name: {userData.fullName}</span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-32">
+                                    Name
+                                </span>
+                                <span>
+                                    : {userData.fullName}
+                                </span>
+                            </div>
                         }
                     </div>
                     <div className="text-md font-semibold ">
@@ -179,7 +185,14 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
                             :
-                            <span className="text-md font-semibold">Weight: {userData.weight} kg</span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-32">
+                                    Weight
+                                </span>
+                                <span>
+                                    : {userData.weight} kg
+                                </span>
+                            </div>
                         }
                     </div>
                     <div className="text-md font-semibold">
@@ -205,10 +218,26 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 </div>
                             </div>
                             :
-                            <span className="text-md font-semibold">Height: {getFeetFromCm(userData.height)} feet {getInchFromCm(userData.height)} inch</span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-32">
+                                    Height
+                                </span>
+                                <span>
+                                    : {convertCmtoFeetInch(userData.height)}
+                                </span>
+                            </div>
                         }
                     </div>
-                    {!editable && <span className="text-md font-semibold">Birth date: {userData.dob}</span>}
+                    {!editable &&
+                        <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                            <span className="w-32">
+                                Birth Date
+                            </span>
+                            <span>
+                                : {userData.dob}
+                            </span>
+                        </div>
+                    }
                     {editable ?
                         <div className="flex flex-row gap-7">
                             <div className="text-md font-semibold flex gap-2 items-center" >Last Period Date:
@@ -247,8 +276,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                         </div>
                         :
                         <div className="flex flex-col">
-                            <div className="text-md font-semibold flex gap-2" >Last Period Date:
-                                <span>{userData?.lastPeriodDate}</span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2" >
+                                <span className="w-32">
+                                    Last Period Date
+                                </span>
+                                <span>: {userData?.lastPeriodDate}</span>
                             </div>
                         </div>
                     }
@@ -261,7 +293,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                             </>
                             :
-                            <div className="text-md font-semibold">Average Cycle Length (days): {userData?.avgCycleLength}
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-32">
+                                    Average Cycle Length
+                                </span>
+                                <span>: {userData?.avgCycleLength} days</span>
                             </div>
                         }
                     </div>
@@ -303,9 +339,12 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
                             </div>
                             :
-                            <span className="text-md font-semibold flex gap-2" >
-                                Diagnose Date: {userData?.diagnosisDate}
-                            </span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-32">
+                                    Diagnose Date
+                                </span>
+                                <span>: {userData.diagnosisDate}</span>
+                            </div>
                         }
                     </div>
                 </div>
@@ -329,9 +368,12 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
                             </>
                             :
-                            <span className="text-md font-semibold flex gap-1">
-                                Current Stage: {userData?.cancerStage}
-                            </span>
+                            <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                <span className="w-40">
+                                    Current Stage
+                                </span>
+                                <span>: {userData.cancerStage}</span>
+                            </div>
                         }
                     </div>
                     <div className="w-full">
@@ -403,8 +445,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             :
                             <div className="flex flex-col justify-between w-full  gap-3">
                                 <div>
-                                    <div className="text-md font-semibold flex items-center gap-2">Cancer History:
-                                        <span>{userData?.cancerHistory === "Y" ? "Yes" : "No"}</span>
+                                    <div className="text-md font-semibold text-gray-800 flex gap-2">
+                                        <span className="w-40">
+                                            Cancer History
+                                        </span>
+                                        <span>: {userData?.cancerHistory}</span>
                                     </div>
                                 </div>
                                 {userData?.cancerHistory === "Y" &&
@@ -472,7 +517,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             </div>
                             :
                             <div className="flex items-center justify-between w-full">
-                                <div className="text-md font-semibold">Period Irregularities: {userData?.periodIrregularities?.join(", ")}
+                                <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                    <span className="w-40">
+                                        Period Irregularities
+                                    </span>
+                                    <span>: {userData?.periodIrregularities?.join(", ")}</span>
                                 </div>
                             </div>
                         }
@@ -534,8 +583,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             </div>
                             :
                             <div className="flex items-center justify-between w-full">
-                                <div className="text-md font-semibold">
-                                    Allergies: {userData?.allergies?.join(", ")}
+                                <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                    <span className="w-40">
+                                        Allergies
+                                    </span>
+                                    <span>: {userData?.allergies?.join(", ")}</span>
                                 </div>
                             </div>
                         }
@@ -549,8 +601,9 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                     </div>
                                     <Button
                                         onClick={() => {
+                                            console.log(editedData)
                                             if (!document.getElementById('organsWithChronicCondition').value) return toast.error("Organ field is empty")
-                                            setEditedData({ ...editedData, organsWithChronicConditions: [...editedData.organsWithChronicCondition, document.getElementById('organsWithChronicCondition').value] })
+                                            setEditedData({ ...editedData, organsWithChronicCondition: [...editedData.organsWithChronicCondition, document.getElementById('organsWithChronicCondition').value] })
                                             document.getElementById('organsWithChronicCondition').value = ''
                                             toast.message("Organ added", {
                                                 description: "See added Organs to see all the Organs added so far"
@@ -575,12 +628,12 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">
                                         <ScrollArea className="rounded-md border h-52 min-w-64">
-                                            {editedData.organsWithChronicConditions.map((organ, index) => (
+                                            {editedData.organsWithChronicCondition.map((organ, index) => (
                                                 <div key={index} className="flex justify-between p-2 border-b border-gray-300">
                                                     <span>{organ}</span>
                                                     <Button
                                                         onClick={() => {
-                                                            setEditedData({ ...editedData, organsWithChronicConditions: editedData.organsWithChronicConditions.filter((_, i) => i !== index) })
+                                                            setEditedData({ ...editedData, organsWithChronicCondition: editedData.organsWithChronicCondition.filter((_, i) => i !== index) })
                                                             toast.message("Organ removed")
                                                         }}
                                                         variant={"outline"}
@@ -597,7 +650,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             </div>
                             :
                             <div className="flex items-center justify-between w-full">
-                                <div className="text-md font-semibold">Organs With Chronic Condition: {userData?.organsWithChronicConditions?.join(", ")}
+                                <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                    <span className="w-40">
+                                        Organs With Chronic Condition
+                                    </span>
+                                    <span>: {userData?.organsWithChronicCondition?.join(", ")}</span>
                                 </div>
                             </div>
                         }
@@ -667,7 +724,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             </div>
                             :
                             <div className="flex items-center justify-between w-full">
-                                <div className="text-md font-semibold">Medications: {userData?.medications?.map(medication => `${medication.name}(${medication.doseDescription})`).join(", ")}
+                                <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                    <span className="w-40">
+                                        Medications
+                                    </span>
+                                    <span>: {userData?.medications?.map((medication) => medication.name).join(", ")}</span>
                                 </div>
                             </div>
                         }
