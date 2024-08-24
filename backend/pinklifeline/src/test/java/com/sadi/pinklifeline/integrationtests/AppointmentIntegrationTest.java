@@ -163,6 +163,7 @@ public class AppointmentIntegrationTest extends AbstractBaseIntegrationTest{
                 .subject(id.toString())
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
+                .claim("subscribed", false)
                 .claim("scope", roles);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
