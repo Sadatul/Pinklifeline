@@ -1,22 +1,33 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
+import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
+import com.sadi.pinklifeline.models.dtos.PaidWorkDTO;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.PaidWork;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.PaidWorkReq;
+import com.sadi.pinklifeline.repositories.DoctorDetailsRepository;
 import com.sadi.pinklifeline.repositories.PaidWorkRepository;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
+import com.sadi.pinklifeline.specifications.PaidWorkSpecification;
 import com.sadi.pinklifeline.utils.SecurityUtils;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,6 +40,7 @@ public class PaidWorkHandlerService {
     private final PaidWorkRepository paidWorkRepository;
     private final UserService userService;
     private final DoctorsInfoService doctorsInfoService;
+    private final DoctorDetailsRepository doctorDetailsRepository;
 
     public void verifyPaidWorkForUpdateAndDelete(PaidWork paidWork, Long userId) {
         if (!Objects.equals(paidWork.getUser().getId(), userId)) {
@@ -136,5 +148,58 @@ public class PaidWorkHandlerService {
                 {"title", paidWork.getTitle()},
                 {"description", paidWork.getDescription()},
         }).collect(Collectors.toMap((val) -> (String) val[0], (val) -> (String) val[1]));
+    }
+
+    public Specification<PaidWork> getSpecification(LocalDateTime startDate, LocalDateTime endDate,
+                                                    Long userId, Long providerId, String address, List<String> tags,
+                                                    PaidWorkStatus status) {
+        Specification<PaidWork> spec = Specification.where(null);
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(PaidWorkSpecification.withDateBetween(startDate, endDate));
+        }
+        if (status != null) {
+           spec = spec.and(PaidWorkSpecification.withStatus(status));
+        }
+        if (address != null && !address.isEmpty()) {
+            spec = spec.and(PaidWorkSpecification.withAddress(address));
+        }
+        if (tags != null && !tags.isEmpty()) {
+            spec = spec.and(PaidWorkSpecification.withTags(tags));
+        }
+        if (userId != null) {
+            spec = spec.and(PaidWorkSpecification.withUserId(userId));
+        }
+        if (providerId != null) {
+            spec = spec.and(PaidWorkSpecification.withProviderId(providerId));
+        }
+        return spec;
+    }
+
+    public Page<PaidWork> filterWorks(Specification<PaidWork> spec, Pageable pageable) {
+        return paidWorkRepository.findAll(spec, pageable);
+
+    }
+
+    public PaidWorkDTO getPaidWorkDTO(Long id) {
+         var dto = paidWorkRepository.findPaidWorkDTOById(id).orElseThrow(() -> new ResourceNotFoundException(
+                String.format("PaidWork with id %s not found", id)
+        ));
+         dto.setTags(paidWorkRepository.findWorkTagsById(id));
+         if(!dto.getStatus().equals(PaidWorkStatus.POSTED)){
+             String[] docInfo = doctorDetailsRepository.getDocContactInfoById(dto.getProviderId()).getFirst();
+             if(docInfo.length != 3){
+                 log.info("Paid work provider info: {}", docInfo.length);
+                 return dto;
+             }
+             dto.setProviderMail(docInfo[1]);
+             dto.setProviderName(docInfo[0]);
+             dto.setProviderContactNumber(docInfo[2]);
+         }
+         return dto;
+    }
+
+    public List<WorkTag> getWorkTags(Long id) {
+        return paidWorkRepository.findWorkTagsById(id);
     }
 }

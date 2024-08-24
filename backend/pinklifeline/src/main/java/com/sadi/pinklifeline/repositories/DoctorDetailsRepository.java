@@ -12,4 +12,7 @@ public interface DoctorDetailsRepository extends JpaRepository<DoctorDetails, Lo
 
     @Query("select dd.qualifications from DoctorDetails dd where dd.userId = :id")
     List<String> getDoctorQualificationsById(Long id);
+
+    @Query("select dd.fullName, dd.user.username, dd.contactNumber from DoctorDetails dd where dd.userId = :id")
+    List<String[]> getDocContactInfoById(Long id);
 }
