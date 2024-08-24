@@ -26,6 +26,10 @@ public class PaidWorkReq {
     private String description;
 
     @NotNull
+    @Size(min = 1, max = 255, message = "Address length must be within 1 to 255 chars")
+    private String address;
+
+    @NotNull
     private List<WorkTag> tags;
 
     @AssertTrue(message = "Can't consist of duplicate tags")

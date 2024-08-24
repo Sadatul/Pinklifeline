@@ -10,6 +10,7 @@ CREATE TABLE paid_works
     user_id       BIGINT                NOT NULL,
     title         VARCHAR(255)          NOT NULL,
     description   VARCHAR(1000)         NOT NULL,
+    address       VARCHAR(255)          NOT NULL,
     created_at    datetime              NOT NULL,
     last_updated  datetime              NOT NULL,
     version       BIGINT                NULL,
@@ -25,6 +26,8 @@ CREATE TABLE paid_work_providers
 );
 
 CREATE INDEX index_paid_works_created_at ON paid_works (created_at);
+
+CREATE INDEX index_paid_works_address ON paid_works (address);
 
 CREATE INDEX index_paid_work_tags_tag ON paid_work_tags (tag);
 

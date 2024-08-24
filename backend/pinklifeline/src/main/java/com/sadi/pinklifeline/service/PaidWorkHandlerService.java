@@ -60,7 +60,7 @@ public class PaidWorkHandlerService {
     public Long addPaidWork(@Valid PaidWorkReq req) {
         Long userId = SecurityUtils.getOwnerID();
         User user = userService.getUserIfRegisteredOnlyId(userId);
-        PaidWork paidWork = new PaidWork(user, req.getTitle(), req.getDescription(), req.getTags());
+        PaidWork paidWork = new PaidWork(user, req.getTitle(), req.getDescription(), req.getAddress() ,req.getTags());
         return paidWorkRepository.save(paidWork).getId();
     }
 
@@ -71,6 +71,7 @@ public class PaidWorkHandlerService {
 
         paidWork.setTitle(req.getTitle());
         paidWork.setDescription(req.getDescription());
+        paidWork.setAddress(req.getAddress());
         paidWork.setTags(req.getTags());
 
         paidWorkRepository.save(paidWork);

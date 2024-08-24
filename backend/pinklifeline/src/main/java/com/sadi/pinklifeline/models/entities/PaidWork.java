@@ -20,7 +20,8 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @Table(name = "paid_works", indexes = {
-        @Index(name = "index_paid_works_created_at", columnList = "created_at")
+        @Index(name = "index_paid_works_created_at", columnList = "created_at"),
+        @Index(name = "index_paid_works_address", columnList = "address")
 })
 @SecondaryTable(
         name = "paid_work_providers",
@@ -48,6 +49,9 @@ public class PaidWork {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private String address;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
@@ -70,10 +74,11 @@ public class PaidWork {
     @Enumerated(EnumType.STRING)
     private PaidWorkStatus status;
 
-    public PaidWork(User user, String title, String description, List<WorkTag> tags) {
+    public PaidWork(User user, String title, String description, String address, List<WorkTag> tags) {
         this.user = user;
         this.title = title;
         this.description = description;
+        this.address = address;
         this.tags = tags;
         this.status = PaidWorkStatus.POSTED;
     }
