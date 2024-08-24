@@ -14,6 +14,7 @@ import { Pagination } from "@mui/material"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
+import ScrollableContainer from "./StyledScrollbar"
 
 const animatedComponents = makeAnimated();
 
@@ -78,7 +79,7 @@ export function HospitalsComponent({ isAdmin }) {
     }
 
     return (
-        <div className={cn("flex flex-col w-full items-center p-4 flex-1 gap-3", radicalGradient, "from-zinc-200 to-slate-100")} >
+        <ScrollableContainer className={cn("flex flex-col w-full items-center p-4 flex-1 gap-3 overflow-x-hidden", radicalGradient, "from-zinc-200 to-slate-100")} >
             <div className="w-11/12 bg-white rounded p-3 flex flex-col gap-5">
                 <div className="flex flex-col items-center gap-2">
                     <h1 className="text-2xl font-bold">Hospitals</h1>
@@ -169,7 +170,7 @@ export function HospitalsComponent({ isAdmin }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </ScrollableContainer>
     )
 }
 

@@ -68,6 +68,7 @@ export const complaintUrl = `${baseUrl}/v1/complaints`
 export const getComplaints = `${baseUrl}/v1/ROLE_ADMIN/complaints`
 export const resolveComplaint = (complaint_id) => { return `${baseUrl}/v1/ROLE_ADMIN/complaints/${complaint_id}` }
 export const unverifiedDoctors = `${baseUrl}/v1/doctors`
+export const getDoctorsUrl = `${baseUrl}/v1/doctors`
 export const verifyDoctor = (docId) => { return `${baseUrl}/v1/ROLE_ADMIN/verify/doctors/${docId}` }
 export const hospitalsAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals`
 export const hospitalByIdUrl = (hospital_id) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/${hospital_id}` }
@@ -84,6 +85,7 @@ export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/comp
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
 export const locationResolution = 8
+export const sessionExpirationTime = 86400000
 
 export const dummyAvatar = (name) => { return `https://getstream.io/random_svg/?name=${name}` }
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
@@ -185,6 +187,7 @@ export const pagePaths = {
     hospitalByIdPage: (hospitalId) => { return `/hospitals/details/${hospitalId}` },
     compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
+    searchPage : (query) => { return `/search?query=${query}` },
 }
 
 export const ReportTypes = {
@@ -201,6 +204,10 @@ export const voteTypes = {
     upvote: "UPVOTE",
     downvote: "DOWNVOTE",
     unvote: "UNVOTE",
+}
+
+export function round(number) {
+    return (Math.round((number + Number.EPSILON) * 100) / 100)
 }
 
 export const convertCmtoFeetInch = (cm) => {

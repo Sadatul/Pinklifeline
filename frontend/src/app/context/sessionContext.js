@@ -1,5 +1,5 @@
 'use client'
-import { pagePaths, sessionDataItem } from "@/utils/constants"
+import { pagePaths, sessionDataItem, sessionExpirationTime } from "@/utils/constants"
 import { useRouter } from "next/navigation"
 import { createContext, useRef, useContext, useState, useEffect } from "react"
 import { toast } from "sonner"
@@ -8,20 +8,33 @@ const sessionContext = createContext()
 
 export function SessionContextProvider({ children }) {
     const [sessionData, setSessionData] = useState(null)
-    const router = useRouter()
 
     useEffect(() => {
         const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
         if (!sessionData) {
-            toast.error("Session data not found", {
-                description: "You need to login to continue",
+            setSessionData({
+                userId: null,
+                role: null,
+                username: null,
+                time: new Date(),
             })
-            router.push(pagePaths.login)
+        }//check if session is expired which is 24 hours
+        else if (new Date() - new Date(sessionData.time) > sessionExpirationTime) {
+            setSessionData({
+                userId: null,
+                role: null,
+                username: null,
+                time: new Date(),
+            })
+            localStorage.removeItem(sessionDataItem)
+            toast.error("Session Expired")
         }
-        setSessionData({
-            ...sessionData,
-        })
-    }, [router])
+        else {
+            setSessionData({
+                ...sessionData,
+            })
+        }
+    }, [])
 
     return (
         <sessionContext.Provider value={{

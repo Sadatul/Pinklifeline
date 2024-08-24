@@ -23,7 +23,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { avatarAang, blogsUrl, generateFormattedDate, pagePaths } from "@/utils/constants";
+import { avatarAang, blogsAnonymousUrl, blogsUrl, generateFormattedDate, pagePaths } from "@/utils/constants";
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import babyImage from "../../../../../public/babyImage.jpg"
@@ -34,6 +34,7 @@ import Avatar from "@/app/components/avatar";
 import axiosInstance from "@/utils/axiosInstance";
 
 export default function BlogsPage() {
+    
     const searchParams = useSearchParams();
     const pageNumber = searchParams.get('page') || 1;
     const searchTerms = searchParams.get('search') || '';
@@ -72,7 +73,7 @@ export default function BlogsPage() {
     }
 
     useEffect(() => {
-        axiosInstance.get(blogsUrl, { params: filter }).then((response) => {
+        axiosInstance.get(blogsAnonymousUrl, { params: filter }).then((response) => {
             console.log(response.data);
             setBlogs(response.data.content.map(blog => {
                 const content = blog.content.match(/<covertext>(.*?)<\/covertext>/s)
@@ -92,7 +93,7 @@ export default function BlogsPage() {
     }, [filter])
 
     useEffect(() => {
-        axiosInstance.get(blogsUrl, {
+        axiosInstance.get(blogsAnonymousUrl, {
             params: {
                 endDate: generateFormattedDate(new Date()),
                 startDate: generateFormattedDate(new Date(new Date().setDate(new Date().getDate() - 7))),

@@ -1,5 +1,6 @@
 'use client'
 import Loading from "@/app/components/loading"
+import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
@@ -63,7 +64,7 @@ function AddTest() {
     if (loading) return <Loading chose="handle" />
 
     return (
-        <div className={cn(radicalGradient, "flex flex-col w-full flex-1 from-slate-200 to-slate-100 gap-4 p-4")}>
+        <ScrollableContainer className={cn(radicalGradient, "flex flex-col w-full flex-1 from-slate-200 to-slate-100 gap-4 p-4 overflow-x-hidden")}>
             <div className="flex flex-col gap-4 w-10/12 mx-auto bg-white rounded-md p-5">
                 <div className="flex flex-col gap-7 w-full">
                     <div className="flex flex-col gap-2 w-full">
@@ -136,7 +137,7 @@ function AddTest() {
                     </div>
                 </div>
             </div>
-        </div>
+        </ScrollableContainer>
     )
 }
 

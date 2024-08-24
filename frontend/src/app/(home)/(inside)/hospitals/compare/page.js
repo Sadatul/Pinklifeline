@@ -5,13 +5,14 @@ import { useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useDebugValue, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { alignArrays, getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAnonymousUrl, radicalGradient } from "@/utils/constants"
-import { debounce } from "lodash"
+import { debounce, set } from "lodash"
 import axiosInstance from "@/utils/axiosInstance"
 import AsyncSelect from 'react-select/async';
 import makeAnimated from 'react-select/animated';
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Pagination } from "@mui/material"
+import ScrollableContainer from "@/app/components/StyledScrollbar"
 
 const animatedComponents = makeAnimated();
 
@@ -30,13 +31,11 @@ function ComparePageComponent() {
     const [hospitalTwoOptions, setHospitalTwoOptions] = useState([])
     const [loadingOptionsOne, setLoadingOptionsOne] = useState(false)
     const [loadingOptionsTwo, setLoadingOptionsTwo] = useState(false)
+    const [showOptionOne, setShowOptionOne] = useState(false)
+    const [showOptionTwo, setShowOptionTwo] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
     const [selectedTests, setSelectedTests] = useState([])
-    const [pageInfoOne, setPageInfoOne] = useState({
-        number: 0,
-        totalPages: 0,
-    })
-    const [pageInfoTwo, setPageInfoTwo] = useState({
+    const [pageInfo, setPageInfo] = useState({
         number: 0,
         totalPages: 0,
     })
@@ -109,14 +108,19 @@ function ComparePageComponent() {
 
     useEffect(() => {
         if (searchHospitalTwo !== "") {
+            console.log("Search Hospital Two", searchHospitalTwo)
             getHospitalTwoOptions(searchHospitalTwo)
         }
     }, [searchHospitalTwo])
 
+    useEffect(()=>{
+        console.log("Page Info",pageInfo)
+    },[pageInfo])
+
     if (!isMounted) return null
 
     return (
-        <div className={cn(radicalGradient, "from-slate-200 to-slate-100 w-full flex-1 flex flex-col items-center gap-4 p-4")}>
+        <ScrollableContainer className={cn(radicalGradient, "from-slate-200 to-slate-100 w-full flex-1 flex flex-col items-center overflow-x-hidden gap-4 p-4")}>
             <h1 className="text-3xl font-bold text-slate-900 mt-8">Compare Hospitals</h1>
             <div className="flex flex-col bg-white rounded-md p-4 w-11/12 gap-4">
                 <div className="flex flex-row items-center gap-14 px-5 w-full flex-wrap">
@@ -124,18 +128,19 @@ function ComparePageComponent() {
                         <span className="text-lg font-semibold text-slate-800">Hospital One name</span>
                         <div className="flex flex-col w-72 bg-white rounded-md relative">
                             <input autoComplete="off" id="hospitalOne" type="text" placeholder="Hospital One" className="h-8 border border-gray-600 focus:ring-0 focus:outline-none rounded p-2 shadow-inner" onChange={(e) => {
-                                setHospitalIdOne(null)
-                                setHospitalOne(null)
+                                console.log("Hospital one",e.target.value)
                                 setSearchHospitalOne(e.target.value)
+                                setShowOptionOne(true)
                             }} />
-                            {(searchHospitalOne !== "" && !hospital_id_one) &&
+                            {(searchHospitalOne !== "" && showOptionOne) &&
                                 <div className="absolute top-8 right-0 left-0 w-72 rounded-b-md bg-white border border-gray-600 z-20">
                                     {loadingOptionsOne ? <Loading chose="dots" /> : null}
                                     {hospitalOneOptions.map((option, index) => (
                                         <div className="p-2 border-b border-gray-600 flex flex-col gap-1 cursor-pointer" key={index} onClick={(e) => {
                                             setHospitalIdOne(option.id)
                                             document.getElementById("hospitalOne").value = option.name
-                                            setHospitalIdOne(option)
+                                            setHospitalOne(option)
+                                            setShowOptionOne(false)
                                         }}>
                                             <span className="text-base text-slate-800">{option.name}</span>
                                             <span className="text-sm text-slate-600">{option.location}</span>
@@ -149,11 +154,11 @@ function ComparePageComponent() {
                         <span className="text-lg font-semibold text-slate-800">Hospital Two name</span>
                         <div className="flex flex-col w-72 bg-white rounded-md relative">
                             <input autoComplete="off" id="hospitalTwo" type="text" placeholder="Hospital Two" className="h-8 border border-gray-600 focus:ring-0 focus:outline-nTwo rounded p-2 shadow-inner" onChange={(e) => {
-                                setHospitalIdTwo(null)
+                                console.log("Hospital Two", e.target.value)
+                                setShowOptionTwo(true)
                                 setSearchHospitalTwo(e.target.value)
-                                setHospitalTwo(null)
                             }} />
-                            {(searchHospitalTwo !== "" && !hospital_id_two) &&
+                            {(searchHospitalTwo !== "" && showOptionTwo) &&
                                 <div className="absolute top-8 right-0 left-0 w-72 rounded-b-md bg-white border border-gray-600 z-20">
                                     {loadingOptionsTwo ? <Loading chose="dots" /> : null}
                                     {hospitalTwoOptions.map((option, index) => (
@@ -161,6 +166,7 @@ function ComparePageComponent() {
                                             setHospitalIdTwo(option.id)
                                             document.getElementById("hospitalTwo").value = option.name
                                             setHospitalTwo(option)
+                                            setShowOptionTwo(false)
                                         }}>
                                             <span className="text-base text-slate-800">{option.name}</span>
                                             <span className="text-sm text-slate-600">{option.location}</span>
@@ -199,16 +205,16 @@ function ComparePageComponent() {
                         let responseOne = null;
                         let responseTwo = null;
                         if (hospital_id_one) {
-                            responseOne = await handleHospitalDataLoad(hospital_id_one, pageInfoOne.number)
+                            responseOne = await handleHospitalDataLoad(hospital_id_one, 0)
                         }
                         if (hospital_id_two) {
-                            responseTwo = await handleHospitalDataLoad(hospital_id_two, pageInfoTwo.number)
+                            responseTwo = await handleHospitalDataLoad(hospital_id_two, 0)
                         }
+                        console.log(responseOne, responseTwo)
                         const { resultA, resultB } = alignArrays(responseOne?.content, responseTwo?.content)
                         setHospitalOneData(resultA)
                         setHospitalTwoData(resultB)
-                        setPageInfoOne({ number: responseOne?.number, totalPages: responseOne?.totalPages })
-                        setPageInfoTwo({ number: responseTwo?.number, totalPages: responseTwo?.totalPages })
+                        setPageInfo({ number: 0, totalPages: Math.max(responseOne?.page?.totalPages, responseTwo?.page?.totalPages) })
                         setLoadingOne(false)
                         setLoadingTwo(false)
                     }}>
@@ -245,8 +251,39 @@ function ComparePageComponent() {
                     }
                     {loadingTwo && <Loading chose="dots" />}
                 </div>
+                <div className="flex flex-row items-center gap-2 justify-center w-full">
+                    <Pagination count={pageInfo?.totalPages} page={pageInfo?.number + 1} onChange={async (e, page) => {
+                        if (!hospital_id_one || !hospital_id_two) {
+                            document.getElementById("compare-id-error").innerText = "Please select both hospitals. And refresh if something went wrong."
+                            return
+                        }
+                        document.getElementById("compare-id-error").innerText = ""
+                        setLoadingOne(true)
+                        setLoadingTwo(true)
+                        let responseOne = null;
+                        let responseTwo = null;
+                        if (hospital_id_one) {
+                            responseOne = await handleHospitalDataLoad(hospital_id_one, page - 1)
+                        }
+                        if (hospital_id_two) {
+                            responseTwo = await handleHospitalDataLoad(hospital_id_two, page - 1)
+                        }
+                        const { resultA, resultB } = alignArrays(responseOne?.content, responseTwo?.content)
+                        setHospitalOneData(resultA)
+                        setHospitalTwoData(resultB)
+                        setPageInfo({ number: responseOne?.number, totalPages: Math.max(responseOne?.totalPages, responseTwo?.totalPages) })
+                        setLoadingOne(false)
+                        setLoadingTwo(false)
+                    }}
+                        color="primary"
+                        variant="outlined"
+                        shape="rounded"
+                        showFirstButton
+                        showLastButton
+                    />
+                </div>
             </div>
-        </div>
+        </ScrollableContainer>
     )
 }
 
@@ -266,18 +303,6 @@ function TestsComponent({ tests = [], pageInfo, setPageInfo, loading, setLoading
                     <span className="text-sm text-slate-600 w-full">{test?.fee} TK</span>
                 </div>
             ))}
-            <div className="flex flex-row items-center gap-2 justify-center w-full">
-                <Pagination count={pageInfo?.totalPages} page={pageInfo?.number + 1} onChange={(e, page) => {
-                    setLoading(true)
-                    setPageInfo({ ...pageInfo, number: page - 1 })
-                }}
-                    color="primary"
-                    variant="outlined"
-                    shape="rounded"
-                    showFirstButton
-                    showLastButton
-                />
-            </div>
         </div>
     )
 }

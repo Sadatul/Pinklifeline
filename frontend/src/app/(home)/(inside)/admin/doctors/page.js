@@ -54,6 +54,7 @@ export default function DoctorsVerifyPage() {
         designation: null,
         contactNumber: null,
         qualifications: null,
+        isVerified :"N",
         pageNo: 0
     })
     const [loading, setLoading] = useState(true)
