@@ -99,7 +99,7 @@ public class PaidWorkHandlerV1 {
     ){
         log.debug("Req to get paid works");
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection, "createdAt"));
-        Boolean isPaid = true;
+        Boolean isPaid = SecurityUtils.isPaidAccount();
         if(!isPaid && address != null){
             throw new BadRequestFromUserException("Address param is only available for paid users");
         }
@@ -132,7 +132,7 @@ public class PaidWorkHandlerV1 {
 
     private Map<String, Object> convertPaidWorkDTOtoMap(PaidWorkDTO dto) {
         Long userId = SecurityUtils.getOwnerID();
-        Boolean isPaid = true;
+        Boolean isPaid = SecurityUtils.isPaidAccount();
         Map<String, Object> map = Stream.of(new Object[][]{
                 {"id", dto.getId()},
                 {"title", dto.getTitle()},

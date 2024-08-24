@@ -1,6 +1,5 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.enums.BlogSortType;
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
