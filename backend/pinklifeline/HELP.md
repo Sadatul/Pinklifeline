@@ -1966,3 +1966,233 @@ Endpoints: GET /v1/anonymous/hospitals/compare
   "4": 3000
 }
 ```
+## Add Work
+``` Endpoint: POST /v1/works```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+   "title": "My sister needs chemo",
+   "description": "add me go ",
+   "address": "Chittagong, Bangladesh",
+   "tags": ["NURSING"]
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* Title and address is limited to 255 characters and description is limited to 1000 characters
+* tags can be list of two type of values, DOCTOR and NURSING
+## Update Work
+``` Endpoint: PUT /v1/works/{work_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+   "title": "My sister needs chemo",
+   "description": "add me go ",
+   "address": "Chittagong, Bangladesh",
+   "tags": ["NURSING"]
+}
+```
+**<span style="color:red">Notes:</span>**
+* This is only allowed if no current provider has reserved the work. You can remove reserve from the work and then update it. 
+* None of the above fields can be null. Must provide each one.
+* Title and address is limited to 255 characters and description is limited to 1000 characters
+* tags can be list of two type of values, DOCTOR and NURSING
+##  Delete Work
+``` Endpoint: DELETE /v1/works/{work_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* This is only allowed if no current provider has reserved the work. You can remove reserve from the work and then delete it.
+
+## Reserve Work
+``` Endpoint: PUT /v1/works/{work_id}/reserve```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Must be a subscribed account to access this.
+
+## Remove Reserve from Work
+``` Endpoint: DELETE /v1/works/{work_id}/reserve```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Both user and provider of the task can perform this. If one removes reserve the other one will get an email.
+## Finish Work
+``` Endpoint: PUT /v1/works/{work_id}/finish```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can only finish a task if it is in accepted state.
+
+## Get Tags for a work
+``` Endpoint: GET /v1/works/{work_id}/tags```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body
+```
+['DOCTOR', 'NURSING']
+```
+
+## Get Work By Id
+``` Endpoint: GET /v1/works/{work_id}```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "createdAt": "2024-08-24T12:45:24",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "id": 5,
+  "title": "WestHamFix with the help of Social Media",
+  "tags":["NURSING"],
+  "status": "FINISHED"
+}
+```
+### Response Body (For Subscribed and Non-owner)
+```
+{
+  "createdAt": "2024-08-24T12:45:24",
+  "address": "Dhaka, Bangladesh",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "id": 5,
+  "title": "WestHamFix with the help of Social Media",
+  "tags":["NURSING"],
+  "status": "FINISHED"
+}
+```
+### Response Body (For Owner and provider)
+```
+{
+  "address": "Chittagong, Bangladesh",
+  "userFullName": "Sadatul",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "providerMail": "2005077@ugrad.cse.buet.ac.bd",
+  "title": "WestHamFix with the help of Social Media",
+  "userId": 2,
+  "tags":["NURSING"],
+  "createdAt": "2024-08-24T12:45:24",
+  "providerId": 3,
+  "id": 5,
+  "providerName": "Dr. Sadi Ahmed",
+  "status": "FINISHED",
+  "providerContactNumber": "01730445524",
+  "username": "sadatulislamsadi@gmail.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* username is the mail of the owner.
+* If the task is in posted state meaning no one has reserved the task. Then you will see that the providerMail, ProvideId and ProviderName is null
+## Get Works: Paginated
+``` Endpoint: GET /v1/works/{work_id}```
+<br>
+<br>
+```Response status: ok(200)```
+<br><br>
+``` Query params: startDate=2024-08-08```
+<br>
+``` Query params: endDate=2024-09-08```
+<br>
+``` Query params: tags=doctor,nursing```
+<br>
+``` Query params: userId=1```
+<br>
+``` Query params: status=POSTED```
+<br>
+``` Query params: providerId=1```
+<br>
+``` Query params: address=dhaka```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* status can be POSTED, ACCEPTED, FINISHED
+* address is only available for paid users. Un-subscribed users will get a exception.
+* By default, the result will come in descending order of createdAt.
+### Response Body.Content (For Non-Subscribed users)
+**Note: This response is paginated. Check paginated responses**
+```
+[
+  {
+    "createdAt": "2024-08-24T12:45:24",
+    "description": "sequat venenatis.sdfasdfsdfsdf ",
+    "id": 5,
+    "title": "WestHamFix with the help of Social Media",
+    "status": "FINISHED"
+  }
+]
+```
+### Response Body.Content (For Subscribed users)
+**Note: This response is paginated. Check paginated responses**
+```
+[
+  {
+    "createdAt": "2024-08-24T12:45:24",
+    "address": "Khulna, Bangladesh",
+    "description": "sequat venenatis.sdfasdfsdfsdf ",
+    "id": 5,
+    "title": "WestHamFix with the help of Social Media",
+    "status": "FINISHED"
+  }
+]
+```
+## Payment for Subscription
+``` Endpoint: POST /v1/payment/subscription/{user_id}/initiate```
+### Sample Body
+```
+{
+  "customerName": "Sadatul Islam Sadi",
+  "customerEmail": "sadatulislamsadi@gmail.com",
+  "customerPhone": "0171231213",
+  "subscriptionType": "YEARLY"
+}
+```
+**<span style="color:red">Notes:</span>**
+* Each of the field must be provided
+* customerEmail must be a valid email
+* subscriptionType can be MONTHLY or YEARLY
+
+### Response Body
+```
+{
+    "transactionId": "17208953344777288",
+    "gatewayUrl": "https://sandbox.sslcommerz.com/EasyCheckOut/testcdebca74f4c2f037c2e974a06d9dac94c4a"
+}
+
+```
+**<span style="color:red">Notes:</span>**
+* This only initiates the payment request. To complete payment, the transaction must be validated. To validate the transaction you will need the transactionId
+* "gatewayUrl" is a the url to the sslcommerz gateway, where you will find different options to pay.
+
+## Validate Payment for Subscription
+``` Endpoint: GET /v1/payment/subscription/{userId}/validate```
+### Query Parameters
+```
+transId=17208953344777288
+```
+**<span style="color:red">Notes:</span>**
+* Note this is a get request. You don't need to send a body but need to send a query parameter named transId
+* "transId" is the transactionId that we got when we initiated the payment
+* After subscription make sure that the user logs out and logs in again. Otherwise paidStatus in the token won't be updated.
+* From the get request you will get three different HttpStatus codes
+  * **400** : means transaction has failed user needs to retry by initiating the payment again
+  * **202** : transaction is still pending. User hasn't made any payment via the gateway
+  * **200** : payment has been completed. Nice

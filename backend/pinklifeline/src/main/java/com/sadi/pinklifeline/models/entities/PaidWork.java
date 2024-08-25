@@ -65,6 +65,7 @@ public class PaidWork {
             indexes = @Index(name = "index_paid_work_tags_tag", columnList = "tag"))
     @Column(name = "tag", nullable = false)
     @Enumerated(EnumType.STRING)
+    @ToString.Exclude
     private List<WorkTag> tags;
 
     @Version

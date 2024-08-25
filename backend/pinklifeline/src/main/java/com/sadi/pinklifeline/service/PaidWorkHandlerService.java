@@ -1,6 +1,5 @@
 package com.sadi.pinklifeline.service;
 
-import com.sadi.pinklifeline.enums.PaidWorkQueryStatus;
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
@@ -180,14 +179,14 @@ public class PaidWorkHandlerService {
 
     public Specification<PaidWork> getSpecification(LocalDateTime startDate, LocalDateTime endDate,
                                                     Long userId, Long providerId, String address, List<String> tags,
-                                                    PaidWorkQueryStatus status) {
+                                                    PaidWorkStatus status) {
         Specification<PaidWork> spec = Specification.where(null);
 
         if (startDate != null && endDate != null) {
             spec = spec.and(PaidWorkSpecification.withDateBetween(startDate, endDate));
         }
-        if (status != null && !status.equals(PaidWorkQueryStatus.ALL)) {
-           spec = spec.and(PaidWorkSpecification.withStatus(PaidWorkStatus.valueOf(status.name())));
+        if (status != null) {
+           spec = spec.and(PaidWorkSpecification.withStatus(status));
         }
         if (address != null && !address.isEmpty()) {
             spec = spec.and(PaidWorkSpecification.withAddress(address));

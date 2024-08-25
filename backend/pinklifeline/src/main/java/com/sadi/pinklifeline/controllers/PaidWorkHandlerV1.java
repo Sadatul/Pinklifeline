@@ -1,6 +1,6 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.sadi.pinklifeline.enums.PaidWorkQueryStatus;
+import com.sadi.pinklifeline.enums.PaidWorkStatus;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.models.dtos.PaidWorkDTO;
@@ -102,7 +102,7 @@ public class PaidWorkHandlerV1 {
             @RequestParam(required = false, defaultValue = "9999-12-31") LocalDate endDate,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false, defaultValue = "POSTED") PaidWorkQueryStatus status,
+            @RequestParam(required = false) PaidWorkStatus status,
             @RequestParam(required = false) Long providerId,
             @RequestParam(required = false) String address,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
