@@ -34,8 +34,9 @@ public class SubscriptionService extends AbstractPaymentService{
         Subscription subscription = subscriptionRepository.findById(id).orElseThrow(
                 () -> new InternalServerErrorException("Something went wrong during setup, please contact our helpline immediately")
         );
-        subscription.setExpiryDate(subscription.getSubscriptionType().equals(SubscriptionType.MONTHLY) ?
-                LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
+        subscription.setExpiryDate(LocalDateTime.now().plusMonths(
+                subscription.getSubscriptionType().getTimeInMonths()
+        ));
         subscriptionRepository.save(subscription);
     }
 
@@ -62,17 +63,7 @@ public class SubscriptionService extends AbstractPaymentService{
     }
 
     public static int getSubscriptionPrice(SubscriptionType type) {
-        if(type.equals(SubscriptionType.MONTHLY))
-        {
-            return 50;
-        }
-        else if(type.equals(SubscriptionType.YEARLY))
-        {
-            return 50 * 12;
-        }
-        else {
-            throw new BadRequestFromUserException("Invalid subscription type");
-        }
+        return type.getPrice();
     }
 
     @Override
@@ -104,7 +95,7 @@ public class SubscriptionService extends AbstractPaymentService{
 
         int adminFees = getSubscriptionPrice(subscription.getSubscriptionType());
         BalanceHistory adminBalance = new BalanceHistory(new User(1L),
-                String.format("Payment of %d received for subscription", adminFees),
+                String.format("Payment of %d received for subscription with type %s", adminFees, subscription.getSubscriptionType()),
                 adminFees
         );
         balanceHistoryRepository.save(adminBalance);

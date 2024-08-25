@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
 import com.sadi.pinklifeline.enums.Roles;
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.models.entities.PaidWork;
 import com.sadi.pinklifeline.models.reqeusts.PaidWorkReq;
@@ -85,7 +86,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
                 }
                 """;
 
-        String token = mint(userId, List.of(Roles.ROLE_PATIENT), false);
+        String token = mint(userId, List.of(Roles.ROLE_PATIENT), 0);
 
         String location = mockMvc.perform(post("/v1/works")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -117,7 +118,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
                 }
                 """;
 
-        String updateToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
+        String updateToken = mint(userId, List.of(Roles.ROLE_PATIENT), 0);
 
         mockMvc.perform(put("/v1/works/{newWorkId}", newWorkId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -136,7 +137,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
 
         asserWork(req, updatedWork.get());
 
-        String docToken = mint(providerId, List.of(Roles.ROLE_DOCTOR), true);
+        String docToken = mint(providerId, List.of(Roles.ROLE_DOCTOR), SubscriptionType.DOCTOR_MONTHLY.getValue());
         mockMvc.perform(put("/v1/works/{newWorkId}/reserve", newWorkId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", docToken)))
@@ -165,7 +166,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
         assertNull(newPaidWork.get().getHealCareProvider());
         assertEquals(PaidWorkStatus.POSTED, newPaidWork.get().getStatus());
 
-        String deleteToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
+        String deleteToken = mint(userId, List.of(Roles.ROLE_PATIENT), 0);
         mockMvc.perform(delete("/v1/works/{newWorkId}", newWorkId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", String.format("Bearer %s", deleteToken)))
@@ -207,9 +208,9 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
         Long acceptedWorkId = 2L;
         Long selectedId = 3L;
 
-        String providerTokenUnPaid = mint(providerId, List.of(Roles.ROLE_DOCTOR), false);
-        String providerTokenPaid = mint(providerId, List.of(Roles.ROLE_DOCTOR), true);
-        String userToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
+        String providerTokenUnPaid = mint(providerId, List.of(Roles.ROLE_DOCTOR), 0);
+        String providerTokenPaid = mint(providerId, List.of(Roles.ROLE_DOCTOR), SubscriptionType.DOCTOR_YEARLY.getValue());
+        String userToken = mint(userId, List.of(Roles.ROLE_PATIENT), 0);
 
         String res = mockMvc.perform(get("/v1/works")
                         .header("Authorization", String.format("Bearer %s", providerTokenUnPaid))
@@ -304,7 +305,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
         assertNull(newPaidWork.getHealCareProvider());
     }
 
-    private String mint(Long id, List<Roles> roles, Boolean isSubscribed){
+    private String mint(Long id, List<Roles> roles, int subscribed){
         JwtClaimsSet.Builder builder = JwtClaimsSet.builder()
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(3600))
@@ -312,7 +313,7 @@ public class PaidWorkIntegrationTest extends AbstractBaseIntegrationTest{
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
                 .claim("scope", roles)
-                .claim("subscribed", isSubscribed);
+                .claim("subscribed", subscribed);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
     }

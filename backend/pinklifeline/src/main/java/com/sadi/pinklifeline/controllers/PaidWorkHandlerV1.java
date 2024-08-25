@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.models.dtos.PaidWorkDTO;
@@ -110,7 +111,7 @@ public class PaidWorkHandlerV1 {
     ){
         log.debug("Req to get paid works");
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection, "createdAt"));
-        Boolean isPaid = SecurityUtils.isSubscribedAccount();
+        Boolean isPaid = SecurityUtils.isSubscribedWithPackage(SubscriptionType.DOCTOR_MONTHLY, SubscriptionType.DOCTOR_YEARLY);
         if(!isPaid && address != null){
             throw new BadRequestFromUserException("Address param is only available for paid users");
         }
@@ -143,7 +144,7 @@ public class PaidWorkHandlerV1 {
 
     private Map<String, Object> convertPaidWorkDTOtoMap(PaidWorkDTO dto) {
         Long userId = SecurityUtils.getOwnerID();
-        Boolean isPaid = SecurityUtils.isSubscribedAccount();
+        Boolean isPaid = SecurityUtils.isSubscribedWithPackage(SubscriptionType.DOCTOR_MONTHLY, SubscriptionType.DOCTOR_YEARLY);
         Map<String, Object> map = Stream.of(new Object[][]{
                 {"id", dto.getId()},
                 {"title", dto.getTitle()},

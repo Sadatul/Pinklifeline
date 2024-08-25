@@ -44,7 +44,8 @@ public class JwtTokenService {
         UserTokenDTO user = userRepository.findUserTokenDTOByUsername(authentication.getName())
                     .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
         user.setRoles(userRepository.getRolesById(user.getId()));
-        boolean isSubscribed = user.getExpiryDate() != null && LocalDateTime.now().isBefore(user.getExpiryDate());
+        int subscribed = (user.getExpiryDate() != null && LocalDateTime.now().isBefore(user.getExpiryDate()))
+                ? user.getSubscriptionType().getValue() : 0;
         var claims = JwtClaimsSet.builder()
                                 .issuer(issuer)
                                 .issuedAt(Instant.now())
@@ -52,9 +53,9 @@ public class JwtTokenService {
                                 .expiresAt(Instant.now().plusSeconds(timeout))
                                 .subject(user.getId().toString())
                                 .claim("scp", scope)
-                                .claim("subscribed", isSubscribed)
+                                .claim("subscribed", subscribed)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return new JwtTokenResponse(token, user.getId(), user.getUsername(), isSubscribed, user.getRoles());
+        return new JwtTokenResponse(token, user.getId(), user.getUsername(), subscribed, user.getRoles());
     }
 }

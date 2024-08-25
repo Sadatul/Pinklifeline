@@ -182,7 +182,7 @@ public class ReviewsIntegrationTest extends AbstractBaseIntegrationTest{
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
                 .claim("scope", roles)
-                .claim("subscribed", false);
+                .claim("subscribed", 0);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
     }

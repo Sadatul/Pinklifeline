@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.service;
 
 import com.sadi.pinklifeline.enums.PaidWorkStatus;
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import com.sadi.pinklifeline.enums.WorkTag;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -123,10 +125,12 @@ public class PaidWorkHandlerService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('DOCTOR')")
     public Map<String, String> reservePaidWork(Long id) {
         Long userId = SecurityUtils.getOwnerID();
         DoctorDetails doctor = doctorsInfoService.getDoctorIfVerified(userId);
-        SecurityUtils.throwExceptionIfNotSubscribed();
+        SecurityUtils.throwExceptionIfNotSubscribed(SubscriptionType.DOCTOR_MONTHLY,
+                SubscriptionType.DOCTOR_YEARLY);
 
         PaidWork paidWork = getPaidWorkWithLock(id);
         if(!Objects.equals(paidWork.getStatus(), PaidWorkStatus.POSTED)){

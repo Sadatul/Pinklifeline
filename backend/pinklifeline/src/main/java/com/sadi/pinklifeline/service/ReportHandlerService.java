@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.dtos.ReportSharedInfoDTO;
@@ -52,7 +53,8 @@ public class ReportHandlerService {
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public Long addReport(ReportReq req) {
         Long userId = SecurityUtils.getOwnerID();
-        SecurityUtils.throwExceptionIfNotSubscribed();
+        SecurityUtils.throwExceptionIfNotSubscribed(SubscriptionType.USER_MONTHLY,
+                SubscriptionType.USER_YEARLY);
         User user = userService.getUserIfRegisteredOnlyId(userId);
         Report report = new Report(user, req.getDoctorName(), req.getHospitalName(), req.getDate(),
                 req.getSummary(), req.getFileLink(), req.getKeywords());
