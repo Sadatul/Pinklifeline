@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useSessionContext } from "@/app/context/sessionContext"
 import axiosInstance from "@/utils/axiosInstance"
-import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, convertCmtoFeetInch, createOnlineMeetingUrl, declineAppointmentUrl, getAppointmentsUrl, getDoctorBalance, getDoctorBalanceHistory, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, patientInfoUrl, roles, validateTransactionUrl } from "@/utils/constants"
+import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, convertCmtoFeetInch, createOnlineMeetingUrl, declineAppointmentUrl, finishAppointmentUrl, getAppointmentsUrl, getDoctorBalance, getDoctorBalanceHistory, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, patientInfoUrl, roles, validateTransactionUrl } from "@/utils/constants"
 import Loading from "./loading"
 import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
@@ -256,7 +256,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
 function AppointmentSection({ appointments, setAppointments, disableCard, setDisableCard, setFetchAgain }) {
     const filterOptions = useRef([
         {
-            name: "Unpaid Upcoming",
+            name: "Unpaid",
             rule: (appointments) => appointments.filter(appointment => ((!appointment.isPaymentComplete) && (appointment.status === appointmentStatus.accepted))).sort((a, b) => {
                 const dateTimeA = new Date(`${a.date}T${a.time}`);
                 const dateTimeB = new Date(`${b.date}T${b.time}`);
@@ -264,7 +264,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
             })
         },
         {
-            name: "Paid Upcoming",
+            name: "Paid",
             rule: (appointments) => appointments.filter(appointment => (appointment.isPaymentComplete && appointment.status === appointmentStatus.accepted)).sort((a, b) => {
                 const dateTimeA = new Date(`${a.date}T${a.time}`);
                 const dateTimeB = new Date(`${b.date}T${b.time}`);
@@ -313,29 +313,31 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
             })
         }
     ]);
+    const secondaryFilterOptions = useRef([
+        {
+            name: "Online",
+            rule: (appointments) => appointments.filter(appointment => appointment.isOnline)
+        },
+        {
+            name: "Offline",
+            rule: (appointments) => appointments.filter(appointment => !appointment.isOnline)
+        },
+        {
+            name: "All",
+            rule: (appointments) => appointments
+        }
+    ])
 
-
-    const [selectionCriteria, setSelectionCriteria] = useState(null)
+    const [selectionCriteria, setSelectionCriteria] = useState(filterOptions.current[2])
+    const [secondarySelectionCriteria, setSecondarySelectionCriteria] = useState(secondaryFilterOptions.current[2])
     const [selectedAppointments, setSelectedAppointments] = useState(appointments)
     const [date, setDate] = useState(null)
     const sessionContext = useSessionContext()
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            if (sessionContext.sessionData.role === roles.doctor) {
-                setSelectionCriteria(filterOptions.current[1])
-            }
-            else {
-                setSelectionCriteria(filterOptions.current[0])
-            }
-        }
-    }, [sessionContext.sessionData])
-
-    useEffect(() => {
-        if (selectionCriteria) {
-            setSelectedAppointments(selectionCriteria.rule(appointments))
-        }
-    }, [selectionCriteria, appointments])
+        setSelectedAppointments(selectionCriteria.rule(secondarySelectionCriteria.rule(appointments)))
+        console.log("secondarySelectionCriteria", secondarySelectionCriteria.rule(appointments))
+    }, [selectionCriteria, appointments, secondarySelectionCriteria])
 
     return (
         <div className="flex flex-col gap-4 w-full">
@@ -343,26 +345,47 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
                 <h1 className="text-base capitalize font-semibold">
                     {selectionCriteria?.name} Appointments
                 </h1>
-                <Popover>
-                    <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
-                        {selectionCriteria?.name}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto">
-                        <h1 className="w-full text-center">Filter by</h1>
-                        <Separator />
-                        <div className="gap-1 flex flex-col items-start mt-5 w-full ">
-                            {filterOptions.current.map((option, index) => (
-                                <button key={index} className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md"
-                                    onClick={() => {
-                                        setSelectionCriteria(option)
-                                    }}
-                                >
-                                    {option.name}
-                                </button>
-                            ))}
-                        </div>
-                    </PopoverContent>
-                </Popover>
+                <div className="flex flex-row gap-8">
+                    <Popover>
+                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
+                            {secondarySelectionCriteria?.name}
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto">
+                            <h1 className="w-full text-center">Filter by</h1>
+                            <Separator />
+                            <div className="gap-1 flex flex-col items-start mt-5 w-full ">
+                                {secondaryFilterOptions.current.map((option, index) => (
+                                    <button key={index} className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md"
+                                        onClick={() => {
+                                            setSecondarySelectionCriteria(option)
+                                        }}>
+                                        {option.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <Popover>
+                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
+                            {selectionCriteria?.name}
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto">
+                            <h1 className="w-full text-center">Filter by</h1>
+                            <Separator />
+                            <div className="gap-1 flex flex-col items-start mt-5 w-full ">
+                                {filterOptions.current.map((option, index) => (
+                                    <button key={index} className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md"
+                                        onClick={() => {
+                                            setSelectionCriteria(option)
+                                        }}
+                                    >
+                                        {option.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
             </div>
             <Separator className="w-full bg-pink-400 h-[1.5px]" />
             <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full bg-white p-3 rounded-md flex-wrap items-center justify-start">
@@ -748,6 +771,35 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                         )}
                     </>
 
+                }
+                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && !appointment.isOnline) &&
+                    <AlertDialog>
+                        <AlertDialogTrigger disabled={disableCard} className={cn("bg-blue-50 border transition ease-in text-green-500 shadow flex flex-row items-center justify-center flex-nowrap gap-1 flex-1 h-full ")}>
+                            Mark Finished
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        axiosInstance.put(finishAppointmentUrl(appointment.id)).then((res) => {
+                                            toast.success("Appointment Finished")
+                                            setFetchAgain(true)
+                                        }).catch((error) => {
+                                            console.log("Error finishing appointment", error)
+                                            toast.error("Error finishing appointment")
+                                        })
+                                    }}
+                                >Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 }
                 {(appointment.status === appointmentStatus.requested || appointment.status === appointmentStatus.accepted) &&
                     <AlertDialog>

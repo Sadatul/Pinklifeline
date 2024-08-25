@@ -32,6 +32,7 @@ export const joinVideoCall = `${baseUrl}/v1/online-meeting/join`
 export const closeVideoCall = `${baseUrl}/v1/online-meeting/close`
 export const cancelAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/cancel` }
 export const declineAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/decline` }
+export const finishAppointmentUrl = (appointment_id) => { return `${baseUrl}/v1/appointments/${appointment_id}/finish` }
 export const getDoctorProfileDetailsUrl = (doc_id) => { return `${baseUrl}/v1/infos/guest/doctor/${doc_id}` }
 export const getUserProfileDetails = (id) => { return `${baseUrl}/v1/infos/guest/basic/${id}` }
 export const getDoctorProfileDetailsUrlLocations = (doc_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doc_id}/locations` }
@@ -162,7 +163,7 @@ export const pagePaths = {
         prescriptionVaultPage: "/dashboard/prescription/vault",
         prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
         userdetailsPage: "/dashboard/userdetails",
-        profilePicPage : "/dashboard/userdetails/profilepic",
+        profilePicPage: "/dashboard/userdetails/profilepic",
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
     },
@@ -190,7 +191,7 @@ export const pagePaths = {
     hospitalByIdPage: (hospitalId) => { return `/hospitals/details/${hospitalId}` },
     compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
-    searchPage : (query) => { return `/search?query=${query}` },
+    searchPage: (query) => { return `/search?query=${query}` },
 }
 
 export const ReportTypes = {
@@ -384,7 +385,7 @@ export function generatePairs(elements) {
             pairs.push([elements[i], elements[j]]);
         }
     }
-    
+
     return pairs;
 }
 
