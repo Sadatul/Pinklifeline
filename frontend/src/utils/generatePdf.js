@@ -26,3 +26,10 @@ export const generatePDF = async (elementId) => {
 
   pdf.save('prescription.pdf');
 };
+
+
+export const getImage = async (elementId) => {
+  const input = document.getElementById(elementId);
+  const canvas = await html2canvas(input);
+  return canvas.toDataURL('image/png');
+};

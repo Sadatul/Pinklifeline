@@ -82,6 +82,7 @@ export const medicalTestHospitalAdminUrl = `${baseUrl}/v1/ROLE_ADMIN/hospitals/t
 export const medicalTestHospitalByIdAdminUrl = (hospitalTestId) => { return `${baseUrl}/v1/ROLE_ADMIN/hospitals/tests/${hospitalTestId}` }
 export const medicalTestHospitalAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals/tests`
 export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/compare`
+export const toggleLocationShare = `${baseUrl}/v1/ROLE_PATIENT/toggle-location-share`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -388,6 +389,21 @@ export function generatePairs(elements) {
 }
 
 // const blogContent = `<covertext>${coverText}</covertext><coverimage>${coverImageLink}</coverimage><content>${content}</content>`
+
+export function extractCoverText(content) {
+    const cover = content.match(/<covertext>(.*?)<\/covertext>/);
+    return cover ? cover[1] : null;
+}
+
+export function extractCoverImage(content) {
+    const cover = content.match(/<coverimage>(.*?)<\/coverimage>/);
+    return cover ? cover[1] : null;
+}
+
+export function extractContent(content) {
+    const cover = content.match(/<content>(.*?)<\/content>/);
+    return cover ? cover[1] : null;
+}
 
 export const reportCategories = [
     { label: "Spam", toxicityModelLabel: null },

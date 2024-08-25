@@ -12,7 +12,6 @@ export default function ValidatePage() {
     const [tryCountLeft, setTryCountLeft] = useState(3);
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(searchParams.get("status"));
-    const router = useRouter()
     const transactionId = searchParams.get("transactionId");
     const type = searchParams.get("type");
     const appointmentId = searchParams.get("id");
@@ -57,7 +56,7 @@ export default function ValidatePage() {
                 })
             }
             else if (status === transactionStatus.success || status === transactionStatus.failed) {
-                router.push(pagePaths.dashboard)
+                window.location.href = pagePaths.dashboard
             }
         }
         else if (countdown > 0) {
@@ -66,7 +65,7 @@ export default function ValidatePage() {
             }, 1000)
         }
         return () => clearTimeout(timer)
-    }, [countdown, appointmentId, transactionId, router])
+    }, [countdown, appointmentId, transactionId])
 
     const retryValidation = () => {
         if (status !== transactionStatus.pending) return

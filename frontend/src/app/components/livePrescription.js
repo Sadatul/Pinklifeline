@@ -7,16 +7,18 @@ import { LoaderCircle, Minus, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Client } from '@stomp/stompjs';
 import { Separator } from "@/components/ui/separator"
-import { generatePDF } from "@/utils/generatePdf"
+import { generatePDF, getImage } from "@/utils/generatePdf"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSessionContext } from "@/app/context/sessionContext"
-import { convertCmtoFeetInch, convertFtIncToCm, joinVideoCall, livePrescriptionSendUrl, livePrescriptionSubscribe, livePrescriptionSubscribeErrors, stompBrokerUrl } from "@/utils/constants"
+import { addReportUrl, convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, joinVideoCall, livePrescriptionSendUrl, livePrescriptionSubscribe, livePrescriptionSubscribeErrors, locationOnline, roles, stompBrokerUrl } from "@/utils/constants"
 import { useParams } from "next/navigation"
 import axiosInstance from "@/utils/axiosInstance"
 import Loading from "./loading"
 import { debounce } from "lodash"
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
+import firebase_app from "@/utils/firebaseConfig"
 
 
 export function DoctorLivePrescriptionPage() {
@@ -325,7 +327,9 @@ export function DoctorLivePrescriptionPage() {
 
 export function PatientLivePrescriptionPage() {
     const params = useParams()
+    const storage = getStorage(firebase_app)
     const [dataState, setDataState] = useState("FOUND")
+    const [isPaidUser, setIsPaidUser] = useState(true)
     const [loading, setLoading] = useState(false)
     const [medications, setMedications] = useState([]);
     const [tests, setTests] = useState([]);
@@ -334,6 +338,7 @@ export function PatientLivePrescriptionPage() {
     const sessionContext = useSessionContext()
     const initialized = useRef(false)
     const callId = useRef(null)
+    const [loadingRportAdd, setLoadingReportAdd] = useState(false)
     const [prescriptionData, setPrescriptionData] = useState({
         "callId": "2417210933683308291",
         "prescription": {
@@ -373,6 +378,9 @@ export function PatientLivePrescriptionPage() {
             }).catch((error) => {
                 console.log("error fetching prescription data ", error)
                 toast.error("Error connecting.")
+                if (error.response?.status === 404) {
+                    setDataState("NOT_FOUND")
+                }
             })
         }
     }, [sessionContext.sessionData])
@@ -430,27 +438,125 @@ export function PatientLivePrescriptionPage() {
         }
     }, [sessionContext.sessionData, initialized.current])
 
+    const addReportToVault = async () => {
+        try {
+            const imageDataUrl = await getImage('prescriptionSection'); // Get image data URL
+            const byteCharacters = atob(imageDataUrl.split(',')[1]); // Decode the base64 string
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+
+            // Define storage reference
+            const storageRef = ref(storage, `reports/${sessionContext.sessionData.userId}/${prescriptionData.prescription.id}.png`);
+            const metadata = {
+                contentType: 'image/png',
+              };
+            // Start the upload task with blob data
+            const uploadTask = uploadBytesResumable(storageRef, byteArray, metadata);
+
+            // Monitor upload progress
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    console.error("Error uploading image", error);
+                    toast.error("Error uploading image", {
+                        description: "Please try again later",
+                    });
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    console.log('File available at', downloadURL);
+                    toast.success("Image uploaded successfully");
+                    const prescriptionSummary = `
+Prescription Summary:
+---------------------
+Prescription ID: ${prescriptionData.prescription.id}
+Date: ${prescriptionData.prescription.date}
+
+Patient Information:
+- Name: ${prescriptionData.prescription.patientName}
+- ID: ${prescriptionData.prescription.patientId}
+- Age: ${prescriptionData.prescription.age}
+- Weight: ${prescriptionData.prescription.weight} kg
+- Height: ${prescriptionData.prescription.height} cm
+
+Doctor Information:
+- Name: ${prescriptionData.prescription.doctorName}
+- ID: ${prescriptionData.prescription.doctorId}
+
+Analysis: ${prescriptionData.prescription.analysis}
+
+Medications:
+${prescriptionData.prescription.medications.map(med => `- ${med.name}: ${med.doseDescription}`).join('\n')}
+
+Tests Ordered:
+${prescriptionData.prescription.tests.join(', ')}
+`;
+                    const reportData = {
+                        "doctorName": "Dr. Morshad Hossain",
+                        "hospitalName": locationOnline,
+                        "date": generateFormattedDate(new Date()),
+                        "summary": prescriptionSummary,
+                        "fileLink": downloadURL,
+                        "keywords": [...medications.map(med => med.name), ...tests]
+                    }
+                    console.log("report data ", reportData.fileLink)
+                    axiosInstance.post(addReportUrl, reportData).then((res) => {
+                        toast.success("Report added to vault successfully")
+                    }).catch((error) => {
+                        console.log("error adding report to vault ", error)
+                        toast.error("Error adding report to vault")
+                    })
+                }
+            );
+        } catch (error) {
+            console.error("Error uploading image", error);
+            toast.error("Error uploading image", {
+                description: "Please try again later",
+            });
+        }
+    };
 
 
     const handleGeneratePDF = () => {
         generatePDF('prescriptionSection');
     };
 
-    if (dataState === null) return <Loading chose="hand" />
+    if (sessionContext.sessionData?.role === roles.doctor) return <h1 className="font-bold text-3xl text-black w-full text-center mt-10">You are not authorized to view this page.</h1>
+
+    if (prescriptionData === null) return <Loading chose="hand" />
 
     if (dataState === "NOT_FOUND") return <h1 className="font-bold text-3xl text-black w-full text-center mt-10">Prescription not found. No meeting may not be running right now.</h1>
 
     return (
-        <div className="flex flex-col items-center gap-5 relative w-full">
+        <div className="flex flex-col items-center gap-5 relative w-full p-3">
             <h1 className="text-2xl font-semibold text-center w-full">Live Prescription</h1>
             <div className="w-4/5 gap-6 flex flex-col bg-blue-50 p-2">
-                <button disabled={loading} className="bg-purple-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md top-24 right-10 z-10 fixed" onClick={() => {
-                    setLoading(true);
-                    handleGeneratePDF();
-                    setLoading(false);
-                }}>
-                    {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Generate PDF"}
-                </button>
+                <div className="flex flex-row fixed top-16 right-7 gap-5 items-center z-10 ">
+                    <button disabled={loading} className="bg-purple-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
+                        setLoading(true);
+                        handleGeneratePDF();
+                        setLoading(false);
+                    }}>
+                        {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Generate PDF"}
+                    </button>
+                    {isPaidUser &&
+                        <button disabled={loadingRportAdd} className="bg-pink-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
+                            setLoadingReportAdd(true);
+                            addReportToVault();
+                            setLoadingReportAdd(false);
+                        }}>
+                            {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Add to Vault"}
+                        </button>
+                    }
+
+                </div>
                 <div id="prescriptionSection" className="flex flex-col flex-1 items-center gap-5 w-full p-5">
                     <h1 className="text-2xl font-semibold">
                         {prescriptionData.prescription.doctorName.startsWith("Dr.") ? prescriptionData?.prescription?.doctorName : `Dr. ${prescriptionData?.prescription?.doctorName}`}

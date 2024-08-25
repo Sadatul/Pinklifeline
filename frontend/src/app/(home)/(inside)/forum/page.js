@@ -288,7 +288,7 @@ export default function ForumPage() {
                                         <div className="flex flex-col gap-2 p-2 bg-transparent bg-gradient-to-r from-pink-100 to-transparent rounded px-4 py-2">
                                             <Link href={pagePaths.questionPageById(question.id)} className="text-3xl font-semibold hover:underline">{question.title}</Link>
                                             <div className="flex flex-row gap-3 items-center">
-                                                <Avatar avatarImgScr={question.authorProfilePicture} size={52} />
+                                                <Avatar avatarImgSrc={question.authorProfilePicture} size={52} />
                                                 <div className="flex flex-col gap-[0px]">
                                                     <Link href={pagePaths.userProfile(question.authorId)} className="hover:underline">{question.author}</Link>
                                                     <span className="text-sm text-gray-500">{displayDate(question.createdAt)}</span>

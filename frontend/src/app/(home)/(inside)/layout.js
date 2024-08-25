@@ -99,7 +99,7 @@ export default function Layout({ children }) {
                             </Popover>
                         </div>
                     </nav>
-                    {/* <SocketInitializer /> */}
+                    <SocketInitializer />
                     <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto rounded-l-lg overflow-x-hidden">
                         {children}
                     </ScrollableContainer>

@@ -51,6 +51,7 @@ import firebase_app from "@/utils/firebaseConfig";
 import { Progress } from "@/components/ui/progress";
 import { FileUploader } from "react-drag-drop-files";
 import { useSessionContext } from "@/app/context/sessionContext";
+import { debounce } from "lodash";
 
 
 
@@ -114,6 +115,8 @@ export function ChatLayout() {
 
 export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
     const sessionContext = useSessionContext()
+    const [chats, setChats] = useState([])
+
     useEffect(() => {
         if (sessionContext.sessionData) {
             const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
@@ -127,6 +130,21 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
             })
         }
     }, [router, sessionContext.sessionData])
+
+    useEffect(() => {
+        setChats(stompContext.chats)
+    }, [stompContext.chats])
+
+    const handleChatsSearch = debounce((text) => {
+        if (text === '') {
+            setChats(stompContext.chats)
+        }
+        else {
+            const filteredChats = stompContext.chats.filter(chat => chat.name.toLowerCase().includes(text.toLowerCase()))
+            setChats(filteredChats)
+        }
+    }, 500)
+
     return (
         <>
             <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">
@@ -140,16 +158,18 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                             </svg>
                         </div>
-                        <input type="search" id="default-search" className=" px-3 py-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-2xl bg-gray-50" placeholder="Search Chats" />
+                        <input type="search" id="default-search" className=" px-3 py-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-2xl bg-gray-50" placeholder="Search Chats" onChange={(e) => {
+                            handleChatsSearch(e.target.value?.trim())
+                        }} />
                     </div>
                 }
             </div>
             <ScrollArea className="h-full px-4">
                 <ScrollBar className="" />
-                {stompContext.chats?.map((chat, index) => (
+                {chats?.map((chat, index) => (
                     <React.Fragment key={index}>
-                        <div type="button"
-                            className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group"
+                        <div
+                            className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group cursor-pointer"
                             onClick={() => {
                                 console.log("Chat clicked")
                                 console.log(JSON.stringify(chat))
@@ -165,7 +185,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                 <TooltipProvider delayDuration={100}>
                                     <Tooltip>
                                         <TooltipTrigger >
-                                            <Avatar avatarImgScr={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
+                                            <Avatar avatarImgSrc={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
                                         </TooltipTrigger>
                                         <TooltipContent side={'right'}>
                                             <p>
@@ -176,7 +196,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                                 </TooltipProvider>
                             ) : (
                                 <>
-                                    <Avatar avatarImgScr={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
+                                    <Avatar avatarImgSrc={chat.profilePicture ? chat.profilePicture : testingAvatar} size={44} />
                                     <div className="flex flex-row items-center">
                                         <h1 className="text-xl font-bold text-zinc-700 font-mono flex items-center transform transition-transform duration-300 ease-in-out translate-x-5 group-hover:translate-x-0 mr-4">
                                             {chat.name}
@@ -196,7 +216,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
     )
 }
 
-export function ChatWindow({ stompContext, router }) {
+export function ChatWindow({ stompContext }) {
     const sessionContext = useSessionContext()
     const scrollAreaRef = useRef(null);
     const imageFileInputRef = useRef(null);
@@ -205,6 +225,7 @@ export function ChatWindow({ stompContext, router }) {
     const storage = getStorage(firebase_app);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [openImageUploadDialog, setOpenImageUploadDialog] = useState(false);
+    const messageDateRef = useRef(null);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -309,9 +330,14 @@ export function ChatWindow({ stompContext, router }) {
             <div className="flex flex-col h-full w-full" >
                 {/* Chat Top Bar */}
                 <div className="flex flex-row items-center p-3 justify-between shadow">
-                    <div className="flex flex-row items-center ml-3">
-                        <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={44} />
-                        <h1 className="text-3xl font-bold text-zinc-700 font-mono ml-5">{stompContext.openedChat.name}</h1>
+                    <div className="flex flex-row items-center ml-3 gap-3">
+                        <button className="">
+                            <ArrowLeft size={24} color="rgb(255,0,0,0.5)" onClick={() => {
+                                stompContext.setOpenedChat(null)
+                            }} />
+                        </button>
+                        <Avatar avatarImgSrc={stompContext.openedChat?.profilePicture} size={44} />
+                        <h1 className="text-xl font-bold text-zinc-700 font-mono ">{stompContext.openedChat.name}</h1>
                     </div>
                     <div className="flex flex-row items-center">
                         <Popover>
@@ -338,25 +364,28 @@ export function ChatWindow({ stompContext, router }) {
 
                 {/* Scrollable Chat Area */}
                 <ScrollableContainer id="chat-scroll" className="flex-1 p-4 overflow-y-auto" ref={scrollAreaRef}>
-                    <div className="flex flex-col-reverse" >
-                        {stompContext.messages.toReversed().map((message, index) => (
-                            <div key={index} className={cn('flex flex-col my-4', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "items-end" : "items-start")}>
-                                <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
-                                    <div className={cn('flex flex-row items-center', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
-                                        <Avatar avatarImgScr={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
-                                        <div className={cn('flex flex-col px-4 py-1 rounded-3xl mx-2', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext.sessionData.userId)) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
-                                            {message.type === "TEXT" && <p>{message.message}</p>}
-                                            {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
+                    <div className="flex flex-col-reverse gap-6" >
+                        {stompContext.messages.toReversed().map((message, index) => {
+                            const addDate = (messageDateRef.current && messageDateRef.current !== message.timestamp.split('T')[0]) || (index === stompContext.messages.length - 1)
+                            messageDateRef.current = message.timestamp.split('T')[0]
+                            return (
+                                <div key={index} className={cn('flex flex-col ', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "items-end" : "items-start")}>
+                                    <div className="flex flex-row items-center justify-center w-full">
+                                        {addDate && <p className="text-sm font-semibold text-gray-800">{message.timestamp.split('T')[0]}</p>}
+                                    </div>
+                                    <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
+                                        <div className={cn('flex flex-row items-center', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
+                                            <Avatar avatarImgSrc={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
+                                            <div className={cn('flex flex-col gap-0 px-4 py-1 rounded-3xl mx-2 min-w-32 break-all text-wrap', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext.sessionData.userId)) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
+                                                {message.type === "TEXT" && <p className="text-base">{message.message}</p>}
+                                                <p className={cn("text-xs w-full",String(message.sender) === String(sessionContext.sessionData.userId) ? "text-left":"text-right" )}>{message.timestamp.split('T')[1]}</p>
+                                                {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className={cn('flex flex-row mx-5', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
-                                    <p className={cn('text-xs text-gray-500', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "text-right" : "text-left")}>
-                                        {message.timestamp}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </ScrollableContainer>
 
@@ -408,8 +437,8 @@ export function ChatWindow({ stompContext, router }) {
                                 </Popover>
                             </div>
                         </div>
-                        <button type="submit" className="border bg-pink-500 rounded-full p-[10px] p-ripple">
-                            <Send size={24} color="white" />
+                        <button type="submit" className="border p-ripple">
+                            <Send size={32} className="text-pink-700" />
                             <Ripple />
                         </button>
                     </form>
@@ -461,4 +490,5 @@ export function ChatWindow({ stompContext, router }) {
         </>
     )
 }
+
 

@@ -160,7 +160,13 @@ export function MeetingRoom() {
         console.log("Call ended");
         call.microphone.disable()
         call.camera.disable()
-        router.push(pagePaths.dashboard);
+        axiosInstance.delete(closeVideoCall).then((res) => {
+            console.log(res.data);
+        }).catch((err) => {
+            console.log(err);
+        }).finally(() => {
+            router.push(pagePaths.dashboardPages.appointmentsPage);
+        })
     }))
 
     const CallLayout = () => {
@@ -229,7 +235,6 @@ export function MeetingRoom() {
                         <Users size={24} className="text-white" />
                     </button>
                     <CancelCallButton
-                        onLeave={endCall}
                         onClick={endCall}
                     />
                 </div>

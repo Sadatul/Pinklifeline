@@ -8,20 +8,7 @@ import { Calendar, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function BalanceHistoryPage() {
-    const [balanceHistory, setBalanceHistory] = useState([
-        {
-            "description": "Payment of 450 received for appointment",
-            "id": 3,
-            "value": 450,
-            "timestamp": "2024-08-11T12:11:02"
-        },
-        {
-            "description": "Payment of 450 received for appointment",
-            "id": 1,
-            "value": 450,
-            "timestamp": "2024-08-11T10:19:23"
-        }
-    ]);
+    const [balanceHistory, setBalanceHistory] = useState([]);
     const [pageInfo, setPageInfo] = useState()
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -44,7 +31,7 @@ export default function BalanceHistoryPage() {
     return (
         <div className="flex flex-col gap-5 items-center p-5">
             <h1 className="text-xl font-semibold text-black">Balance History Page</h1>
-            <div className="flex flex-col bg-gray-200 border border-gray-500 gap-5 w-8/12 items-center">
+            <div className="flex flex-col bg-gray-100 rounded border border-gray-500 gap-5 w-8/12 items-center">
                 {balanceHistory.length === 0 ?
                     <h2 className="text-lg text-black">
                         No balance history available
@@ -86,6 +73,9 @@ export default function BalanceHistoryPage() {
                             page={currentPage}
                             color="primary"
                             shape="rounded"
+                            showLastButton
+                            showFirstButton
+                            className="mb-5"
                         />
                     </>
                 }

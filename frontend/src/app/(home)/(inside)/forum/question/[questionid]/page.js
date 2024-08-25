@@ -217,7 +217,7 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                 </h1>
                 <div className="flex flex-row gap-2">
                     <p className="text-base text-gray-900 flex items-center gap-1">
-                        <Avatar avatarImgScr={questionInfo?.authorProfilePicture} size={24} />
+                        <Avatar avatarImgSrc={questionInfo?.authorProfilePicture} size={24} />
                         <Link href={pagePaths.redirectUserToProfileWithId(questionInfo?.authorId)} className=" hover:underline">
                             {questionInfo?.author}
                         </Link>
@@ -507,7 +507,7 @@ const Answer = React.memo(
                     </div>
                 }
                 <div className="flex flex-col">
-                    <Avatar avatarImgScr={mutableAnswer.authorProfilePicture} size={36} />
+                    <Avatar avatarImgSrc={mutableAnswer.authorProfilePicture} size={36} />
                 </div>
                 <div className={cn("flex flex-col w-full gap-0")}>
                     <div className="relative bg-white px-4 pt-1 rounded-b-lg rounded-r-lg shadow-lg flex flex-col w-full gap-3">

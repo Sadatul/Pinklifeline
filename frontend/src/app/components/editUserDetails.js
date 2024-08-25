@@ -1,7 +1,7 @@
 'use client'
 
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, updateUserDetailsUrl } from "@/utils/constants"
+import { convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, toggleLocationShare, updateUserDetailsUrl } from "@/utils/constants"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import AddIcon from '@mui/icons-material/Add';
@@ -31,6 +31,7 @@ import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "@/app/components/loading"
 import { set } from "lodash"
 import EditUserMapView from "./editUserdetailsmapComponent"
+import { Switch } from "@/components/ui/switch"
 
 const dummyData = {
     "allergies": ["Peanut"],
@@ -735,8 +736,21 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col items-center justify-center w-full border border-gray-500 bg-gray-100 relative rounded-md p-3">
-                <h1 className="text-2xl font-bold text-black">Location</h1>
+            <div className="flex flex-col items-center justify-center w-full border border-gray-500 bg-gray-100 relative rounded-md p-3 gap-5">
+                <div className="flex flex-row justify-between w-full items-center">
+                    <h2 className="text-2xl font-bold text-black">Location</h2>
+                    <div className="flex flex-row items-center gap-2">
+                        <Switch checked={userData?.locationShare} onCheckedChange={(checked) => {
+                            axiosInstance.put(toggleLocationShare).then((response) => {
+                                setUserData({ ...userData, locationShare: response?.data?.locationShare })
+                                toast.message("Location share " + (response?.data?.locationShare ? "enabled" : "disabled"))
+                            }).catch((error) => {
+                                console.log(error)
+                            })
+                        }} />
+                        <span>Share Location</span>
+                    </div>
+                </div>
                 {currentPosition ?
                     <>
                         <span className='absolute top-20 right-24 bg-white p-2 text-lg z-10 rounded-md shadow-md'>{"Lat: " + (Math.round((currentPosition?.lat + Number.EPSILON) * 10000) / 10000) + " Lng: " + (Math.round((currentPosition?.lng + Number.EPSILON) * 10000) / 10000)}</span>

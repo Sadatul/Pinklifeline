@@ -190,7 +190,7 @@ function PostSection({ userId, className }) {
                 <div className="flex flex-col w-full mt-3">
                     {similarPersons.map((person, index) => (
                         <div key={index} className="flex flex-row items-center justify-between w-full h-16 py-2 px-1 border border-gray-300 rounded-md mt-2">
-                            <Avatar avatarImgScr={person.profilePic} size={40} />
+                            <Avatar avatarImgSrc={person.profilePic} size={40} />
                             <div className="flex flex-col ml-2">
                                 <h1 className="text-base">{person.name}</h1>
                                 <h1 className="text-sm">{person.workPlace}</h1>

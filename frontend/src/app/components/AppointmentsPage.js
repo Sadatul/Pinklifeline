@@ -79,7 +79,7 @@ export function AppointmentsPage() {
                             <>
                                 {balanceLoading ? <LoaderCircle size={24} className="animate-spin text-pink-600" />
                                     :
-                                    <button className="text-base text-pink-800"
+                                    <button className="text-sm text-pink-800 rounded"
                                         onClick={() => {
                                             setBalanceLoading(true)
                                             console.log("Fetching balance")
@@ -475,8 +475,8 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         const email = document.getElementById("payment-email-input").value
         const number = document.getElementById("payment-number-input").value
         if (name && email && number) {
-            if (number.length !== 11 || isNaN(Number(number)) || !String(number).startsWith("01")) {
-                toast.error("Contact Number should be of 11 digits and start with 01")
+            if (isNaN(Number(number)) && Number(number) > 0) {
+                toast.error("Enter valid number")
                 return
             }
             console.log(name, email, number)

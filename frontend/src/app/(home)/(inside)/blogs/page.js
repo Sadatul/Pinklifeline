@@ -258,7 +258,7 @@ export default function BlogsPage() {
                                                         <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
                                                         <div className="flex flex-row items-center gap-3">
                                                             <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-base hover:underline mr-5 gap-1 flex items-center">
-                                                                <Avatar avatarImgScr={blog.authorProfilePicture} size={32} />
+                                                                <Avatar avatarImgSrc={blog.authorProfilePicture} size={32} />
                                                                 {blog.author}
                                                             </Link>
                                                             <p className="text-sm">{displayDate(blog.createdAt)}</p>

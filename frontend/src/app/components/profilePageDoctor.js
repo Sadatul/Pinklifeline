@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, avatarAang, deleteDoctorReview, dummyAvatar, emptyAvatar, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, avatarAang, blogsAnonymousUrl, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractCoverImage, extractCoverText, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
+import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, Loader, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -65,11 +65,9 @@ export default function DoctorProfile({ profileId, section }) {
     const profilePic = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
     const stompContext = useStompContext();
     const sectionEnum = {
-        reviews: 0,
-        about: 1,
-        posts: 2,
-        appointments: 3,
-        consultations: 4
+        posts: 0,
+        reviews: 1,
+        consultations: 2
     }
 
     const [userData, setUserData] = useState(null)
@@ -88,28 +86,16 @@ export default function DoctorProfile({ profileId, section }) {
 
     const tabs = [
         {
+            title: "Posts",
+            textColor: "text-indigo-500",
+            bgColor: "bg-indigo-500",
+            section: <PostSection userId={profileId} userData={userData} className={"bg-gradient-to-b from-indigo-50 to-white"} />
+        },
+        {
             title: "Reviews",
             textColor: "text-amber-500",
             bgColor: "bg-amber-500",
             section: <ReviewSection profileId={profileId} reviewInfo={reviewInfo} setReviewInfo={setReviewInfo} className={"bg-gradient-to-b from-amber-50 to-white"} />
-        },
-        {
-            title: "About",
-            textColor: "text-green-500",
-            bgColor: "bg-green-500",
-            section: <AboutSection workPlace={"Dhaka Medical Collage"} designation={"Head"} qualifications={["MBBS", "FCPS", "Degree"]} department={"Cancer"} contactNumber={"01792421372"} className={"bg-gradient-to-b from-green-50 to-white"} />
-        },
-        {
-            title: "Posts",
-            textColor: "text-indigo-500",
-            bgColor: "bg-indigo-500",
-            section: <PostSection userId={profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
-        },
-        {
-            title: "Appointments",
-            textColor: "text-purple-500",
-            bgColor: "bg-purple-500",
-            section: <AppointmentsSection userId={profileId} className={"bg-gradient-to-b from-purple-50 to-white"} />
         },
         {
             title: "Consultations",
@@ -129,7 +115,11 @@ export default function DoctorProfile({ profileId, section }) {
         if (sessionContext.sessionData) {
             axiosInstance.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
                 console.log("doctor data", res.data)
-                setUserData(res.data)
+                setUserData({
+                    ...res.data,
+                    profilePicture: res.data?.profilePicture || testingAvatar,
+                    isNurse: (res?.data?.qualifications?.includes("BSN") || res?.data?.qualifications?.includes("MSN") && !res?.data?.qualifications?.includes("MBBS")),
+                })
                 setReviewInfo({
                     ...res.data?.reviewSummary,
                     ratingCount: res.data?.reviewSummary?.ratingCount?.reverse()
@@ -203,15 +193,22 @@ export default function DoctorProfile({ profileId, section }) {
                 <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
                     <div className="absolute -top-20 flex flex-col items-center">
                         <Image src={userData?.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
-                        <Badge className={"mt-2 text-sm"}>Doctor</Badge>
                     </div>
                     <div className="flex flex-col ml-56 gap-2">
-                        <h1 className="text-2xl font-bold flex items-center gap-3">
+                        <h1 className="text-3xl font-semibold flex items-center gap-2">
                             {userData?.fullName}
-                            <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white font-thin py-1 h-6")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
+                            <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white text-xs scale-95 translate-y-[2px]")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
+                            <Badge className={cn("text-xs scale-90 translate-y-[2px]", userData?.isNurse && "bg-purple-900 ")}>
+                                {userData?.isNurse ? "Nurse" : "Doctor"}
+                            </Badge>
                         </h1>
-                        <h1 className="text-base ">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</h1>
-                        <h1 className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</h1>
+                        <p className="text-base font-semibold flex flex-row items-center gap-2">
+                            {userData?.qualifications?.map((qualification, index) => (
+                                <Badge key={index} variant={"outlined"} className={"bg-gray-200"} >{qualification}</Badge>
+                            ))}
+                        </p>
+                        <p className="text-base font-semibold">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</p>
+                        <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
                         <Popover>
                             <PopoverTrigger className="w-12">
                                 <div className="flex flex-row items-center mt-3">
@@ -297,7 +294,7 @@ export default function DoctorProfile({ profileId, section }) {
     )
 }
 
-function PostSection({ userId, className }) {
+function PostSection({ userId, className, userData }) {
     const [selectedTab, setSelectedTab] = useState("blogPosts")
     const [currentBlogPostPage, setCurrentBlogPostPage] = useState(1)
     const [currentForumQuestionPage, setCurrentForumQuestionPage] = useState(1)
@@ -329,15 +326,115 @@ function PostSection({ userId, className }) {
             imageSrc: "https://www.mdanderson.org/cancerwise/2024/07/does-hormone-replacement-therapy-increase-cancer-risk/jcr:content/blog/adaptiveimage.resize.648.0.medium.dir.jpg/1719869273826.jpg"
         },
     ])
-    const [similarPersons, setSimilarPersons] = useState([
-        { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
-        { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
-        { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
-    ])
+    const [forumQuestions, setForumQuestions] = useState([])
+    const [similarPersons, setSimilarPersons] = useState([])
+    const [loadingSimilarPersons, setLoadingSimilarPersons] = useState(true)
+    const [blogPageInfo, setBlogPageInfo] = useState({
+        totalPages: 0,
+    })
+    const [forumPageInfo, setForumPageInfo] = useState({
+        totalPages: 0,
+    })
+
+    useEffect(() => {
+        axiosInstance.get(blogsAnonymousUrl, {
+            params: {
+                docId: userId,
+                pageNo: currentBlogPostPage - 0,
+            }
+        }).then((res) => {
+            console.log("blog posts", res.data)
+            setPosts(res.data?.content?.map((post) => {
+                const covertText = extractCoverText(post.content)
+                const coverImage = extractCoverImage(post.content)
+                return {
+                    id: post.id,
+                    title: post.title,
+                    content: covertText,
+                    date: displayDate(post?.createdAt),
+                    imageSrc: coverImage
+                }
+            }))
+            setBlogPageInfo(res.data?.page)
+
+        }).catch((error) => {
+            console.log(error)
+        })
+    }, [currentBlogPostPage])
+
+    useEffect(() => {
+        axiosInstance.get(forumQuestionsAnonymousUrl, {
+            params: {
+                userId: userId,
+                pageNo: currentForumQuestionPage - 0,
+            }
+        }).then((res) => {
+            setForumQuestions(res.data?.content?.map((question) => {
+                return {
+                    id: question.id,
+                    title: question.title,
+                    likesCount: question.voteCount,
+                    date: displayDate(question.createdAt),
+                }
+            }))
+            setForumPageInfo(res.data?.page)
+        }).catch((error) => {
+            console.log(error)
+        })
+    }, [currentForumQuestionPage])
+
+    useEffect(() => {
+        const loadSimilarPersons = async () => {
+            setLoadingSimilarPersons(true);
+            const tempSimilarPersons = new Map(); // Using a Map to ensure unique ids
+
+            // Fetch persons by workplace
+            let res = await axiosInstance.get(getDoctorsUrl, {
+                params: {
+                    workplace: userData?.workplace,
+                }
+            });
+            res.data?.content.forEach(person => {
+                console.log("person", person)
+                if (String(person.id) !== String(userId)) { // Exclude the user itself
+                    tempSimilarPersons.set(String(person.id), person);
+                }
+            });
+
+            // Fetch persons by department
+            res = await axiosInstance.get(getDoctorsUrl, {
+                params: {
+                    department: userData?.department,
+                }
+            });
+            res.data?.content.forEach(person => {
+                if (String(person.id) !== String(userId)) { // Exclude the user itself
+                    tempSimilarPersons.set(String(person.id), person);
+                }
+            });
+
+            // Fetch persons by designation
+            res = await axiosInstance.get(getDoctorsUrl, {
+                params: {
+                    designation: userData?.designation,
+                }
+            });
+            res.data?.content.forEach(person => {
+                if (String(person.id) !== String(userId)) { // Exclude the user itself
+                    tempSimilarPersons.set(String(person.id), person);
+                }
+            });
+
+            // Convert Map to an array and set it
+            setSimilarPersons(Array.from(tempSimilarPersons.values()));
+            setLoadingSimilarPersons(false);
+        };
+        loadSimilarPersons();
+    }, [])
 
     return (
-        <div className={cn("flex flex-row w-full mt-4 p-4 rounded", className)}>
-            <div className="flex flex-col rounded w-9/12">
+        <div className={cn("flex flex-row w-full mt-4 p-4 rounded")}>
+            <div className={cn("flex flex-col rounded flex-1 p-3", className)}>
                 <Tabs defaultValue={"blogPosts"} onValueChange={(value) => {
                     console.log(value)
                     setSelectedTab(value)
@@ -352,6 +449,7 @@ function PostSection({ userId, className }) {
                     </TabsList>
                     <TabsContent value={"blogPosts"}>
                         <div className="flex flex-col">
+                            {posts.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
                             {posts.map((post, index) => (
                                 <BlogCard key={index} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} />
                             ))}
@@ -359,41 +457,47 @@ function PostSection({ userId, className }) {
                     </TabsContent>
                     <TabsContent value={"forumQuestions"}>
                         <div className="flex flex-col">
-                            <ForumCard title="How to deal with anxiety?" content="I have been feeling anxious lately. How do I deal with it?" date="2021-09-01" likesCount={10} commentsCount={15} />
-                            <ForumCard title="How to deal with anxiety?" content="I have been feeling anxious lately. How do I deal with it?" date="2021-09-01" likesCount={14} commentsCount={9} />
+                            {forumQuestions.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No questions found</h1>}
+                            {forumQuestions.map((question, index) => (
+                                <ForumCard key={index} title={question.title} date={question.date} likesCount={question.likesCount} />
+                            ))}
                         </div>
                     </TabsContent>
                 </Tabs>
                 <div className="w-full flex justify-center mt-4">
-                    <Pagination count={selectedTab === "blogPosts" ? totalBlogPostPages : totalForumQuestionPages}
-                        page={selectedTab === "blogPosts" ? currentBlogPostPage : currentForumQuestionPage}
-                        boundaryCount={3}
-                        size="large"
-                        variant="outlined"
-                        onChange={(event, value) => {
-                            if (selectedTab === "blogPosts") {
-                                setCurrentBlogPostPage(value)
-                            }
-                            else if (selectedTab === "forumQuestions") {
-                                setCurrentForumQuestionPage(value)
-                            }
-                        }}
-                        color={selectedTab === "blogPosts" ? "primary" : "secondary"}
-                    />
+                    {(selectedTab === "blogPosts" && blogPageInfo.totalPages > 1) || (selectedTab === "forumQuestions" && forumPageInfo?.totalPages > 1) &&
+                        <Pagination count={selectedTab === "blogPosts" ? blogPageInfo.totalPages : forumPageInfo?.totalPages}
+                            page={selectedTab === "blogPosts" ? currentBlogPostPage : currentForumQuestionPage}
+                            boundaryCount={3}
+                            size="large"
+                            variant="outlined"
+                            onChange={(event, value) => {
+                                if (selectedTab === "blogPosts") {
+                                    setCurrentBlogPostPage(value)
+                                }
+                                else if (selectedTab === "forumQuestions") {
+                                    setCurrentForumQuestionPage(value)
+                                }
+                            }}
+                            color={selectedTab === "blogPosts" ? "primary" : "secondary"}
+                            showLastButton
+                            showFirstButton
+                        />
+                    }
                 </div>
             </div>
-            <div className="flex flex-col bg-white rounded-md items-center p-4 m-3 ml-7 w-3/12">
+            <div className="flex flex-col bg-white rounded-md items-center p-4 ml-7 w-3/12">
                 <h1 className="text-xl ">Similar Persons</h1>
                 <Separator className="w-11/12 h-[1.5px] mt-2 bg-purple-100" />
-                <div className="flex flex-col w-full mt-3">
+                <div className="flex flex-col w-full gap-3">
+                    {loadingSimilarPersons && <Loader size={30} />}
+                    {similarPersons.length === 0 && !loadingSimilarPersons && <h1 className="text-3xl font-semibold text-center m-4">No similar persons found</h1>}
                     {similarPersons.map((person, index) => (
-                        <div key={index} className="flex flex-row items-center justify-between w-full h-16 py-2 px-1 border border-gray-300 rounded-md mt-2">
-                            <Avatar avatarImgScr={person.profilePic} size={40} />
+                        <div key={index} className="flex flex-row items-center justify-between w-full h-16 py-2 px-1 border-b border-gray-300">
                             <div className="flex flex-col ml-2">
-                                <h1 className="text-base">{person.name}</h1>
-                                <h1 className="text-sm">{person.workPlace}</h1>
+                                <Link href={pagePaths.doctorProfile(person?.id)} className="text-lg hover:underline">{person.fullName}</Link>
+                                <p className="text-sm">{person.workplace}</p>
                             </div>
-                            <button className=" bg-violet-300 text-black px-2 py-1 text-sm rounded-md ml-2">View</button>
                         </div>
                     ))}
                 </div>
@@ -425,7 +529,7 @@ function BlogCard({ title, content, date, imageSrc }) {
     )
 }
 
-function ForumCard({ title, content, date, likesCount, commentsCount }) {
+function ForumCard({ title, content, date, likesCount }) {
     return (
         <div className="flex flex-row w-full m-1 bg-white rounded-md drop-shadow-sm h-28 to-zinc-100">
             <div className="flex flex-col w-full px-4 py-2">
@@ -436,10 +540,6 @@ function ForumCard({ title, content, date, likesCount, commentsCount }) {
                         <span className="flex">
                             <ThumbsUp size={20} fill="white" className="text-blue-400" />
                             {likesCount}
-                        </span>
-                        <span className="flex">
-                            <MessageCircleReply size={20} className="text-pink-400 ml-6" />
-                            {commentsCount}
                         </span>
                     </div>
                     <span className="text-sm font-semibold text-end w-full">{date}</span>
@@ -546,10 +646,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                 <div className="flex flex-col items-center gap-5">
                     {userReview ?
                         <UserReviewCard
-                            reviewer={userReview?.reviewerName}
-                            content={userReview?.comment}
-                            date={userReview?.timestamp}
-                            rating={userReview?.rating}
+                            data={userReview}
                             reviewInfo={reviewInfo}
                             setReviewInfo={setReviewInfo}
                             id={userReview?.id}
@@ -576,15 +673,11 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     )
 }
 
-function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, reviewerId, setUserReview, setFetchAgain, profilePicture }) {
+function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, setFetchAgain, profilePicture }) {
     const sessionContext = useSessionContext()
     const [editable, setEditable] = useState(false)
-    const [data, setData] = useState({
-        content: content,
-        date: date,
-        rating: rating,
-        reviewer: reviewer
-    })
+    const textContentRef = useRef(null)
+    const ratingRef = useRef(null)
 
     const deleteReview = () => {
         axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id)).then((res) => {
@@ -598,16 +691,16 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
     }
 
     return (
-        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
-            <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
+        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3 px-5">
+            <div className="flex flex-col justify-between w-full items-start  text-black rounded-md  py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
-                    <Avatar avatarImgScr={profilePicture || emptyAvatar} size={44} />
-                    <h1 className="text-lg font-semibold line-clamp-1">{data.reviewer.split("@")[0]}</h1>
+                    <Avatar avatarImgSrc={profilePicture || emptyAvatar} size={44} />
+                    <h1 className="text-lg font-semibold line-clamp-1">{data?.reviewerName?.split("@")[0]}</h1>
                 </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-col py-1 items-start justify-center">
                         {editable ? (
-                            <select id="review-rating" className="p-2 rounded-md bg-gray-200 border border-gray-600 text-black" defaultValue={Number(data.rating) || 0}>
+                            <select ref={ratingRef} className="p-2 rounded-md bg-gray-200 border border-gray-600 text-black" defaultValue={Number(data.rating) || 0}>
                                 <option value={0} disabled>Rating</option>
                                 <option value={1}>1</option>
                                 <option value={2}>2</option>
@@ -630,7 +723,7 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
                     <div className="flex flex-row gap-2">
                         <span className="flex items-center gap-1">
                             <Clock size={16} />
-                            {formatDistanceToNow(new Date(data.date), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(data.timestamp), { addSuffix: true })}
                         </span>
                     </div>
                     <div className="flex flex-row gap-3 absolute top-3 right-3">
@@ -639,8 +732,8 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
                                 <>
                                     <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
                                         onClick={() => {
-                                            const newContent = document.getElementById("review-text")?.value
-                                            const newRating = document.getElementById("review-rating")?.value
+                                            const newContent = textContentRef.current?.value
+                                            const newRating = ratingRef.current?.value
                                             if ((newRating !== data.rating && newRating) || newContent !== data.content) {
                                                 const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
                                                 axiosInstance.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
@@ -650,7 +743,6 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
                                                     console.log("updated review", res.data)
                                                     setReviewInfo(res?.data)
                                                     setFetchAgain(true)
-
                                                     toast.success("Successfully updated")
                                                     setEditable(false)
                                                 }).catch((error) => {
@@ -689,7 +781,7 @@ function UserReviewCard({ content, date, rating, reviewer, setReviewInfo, id, re
                     </div>
                 </div>
             </div>
-            {editable ? <textarea id="review-text" className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.content} /> : (<p className=" text-lg py-1 px-3 mb-1">{data.content}</p>)}
+            {editable ? <textarea ref={textContentRef} className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.comment} /> : (<p className=" text-lg py-1 mb-1">{data.comment}</p>)}
         </div>
     )
 }
@@ -700,7 +792,7 @@ function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePictur
         <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
             <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
-                    <Avatar avatarImgScr={profilePicture || emptyAvatar} size={44} />
+                    <Avatar avatarImgSrc={profilePicture || emptyAvatar} size={44} />
                     <h1 className="text-lg font-semibold line-clamp-1">{reviewer.split("@")[0]}</h1>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -728,42 +820,6 @@ function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePictur
     )
 }
 
-function AboutSection({ workPlace, designation, qualifications, department, contactNumber, className }) {
-    qualifications = qualifications.join(", ")
-    return (
-        <div className={cn("flex flex-col items-center p-4 rounded-md w-full", className)}>
-            <h1 className="text-2xl font-semibold">About</h1>
-            <div className="flex flex-row w-full p-4 h-auto">
-                <div className="flex flex-col items-start px-5 w-6/12 h-full">
-                    <span className="flex flex-row items-center mt-0">
-                        <BsPersonVcardFill size={20} />
-                        <p className="text-lg font-semibold ml-2">{designation}</p>
-                    </span>
-                    <span className="flex flex-row items-center">
-                        <FaChair size={20} />
-                        <p className="text-lg font-semibold ml-2">{department}</p>
-                    </span>
-                    <span className="flex flex-row items-center">
-                        <Hospital size={20} className="text-gray-800" />
-                        <p className="text-lg font-semibold ml-2">{workPlace}</p>
-                    </span>
-                </div>
-                <Separator orientation="vertical" />
-                <div className="flex flex-col justify-evenly items-start px-5 w-6/12 h-full">
-                    <span className="flex flex-row items-center mt-0">
-                        <PiCertificate size={20} />
-                        <p className="text-lg font-semibold ml-2">{qualifications}</p>
-                    </span>
-                    <span className="flex flex-row items-center mt-4">
-                        <Phone size={20} />
-                        <p className="text-lg font-semibold ml-2">{contactNumber}</p>
-                    </span>
-
-                </div>
-            </div>
-        </div>
-    )
-}
 
 function ConsultationSection({ userId, className, profileId }) {
     const [chambers, setChambers] = useState([])
@@ -873,7 +929,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
             </div>
             <div className="flex flex-row px-4 py-2 items-center justify-center h-full">
                 <AlertDialog open={openDialog}>
-                    <AlertDialogTrigger className="bg-gradient-to-br from-pink-600 to-pink-700 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:bg-gray-200 hover:text-purple-100 transition hover:text-base"
+                    <AlertDialogTrigger className="bg-gradient-to-br from-pink-600 to-pink-700 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:bg-gray-200 hover:text-purple-100 transition hover:scale-95"
                         onClick={() => setOpenDialog(true)}>
                         Request Appointment</AlertDialogTrigger>
                     <AlertDialogContent className="w-auto bg-gray-100  flex flex-col justify-between">
@@ -948,82 +1004,118 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
 
 }
 
-function AppointmentsSection({ userId, className }) {
-    const [comingAppointments, setComingAppointments] = useState([
-        // {
-        //     location: "Dhaka Medical College Hospital",
-        //     startTime: "09:00",
-        //     endTime: "17:00",
-        //     date: "2021-09-01",
-        //     fees: "500 BDT"
-        // },
-        // {
-        //     location: "Dhaka Medical College Hospital",
-        //     startTime: "09:00",
-        //     endTime: "17:00",
-        //     date: "2021-09-01",
-        //     fees: "500 BDT"
-        // }
-    ])
+// function AboutSection({ workPlace, designation, qualifications, department, contactNumber, className }) {
+//     qualifications = qualifications.join(", ")
+//     return (
+//         <div className={cn("flex flex-col items-center p-4 rounded-md w-full", className)}>
+//             <h1 className="text-2xl font-semibold">About</h1>
+//             <div className="flex flex-row w-full p-4 h-auto">
+//                 <div className="flex flex-col items-start px-5 w-6/12 h-full">
+//                     <span className="flex flex-row items-center mt-0">
+//                         <BsPersonVcardFill size={20} />
+//                         <p className="text-lg font-semibold ml-2">{designation}</p>
+//                     </span>
+//                     <span className="flex flex-row items-center">
+//                         <FaChair size={20} />
+//                         <p className="text-lg font-semibold ml-2">{department}</p>
+//                     </span>
+//                     <span className="flex flex-row items-center">
+//                         <Hospital size={20} className="text-gray-800" />
+//                         <p className="text-lg font-semibold ml-2">{workPlace}</p>
+//                     </span>
+//                 </div>
+//                 <Separator orientation="vertical" />
+//                 <div className="flex flex-col justify-evenly items-start px-5 w-6/12 h-full">
+//                     <span className="flex flex-row items-center mt-0">
+//                         <PiCertificate size={20} />
+//                         <p className="text-lg font-semibold ml-2">{qualifications}</p>
+//                     </span>
+//                     <span className="flex flex-row items-center mt-4">
+//                         <Phone size={20} />
+//                         <p className="text-lg font-semibold ml-2">{contactNumber}</p>
+//                     </span>
 
-    return (
-        <>
-            {comingAppointments.length > 0 ? (
-                <>
-                    <div className={cn("flex flex-col items-center w-full rounded-md px-4 py-3 ", className)}>
-                        <h1 className="text-2xl font-semibold flex  font-sans items-center"><CalendarSearch strokeWidth={2.5} size={32} className="mr-3 text-purple-600" />Upcoming Appointments</h1>
-                        <div className="flex flex-col w-full mt-3">
-                            {comingAppointments.map((appointment, index) => (
-                                <AppointmentCard key={index} location={appointment.location} startTime={appointment.startTime} endTime={appointment.endTime} date={appointment.date} fees={appointment.fees} rotateDirection={index % 2} />
-                            ))}
-                        </div>
-                    </div>
-                </>
-            ) : (
-                <>
-                    <div className={cn("flex flex-row justify-between w-full mt-4 rounded-md px-6 h-auto", className)}>
-                        <div className="flex flex-row items-center justify-evenly ml-10 h-full">
-                            <span className="text-lg font-semibold">You have no upcoming appointments</span>
-                            <Lottie
-                                animationData={EmptyAppointment}
-                                className="flex justify-center items-center w-64"
-                                loop={true}
-                            />
-                        </div>
-                        <Separator orientation="vertical" className="w-[2px] h-10/12 mt-5 bg-pink-300" />
-                        <div className="flex flex-row items-center justify-evenly mr-10">
-                            <Lottie
-                                animationData={AddAppointAnimation}
-                                className="flex justify-center items-center w-64"
-                                loop={true}
-                            />
-                            <span className="text-lg font-semibold">Go to Consultations to add an appointment</span>
-                        </div>
-                    </div>
-                </>
-            )}
-        </>
-    )
-}
+//                 </div>
+//             </div>
+//         </div>
+//     )
+// }
+// function AppointmentsSection({ userId, className }) {
+//     const [comingAppointments, setComingAppointments] = useState([
+//         {
+//             location: "Dhaka Medical College Hospital",
+//             startTime: "09:00",
+//             endTime: "17:00",
+//             date: "2021-09-01",
+//             fees: "500 BDT"
+//         },
+//         {
+//             location: "Dhaka Medical College Hospital",
+//             startTime: "09:00",
+//             endTime: "17:00",
+//             date: "2021-09-01",
+//             fees: "500 BDT"
+//         }
+//     ])
 
-function AppointmentCard({ location, startTime, endTime, date, fees, rotateDirection }) {
-    return (
-        <div className={cn("flex flex-row w-full m-1 bg-white rounded-md shadow h-auto")}>
-            <div className="flex flex-col w-4/12 px-4 py-2">
-                <h1 className="text font-semibold line-clamp-1">{location}</h1>
-                <p className="mt-2 line-clamp-2">{fees}</p>
-            </div>
-            <div className="flex flex-col w-4/12 px-4 py-2 h-full justify-center">
-                <div className="flex flex-row items-center h-full">
-                    <p className="text-base font-semibold ml-2">{startTime + " to " + endTime}</p>
-                </div>
-                <div className="flex flex-row items-center mt-4">
-                    <span className="text-sm font-semibold text-end w-full">{date}</span>
-                </div>
-            </div>
-            <div className="flex flex-col w-4/12 px-4 py-2 items-end justify-center h-full">
-                <button className="bg-pink-500 to-pink-500 text-black px-2 py-1 text-sm rounded-md ml-2 font-semibold max-w-32 hover:scale-90 hover:bg-gray-200 hover:text-purple-700 transition ease-out hover:text-base">Cancel Appointment</button>
-            </div>
-        </div>
-    )
-}
+//     return (
+//         <>
+//             {comingAppointments.length > 0 ? (
+//                 <>
+//                     <div className={cn("flex flex-col items-center w-full rounded-md px-4 py-3 ", className)}>
+//                         <h1 className="text-2xl font-semibold flex  font-sans items-center"><CalendarSearch strokeWidth={2.5} size={32} className="mr-3 text-purple-600" />Upcoming Appointments</h1>
+//                         <div className="flex flex-col w-full mt-3">
+//                             {comingAppointments.map((appointment, index) => (
+//                                 <AppointmentCard key={index} location={appointment.location} startTime={appointment.startTime} endTime={appointment.endTime} date={appointment.date} fees={appointment.fees} rotateDirection={index % 2} />
+//                             ))}
+//                         </div>
+//                     </div>
+//                 </>
+//             ) : (
+//                 <>
+//                     <div className={cn("flex flex-row justify-between w-full mt-4 rounded-md px-6 h-auto", className)}>
+//                         <div className="flex flex-row items-center justify-evenly ml-10 h-full">
+//                             <span className="text-lg font-semibold">You have no upcoming appointments</span>
+//                             <Lottie
+//                                 animationData={EmptyAppointment}
+//                                 className="flex justify-center items-center w-64"
+//                                 loop={true}
+//                             />
+//                         </div>
+//                         <Separator orientation="vertical" className="w-[2px] h-10/12 mt-5 bg-pink-300" />
+//                         <div className="flex flex-row items-center justify-evenly mr-10">
+//                             <Lottie
+//                                 animationData={AddAppointAnimation}
+//                                 className="flex justify-center items-center w-64"
+//                                 loop={true}
+//                             />
+//                             <span className="text-lg font-semibold">Go to Consultations to add an appointment</span>
+//                         </div>
+//                     </div>
+//                 </>
+//             )}
+//         </>
+//     )
+// }
+
+// function AppointmentCard({ location, startTime, endTime, date, fees, rotateDirection }) {
+//     return (
+//         <div className={cn("flex flex-row w-full m-1 bg-white rounded-md shadow h-auto")}>
+//             <div className="flex flex-col w-4/12 px-4 py-2">
+//                 <h1 className="text font-semibold line-clamp-1">{location}</h1>
+//                 <p className="mt-2 line-clamp-2">{fees}</p>
+//             </div>
+//             <div className="flex flex-col w-4/12 px-4 py-2 h-full justify-center">
+//                 <div className="flex flex-row items-center h-full">
+//                     <p className="text-base font-semibold ml-2">{startTime + " to " + endTime}</p>
+//                 </div>
+//                 <div className="flex flex-row items-center mt-4">
+//                     <span className="text-sm font-semibold text-end w-full">{date}</span>
+//                 </div>
+//             </div>
+//             <div className="flex flex-col w-4/12 px-4 py-2 items-end justify-center h-full">
+//                 <button className="bg-pink-500 to-pink-500 text-black px-2 py-1 text-sm rounded-md ml-2 font-semibold max-w-32 hover:scale-90 hover:bg-gray-200 hover:text-purple-700 transition ease-out hover:text-base">Cancel Appointment</button>
+//             </div>
+//         </div>
+//     )
+// }

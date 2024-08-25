@@ -60,7 +60,7 @@ export default function BlogPage() {
                         {(coverText && coverText !== "") && <p className="text-xl text-gray-600 font-semibold">{coverText}</p>}
                     </div>
                     <div className="flex items-center text-base gap-3">
-                        <Avatar avatarImgScr={blog.authorProfilePicture} size={64} />
+                        <Avatar avatarImgSrc={blog.authorProfilePicture} size={64} />
                         < div className="flex flex-col gap-0">
                             <Link href={pagePaths.doctorProfile(blog.authorId)} target='_blank' className="flex items-center hover:underline font-semibold">
                                 <span className="text-lg">{blog.authorName}</span>
