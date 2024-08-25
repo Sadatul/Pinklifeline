@@ -84,7 +84,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                 
                 """;
 
-        String token = mint(userId, List.of(Roles.ROLE_PATIENT));
+        String token = mint(userId, List.of(Roles.ROLE_PATIENT), true);
         String location = mockMvc.perform(post("/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", String.format("Bearer %s", token))
@@ -138,7 +138,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                 
                 """;
 
-        String updateToken = mint(userId, List.of(Roles.ROLE_PATIENT));
+        String updateToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
         mockMvc.perform(put("/v1/reports/{newReportId}", newReportId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", String.format("Bearer %s", updateToken))
@@ -168,7 +168,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
         );
 
 
-        String shareToken = mint(userId, List.of(Roles.ROLE_PATIENT));
+        String shareToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
         String sharedReportLocation = mockMvc.perform(post("/v1/reports/share")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", shareToken))
@@ -201,7 +201,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                 .andExpect(jsonPath("$[0].id").value(newSharedReportId))
                 .andReturn().getResponse().getContentAsString();
         log.info("Report shared info for report with id {}: {}", newReportId, res);
-        String doctorToken = mint(doctorId, List.of(Roles.ROLE_DOCTOR));
+        String doctorToken = mint(doctorId, List.of(Roles.ROLE_DOCTOR), false);
 
         res = mockMvc.perform(get("/v1/reports/share")
                         .header("Authorization", String.format("Bearer %s", doctorToken)))
@@ -211,7 +211,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                 .andReturn().getResponse().getContentAsString();
 
         log.info("Shared reports for doctor {}", res);
-        String deleteToken = mint(userId, List.of(Roles.ROLE_PATIENT));
+        String deleteToken = mint(userId, List.of(Roles.ROLE_PATIENT), false);
 
         mockMvc.perform(delete("/v1/reports/{newReportId}", newReportId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -245,7 +245,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
     }
 
 
-    private String mint(Long id, List<Roles> roles){
+    private String mint(Long id, List<Roles> roles, boolean isSubscribed){
         JwtClaimsSet.Builder builder = JwtClaimsSet.builder()
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(3600))
@@ -253,7 +253,7 @@ public class ReportIntegrationTest extends AbstractBaseIntegrationTest{
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
                 .claim("scope", roles)
-                .claim("subscribed", false);
+                .claim("subscribed", isSubscribed);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
     }

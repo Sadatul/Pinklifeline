@@ -52,6 +52,7 @@ public class ReportHandlerService {
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public Long addReport(ReportReq req) {
         Long userId = SecurityUtils.getOwnerID();
+        SecurityUtils.throwExceptionIfNotSubscribed();
         User user = userService.getUserIfRegisteredOnlyId(userId);
         Report report = new Report(user, req.getDoctorName(), req.getHospitalName(), req.getDate(),
                 req.getSummary(), req.getFileLink(), req.getKeywords());

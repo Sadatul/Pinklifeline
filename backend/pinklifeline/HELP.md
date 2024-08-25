@@ -747,6 +747,7 @@ status: create(201)
 ```
 
 **<span style="color:red">Notes:</span>**
+* Only Subscribed users can access this endpoint.
 * Add report request can be sent by any role
 * None of the above fields can be null. Must provide each one.
 * if you have no keywords than send an empty list ( [ ] )
