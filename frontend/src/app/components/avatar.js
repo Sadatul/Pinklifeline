@@ -14,8 +14,7 @@ const Avatar = ({ avatarImgSrc, size = 96, className }) => {
       <Image
         src={avatarImgSrc || emptyAvatar}
         alt="Avatar"
-        layout="fill"
-        objectFit="cover"
+        fill={true}
         className="object-cover object-center"
       />
     </div>

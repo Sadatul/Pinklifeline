@@ -411,7 +411,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const client = useStreamVideoClient();
     const [opendialog, setOpendialog] = useState(false)
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
-    const [patientInfo, setPatientInfo] = useState()
+    const [patientInfo, setPatientInfo] = useState(null)
     const router = useRouter()
 
     const clocks = [
@@ -605,19 +605,19 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                                         Avg Cycle Length: {patientInfo.avgCycleLength}
                                     </p>
                                     <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                                        Perido Irregularities: {patientInfo.periodIrregularities.join(", ")}
+                                        Perido Irregularities: {patientInfo.periodIrregularities?.join(", ")}
                                     </p>
                                     <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                                        Allergies: {patientInfo.allergies.join(", ")}
+                                        Allergies: {patientInfo.allergies?.join(", ")}
                                     </p>
                                     <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                                        Organs with Chronic Condition: {patientInfo.organsWithChronicConditions.join(", ")}
+                                        Organs with Chronic Condition: {patientInfo.organsWithChronicConditions?.join(", ")}
                                     </p>
                                     <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                                        Medications : {patientInfo.medications.map(medication => `${medication.name} - ${medication.doseDescription}`).join(", ")}
+                                        Medications : {patientInfo.medications.map(medication => `${medication.name} - ${medication.doseDescription}`)?.join(", ")}
                                     </p>
                                     <p className="text-lg font-semibold flex flex-row items-center gap-2">
-                                        Cancer Relatives: {patientInfo.cancerRelatives.join(", ")}
+                                        Cancer Relatives: {patientInfo.cancerRelatives?.join(", ")}
                                     </p>
                                 </>
                                 :
@@ -770,7 +770,6 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
 
                         )}
                     </>
-
                 }
                 {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && !appointment.isOnline) &&
                     <AlertDialog>
@@ -825,6 +824,11 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
+                }
+                {(appointment.status === appointmentStatus.finished) &&
+                    <button disabled className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
+                        Finished
+                    </button>
                 }
             </div >
         </div >

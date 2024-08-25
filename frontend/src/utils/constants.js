@@ -84,6 +84,8 @@ export const medicalTestHospitalByIdAdminUrl = (hospitalTestId) => { return `${b
 export const medicalTestHospitalAnonymousUrl = `${baseUrl}/v1/anonymous/hospitals/tests`
 export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/compare`
 export const toggleLocationShare = `${baseUrl}/v1/ROLE_PATIENT/toggle-location-share`
+export const worksUrl = `${baseUrl}/v1/works`
+export const worksByIdUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -192,6 +194,8 @@ export const pagePaths = {
     compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
     searchPage: (query) => { return `/search?query=${query}` },
+    worksPage: "/works",
+    addWorkPage: "/works/add",
 }
 
 export const ReportTypes = {

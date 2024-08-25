@@ -267,7 +267,7 @@ function SharedReportsComponent() {
                 <div className="flex flex-row gap-2 w-full justify-between px-5 py-2">
                     <h2 className="text-2xl text-black">Selected Report</h2>
                     {selectedReport &&
-                        <button className="bg-red-500 text-white rounded p-2 w-36 hover:scale-95" onClick={() => {
+                        <button className="bg-red-500 text-white rounded p-2 w-44 hover:scale-95" onClick={() => {
                             setSelectedReport(null)
                         }}>
                             Remove Selected

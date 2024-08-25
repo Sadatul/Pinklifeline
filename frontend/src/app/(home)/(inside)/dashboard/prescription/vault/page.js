@@ -236,9 +236,12 @@ export default function PrescriptionVaultPage() {
                     </div>
                     <div className="flex flex-col w-full items-center mb-5">
                         <Pagination
-                            count={data?.totalPages}
+                            count={data?.page?.totalPages}
                             page={currentPage}
-                            onChange={(event, page) => setCurrentPage(page)}
+                            onChange={(event, page) => {
+                                setCurrentPage(page)
+                                setLoading(true)
+                            }}
                             variant="outlined"
                             color="secondary"
                             shape="rounded"

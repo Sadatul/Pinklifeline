@@ -8,12 +8,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { toast } from "sonner"
 import Image from "next/image"
 import { CircularProgress } from "@mui/material"
-import { Calendar, Check, ChevronDown, ChevronUp, Loader2, LoaderCircle, Pencil, Share2, Trash2, X } from "lucide-react";
+import { ArrowLeft, Calendar, Check, ChevronDown, ChevronUp, Loader2, LoaderCircle, Pencil, Share2, Trash2, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
 import axiosInstance from "@/utils/axiosInstance";
-import { addReportUrl, capitalizeFirstLetter, getImageDimensions, getReportByIdUrl, getSharedReportByIdUrl, pagePaths, shareReportUrl, updateReportUrl } from "@/utils/constants";
+import { addReportUrl, capitalizeFirstLetter, getDoctorsUrl, getImageDimensions, getReportByIdUrl, getSharedReportByIdUrl, pagePaths, shareReportUrl, updateReportUrl } from "@/utils/constants";
 import { useSessionContext } from "@/app/context/sessionContext";
 import { useRouter } from "next/navigation";
 import CreatableSelect from 'react-select/creatable'
@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import Loading from './loading';
+import { debounce } from 'lodash';
+import { Switch } from '@/components/ui/switch';
 
 export function AddPrescriptionPage() {
     const storage = getStorage(firebase_app)
@@ -241,6 +243,24 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
     const [showShareinfo, setShowShareInfo] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
     const animatedComponents = makeAnimated();
+    const [doctorOptions, setDoctorOptions] = useState([])
+    const [loadingDoctorsOptions, setLoadingDoctorsOptions] = useState(false)
+    const [selectedDoctorId, setSelectedDoctorId] = useState(null)
+
+    const loadDoctorOptions = debounce((searchText) => {
+        setLoadingDoctorsOptions(true)
+        axiosInstance.get(getDoctorsUrl, {
+            params: {
+                fullName: searchText
+            }
+        }).then(res => {
+            setDoctorOptions(res.data?.content?.map((doctor) => ({ name: doctor.fullName, value: doctor.id, workplace: doctor.workplace })))
+        }).catch(error => {
+            console.log("Error fetching doctors", error)
+        }).finally(() => {
+            setLoadingDoctorsOptions(false)
+        })
+    }, 500)
 
     useEffect(() => {
         const fetchImageDimensions = async () => {
@@ -289,7 +309,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
     }
 
     const handleShareReport = () => {
-        if (document.getElementById("reportShareDoctorId").value === "") {
+        if (!selectedDoctorId) {
             document.getElementById("error").innerText = "Must fill doctor id field"
             return
         }
@@ -298,8 +318,8 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
             document.getElementById("error").innerText = ""
             const form = {
                 "reportId": report.id,
-                "doctorId": document.getElementById("reportShareDoctorId").value,
-                "period": document.getElementById("reportSharePeriod").value > 0 ? document.getElementById("reportSharePeriod").value : null
+                "doctorId": selectedDoctorId,
+                "period": Number(document.getElementById("reportSharePeriod").value) > 0 ? document.getElementById("reportSharePeriod").value : null
             }
             axiosInstance.post(shareReportUrl, form).then((res) => {
                 setShareDialogOpen(false)
@@ -315,11 +335,16 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
         }
     }
 
+
     if (!isMounted) return <Loading />
 
     return (
         <div className="flex flex-col gap-5 p-2 w-full">
-            <h1 className="text-2xl font-semibold mt-5">Prescription/Report</h1>
+            <h1 className="text-2xl font-semibold mt-5 flex items-center gap-4">
+                <Link href={pagePaths.dashboardPages.prescriptionVaultPage}>
+                    <ArrowLeft size={28} className="text-blue-500 cursor-pointer hover:scale-95" />
+                </Link>
+                Prescription/Report</h1>
             <div className="flex flex-col gap-7 w-full bg-blue-50 rounded-md p-2">
                 <div className="flex flex-col gap-4 w-full relative">
                     <div className="flex flex-row justify-between items-center gap-2 absolute top-5 right-10">
@@ -345,7 +370,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                             <Share2 size={24} />
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent className="">
+                                    <DialogContent className="w-[600px]">
                                         <DialogHeader>
                                             <DialogTitle>Share Report</DialogTitle>
                                             <DialogDescription>
@@ -353,18 +378,53 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="flex flex-col gap-2 ">
-                                            <label className="flex text-lg font-semibold gap-2">
-                                                Doctor ID:
-                                                <input id="reportShareDoctorId" type="number" className="number-input rounded border border-gray-700 px-2 py-1" min={0} />
-                                            </label>
+                                            <div className="flex text-lg font-semibold gap-2">
+                                                <span className='w-40'>Doctor ID:</span>
+                                                <div className='relative flex-1'>
+                                                    <input id='reportShareDoctorId' type="text" className="number-input rounded border border-gray-700 px-2 py-1 w-full" onChange={(e) => {
+                                                        if (e.target.value.length > 0) {
+                                                            setSelectedDoctorId(undefined)
+                                                            loadDoctorOptions(e.target.value.trim())
+                                                        }
+                                                        else {
+                                                            setSelectedDoctorId(null)
+                                                        }
+                                                    }} />
+                                                    {(selectedDoctorId === undefined) && <div className='flex flex-col absolute top-full left-0 w-full bg-white rounded-b-md border border-gray-700 z-10'>
+                                                        {loadingDoctorsOptions && <span className="text-center">Loading...</span>}
+                                                        {doctorOptions.length === 0 && !loadingDoctorsOptions && <span className="text-center">No doctors found</span>}
+                                                        {doctorOptions.map((doctor, index) => (
+                                                            <button key={index} className="flex flex-col gap-1 p-1 border-b border-gray-700 hover:bg-gray-100" onClick={() => {
+                                                                setSelectedDoctorId(doctor.value)
+                                                                document.getElementById("reportShareDoctorId").value = doctor.name
+                                                            }}>
+                                                                <span className='text-sm font-normal'>{doctor.name}</span>
+                                                                <span className="text-xs font-normal">{doctor.workplace}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>}
+                                                </div>
+                                            </div>
                                             <div className="flex flex-col gap-2">
-                                                <label className="flex text-lg font-semibold gap-2">
-                                                    Period (in hours):
-                                                    <input id="reportSharePeriod" type="number" className="number-input rounded border border-gray-700 px-2 py-1" min={0} defaultValue={0} />
-                                                </label>
-                                                <span className="text-sm">
-                                                    Keep the period 0 or empty to share the report indefinitely
-                                                </span>
+                                                <div className="flex text-lg font-semibold gap-2 items-center">
+                                                    <span className='w-40'>{"Period(Hours)"}:</span>
+                                                    <input id="reportSharePeriod" type="number" className="number-input rounded border border-gray-700 px-2 py-1 w-32" min={0} defaultValue={0} />
+                                                    <div className='flex flex-col items-center gap-1 translate-y-1'>
+                                                        <Switch defaultChecked={false} onCheckedChange={(checked) => {
+                                                            if (checked) {
+                                                                document.getElementById("reportSharePeriod").value = 0
+                                                                document.getElementById("reportSharePeriod").disabled = true
+                                                            }
+                                                            else {
+                                                                document.getElementById("reportSharePeriod").value = ""
+                                                                document.getElementById("reportSharePeriod").disabled = false
+                                                            }
+                                                        }} />
+                                                        <span className="text-sm">
+                                                            Share indefinitely
+                                                        </span>
+                                                    </div>
+                                                </div>
                                                 <span id="error" className="text-red-500"></span>
                                             </div>
                                         </div>
@@ -392,25 +452,32 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                         Are you sure you want to delete this report?
                                     </DialogDescription>
                                 </DialogHeader>
+                                {report.shareInfo.length > 0 && (
+                                    <span className='text-lg text-red-600'>
+                                        This report is shared with others. Must revoke the share before deleting the report
+                                    </span>
+                                )}
                                 <DialogFooter>
-                                    <DialogClose asChild>
-                                        <Button className="bg-red-700 hover:scale-95" onClick={() => {
-                                            toast.loading("Deleting report")
-                                            axiosInstance.delete(getReportByIdUrl(report.id)).then((res) => {
-                                                console.log("Report deleted", res)
-                                                window.open(pagePaths.dashboardPages.prescriptionVaultPage, "_self");
-                                                toast.dismiss()
-                                            }).catch((error) => {
-                                                console.log("Error deleting report", error)
-                                                toast.dismiss()
-                                                toast.error("Error deleting report", {
-                                                    description: "Please try again later"
+                                    {(report.shareInfo.length === 0) &&
+                                        <DialogClose asChild>
+                                            <Button className="bg-red-700 hover:scale-95" onClick={() => {
+                                                toast.loading("Deleting report")
+                                                axiosInstance.delete(getReportByIdUrl(report.id)).then((res) => {
+                                                    console.log("Report deleted", res)
+                                                    window.open(pagePaths.dashboardPages.prescriptionVaultPage, "_self");
+                                                    toast.dismiss()
+                                                }).catch((error) => {
+                                                    console.log("Error deleting report", error)
+                                                    toast.dismiss()
+                                                    toast.error("Error deleting report", {
+                                                        description: "Please try again later"
+                                                    })
                                                 })
-                                            })
-                                        }}>
-                                            Delete
-                                        </Button>
-                                    </DialogClose>
+                                            }}>
+                                                Delete
+                                            </Button>
+                                        </DialogClose>
+                                    }
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
@@ -425,7 +492,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                 </div>
                                 <div className="flex text-lg font-semibold gap-2">
                                     Hospital Name:
-                                    <input defaultValue={report.doctorName} id="reportHospitalName" type="text" className="border border-blue-800 shadow-inner p-1 flex-1 rounded-md" />
+                                    <input defaultValue={report.hospitalName} id="reportHospitalName" type="text" className="border border-blue-800 shadow-inner p-1 flex-1 rounded-md" />
                                 </div>
                                 <div className="flex text-lg font-semibold gap-2">
                                     Date:
@@ -472,13 +539,13 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                 <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {report.date}</span>
                                 <span className="text-xl font-semibold mt-2" >Summary</span>
                                 <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
-                                <span className="text-lg flex-col gap-1 items-center">{report.summary}</span>
+                                <pre className="text-lg flex-col gap-1 items-center">{report.summary}</pre>
                             </div>
                         </div>
                     )}
                 </div>
                 <div className="flex flex-col gap-2">
-                    <button onClick={() => { setShowShareInfo(prev => !prev) }} className="flex items-center w-32 hover:scale-95">
+                    <button onClick={() => { setShowShareInfo(prev => !prev) }} className="flex items-center w-44 hover:scale-95">
                         See Share info {showShareinfo ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                     </button>
                     {!showShareinfo && <Separator className="w-28 h-[1.5px] bg-gray-400" />}
