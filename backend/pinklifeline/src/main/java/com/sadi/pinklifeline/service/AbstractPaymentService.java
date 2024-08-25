@@ -18,17 +18,21 @@ public abstract class AbstractPaymentService {
     }
 
     public abstract void updatePaymentStatus(Long id);
+    public abstract void setup(Long id, InitiatePaymentReq req);
     public abstract Integer getTotalAmount(Long id);
+    public abstract Integer getTotalAmount(Long id, InitiatePaymentReq req);
     public abstract void validateResourceForPayment(Long id);
     public abstract void addBalanceToUsers(Long resourceId);
     public InitiatePaymentRes initiatePayment(Long id, String type, InitiatePaymentReq req) {
         validateResourceForPayment(id);
-        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, type, getTotalAmount(id).doubleValue(), req.getCustomerName(),
+        SslcommerzInitResponse res = sslcommerzClientService.initiatePayment(id, type, getTotalAmountWithReq(id, req, type).doubleValue(),
+                req.getCustomerName(),
                 req.getCustomerEmail(), req.getCustomerPhone());
         if(!(res.getStatus().equals("SUCCESS"))){
             log.info("Failed to initiate payment: {}", res.getFailedreason());
             throw new InternalServerErrorException("Some issues may have occurred in the database. Please try again later");
         }
+        setup(id, req);
         return new InitiatePaymentRes(res.getTranId(), res.getGatewayPageURL());
     }
 
@@ -49,5 +53,14 @@ public abstract class AbstractPaymentService {
         updatePaymentStatus(id);
         addBalanceToUsers(id);
         return ResponseEntity.ok().build();
+    }
+
+    public Integer getTotalAmountWithReq(Long id, InitiatePaymentReq req, String type) {
+        if(type.equalsIgnoreCase("subscription")){
+            return getTotalAmount(id, req);
+        }
+        else{
+            return getTotalAmount(id);
+        }
     }
 }

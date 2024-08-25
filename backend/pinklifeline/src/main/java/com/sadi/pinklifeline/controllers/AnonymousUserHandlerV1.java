@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.enums.BlogSortType;
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import com.sadi.pinklifeline.models.entities.Blog;
 import com.sadi.pinklifeline.models.entities.ForumQuestion;
 import com.sadi.pinklifeline.models.responses.*;
@@ -19,10 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/v1/anonymous")
@@ -117,5 +117,16 @@ public class AnonymousUserHandlerV1 {
     public ResponseEntity<ForumAnswerRes> getForumAnswer(@PathVariable Long id){
         ForumAnswerRes answer = forumAnswerHandlerService.getForumAnswerResById(id, null);
         return ResponseEntity.ok(answer);
+    }
+
+    @GetMapping("/subscriptions")
+    public ResponseEntity<Map<String, Object>> getSubscriptions(){
+        Map<String, Object> res = Stream.of(new Object[][]{
+            {"DOCTOR_MONTHLY", SubscriptionType.DOCTOR_MONTHLY.getPrice()},
+            {"DOCTOR_YEARLY", SubscriptionType.DOCTOR_YEARLY.getPrice()},
+            {"USER_MONTHLY", SubscriptionType.USER_MONTHLY.getPrice()},
+            {"USER_YEARLY", SubscriptionType.USER_YEARLY.getPrice()},
+        }).collect(Collectors.toMap(val -> (String) val[0], val -> val[1]));
+        return ResponseEntity.ok(res);
     }
 }

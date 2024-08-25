@@ -35,6 +35,10 @@ public class UserService {
         return userRepository.getProfilePictureById(id);
     }
 
+    public String getUsernameById(Long id){
+        return userRepository.findUsernameById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
     public User getUserIfRegistered(Long id){
         User user = getUser(id);
         if(user.getIsRegistrationComplete() == YesNo.N){

@@ -2,6 +2,7 @@ package com.sadi.pinklifeline.controllers;
 
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
+import com.sadi.pinklifeline.service.EmailService;
 import com.sadi.pinklifeline.service.doctor.DoctorsInfoService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,11 +22,13 @@ import java.util.Map;
 @RequestMapping("/v1")
 public class VerificationHandler {
     private final DoctorsInfoService doctorsInfoService;
+    private final EmailService emailService;
     @Value("${unverified.page-size}")
     private int pageSize;
 
-    public VerificationHandler(DoctorsInfoService doctorsInfoService) {
+    public VerificationHandler(DoctorsInfoService doctorsInfoService, EmailService emailService) {
         this.doctorsInfoService = doctorsInfoService;
+        this.emailService = emailService;
     }
 
 
@@ -60,7 +63,8 @@ public class VerificationHandler {
 
     @PutMapping("/ROLE_ADMIN/verify/doctors/{id}")
     public ResponseEntity<Void> verifyDoctors(@PathVariable Long id){
-        doctorsInfoService.verifyDoctor(id);
+        String username = doctorsInfoService.verifyDoctor(id);
+        emailService.sendSimpleEmail(username, "Verification", "Your account has been approved by our admin. Please log out and log back in to apply the changes.");
         return ResponseEntity.noContent().build();
     }
 }

@@ -409,7 +409,8 @@ public class ForumIntegrationTest extends AbstractBaseIntegrationTest{
                 .subject(id.toString())
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
-                .claim("scope", roles);
+                .claim("scope", roles)
+                .claim("subscribed", 0);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
     }
