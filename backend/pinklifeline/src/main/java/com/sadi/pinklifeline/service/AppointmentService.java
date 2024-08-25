@@ -251,4 +251,18 @@ public class AppointmentService extends AbstractPaymentService{
     public void updateAppointmentStatus(Long appointmentId, AppointmentStatus appointmentStatus) {
         appointmentRepository.updateAppointmentStatus(appointmentId, appointmentStatus);
     }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public void finishAppointment(Long id) {
+        Long owner = SecurityUtils.getOwnerID();
+        Appointment appointment = getAppointment(id);
+        verifyAppointmentDoctorAccess(appointment, owner);
+        if(appointment.getStatus() != AppointmentStatus.ACCEPTED){
+            throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be finished", appointment.getStatus()));
+        }
+        appointment.setStatus(AppointmentStatus.FINISHED);
+        appointment.setIsPaymentComplete(true);
+
+        appointmentRepository.save(appointment);
+    }
 }

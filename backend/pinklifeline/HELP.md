@@ -415,6 +415,14 @@ need to be passed, then pass an empty list like this:
 **<span style="color:red">Notes:</span>**
 * Patient can only cancel appointments that are at REQUESTED status or at ACCEPTED status
 
+##  Doctor Finish Appointment
+``` Endpoint: PUT /v1/appointments/{appointment_id}/finish```
+
+**<span style="color:red">Notes:</span>**
+* Only doctors can use this endpoint
+* Doctor can only decline appointments that are at ACCEPTED status
+
+
 ## Payment for Doctor Appointment
 ``` Endpoint: POST /v1/payment/appointment/{appointment_id}/initiate```
 ### Sample Body
@@ -2169,7 +2177,7 @@ Endpoints: GET /v1/anonymous/hospitals/compare
 **<span style="color:red">Notes:</span>**
 * Each of the field must be provided
 * customerEmail must be a valid email
-* subscriptionType can be MONTHLY or YEARLY
+* subscriptionType can be DOCTOR_MONTHLY(1), DOCTOR_YEARLY(2), USER_MONTHLY(3) and USER_YEARLY(4)
 
 ### Response Body
 ```
@@ -2197,3 +2205,45 @@ transId=17208953344777288
   * **400** : means transaction has failed user needs to retry by initiating the payment again
   * **202** : transaction is still pending. User hasn't made any payment via the gateway
   * **200** : payment has been completed. Nice
+
+## Get Subscription Packages
+``` Endpoint: GET /v1/anonymous/subscriptions```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "USER_MONTHLY": 300,
+  "USER_YEARLY": 3000,
+  "DOCTOR_YEARLY": 10000,
+  "DOCTOR_MONTHLY": 1000
+}
+```
+
+## Get Subscription Packages
+``` Endpoint: GET /v1/anonymous/subscriptions```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "USER_MONTHLY": 300,
+  "USER_YEARLY": 3000,
+  "DOCTOR_YEARLY": 10000,
+  "DOCTOR_MONTHLY": 1000
+}
+```
+## Get Subscription Info of User
+``` Endpoint: GET /v1/infos/subscription```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "type": "USER_MONTHLY",
+  "expiryDate": "2024-08-08"
+}
+```

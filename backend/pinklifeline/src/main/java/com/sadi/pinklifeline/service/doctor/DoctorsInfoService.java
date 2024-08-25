@@ -4,6 +4,7 @@ import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UnverifiedResourceException;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.repositories.DoctorDetailsRepository;
+import com.sadi.pinklifeline.service.UserService;
 import com.sadi.pinklifeline.specifications.DoctorDetailsSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,9 +20,11 @@ import java.util.stream.Stream;
 @Service
 public class DoctorsInfoService {
     private final DoctorDetailsRepository doctorRepository;
+    private final UserService userService;
 
-    public DoctorsInfoService(DoctorDetailsRepository doctorRepository) {
+    public DoctorsInfoService(DoctorDetailsRepository doctorRepository, UserService userService) {
         this.doctorRepository = doctorRepository;
+        this.userService = userService;
     }
 
     public DoctorDetails getDoctor(Long id) {
@@ -101,9 +104,10 @@ public class DoctorsInfoService {
                 )).toList();
     }
 
-    public void verifyDoctor(Long id) {
+    public String verifyDoctor(Long id) {
         DoctorDetails doctorDetails = getDoctorIfNotVerified(id);
         doctorDetails.setIsVerified(YesNo.Y);
         doctorRepository.save(doctorDetails);
+        return userService.getUsernameById(id);
     }
 }

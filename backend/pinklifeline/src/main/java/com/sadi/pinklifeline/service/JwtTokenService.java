@@ -1,7 +1,9 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
+import com.sadi.pinklifeline.repositories.DoctorDetailsRepository;
 import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class JwtTokenService {
     private final JwtEncoder jwtEncoder;
+    private final DoctorDetailsRepository doctorDetailsRepository;
 
     @Value("${auth.jwt.audiences}")
     private String[] audiences;
@@ -32,9 +35,10 @@ public class JwtTokenService {
     private final UserRepository userRepository;
 
     public JwtTokenService(JwtEncoder jwtEncoder,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, DoctorDetailsRepository doctorDetailsRepository) {
         this.jwtEncoder = jwtEncoder;
         this.userRepository = userRepository;
+        this.doctorDetailsRepository = doctorDetailsRepository;
     }
 
     public JwtTokenResponse generateToken(Authentication authentication) {
@@ -46,6 +50,7 @@ public class JwtTokenService {
         user.setRoles(userRepository.getRolesById(user.getId()));
         int subscribed = (user.getExpiryDate() != null && LocalDateTime.now().isBefore(user.getExpiryDate()))
                 ? user.getSubscriptionType().getValue() : 0;
+        boolean isVerified = doctorDetailsRepository.existsByUserIdAndAndIsVerified(user.getId(), YesNo.Y);
         var claims = JwtClaimsSet.builder()
                                 .issuer(issuer)
                                 .issuedAt(Instant.now())
@@ -56,6 +61,7 @@ public class JwtTokenService {
                                 .claim("subscribed", subscribed)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return new JwtTokenResponse(token, user.getId(), user.getUsername(), subscribed, user.getRoles());
+        return new JwtTokenResponse(token, user.getId(), user.getUsername(),
+                user.getIsRegistered().equals(YesNo.Y), isVerified, subscribed, user.getRoles());
     }
 }

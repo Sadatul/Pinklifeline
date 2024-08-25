@@ -42,6 +42,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("select u.username from User u where u.id = :id")
     Optional<String> findUsernameById(Long id);
 
-    @Query("select new com.sadi.pinklifeline.models.dtos.UserTokenDTO(u.id, u.username, s.subscriptionType, s.expiryDate) from User u left join Subscription s on u.id = s.userId where u.username = :username")
+    @Query("select new com.sadi.pinklifeline.models.dtos.UserTokenDTO(u.id, u.username, u.isRegistrationComplete, s.subscriptionType, s.expiryDate) from User u left join Subscription s on u.id = s.userId where u.username = :username")
     Optional<UserTokenDTO> findUserTokenDTOByUsername(String username);
 }
