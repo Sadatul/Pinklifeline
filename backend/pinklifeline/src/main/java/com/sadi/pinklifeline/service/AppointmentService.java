@@ -260,6 +260,9 @@ public class AppointmentService extends AbstractPaymentService{
         if(appointment.getStatus() != AppointmentStatus.ACCEPTED){
             throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be finished", appointment.getStatus()));
         }
+        if(appointment.getIsOnline()){
+            throw new BadRequestFromUserException("Online appointments can't be finished like this.");
+        }
         appointment.setStatus(AppointmentStatus.FINISHED);
         appointment.setIsPaymentComplete(true);
 
