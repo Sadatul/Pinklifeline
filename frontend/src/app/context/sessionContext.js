@@ -11,12 +11,16 @@ export function SessionContextProvider({ children }) {
 
     useEffect(() => {
         const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
+        console.log(sessionData)
         if (!sessionData) {
             setSessionData({
                 userId: null,
                 role: null,
                 username: null,
-                time: new Date(),
+                isVerified: null,
+                subscribed: null,
+                isRegisterComplete: null,
+                time: null
             })
         }//check if session is expired which is 24 hours
         else if (new Date() - new Date(sessionData.time) > sessionExpirationTime) {
@@ -24,7 +28,10 @@ export function SessionContextProvider({ children }) {
                 userId: null,
                 role: null,
                 username: null,
-                time: new Date(),
+                isVerified: null,
+                subscribed: null,
+                isRegisterComplete: null,
+                time: null
             })
             localStorage.removeItem(sessionDataItem)
             toast.error("Session Expired")

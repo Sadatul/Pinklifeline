@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
 import "@stream-io/video-react-sdk/dist/css/styles.css";
+import NextTopLoader from 'nextjs-toploader';
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
+        <NextTopLoader />
         {children}
         <Toaster richColors closeButton position='bottom-left' duration={1000} />
       </body>

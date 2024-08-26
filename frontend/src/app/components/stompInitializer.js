@@ -19,42 +19,43 @@ export function SocketInitializer() {
     const sessionContext = useSessionContext()
 
     useEffect(() => {
-        const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
-        stompContext.setUserId(sessionData.userId)
-        if (!sessionData.userId) {
-            router.push('/login')
-        }
-        if (!strompInitializedRef.current) {
-            stompContext.stompClientRef.current = new Client({
-                brokerURL: stompBrokerUrl,
-                debug: function (str) {
-                    console.log(str)
-                },
-                reconnectDelay: 0,
-                heartbeatIncoming: 4000,
-                heartbeatOutgoing: 4000
-            })
-            stompContext.stompClientRef.current.onConnect = (frame) => {
-                stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionData.userId), (response) => {
-                    console.log(response)
-                    const message = JSON.parse(response.body)
-                    console.log('Received message')
-                    console.log(message)
-                    setMessageQueue([...messageQueue, message])
-
-                })
-                stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(sessionData.userId), (error) => {
-                    console.log(error)
-                    console.log(JSON.parse(error.body))
-                })
+        if (sessionContext.sessionData) {
+            stompContext.setUserId(sessionContext.sessionData.userId)
+            if (!sessionContext.sessionData.userId) {
+                return
             }
-            stompContext.stompClientRef.current.onStompError = (frame) => {
-                console.log('Broker reported error: ' + frame.headers['message'])
-                console.log('Additional details: ' + frame.body)
-            }
+            if (!strompInitializedRef.current) {
+                stompContext.stompClientRef.current = new Client({
+                    brokerURL: stompBrokerUrl,
+                    debug: function (str) {
+                        console.log(str)
+                    },
+                    reconnectDelay: 0,
+                    heartbeatIncoming: 4000,
+                    heartbeatOutgoing: 4000
+                })
+                stompContext.stompClientRef.current.onConnect = (frame) => {
+                    stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionContext.sessionData.userId), (response) => {
+                        console.log(response)
+                        const message = JSON.parse(response.body)
+                        console.log('Received message')
+                        console.log(message)
+                        setMessageQueue([...messageQueue, message])
 
-            stompContext.stompClientRef.current.activate()
-            strompInitializedRef.current = true
+                    })
+                    stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(sessionContext.sessionData.userId), (error) => {
+                        console.log(error)
+                        console.log(JSON.parse(error.body))
+                    })
+                }
+                stompContext.stompClientRef.current.onStompError = (frame) => {
+                    console.log('Broker reported error: ' + frame.headers['message'])
+                    console.log('Additional details: ' + frame.body)
+                }
+
+                stompContext.stompClientRef.current.activate()
+                strompInitializedRef.current = true
+            }
         }
 
         return () => {

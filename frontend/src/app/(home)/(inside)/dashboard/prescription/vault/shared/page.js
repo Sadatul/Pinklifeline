@@ -253,7 +253,7 @@ function SharedReportsComponent() {
                     </div>
                     <div className="flex flex-col w-full items-center mb-5">
                         <Pagination
-                            count={data?.totalPages}
+                            count={data?.page?.totalPages}
                             page={currentPage}
                             onChange={(event, page) => setCurrentPage(page)}
                             variant="outlined"

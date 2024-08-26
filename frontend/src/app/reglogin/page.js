@@ -39,6 +39,9 @@ export default function LoginRegister() {
                         userId: res.data?.userId,
                         role: res.data?.roles[0],
                         username: res.data?.username,
+                        isVerified: res.data?.isVerified || res.data?.roles[0] === roles.basicUser || res.data?.roles[0] === roles.patient,
+                        subscribed: res.data?.subscribed,
+                        isRegisterComplete: res.data?.isRegistered,
                         time: new Date()
                     }
                     localStorage.clear();
@@ -103,7 +106,7 @@ export default function LoginRegister() {
 
 
     return (
-        <div className="flex w-screen flex-col h-screen items-center justify-center flex-wrap flex-shrink">
+        <div className="flex w-screen flex-col h-screen items-center flex-wrap flex-shrink p-10">
             <div className="flex w-full flex-col  p-10 items-center justify-center flex-wrap flex-shrink ">
                 <div className="flex flex-row justify-center items-center">
                     <button onClick={() => { setCurrentSection("Login") }} id="loginsection" className="text-2xl font-bold text-center m-2">Login</button>
@@ -111,11 +114,12 @@ export default function LoginRegister() {
                     <button onClick={() => { setCurrentSection("Register") }} id="registersection" className="text-2xl font-bold text-center m-2">Register</button>
                 </div>
                 <Separator className="bg-purple-400 m-2 w-80" />
-                <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
+                <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5 " onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
                     <input type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
                         {...register("email", {
-                            required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }})} />
+                            required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }
+                        })} />
                     {errors.email && <span className="text-red-500">{errors.email?.message}</span>}
                     {currentSection === "Register" && (
                         <select className="w-32 mt-5 h-9 rounded p-2" defaultValue={roles.basicUser} {...register("role")}>

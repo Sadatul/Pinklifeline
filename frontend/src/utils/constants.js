@@ -104,6 +104,11 @@ export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-g
 export const sessionDataItem = "sessionData"
 export const reportAnalysisThreshold = 0.85
 
+export const workStatus = {
+    POSTED: "POSTED",
+    REJECTED: "REJECTED",
+    FINISHED: "FINISHED",
+}
 export const roles = {
     basicUser: "ROLE_BASICUSER",
     patient: "ROLE_PATIENT",
@@ -196,6 +201,7 @@ export const pagePaths = {
     searchPage: (query) => { return `/search?query=${query}` },
     worksPage: "/works",
     addWorkPage: "/works/add",
+    worksByIdPage: (workId) => { return `/works/${workId}` },
 }
 
 export const ReportTypes = {
