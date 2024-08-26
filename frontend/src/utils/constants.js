@@ -106,7 +106,7 @@ export const reportAnalysisThreshold = 0.85
 
 export const workStatus = {
     POSTED: "POSTED",
-    REJECTED: "REJECTED",
+    ACCEPTED: "ACCEPTED",
     FINISHED: "FINISHED",
 }
 export const roles = {
