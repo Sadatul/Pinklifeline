@@ -86,6 +86,8 @@ export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/comp
 export const toggleLocationShare = `${baseUrl}/v1/ROLE_PATIENT/toggle-location-share`
 export const worksUrl = `${baseUrl}/v1/works`
 export const worksByIdUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}` }
+export const reserveWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/reserve` }
+export const finishWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/finish` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"

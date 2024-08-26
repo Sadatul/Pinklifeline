@@ -1,10 +1,11 @@
 'use client'
 
 import { useSessionContext } from "@/app/context/sessionContext"
+import { useStompContext } from "@/app/context/stompContext"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { displayDate, radicalGradient, worksByIdUrl, workStatus } from "@/utils/constants"
+import { displayDate, finishWorkUrl, messageSendUrl, pagePaths, radicalGradient, reserveWorkUrl, worksByIdUrl, workStatus } from "@/utils/constants"
 import { CalendarIcon, Loader, Mail, Phone } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
@@ -30,24 +31,72 @@ export default function WorkPage() {
     const [loading, setLoading] = useState(true)
     const sendMessageRef = useRef(null)
     const sessionContext = useSessionContext()
+    const stompContext = useStompContext()
 
     useEffect(() => {
-        axiosInstance.get(worksByIdUrl).then((response) => {
-            setWorkInfo(response.data)
-            setIsOwnerOrProvider(response.data.isOwnerORProvider)
-        }).catch((error) =>
-            console.log(error)
-        ).finally(() => {
-            setLoading(false)
-        })
-    }, [])
+        if (loading) {
+            axiosInstance.get(worksByIdUrl).then((response) => {
+                setWorkInfo(response.data)
+                setIsOwnerOrProvider(response.data.isOwnerORProvider)
+            }).catch((error) =>
+                console.log(error)
+            ).finally(() => {
+                setLoading(false)
+            })
+        }
+    }, [loading])
 
-    const deleteWork = () => { }
-    const reserveWork = () => { }
-    const sendMessage = (messageText) => { }
-    const rejectWork = () => { }
-    const finishWork = () => { }
-    const removeProvider = () => { }
+    const deleteWork = () => {
+        axiosInstance.delete(worksByIdUrl).then((response) => {
+            console.log(response)
+            window.location.href = pagePaths.worksPage
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+    const reserveWork = () => {
+        axiosInstance.put(reserveWorkUrl).then((response) => {
+            console.log(response)
+            setLoading(true)
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+    const sendMesssage = (messageObject) => {
+        stompContext.stompClientRef.current.publish({
+            destination: messageSendUrl,
+            body: JSON.stringify(messageObject),
+        });
+    }
+    const handleMessage = (messageText) => {
+        if (messageText !== '') {
+            const messageObject = {
+                sender: sessionContext.sessionData.userId,
+                receiverId: stompContext.openedChat?.userId,
+                message: messageText,
+                timestamp: new Date().toISOString(),
+                type: "TEXT",
+            }
+            sendMesssage(messageObject);
+            sendMessageRef.current.value = "";
+        }
+    }
+    const rejectWork = () => {
+        axiosInstance.delete(reserveWorkUrl).then((response) => {
+            console.log(response)
+            setLoading(true)
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+    const finishWork = () => {
+        axiosInstance.put(finishWorkUrl).then((response) => {
+            console.log(response)
+            setLoading(true)
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
 
     if (!sessionContext.sessionData) return null
     if (loading) return <Loader size={44} className="animate-spin m-auto" />
@@ -94,7 +143,9 @@ export default function WorkPage() {
                                 sendMessageRef.current.style.height = "auto"
                                 sendMessageRef.current.style.height = (sendMessageRef.current.scrollHeight + 1) + "px"
                             }} />
-                            <button className="bg-blue-600 text-white w-32 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { sendMessage(sendMessageRef.current.value.trim()) }}>Send Message</button>
+                            <button className="bg-blue-600 text-white w-32 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => {
+                                handleMessage(sendMessageRef.current.value.trim())
+                            }}>Send Message</button>
                         </div>
                     }
                     <div className="flex flex-row gap-3 items-center">
@@ -127,7 +178,7 @@ export default function WorkPage() {
                 <div className="flex flex-col gap-5 w-7/12 p-4 rounded bg-white">
                     <div className="flex flex-row gap-2 items-center justify-between">
                         <h1 className="text-lg font-bold">Provider details</h1>
-                        <button className="h-8 w-40 text-white rounded bg-red-700 hover:bg-opacity-90 hover:scale-95">
+                        <button className="h-8 w-40 text-white rounded bg-red-700 hover:bg-opacity-90 hover:scale-95" onClick={() => { rejectWork() }}>
                             Remove Provider
                         </button>
                     </div>
