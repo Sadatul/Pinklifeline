@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.repositories;
 
 import com.sadi.pinklifeline.enums.Roles;
+import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
 import com.sadi.pinklifeline.models.responses.NearbyUserRes;
 import com.sadi.pinklifeline.models.entities.User;
 import jakarta.transaction.Transactional;
@@ -23,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     void updateProfilePictureById(Long id, String path);
 
     @Query("select new com.sadi.pinklifeline.models.responses.NearbyUserRes(u.id, u.basicUser.fullName, u.patientSpecificDetails.location) " +
-            "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id")
+            "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id and u.patientSpecificDetails.locationShare = true")
     List<NearbyUserRes> findNearbyUsers(List<String> locations, Long id);
 
     @Query("select new User(u.id, u.isRegistrationComplete) from User u where u.id = :id")
@@ -37,4 +38,10 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("select u.roles from User u where u.id = :userId")
     List<Roles> getRolesById(Long userId);
+
+    @Query("select u.username from User u where u.id = :id")
+    Optional<String> findUsernameById(Long id);
+
+    @Query("select new com.sadi.pinklifeline.models.dtos.UserTokenDTO(u.id, u.username, u.isRegistrationComplete, s.subscriptionType, s.expiryDate) from User u left join Subscription s on u.id = s.userId where u.username = :username")
+    Optional<UserTokenDTO> findUserTokenDTOByUsername(String username);
 }

@@ -35,6 +35,10 @@ public class UserService {
         return userRepository.getProfilePictureById(id);
     }
 
+    public String getUsernameById(Long id){
+        return userRepository.findUsernameById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
     public User getUserIfRegistered(Long id){
         User user = getUser(id);
         if(user.getIsRegistrationComplete() == YesNo.N){
@@ -76,7 +80,7 @@ public class UserService {
         response.put("avgCycleLength", basicUserDetails.getAvgCycleLength());
         response.put("periodIrregularities", basicUserDetails.getPeriodIrregularities());
         response.put("allergies", basicUserDetails.getAllergies());
-        response.put("organsWithChronicConditions", basicUserDetails.getOrgansWithChronicCondition());
+        response.put("organsWithChronicCondition", basicUserDetails.getOrgansWithChronicCondition());
         response.put("medications", basicUserDetails.getMedications());
     }
 
@@ -84,6 +88,7 @@ public class UserService {
         response.put("cancerStage", patient.getCancerStage());
         response.put("diagnosisDate", patient.getDiagnosisDate());
         response.put("location", patient.getLocation());
+        response.put("locationShare", patient.getLocationShare());
     }
 
     public void injectDoctorDetailsToMap(DoctorDetails doctorDetails, Map<String, Object> response){

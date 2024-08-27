@@ -1,9 +1,12 @@
 package com.sadi.pinklifeline.controllers;
 
+import com.sadi.pinklifeline.models.entities.Subscription;
 import com.sadi.pinklifeline.models.entities.User;
+import com.sadi.pinklifeline.repositories.SubscriptionRepository;
 import com.sadi.pinklifeline.service.BalanceService;
 import com.sadi.pinklifeline.service.UserService;
 import com.sadi.pinklifeline.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +16,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/infos")
 public class UserInfoForOwnerHandlerV1 {
     private final UserService userService;
     private final BalanceService balanceService;
+    private final SubscriptionRepository subscriptionRepository;
 
-    public UserInfoForOwnerHandlerV1(UserService userService, BalanceService balanceService) {
+    public UserInfoForOwnerHandlerV1(UserService userService, BalanceService balanceService, SubscriptionRepository subscriptionRepository) {
         this.userService = userService;
         this.balanceService = balanceService;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @GetMapping("/profile_picture")
@@ -74,5 +80,16 @@ public class UserInfoForOwnerHandlerV1 {
     ){
         Page<Map<String, Object>> response = balanceService.getBalanceHistoryForUser(pageNo);
         return ResponseEntity.ok(new PagedModel<>(response));
+    }
+
+    @GetMapping("/subscription")
+    public ResponseEntity<Map<String, Object>> getSubscription()
+    {
+        Subscription subscription = subscriptionRepository.findById(SecurityUtils.getOwnerID())
+                .orElseGet(Subscription::new);
+        Map<String, Object> response = new HashMap<>();
+        response.put("type", subscription.getSubscriptionType());
+        response.put("expiryDate", subscription.getExpiryDate());
+        return ResponseEntity.ok(response);
     }
 }

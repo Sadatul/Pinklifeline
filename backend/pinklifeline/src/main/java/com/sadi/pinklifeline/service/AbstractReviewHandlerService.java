@@ -1,6 +1,7 @@
 package com.sadi.pinklifeline.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.dtos.RatingCountPair;
 import com.sadi.pinklifeline.models.entities.Review;
 import com.sadi.pinklifeline.models.reqeusts.RegisterReviewReq;
@@ -31,6 +32,7 @@ public abstract class AbstractReviewHandlerService {
     public abstract Review getNewReview(Long reviewerId, RegisterReviewReq req);
     public abstract List<RatingCountPair> getReviewRatingCountPairList(Long reviewId);
     public abstract void validateIfReviewExists(Long reviewerId, Long resourceId);
+    public abstract boolean resourceExists(Long resourceId);
     public abstract List<ReviewRes> getReviewsByResourceId(Long resourceId);
 
     public void verifyReviewAccess(Review review, Long userId){
@@ -42,17 +44,17 @@ public abstract class AbstractReviewHandlerService {
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
-    public Pair<Long, ReviewSummaryRes> addReview(RegisterReviewReq req, Long userId) throws JsonProcessingException {
+    public Pair<Long, ReviewSummaryRes> addReview(RegisterReviewReq req, Long userId, String type) throws JsonProcessingException {
         validateIfReviewExists(userId, req.getId());
         Review review = getNewReview(userId, req);
         Long id = saveReview(review).getId();
         Long[] lst = addReviewRatingCountPairUpdate(req.getRating(),
-                req.getId(), "doctor");
+                req.getId(), type);
         return Pair.of(id, getReviewSummaryResFromArray(lst));
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
-    public ReviewSummaryRes updateReview(ReviewUpdateReq req, Long userId, Long reviewId) throws JsonProcessingException {
+    public ReviewSummaryRes updateReview(ReviewUpdateReq req, Long userId, Long reviewId, String type) throws JsonProcessingException {
         Review review = getReview(reviewId);
         Integer prevRating = review.getRating();
         verifyReviewAccess(review, userId);
@@ -62,18 +64,18 @@ public abstract class AbstractReviewHandlerService {
         saveReview(review);
 
         Long[] lst = updateReviewRatingCountPairUpdate(req.getRating(), review.getResourceId(),
-                prevRating, "doctor");
+                prevRating, type);
         return getReviewSummaryResFromArray(lst);
     }
 
     @PreAuthorize("#userId.toString() == authentication.name")
-    public ReviewSummaryRes deleteReview(Long userId, Long reviewId) throws JsonProcessingException {
+    public ReviewSummaryRes deleteReview(Long userId, Long reviewId, String type) throws JsonProcessingException {
         Review review = getReview(reviewId);
         Integer prevRating = review.getRating();
         verifyReviewAccess(review, userId);
         deleteReview(review);
 
-        Long[] lst = deleteReviewRatingCountPairUpdate(prevRating, review.getResourceId(), "doctor");
+        Long[] lst = deleteReviewRatingCountPairUpdate(prevRating, review.getResourceId(), type);
         return getReviewSummaryResFromArray(lst);
     }
 
@@ -123,5 +125,23 @@ public abstract class AbstractReviewHandlerService {
             throw new RuntimeException(e);
         }
         return getReviewSummaryResFromArray(lst);
+    }
+
+    public ReviewSummaryRes getReviewSummaryResIfResourceExists(Long id, String type) {
+        if(!resourceExists(id)){
+            throw new ResourceNotFoundException(
+                    String.format("%s with id:%s does not exist", type, id)
+            );
+        }
+        return getReviewSummaryRes(id, type);
+    }
+
+    public List<ReviewRes> getReviewsIfResourceExists(Long resourceId, String type) {
+        if(!resourceExists(resourceId)){
+            throw new ResourceNotFoundException(
+                    String.format("%s with id:%s does not exist", type, resourceId)
+            );
+        }
+        return getReviewsByResourceId(resourceId);
     }
 }

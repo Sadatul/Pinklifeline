@@ -54,6 +54,11 @@ public class DoctorReviewsService extends AbstractReviewHandlerService {
     }
 
     @Override
+    public boolean resourceExists(Long resourceId) {
+        return doctorsInfoService.existsById(resourceId);
+    }
+
+    @Override
     public Review getNewReview(Long reviewerId, RegisterReviewReq req) {
         User reviewer = userService.getUserIfRegisteredOnlyId(reviewerId);
         DoctorDetails doctorDetails = doctorsInfoService.getDoctorIfVerified(req.getId());

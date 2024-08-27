@@ -19,4 +19,7 @@ public interface ForumQuestionRepository extends JpaRepository<ForumQuestion, Lo
 
     @Query("select fq.tags from ForumQuestion fq where fq.id = :id")
     List<String> getTagsById(Long id);
+
+    @Query("select fq.id, fq.user.fullName, fq.user.username, fq.title from ForumQuestion fq where fq.id = :id")
+    Optional<Object[]> getForumQuestionWithAuthorData(Long id);
 }

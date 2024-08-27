@@ -42,3 +42,8 @@ variable "sslcommerz_store_passwd" {
   type      = string
   sensitive = true
 }
+
+variable "email_password" {
+  type      = string
+  sensitive = true
+}

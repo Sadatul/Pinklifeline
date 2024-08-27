@@ -1,7 +1,6 @@
 package com.sadi.pinklifeline.integrationtests;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
-import com.sadi.pinklifeline.service.EmailService;
 import com.sadi.pinklifeline.service.UserRegistrationAndVerificationService;
 import jakarta.mail.internet.MimeMessage;
 import org.assertj.core.api.Assertions;

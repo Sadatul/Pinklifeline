@@ -117,6 +117,20 @@ need to be passed, then pass an empty list like this:
 ```allergies:[]```
 * If ```cancerHistory: "N"```, remember cancerRelatives must be an empty list.
 
+## Update LocationShare status
+``` Endpoint: PUT /v1/ROLE_PATIENT/toggle-location-share```
+<br><br>
+```Response status: ok(200)```
+### Sample Return Object
+```
+{
+  "locationShare": false
+}
+```
+**<span style="color:red">Notes:</span>**
+* "locationShare" is the latest status of the locationShare. This endpoint works like a toggle.
+
+
 ## Get Nearby Users
 ``` Endpoint: GET /v1/ROLE_PATIENT/nearby/{id}```
 ### Sample Return Object
@@ -259,10 +273,10 @@ need to be passed, then pass an empty list like this:
 ## Delete Doctor Consultation Location
 ``` Endpoint: DELETE /v1/ROLE_DOCTOR/{doctor_id}/locations/{location_id}```
 
-## Add Doctor Review
-``` Endpoint: POST /v1/reviews/doctor/{id}``` \
+## Add Review
+``` Endpoint: POST /v1/reviews/{type}/{id}``` \
 
-**Note: Here id means the user who is providing the review**
+**Note: Here id means the user who is providing the review, type can be hospital or doctor**
 ### Sample Body
 ```
 {
@@ -293,15 +307,15 @@ need to be passed, then pass an empty list like this:
 }
 ```
 **<span style="color:red">Notes:</span>**
-* count -> total number of reviews for the doctor to which the review was added
-* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* count -> total number of reviews for the type to which the review was added
+* averageRating -> The average rating (after the new review was added) of the resource to which the review was added.
 * ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 * This response will be also returned for each review update and delete, the info will be the latest info after performing the update.
 
 ## Update Doctor Review
-``` Endpoint: PUT /v1/reviews/doctor/{id}/{review_id}``` \
+``` Endpoint: PUT /v1/reviews/{type}/{id}/{review_id}``` \
 
-**Note: Here id means the user who is providing the review**
+**Note: Here id means the user who is providing the review, type can be hospital or doctor**
 ### Sample Body
 ```
 {
@@ -334,8 +348,9 @@ need to be passed, then pass an empty list like this:
 * ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Delete Doctor Review
-``` Endpoint: DELETE /v1/reviews/doctor/{id}/{review_id}``` \
+``` Endpoint: DELETE /v1/reviews/{type}/{id}/{review_id}``` \
 
+**Note: Here id means the user who is providing the review. Type can be hospital or doctor**
 ### Response Body
 ```
 {
@@ -399,6 +414,14 @@ need to be passed, then pass an empty list like this:
 
 **<span style="color:red">Notes:</span>**
 * Patient can only cancel appointments that are at REQUESTED status or at ACCEPTED status
+
+##  Doctor Finish Appointment
+``` Endpoint: PUT /v1/appointments/{appointment_id}/finish```
+
+**<span style="color:red">Notes:</span>**
+* Only doctors can use this endpoint
+* Doctor can only decline appointments that are at ACCEPTED status
+
 
 ## Payment for Doctor Appointment
 ``` Endpoint: POST /v1/payment/appointment/{appointment_id}/initiate```
@@ -662,8 +685,11 @@ status: create(201)
   "profilePicture": "kaka"
 }
 ```
-## Get reviews for doctors
-``` Endpoint: GET /v1/reviews/doctor/{id}```
+## Get reviews
+``` Endpoint: GET /v1/reviews/(type)/{id}```
+<br><br>
+**Type can be hospital or doctor**
+### Response Body:
 ```
 [
   {
@@ -688,6 +714,28 @@ status: create(201)
 ```
 **<span style="color:red">Notes:</span>** <br>
 * Reviews will be sorted based on time**
+## Get review summary
+``` Endpoint: GET /v1/reviews/(type)/{id}/summary```
+<br><br>
+**Note: Type can be hospital or doctor**
+### Response Body:
+```
+{
+    "count": 3,
+    "averageRating": 2.6666666666666665,
+    "ratingCount":[
+        1,
+        0,
+        1,
+        1,
+        0
+    ]
+}
+```
+**<span style="color:red">Notes:</span>**
+* count -> total number of reviews for the doctor to which the review was added
+* averageRating -> The average rating (after the new review was added) of the doctor to which the review was added.
+* ratingCount -> 0th index refers to the number of 1-star reviews, 1st index refers to the number of 2-star reviews and so on.
 
 ## Add Report
 ``` Endpoint: POST /v1/reports```
@@ -707,6 +755,7 @@ status: create(201)
 ```
 
 **<span style="color:red">Notes:</span>**
+* Only Subscribed users can access this endpoint.
 * Add report request can be sent by any role
 * None of the above fields can be null. Must provide each one.
 * if you have no keywords than send an empty list ( [ ] )
@@ -1085,7 +1134,8 @@ status: create(201)
   "height": 25.0,
   "cancerStage": "SURVIVOR",
   "diagnosisDate": "2020-08-03",
-  "location": "sdfasdfdsfsdfjsdfjfds"
+  "location": "sdfasdfdsfsdfjsdfjfds",
+  "locationShare": true
 }
 ```
 ## Get a Report By Id
@@ -1205,7 +1255,11 @@ status: create(201)
 * This endpoint works like a toggle. If a vote for this blog_id with current user already exists it will remove the vote, and you will get a -1 as response. But if you a vote doesn't exist for the blog_id by the current user, then a vote will be added to the blog and you will get a 1 as response.
 
 ## GET Blogs: Paginated
-``` Endpoint: GET /v1/blogs```
+```
+Endpoint: GET
+    registered user: /v1/blogs
+    anonymous user: /v1/anonymous/blogs
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: docId=1```
@@ -1254,8 +1308,11 @@ status: create(201)
 * If voteId is null that means the current user hasn't voted for this blog. If it has a value(Long), then the user has voted for this blog. 
 
 ## Get Blog info by Id
-```Endpoint: /v1/blogs/{blog_id}```
-<br><br>
+```
+Endpoints: GET 
+    registered users: /v1/blogs/{blog_id}
+    anonymous users: /v1/anonymous/blogs/{blog_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
@@ -1344,7 +1401,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Questions: Paginated
-``` Endpoint: GET /v1/forum```
+``` 
+Endpoints: GET
+    registered users: /v1/forum
+    anonymous users: /v1/anonymous/forum
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: userId=1```
@@ -1392,11 +1453,15 @@ status: create(201)
 * If voteByUser is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 
 ## Get Forum Question Info by Id
-```Endpoint: /v1/forum/{forum_id}```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/{forum_id}
+    anonymous users: /v1/anonymous/forum/{forum_id}
+```
 ```Response status: ok(200)```
 ### Response Body
 ```
+{
   "id": 4,
   "title": "Istanbul Complex Treatment",
   "body": "m libero natoque hac hendrerit nibh amet, torquent ornare.",
@@ -1407,6 +1472,7 @@ status: create(201)
   "voteCount": 1,
   "createdAt": "2024-06-16T21:00:06",
   "tags":["Hospital", "Heart"]
+}
 ```
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
@@ -1472,8 +1538,11 @@ status: create(201)
   * UNVOTE (Removes existing vote)
 * "voteChange" specifies the amount of change you should see in the voteCount
 ## GET Forum Answers by QuestionId
-``` Endpoint: GET /v1/forum/answers```
-<br><br>
+```
+Endpoints: GET
+    registered users: /v1/forum/answers
+    anonymous users: /v1/anonymous/forum/answers
+```
 ```Response status: ok(200)```
 <br><br>
 ``` Query params: questionId=1 (required)```
@@ -1498,6 +1567,7 @@ status: create(201)
     "id": 10,
     "body": "Very good Reply to 8",
     "parentId": 8,
+    "questionId": 5,
     "voteByUser": null,
     "author": "Dr. QQW Ahmed",
     "authorId": 4,
@@ -1511,3 +1581,669 @@ status: create(201)
 **<span style="color:red">Notes:</span>**
 * If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
 * "numberOfReplies" says the number of reply this particular answer had.
+
+## GET Forum Answers by answerId
+```
+Endpoints: GET
+    registered users: /v1/forum/answers/{answerId}
+    anonymous users: /v1/anonymous/forum/answers/{answerId}
+```
+```Response status: ok(200)```
+### Response Body
+```
+[
+  {
+    "id": 10,
+    "body": "Very good Reply to 8",
+    "parentId": 8,
+    "questionId": 5,
+    "voteByUser": null,
+    "author": "Dr. QQW Ahmed",
+    "authorId": 4,
+    "authorProfilePicture": null,
+    "voteCount": 1,
+    "createdAt": "2024-08-17T07:56:27",
+    "numberOfReplies": 1
+  }
+]
+```
+**<span style="color:red">Notes:</span>**
+* If "voteByUser" is null that means the current user hasn't voted for this blog. If it is one 1 then, the user has up-voted and if -1, then down-voted
+* "numberOfReplies" says the number of reply this particular answer had.
+## Add Complaint
+``` Endpoint: POST /v1/complaints```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+  "resourceId": 5,
+  "type": "BLOG",
+  "category": "Mis-information",
+  "description": "This question is filled with mis-information"
+}
+```
+**<span style="color:red">Notes:</span>**
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* "category" is limited to 100 chars
+* "description" is limited to 300 chars
+
+## Get complaints: Only for admin: Paginated
+```
+Endpoints: GET /v1/ROLE_ADMIN/complaints
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: category=nudity```
+<br>
+``` Query params: type=BLOG```
+<br>
+``` Query params: startDate=2024-08-22```
+<br>
+``` Query params: endDate=2024-08-31```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* The result is sorted based on field "createdAt"
+* "type" can be BLOG, FORUM_QUESTION or FORUM_ANSWER
+* sortDirection can have two values ```ASC or DESC```. By default, ASC is selected.
+
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "createdAt": "2024-08-19T22:18:24",
+    "resourceId": 3,
+    "description": "This was very offensive content",
+    "id": 1,
+    "type": "BLOG",
+    "category": "Sexual content"
+  }
+]
+```
+##  Resolve Complaint: Only for admin
+``` Endpoint: /v1/ROLE_ADMIN/complaints/{complaint_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+``` Query params: violation=false```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Here "violation" parameter is what the admin passes. If it true then admin found violation for the complaint.
+* If violation is false, the user who made the complaint will get an email, mentioning that no violation was found
+* If violation is true, then the resource will be deleted, author will be notified that his content was deleted via email and also the user will be get mail that the complaint was resolved.
+## Get Doctors
+```
+Endpoints: GET /v1/doctors
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: fullName=adil```
+<br>
+``` Query params: regNo=sdfasdfsdfsdf```
+<br>
+``` Query params: workplace=hospital```
+<br>
+``` Query params: department=cancer```
+<br>
+``` Query params: designation=ata```
+<br>
+``` Query params: contactNumber=01711573136```
+<br>
+``` Query params: qualifications=fcps,mbbs```
+<br>
+``` Query params: isVerified=Y```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+* "isVerified" can only have two values Y or N. isVerified=Y, user get verified doctors. If isVerified=N user gets unverified doctors.
+* Only admin can get unverified doctors. So, only admin can make a request with isVerified=N. By default, isVerified=Y
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "qualifications":["MBBS", "DO"],
+    "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
+    "contactNumber": "01730445524",
+    "fullName": "Dr. Rahima Begum",
+    "id": 3,
+    "designation": "Head",
+    "department": "Cancer",
+    "workplace": "Rajshahi Medical College"
+  }
+]
+```
+## Verify Doctor: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/verify/doctors/{docId}
+```
+```Response status: noContent(204)```
+
+## Add Hospital: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/hospitals
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "name": "City Medical College, Khulna",
+  "description": "A hospital with all kinds of facilities",
+  "location": "Moylapota, Khulna",
+  "contactNumber": "01738223344",
+  "email": "infos@gazimedicalcollege.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name", "location" and "email" can't be larger than 255 chars log.
+* "email" can't be larger than 30 chars log.
+
+## Update Hospital: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/hospitals/{hospital_id}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "name": "City Medical College, Khulna",
+  "description": "A hospital with all kinds of facilities",
+  "location": "Moylapota, Khulna",
+  "contactNumber": "01738223344",
+  "email": "infos@gazimedicalcollege.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name", "location" and "email" can't be larger than 255 chars log.
+* "email" can't be larger than 30 chars log.
+
+## Delete Hospital: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/hospitals/{hospital_id}
+```
+```Response status: noContent(204)```
+## Add Medical Test: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/medical-tests
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "name": "UltraSonoGraphy",
+  "description": "A very important test for heart patients"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name" can't be larger than 255 chars log.
+
+## Update Medical Test: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/medical-tests/{test_id}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "name": "ECG-Advanced",
+  "description": "A very important test for patients"
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+* "description" can't be larger than 1000 chars log.
+* "name" can't be larger than 255 chars log.
+
+## DELETE Medical Test: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/medical-tests/{test_id}
+```
+```Response status: noContent(204)```
+## Add Test to Hospital: Only for admin
+```
+Endpoints: POST /v1/ROLE_ADMIN/hospitals/tests
+```
+```Response status: created(201)```
+### Request Body
+```
+{
+  "hospitalId": 3,
+  "testId": 5,
+  "fee": 2000
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+
+## Update Test to Hospital: Only for admin
+```
+Endpoints: PUT /v1/ROLE_ADMIN/hospitals/tests/{hospitalTestId}
+```
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "fee": 2000
+}
+```
+**<span style="color:red">Notes:</span>**
+* None of them can be null
+
+## Delete Test to Hospital: Only for admin
+```
+Endpoints: DELETE /v1/ROLE_ADMIN/hospitals/tests/{hospitalTestId}
+```
+```Response status: noContent(204)```
+## Get Hospitals: Paginated
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: name=adil```
+<br>
+``` Query params: location=sdfasdfsdfsdf```
+<br>
+``` Query params: id=1```
+<br>
+``` Query params: testIds=2,3```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* testIds is list of MedicalTest ids. If not null, the query returns only the hospitals that has all the testIds available
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "name": "City Medical College, Khulna",
+    "contactNumber": "01738223344",
+    "description": "A hospital with all kinds of facilities",
+    "location": "Moylapota, Khulna",
+    "id": 5,
+    "email": "infos@gazimedicalcollege.com"
+  },
+]
+```
+## Get Medical Tests
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/medical-tests
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: name=adil```
+<br>
+``` Query params: id=1```
+<br>
+``` Query params: desc=false```
+<br>
+``` Query params: sortDirection=ASC```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Any one of them can be omitted.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* desc by default is false, meaning description won't be sent with the body. But if desc is set true then description will be send the response body for each test
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "name": "CT-scan",
+    "description": "A very important test for heart patients",
+    "id": 4
+  }
+]
+```
+## Get Hospitals Tests by hospitalId: Paginated
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals/tests
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: hospitalId=1 (REQUIRED)```
+<br>
+``` Query params: name=adil```
+<br>
+``` Query params: testIds=2,3```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br>
+``` Query params: pageSize=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* hospitalId is required, must be provided.
+* By default, the result is sorted based on name in ascending order. You can change the order via sortDirection
+* Here testIds work a bit differently, if it is omitted all the tests under the hospital will be returned. But if testIds is not null, then only tests mention in list will be returned if they are available in the hospital.
+* "pageSize" is by default 10 but can be changes as needed.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+[
+  {
+    "fee": 2000,
+    "name": "CT-scan",
+    "description": "A very important test for heart patients",
+    "testId": 4,
+    "id": 7
+  }
+]
+```
+## Get Tests Fee in hospital for comparison
+**Any user can access this, even anonymous ones**
+```
+Endpoints: GET /v1/anonymous/hospitals/compare
+```
+```Response status: ok(200)```
+<br><br>
+``` Query params: testId=1```
+<br>
+``` Query params: hospitalIds=2,3```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* testId is required.
+* hospitalIds is a list of hospitalId. If the test mentioned in the testId is available in the hospitalIds list then its fee will be returned.
+### Response Body.content
+**<span style="color:red">Note: The result is paginated. Check paginated Response</span>**
+```
+{
+  "3": 2000,
+  "4": 3000
+}
+```
+## Add Work
+``` Endpoint: POST /v1/works```
+<br>
+<br>
+```Response status: created(201)```
+### Sample Body
+```
+{
+   "title": "My sister needs chemo",
+   "description": "add me go ",
+   "address": "Chittagong, Bangladesh",
+   "tags": ["NURSING"]
+}
+```
+
+**<span style="color:red">Notes:</span>**
+* None of the above fields can be null. Must provide each one.
+* Title and address is limited to 255 characters and description is limited to 1000 characters
+* tags can be list of two type of values, DOCTOR and NURSING
+## Update Work
+``` Endpoint: PUT /v1/works/{work_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+### Sample Body
+```
+{
+   "title": "My sister needs chemo",
+   "description": "add me go ",
+   "address": "Chittagong, Bangladesh",
+   "tags": ["NURSING"]
+}
+```
+**<span style="color:red">Notes:</span>**
+* This is only allowed if no current provider has reserved the work. You can remove reserve from the work and then update it. 
+* None of the above fields can be null. Must provide each one.
+* Title and address is limited to 255 characters and description is limited to 1000 characters
+* tags can be list of two type of values, DOCTOR and NURSING
+##  Delete Work
+``` Endpoint: DELETE /v1/works/{work_id}```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* This is only allowed if no current provider has reserved the work. You can remove reserve from the work and then delete it.
+
+## Reserve Work
+``` Endpoint: PUT /v1/works/{work_id}/reserve```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Must be a subscribed account to access this.
+
+## Remove Reserve from Work
+``` Endpoint: DELETE /v1/works/{work_id}/reserve```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* Both user and provider of the task can perform this. If one removes reserve the other one will get an email.
+## Finish Work
+``` Endpoint: PUT /v1/works/{work_id}/finish```
+<br>
+<br>
+```Response status: noContent(204)```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* You can only finish a task if it is in accepted state.
+
+## Get Tags for a work
+``` Endpoint: GET /v1/works/{work_id}/tags```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body
+```
+['DOCTOR', 'NURSING']
+```
+
+## Get Work By Id
+``` Endpoint: GET /v1/works/{work_id}```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "createdAt": "2024-08-24T12:45:24",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "id": 5,
+  "title": "WestHamFix with the help of Social Media",
+  "tags":["NURSING"],
+  "status": "FINISHED"
+}
+```
+### Response Body (For Subscribed and Non-owner)
+```
+{
+  "createdAt": "2024-08-24T12:45:24",
+  "address": "Dhaka, Bangladesh",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "id": 5,
+  "title": "WestHamFix with the help of Social Media",
+  "tags":["NURSING"],
+  "status": "FINISHED"
+}
+```
+### Response Body (For Owner and provider)
+```
+{
+  "address": "Chittagong, Bangladesh",
+  "userFullName": "Sadatul",
+  "description": "sequat venenatis.sdfasdfsdfsdf ",
+  "providerMail": "2005077@ugrad.cse.buet.ac.bd",
+  "title": "WestHamFix with the help of Social Media",
+  "userId": 2,
+  "tags":["NURSING"],
+  "createdAt": "2024-08-24T12:45:24",
+  "providerId": 3,
+  "id": 5,
+  "providerName": "Dr. Sadi Ahmed",
+  "status": "FINISHED",
+  "providerContactNumber": "01730445524",
+  "username": "sadatulislamsadi@gmail.com"
+}
+```
+**<span style="color:red">Notes:</span>**
+* username is the mail of the owner.
+* If the task is in posted state meaning no one has reserved the task. Then you will see that the providerMail, ProvideId and ProviderName is null
+## Get Works: Paginated
+``` Endpoint: GET /v1/works/{work_id}```
+<br>
+<br>
+```Response status: ok(200)```
+<br><br>
+``` Query params: startDate=2024-08-08```
+<br>
+``` Query params: endDate=2024-09-08```
+<br>
+``` Query params: tags=doctor,nursing```
+<br>
+``` Query params: userId=1```
+<br>
+``` Query params: status=POSTED```
+<br>
+``` Query params: providerId=1```
+<br>
+``` Query params: address=dhaka```
+<br>
+``` Query params: sortDirection=ASC```
+<br>
+``` Query params: pageNo=0```
+<br><br>
+**<span style="color:red">Notes:</span>**
+* status can be POSTED, ACCEPTED, FINISHED
+* address is only available for paid users. Un-subscribed users will get a exception.
+* By default, the result will come in descending order of createdAt.
+### Response Body.Content (For Non-Subscribed users)
+**Note: This response is paginated. Check paginated responses**
+```
+[
+  {
+    "createdAt": "2024-08-24T12:45:24",
+    "description": "sequat venenatis.sdfasdfsdfsdf ",
+    "id": 5,
+    "title": "WestHamFix with the help of Social Media",
+    "status": "FINISHED"
+  }
+]
+```
+### Response Body.Content (For Subscribed users)
+**Note: This response is paginated. Check paginated responses**
+```
+[
+  {
+    "createdAt": "2024-08-24T12:45:24",
+    "address": "Khulna, Bangladesh",
+    "description": "sequat venenatis.sdfasdfsdfsdf ",
+    "id": 5,
+    "title": "WestHamFix with the help of Social Media",
+    "status": "FINISHED"
+  }
+]
+```
+## Payment for Subscription
+``` Endpoint: POST /v1/payment/subscription/{user_id}/initiate```
+### Sample Body
+```
+{
+  "customerName": "Sadatul Islam Sadi",
+  "customerEmail": "sadatulislamsadi@gmail.com",
+  "customerPhone": "0171231213",
+  "subscriptionType": "YEARLY"
+}
+```
+**<span style="color:red">Notes:</span>**
+* Each of the field must be provided
+* customerEmail must be a valid email
+* subscriptionType can be DOCTOR_MONTHLY(1), DOCTOR_YEARLY(2), USER_MONTHLY(3) and USER_YEARLY(4)
+
+### Response Body
+```
+{
+    "transactionId": "17208953344777288",
+    "gatewayUrl": "https://sandbox.sslcommerz.com/EasyCheckOut/testcdebca74f4c2f037c2e974a06d9dac94c4a"
+}
+
+```
+**<span style="color:red">Notes:</span>**
+* This only initiates the payment request. To complete payment, the transaction must be validated. To validate the transaction you will need the transactionId
+* "gatewayUrl" is a the url to the sslcommerz gateway, where you will find different options to pay.
+
+## Validate Payment for Subscription
+``` Endpoint: GET /v1/payment/subscription/{userId}/validate```
+### Query Parameters
+```
+transId=17208953344777288
+```
+**<span style="color:red">Notes:</span>**
+* Note this is a get request. You don't need to send a body but need to send a query parameter named transId
+* "transId" is the transactionId that we got when we initiated the payment
+* After subscription make sure that the user logs out and logs in again. Otherwise paidStatus in the token won't be updated.
+* From the get request you will get three different HttpStatus codes
+  * **400** : means transaction has failed user needs to retry by initiating the payment again
+  * **202** : transaction is still pending. User hasn't made any payment via the gateway
+  * **200** : payment has been completed. Nice
+
+## Get Subscription Packages
+``` Endpoint: GET /v1/anonymous/subscriptions```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "USER_MONTHLY": 300,
+  "USER_YEARLY": 3000,
+  "DOCTOR_YEARLY": 10000,
+  "DOCTOR_MONTHLY": 1000
+}
+```
+
+## Get Subscription Packages
+``` Endpoint: GET /v1/anonymous/subscriptions```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "USER_MONTHLY": 300,
+  "USER_YEARLY": 3000,
+  "DOCTOR_YEARLY": 10000,
+  "DOCTOR_MONTHLY": 1000
+}
+```
+## Get Subscription Info of User
+``` Endpoint: GET /v1/infos/subscription```
+<br>
+<br>
+```Response status: ok(200)```
+### Response Body (For Non-subscribed and Non-owner)
+```
+{
+  "type": "USER_MONTHLY",
+  "expiryDate": "2024-08-08"
+}
+```

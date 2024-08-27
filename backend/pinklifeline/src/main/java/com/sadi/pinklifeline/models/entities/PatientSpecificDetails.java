@@ -12,7 +12,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
 public class PatientSpecificDetails {
     @Id
     private Long userId;
@@ -34,10 +33,18 @@ public class PatientSpecificDetails {
     @Column(nullable = false)
     private String location;
 
+    @Column(name = "location_share", nullable = false)
+    private Boolean locationShare;
+
+    public PatientSpecificDetails() {
+        this.locationShare = false;
+    }
+
     public PatientSpecificDetails(Long userId, User user, CancerStages cancerStage, LocalDate diagnosisDate) {
         this.userId = userId;
         this.user = user;
         this.cancerStage = cancerStage;
         this.diagnosisDate = diagnosisDate;
+        this.locationShare = false;
     }
 }
