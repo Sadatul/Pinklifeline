@@ -19,6 +19,7 @@ export function SocketInitializer() {
     const sessionContext = useSessionContext()
 
     useEffect(() => {
+        console.log("in stompInitializer", sessionContext.sessionData)
         if (sessionContext.sessionData) {
             stompContext.setUserId(sessionContext.sessionData.userId)
             if (!sessionContext.sessionData.userId) {
@@ -63,7 +64,7 @@ export function SocketInitializer() {
             strompInitializedRef.current = false
             console.log('Disconnected')
         }
-    }, [stompContext.stompClientRef, router])
+    }, [stompContext.stompClientRef, router, sessionContext.sessionData])
 
     useEffect(() => {
         stompContext.setMessages([])

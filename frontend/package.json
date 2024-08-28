@@ -78,7 +78,8 @@
     "styled-components": "^6.1.11",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "tesseract.js": "^5.1.0"
+    "tesseract.js": "^5.1.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "eslint": "^8",

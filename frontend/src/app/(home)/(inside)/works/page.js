@@ -49,7 +49,7 @@ export default function WorksPage() {
             "description": "sequat venenatis.sdfasdfsdfsdf ",
             "id": 5,
             "title": "WestHamFix with the help of Social Media",
-            "status": "REJECTED"
+            "status": "ACCEPTED"
         }, {
             "createdAt": "2024-08-24T12:45:24",
             "description": "sequat venenatis.sdfasdfsdfsdf ",
@@ -70,6 +70,7 @@ export default function WorksPage() {
         sortDirection: "ASC",
         pageNo: 0
     })
+    const [allowStatusFilter, setAllowStatusFilter] = useState(false)
     const [dateRange, setDateRange] = useState({
         from: null,
         to: null,
@@ -162,26 +163,6 @@ export default function WorksPage() {
                                         value={selectedTags}
                                     />
                                 </div>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <span>
-                                        User Id
-                                    </span>
-                                    <input
-                                        type="number"
-                                        id="user-id"
-                                        className="w-24 p-2 border border-gray-500 shadow-inner rounded-md number-input"
-                                    />
-                                </div>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <span>
-                                        Provider Id
-                                    </span>
-                                    <input
-                                        type="number"
-                                        id="provider-id"
-                                        className="w-24 p-2 border border-gray-500 shadow-inner rounded-md number-input"
-                                    />
-                                </div>
                                 {(sessionContext.sessionData.subscribed > 0) &&
                                     <div className="flex flex-row gap-2 items-center">
                                         <span>
@@ -224,9 +205,9 @@ export default function WorksPage() {
                                         to: null,
                                     })
                                     setSelectedTags([])
-                                    document.getElementById("user-id").value = ''
-                                    document.getElementById("provider-id").value = ''
-                                    document.getElementById("address").value = ''
+                                    if (sessionContext.sessionData.subscribed > 0) {
+                                        document.getElementById("address").value = ''
+                                    }
                                 }}>Clear</button>
                             </div>
                         </>
@@ -236,7 +217,43 @@ export default function WorksPage() {
             <div className="flex flex-col w-10/12 gap-4">
                 <div className="flex flex-row items-center justify-end w-full">
                     <div className="flex flex-row gap-4">
-                        <select id="status" value={filter.status} className="p-2 border border-gray-500 shadow-inner rounded-md" onChange={(e) => {
+                        <select className="p-2 border border-gray-500 shadow-inner rounded-md" onChange={(e) => {
+                            if (e.target.value === "DEFAULT") {
+                                setAllowStatusFilter(false)
+                                setFilter({
+                                    ...filter,
+                                    status: workStatus.POSTED,
+                                    userId: '',
+                                    providerId: '',
+                                    pageNo: 0
+                                })
+                            }
+                            else if (e.target.value === "MYPOSTS") {
+                                setAllowStatusFilter(true)
+                                setFilter({
+                                    ...filter,
+                                    userId: sessionContext.sessionData.userId,
+                                    providerId: '',
+                                    status: workStatus.POSTED,
+                                    pageNo: 0
+                                })
+                            }
+                            else if (e.target.value === "MYPROVIDINGS") {
+                                setAllowStatusFilter(true)
+                                setFilter({
+                                    ...filter,
+                                    providerId: sessionContext.sessionData.userId,
+                                    userId: '',
+                                    status: workStatus.ACCEPTED,
+                                    pageNo: 0
+                                })
+                            }
+                        }}>
+                            <option value="DEFAULT">Default</option>
+                            <option value="MYPOSTS">My Posts</option>
+                            <option value="MYPROVIDINGS">My Providings</option>
+                        </select>
+                        <select id="status" disabled={!allowStatusFilter} value={filter.status} className="p-2 border border-gray-500 shadow-inner rounded-md" onChange={(e) => {
                             setFilter({
                                 ...filter,
                                 status: e.target.value === "ALL" ? "" : e.target.value,
@@ -276,7 +293,7 @@ export default function WorksPage() {
                                     <div className="flex flex-row gap-4 justify-between w-full">
                                         <span className="font-bold text-lg flex items-center gap-2">
                                             {work.title}
-                                            <Badge className={cn(work.status === workStatus.FINISHED && "bg-blue-700", work.status === workStatus.REJECTED && "bg-red-700", work.status === workStatus.POSTED && "bg-green-700", "text-white")}>{work.status}</Badge>
+                                            <Badge className={cn(work.status === workStatus.FINISHED && "bg-blue-700", work.status === workStatus.ACCEPTED && "bg-red-700", work.status === workStatus.POSTED && "bg-green-700", "text-white")}>{work.status}</Badge>
                                         </span>
                                         <span>{displayDate(work.createdAt)}</span>
                                     </div>

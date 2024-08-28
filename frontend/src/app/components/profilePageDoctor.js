@@ -202,12 +202,12 @@ export default function DoctorProfile({ profileId, section }) {
                                 {userData?.isNurse ? "Nurse" : "Doctor"}
                             </Badge>
                         </h1>
-                        <p className="text-base font-semibold flex flex-row items-center gap-2">
+                        <div className="text-base font-semibold flex flex-row items-center gap-2">
                             {userData?.qualifications?.map((qualification, index) => (
                                 <Badge key={index} variant={"outlined"} className={"bg-gray-200"} >{qualification}</Badge>
                             ))}
-                        </p>
-                        <p className="text-base font-semibold">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</p>
+                        </div>
+                        <div className="text-base font-semibold">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</div>
                         <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
                         <Popover>
                             <PopoverTrigger className="w-12">
@@ -216,7 +216,7 @@ export default function DoctorProfile({ profileId, section }) {
                                     <span className="text-base font-semibold ml-2">{round(reviewInfo.averageRating)}</span>
                                 </div>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto ">
+                            <PopoverContent className="w-auto " asChild>
                                 {reviewInfo.ratingCount.map((rating, index) => (
                                     <div key={index} className="flex flex-row items-center p-2">
                                         <div className="flex flex-row flex-1">
@@ -228,7 +228,6 @@ export default function DoctorProfile({ profileId, section }) {
                                     </div>
                                 ))}
                             </PopoverContent>
-
                         </Popover>
                     </div>
                     <div className="flex flex-row items-center mr-3 mt-12">
@@ -239,7 +238,7 @@ export default function DoctorProfile({ profileId, section }) {
                                     <span className="ml-1 font-semibold">Message</span>
                                 </button>
                             </PopoverTrigger>
-                            <PopoverContent>
+                            <PopoverContent asChild>
                                 <div className="flex flex-col">
                                     <textarea id="message" className="w-full h-16 p-2 border border-gray-300 rounded-md" placeholder="Type your message here"></textarea>
                                     <button onClick={sendMessage} className="bg-blue-500 text-white px-2 py-2 text-base rounded-md mt-2">Send</button>
@@ -587,7 +586,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                     Add Review
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent asChild>
                                 <DialogHeader>
                                     <DialogTitle>
                                         Write your message
@@ -966,7 +965,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                                     {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
                                                 </Button>
                                             </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
+                                            <PopoverContent className="w-auto p-0" asChild>
                                                 <Calendar
                                                     mode="single"
                                                     selected={appointmentDate}

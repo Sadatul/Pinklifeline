@@ -20,10 +20,10 @@ export default function WorkPage() {
         "userId": 2,
         "tags": ["NURSING"],
         "createdAt": "2024-08-24T12:45:24",
-        "providerId": 3,
+        "providerId": 4,
         "id": 5,
         "providerName": "Dr. Sadi Ahmed",
-        "status": workStatus.POSTED,
+        "status": workStatus.FINISHED,
         "providerContactNumber": "01730445524",
         "username": "sadatulislamsadi@gmail.com"
     })
@@ -136,9 +136,9 @@ export default function WorkPage() {
                     </div>
                 </div>
                 <p className="text-base text-gray-800 break-all px-3">{workInfo.description}</p>
-                <div className="flex flex-row items-center w-full justify-between pt-5 pb-2 px-3">
-                    {sessionContext.sessionData.userId === workInfo.providerId &&
-                        <div className="flex flex-row gap-3 items-center">
+                <div className="flex flex-row items-center w-full justify-end pt-5 pb-2 px-3">
+                    {sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED &&
+                        <div className="flex flex-row gap-3 items-center flex-1 justify-start">
                             <textarea className="w-48 h-10 border border-gray-300 rounded-md p-1" placeholder="Enter your message" ref={sendMessageRef} onChange={(e) => {
                                 sendMessageRef.current.style.height = "auto"
                                 sendMessageRef.current.style.height = (sendMessageRef.current.scrollHeight + 1) + "px"
@@ -149,7 +149,7 @@ export default function WorkPage() {
                         </div>
                     }
                     <div className="flex flex-row gap-3 items-center">
-                        {(sessionContext.sessionData.userId === workInfo.userId) &&
+                        {(sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.POSTED &&
                             <button className={cn("bg-red-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => { deleteWork() }}>
                                 Delete Work
                             </button>
@@ -161,12 +161,12 @@ export default function WorkPage() {
                                 Accept Work
                             </button>
                         }
-                        {(sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.POSTED) &&
+                        {(sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
                             <button className="bg-red-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { rejectWork() }}>
                                 Reject Work
                             </button>
                         }
-                        {(sessionContext.sessionData.userId === workInfo.providerId || sessionContext.sessionData.userId === workInfo.userId) && workInfo.status !== workStatus.FINISHED &&
+                        {(sessionContext.sessionData.userId === workInfo.providerId || sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
                             <button className="bg-gray-800 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { finishWork() }}>
                                 Finish Work
                             </button>
@@ -174,7 +174,7 @@ export default function WorkPage() {
                     </div>
                 </div>
             </div>
-            {(sessionContext.sessionData.userId === workInfo.userId && workInfo.providerId) &&
+            {(sessionContext.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
                 <div className="flex flex-col gap-5 w-7/12 p-4 rounded bg-white">
                     <div className="flex flex-row gap-2 items-center justify-between">
                         <h1 className="text-lg font-bold">Provider details</h1>
