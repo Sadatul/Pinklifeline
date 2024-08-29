@@ -17,6 +17,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsername(String username);
     Optional<User> findById(Long id);
+    boolean existsByUsername(String username);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
@@ -47,4 +48,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("select new com.sadi.pinklifeline.models.dtos.UserTokenDTO(u.id, u.username, u.isRegistrationComplete, s.subscriptionType, s.expiryDate) from User u left join Subscription s on u.id = s.userId where u.id = :userId")
     Optional<UserTokenDTO> findUserTokenDTOUserId(Long userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("update User u set u.password = :password where u.username = :username")
+    void updatePasswordByUsername(String username, String password);
 }

@@ -32,8 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,6 +47,12 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
 
     @Value("${auth.jwt.timeout}")
     private int cookieJwtTimeout;
+
+    @Value("${auth.jwt.refresh-token.cookie-name}")
+    private String refreshTokenCookieName;
+
+    @Value("${auth.jwt.refresh-token.timeout}")
+    private int refreshTokenTimeout;
 
     @Autowired
     private MockMvc mockMvc;
@@ -110,6 +115,82 @@ public class AuthControllerV1Tests extends AbstractBaseIntegrationTest{
         mockMvc.perform(get("/v1/hello")
                         .cookie(cookie))
                 .andExpect(status().isOk());
+
+        String refreshToken = token.get("refreshToken").toString();
+        Cookie refreshCookie = getRefreshCookie(refreshToken);
+
+        response = mockMvc.perform(get("/v1/auth/refresh").cookie(refreshCookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andReturn().getResponse().getContentAsString();
+
+        logger.info("Response from refresh_token: {}", response);
+    }
+
+    @Test
+    public void resetPasswordTest() throws Exception {
+        User newUser = new User("pinklife@example.com", passwordEncoder.encode("12345"),
+                List.of(Roles.ROLE_PATIENT));
+
+        userRepository.save(newUser);
+
+        // First generating a refresh Token.
+        String response = mockMvc.perform(post("/v1/auth").contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                  {
+                    "username": "pinklife@example.com",
+                    "password": "12345"
+                  }
+                 """)).andReturn().getResponse().getContentAsString();
+
+        TypeReference<Map<String, Object>> typeRef = new TypeReference<>() {};
+        Map<String, Object> body = objectMapper.readValue(response, typeRef);
+
+        String refreshToken = body.get("refreshToken").toString();
+        Cookie refreshCookie = getRefreshCookie(refreshToken);
+
+        mockMvc.perform(get("/v1/auth/reset-password").param("email", newUser.getUsername()))
+                .andExpect(status().isOk());
+        Thread.sleep(250);
+
+        MimeMessage[] messages = greenMail.getReceivedMessages();
+        Assertions.assertThat(messages.length).isEqualTo(1);
+
+        String mailBody = GreenMailUtil.getBody(messages[0]);
+        String token = mailBody.split(",")[2];
+        logger.info("Token {}", token);
+
+        String newPassword = "54321";
+        mockMvc.perform(put("/v1/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                  {
+                    "email": "%s",
+                    "password": "%s",
+                    "token": "%s"
+                  }
+                 """, newUser.getUsername(), newPassword, token)))
+                .andExpect(status().isNoContent());
+
+        // Checking if the previous refresh token has been invalidated or not.
+        mockMvc.perform(get("/v1/auth/refresh").cookie(refreshCookie))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/v1/auth").contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                  {
+                    "username": "%s",
+                    "password": "%s"
+                  }
+                 """, newUser.getUsername(), newPassword))).andExpect(status().isOk());
+    }
+
+    private Cookie getRefreshCookie(String refreshToken) {
+        Cookie refreshCookie = new Cookie(refreshTokenCookieName, refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(refreshTokenTimeout);
+        return refreshCookie;
     }
 
     @Test

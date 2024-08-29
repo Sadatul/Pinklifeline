@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/hello/healthy").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/auth/refresh").permitAll()
+                        .requestMatchers("/v1/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/payment/*/*/ssl-redirect").permitAll()
                         .requestMatchers("/v1/anonymous/**").permitAll()
                         .anyRequest().authenticated())

@@ -2247,3 +2247,31 @@ transId=17208953344777288
   "expiryDate": "2024-08-08"
 }
 ```
+## Reset Password
+### step 1:
+``` Endpoint: GET /v1/auth/reset-password```
+<br><br>
+```Response status: ok(200)```
+<br>
+``` Query params: email=sadatulislamsadi@gmail.com (Required)```
+
+**<span style="color:red">Notes:</span>**
+* This will initiate reset password process. 
+* The user will receive an email with a link. The link will have two query parameters 1. the email of the user and 2. a token for resetting password
+* In this page user will set the new password. Be sure to confirm password.
+* Now you will move to step 2.
+### step 2:
+``` Endpoint: PUT /v1/auth/reset-password```
+<br><br>
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "email": "sadatulislamsadi@gmail.com",
+  "password": "sadi@1",
+  "token": "HmjCEIuGMQ3OJ8QP4iuDvy3-ihT87MmXR-9KNlVbq9A"
+}
+```
+**<span style="color:red">Notes:</span>**
+* Remember you will get the token from the query parameter.
+* If the user sends request, his previous refresh tokens will be invalidated.
