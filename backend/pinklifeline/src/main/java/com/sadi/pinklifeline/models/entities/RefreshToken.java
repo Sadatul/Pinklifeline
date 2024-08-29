@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -25,9 +24,9 @@ public class RefreshToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    public RefreshToken(Long userId, Instant expiryDate) {
+    public RefreshToken(Long userId, String token, Instant expiryDate) {
         this.userId = userId;
-        this.token = UUID.randomUUID().toString();
+        this.token = token;
         this.expiryDate = expiryDate;
     }
 

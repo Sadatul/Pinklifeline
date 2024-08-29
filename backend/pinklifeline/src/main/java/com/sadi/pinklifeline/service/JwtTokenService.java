@@ -3,7 +3,6 @@ package com.sadi.pinklifeline.service;
 import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
-import com.sadi.pinklifeline.models.entities.RefreshToken;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
 import com.sadi.pinklifeline.repositories.DoctorDetailsRepository;
 import com.sadi.pinklifeline.repositories.UserRepository;
@@ -65,8 +64,8 @@ public class JwtTokenService {
                                 .claim("subscribed", subscribed)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        RefreshToken refreshToken = refreshTokenService.getRefreshTokenForUser(user.getId());
-        return new JwtTokenResponse(token, refreshToken.getToken(), user.getId(), user.getUsername(),
+        String refreshToken = refreshTokenService.getRefreshTokenForUser(user.getId());
+        return new JwtTokenResponse(token, refreshToken, user.getId(), user.getUsername(),
                 user.getIsRegistered().equals(YesNo.Y), isVerified, subscribed, user.getRoles());
     }
 
