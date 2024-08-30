@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { pagePaths } from "./utils/constants";
 
 export function middleware(request) {
     const path = request.nextUrl.pathname;
@@ -6,7 +7,10 @@ export function middleware(request) {
     const tokenName = "access_token";
     if (!publicPaths.find((publicPath) => path === publicPath) && !request.cookies.get(tokenName)) {
         console.log('middleware.js: redirecting to /reglogin');
-        // return NextResponse.redirect(new URL('/reglogin', request.nextUrl));
+        return NextResponse.redirect(new URL('/reglogin', request.nextUrl));
+    }
+    if( path === "/dashboard"){
+        return NextResponse.redirect(new URL(pagePaths.dashboardPages.userdetailsPage), request.nextUrl);
     }
 }
 

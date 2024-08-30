@@ -56,9 +56,6 @@ export default function AddMedicalTestsPage() {
                 <div className="flex flex-col gap-2 w-full">
                     <Separator className="w-full h-[1.5px] bg-gray-500" />
                     <div className="flex flex-row px-10 w-full justify-end gap-10">
-                        <Link href={pagePaths.hospitalsPage} className="border text-center p-2 border-gray-500 rounded w-20 shadow-inner bg-gray-100 text-black hover:scale-95 transform transition" >
-                            Cancel
-                        </Link>
                         <button className="border border-gray-500 rounded w-20 shadow-inner p-2 bg-gray-700 text-gray-100 hover:scale-95 transform transition" onClick={() => {
                             const name = document.getElementById("testName").value;
                             const description = document.getElementById("testDescription").value;

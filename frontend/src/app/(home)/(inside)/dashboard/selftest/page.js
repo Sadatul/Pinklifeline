@@ -42,7 +42,7 @@ export default function SelfTestPage() {
         }
     };
     return (
-        <div className="flex flex-col p-4 w-full gap-2 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-400 via-gray-400 to-gray-300">
+        <div className="flex flex-col p-4 w-full gap-2 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 to-gray-100">
             <h1 className="text-2xl font-bold">Self Test Page</h1>
             <div className="flex flex-col w-full">
                 <div className="flex flex-row gap-1 px-5 justify-between w-10/12 h-14 bg-gradient-to-t from-zinc-200 via-zinc-300 to-zinc-400 items-center rounded-t-2xl">

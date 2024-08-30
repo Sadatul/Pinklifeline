@@ -88,6 +88,9 @@ export const worksUrl = `${baseUrl}/v1/works`
 export const worksByIdUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}` }
 export const reserveWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/reserve` }
 export const finishWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/finish` }
+export const subscriptionPlansUrl = `${baseUrl}/v1/anonymous/subscriptions`
+export const userSubscriptionUrl = `${baseUrl}/v1/infos/subscription`
+export const subscribeUrl = (user_id) => { return `${baseUrl}/v1/payment/subscription/${user_id}/initiate` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -175,6 +178,9 @@ export const pagePaths = {
         profilePicPage: "/dashboard/userdetails/profilepic",
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
+        worksPage: "/dashboard/works",
+        addWorkPage: "/dashboard/works/add",
+        worksByIdPage: (workId) => { return `/dashboard/works/${workId}` },
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
@@ -195,15 +201,12 @@ export const pagePaths = {
     hospitalsPage: "/admin/hospitals",
     addHospitalPage: "/admin/hospitals/add",
     updateHospitalsPage: (hospitalId) => { return `/admin/hospitals/update/${hospitalId}` },
-    allHospitalsPageAdmin: "/admin/medical-tests",
+    testsAdminPage: "/admin/tests",
     allHospitalsPage: "/hospitals",
     hospitalByIdPage: (hospitalId) => { return `/hospitals/details/${hospitalId}` },
     compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
     searchPage: (query) => { return `/search?query=${query}` },
-    worksPage: "/works",
-    addWorkPage: "/works/add",
-    worksByIdPage: (workId) => { return `/works/${workId}` },
 }
 
 export const ReportTypes = {
@@ -439,3 +442,58 @@ export const reportCategories = [
     { label: "Threat", toxicityModelLabel: "threat" },
     { label: "Toxicity", toxicityModelLabel: "toxicity" }
 ];
+
+export const SubscriptionPlans = [
+    {
+        name: "USER_MONTHLY",
+        price: 300,
+    }, {
+        name: "USER_YEARLY",
+        price: 3000,
+    }, {
+        name: "DOCTOR_MONTHLY",
+        price: 1000,
+    }, {
+        name: "DOCTOR_YEARLY",
+        price: 10000,
+    }
+]
+
+export const DashboardPagesInfos = [
+    {
+        name: "Profile",
+        link: pagePaths.dashboardPages.userdetailsPage,
+    },
+    {
+        name: "Appointments",
+        link: pagePaths.dashboardPages.appointmentsPage,
+    },
+    {
+        name: "Prescription Vault",
+        link: pagePaths.dashboardPages.prescriptionVaultPage,
+    },
+    {
+        name: "Works",
+        link: pagePaths.dashboardPages.worksPage,
+    },
+    {
+        name : "Self Test",
+        link : pagePaths.dashboardPages.selfTestPage
+    }
+]
+
+export const AdminPagesInfos = [
+    {
+        name : "Complaints",
+        link : pagePaths.complaintsPage
+    },{
+        name : "Doctors",
+        link : pagePaths.unverifiedDoctorsPageForAdmin
+    },{
+        name : "Hospitals",
+        link : pagePaths.hospitalsPage
+    },{
+        name : "Medical Tests",
+        link : pagePaths.testsAdminPage
+    }
+]
