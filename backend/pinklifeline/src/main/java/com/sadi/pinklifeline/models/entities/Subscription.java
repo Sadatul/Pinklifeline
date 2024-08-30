@@ -25,18 +25,25 @@ public class Subscription {
 
     @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
+
+    @Column(nullable = false)
+    private Boolean usedFreeTrial;
+
     public Subscription(Long id){
         this.userId = id;
+        this.usedFreeTrial = false;
     }
 
     public Subscription(Long id, SubscriptionType subscriptionType) {
         this.userId = id;
         this.subscriptionType = subscriptionType;
+        this.usedFreeTrial = false;
     }
 
     public Subscription(Long id, SubscriptionType subscriptionType, LocalDateTime expiryDate) {
         this.userId = id;
         this.subscriptionType = subscriptionType;
         this.expiryDate = expiryDate;
+        this.usedFreeTrial = false;
     }
 }

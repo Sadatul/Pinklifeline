@@ -54,7 +54,7 @@ public class ReportHandlerService {
     public Long addReport(ReportReq req) {
         Long userId = SecurityUtils.getOwnerID();
         SecurityUtils.throwExceptionIfNotSubscribed(SubscriptionType.USER_MONTHLY,
-                SubscriptionType.USER_YEARLY);
+                SubscriptionType.USER_YEARLY, SubscriptionType.USER_FREE_TRIAL);
         User user = userService.getUserIfRegisteredOnlyId(userId);
         Report report = new Report(user, req.getDoctorName(), req.getHospitalName(), req.getDate(),
                 req.getSummary(), req.getFileLink(), req.getKeywords());

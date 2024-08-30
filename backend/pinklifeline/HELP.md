@@ -2220,6 +2220,10 @@ transId=17208953344777288
   "DOCTOR_MONTHLY": 1000
 }
 ```
+## Free Trial Endpoint:
+``` Endpoint: PUT /v1/subscriptions/free-trial```
+<br><br>
+```Response status: noContent(204)```
 
 ## Get Subscription Packages
 ``` Endpoint: GET /v1/anonymous/subscriptions```
