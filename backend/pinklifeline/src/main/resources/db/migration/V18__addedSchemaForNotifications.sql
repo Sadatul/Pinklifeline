@@ -1,11 +1,11 @@
 CREATE TABLE notification_subscriptions
 (
-    id          BIGINT AUTO_INCREMENT NOT NULL,
-    user_id     BIGINT                NOT NULL,
-    endpoint    VARCHAR(255)          NOT NULL,
-    public_key  VARCHAR(255)          NOT NULL,
-    auth        VARCHAR(255)          NOT NULL,
-    permissions INT                   NOT NULL,
+    id          BIGINT AUTO_INCREMENT  NOT NULL,
+    user_id     BIGINT                 NOT NULL,
+    endpoint    VARCHAR(1000)          NOT NULL,
+    public_key  VARCHAR(1000)          NOT NULL,
+    auth        VARCHAR(1000)          NOT NULL,
+    permissions INT                    NOT NULL,
     CONSTRAINT pk_notification_subscriptions PRIMARY KEY (id)
 );
 

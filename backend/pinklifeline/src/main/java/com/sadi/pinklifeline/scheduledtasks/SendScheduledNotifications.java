@@ -16,7 +16,7 @@ public class SendScheduledNotifications {
     private final ScheduledNotificationRepository scheduledNotificationRepository;
     private final NotificationHandlerService notificationHandlerService;
 
-    @Scheduled(cron = "0 0 16 * * ?")
+    @Scheduled(cron = "${send.scheduled.notifications.cron}")
     public void sendNotifications() {
         List<ScheduledNotification> notifications = scheduledNotificationRepository.findByTargetDate(LocalDate.now());
         notifications.forEach(notification -> {

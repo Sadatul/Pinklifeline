@@ -2,13 +2,18 @@ package com.sadi.pinklifeline.service;
 
 import static com.sadi.pinklifeline.controllers.NotificationHandlerV1.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sadi.pinklifeline.enums.NotificationType;
 import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
+import com.sadi.pinklifeline.models.dtos.WebPushMessage;
 import com.sadi.pinklifeline.models.entities.NotificationSubscription;
+import com.sadi.pinklifeline.models.entities.ScheduledNotification;
 import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.NotificationSubscriptionReq;
 import com.sadi.pinklifeline.repositories.notifications.NotificationSubscriptionRepository;
+import com.sadi.pinklifeline.repositories.notifications.ScheduledNotificationRepository;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.GeneralSecurityException;
 import java.security.Security;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,6 +35,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class NotificationHandlerService {
+    private final ObjectMapper jacksonObjectMapper;
+    private final ScheduledNotificationRepository scheduledNotificationRepository;
     @Value("${VAPID_PUBLIC_KEY}")
     private String vapidPublicKey;
 
@@ -62,7 +70,7 @@ public class NotificationHandlerService {
 
     public Long subscribe(NotificationSubscriptionReq req) {
         Long userId = SecurityUtils.getOwnerID();
-        User user = userService.getUserIfRegisteredOnlyId(userId);
+        User user = userService.getUserWithIdAndRegistrationStatus(userId);
 
         notificationSubscriptionRepository.findByUserAndEndpoint(user, req.getEndpoint()).ifPresent(
                 notificationSubscription -> {throw new BadRequestFromUserException(
@@ -109,5 +117,22 @@ public class NotificationHandlerService {
                 }
             }
         });
+    }
+
+    public void setScheduledNotification(WebPushMessage message, Long userId,
+                                         LocalDate targetDate, NotificationType type) {
+        String payload = getStringFromWebPushMessage(message);
+        User user = userService.getUserWithIdAndRegistrationStatus(userId);
+        ScheduledNotification scheduledNotification = new ScheduledNotification(user, payload,
+                targetDate, type);
+        scheduledNotificationRepository.save(scheduledNotification);
+    }
+
+    public String getStringFromWebPushMessage(WebPushMessage msg){
+        try {
+            return jacksonObjectMapper.writeValueAsString(msg);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

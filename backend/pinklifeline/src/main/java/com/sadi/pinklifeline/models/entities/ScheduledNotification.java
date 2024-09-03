@@ -34,4 +34,11 @@ public class ScheduledNotification {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private NotificationType type;
+
+    public ScheduledNotification(User user, String payload, LocalDate targetDate, NotificationType type) {
+        this.user = user;
+        this.payload = payload;
+        this.targetDate = targetDate;
+        this.type = type;
+    }
 }
