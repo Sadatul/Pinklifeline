@@ -1,6 +1,5 @@
 'use client'
 
-import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { pagePaths, radicalGradient, worksByIdUrl, worksUrl } from "@/utils/constants"
@@ -59,7 +58,7 @@ export default function AddWork({ workInfo = null, isUpdate = false }) {
                     <span id="error-message" className="text-red-500"></span>
                 </div>
                 <div className="flex justify-end gap-3">
-                    <Link href={pagePaths.worksPage} className="p-2 bg-red-500 text-white rounded-md hover:scale-95">Cancel</Link>
+                    <Link href={pagePaths.dashboardPages.worksPage} className="p-2 bg-red-500 text-white rounded-md hover:scale-95">Cancel</Link>
                     <button className="p-2 bg-blue-500 text-white rounded-md hover:scale-95 w-fit" onClick={() => {
                         const data = {
                             title: document.getElementById("work-title").value,

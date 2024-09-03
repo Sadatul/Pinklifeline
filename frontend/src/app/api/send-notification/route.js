@@ -9,12 +9,21 @@ webPush.setVapidDetails('mailto:your-email@example.com', VAPID_PUBLIC_KEY, VAPID
 
 export async function POST(request) {
     try {
-        const { title, body } = await request.json();
+        // const { title, body } = await request.json();
+        const title = 'New notification';
+        const body = 'test notification from server v2';
+        const actions = [
+            {
+                action: 'explore',
+                title: 'Go to Google',
+                // icon : testingAvatar
+            },
+        ]
         const subscriptions = getSubscriptions();
         console.log('Subscriptions:', subscriptions);
 
         subscriptions.forEach(subscription => {
-            const payload = JSON.stringify({ title, body });
+            const payload = JSON.stringify({ title, body, actions });
 
             webPush.sendNotification(subscription, payload).catch(error => {
                 console.error('Error sending notification:', error);

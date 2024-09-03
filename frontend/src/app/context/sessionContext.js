@@ -1,5 +1,6 @@
 'use client'
-import { pagePaths, sessionDataItem, sessionExpirationTime } from "@/utils/constants"
+import axiosInstance from "@/utils/axiosInstance"
+import { pagePaths, refreshTokenExpirationTime, refreshTokenUrlReq, sessionDataItem, sessionExpirationTime } from "@/utils/constants"
 import { useRouter } from "next/navigation"
 import { createContext, useRef, useContext, useState, useEffect } from "react"
 import { toast } from "sonner"
@@ -23,18 +24,39 @@ export function SessionContextProvider({ children }) {
                 time: null
             })
         }//check if session is expired which is 24 hours
-        else if (new Date() - new Date(sessionData.time) > sessionExpirationTime) {
-            setSessionData({
-                userId: null,
-                role: null,
-                username: null,
-                isVerified: null,
-                subscribed: null,
-                isRegisterComplete: null,
-                time: null
-            })
-            localStorage.removeItem(sessionDataItem)
-            toast.error("Session Expired")
+        else if (Math.abs(new Date() - new Date(sessionData.time)) > sessionExpirationTime) {
+            if (Math.abs(new Date() - new Date(sessionData.refreshTime)) < refreshTokenExpirationTime) {
+                axiosInstance.get(refreshTokenUrlReq).then((res) => {
+                    setSessionData({
+                        ...sessionData,
+                    })
+                }).catch((err) => {
+                    setSessionData({
+                        userId: null,
+                        role: null,
+                        username: null,
+                        isVerified: null,
+                        subscribed: null,
+                        isRegisterComplete: null,
+                        time: null
+                    })
+                    localStorage.removeItem(sessionDataItem)
+                    toast.error("Session Expired")
+                })
+            }
+            else {
+                setSessionData({
+                    userId: null,
+                    role: null,
+                    username: null,
+                    isVerified: null,
+                    subscribed: null,
+                    isRegisterComplete: null,
+                    time: null
+                })
+                localStorage.removeItem(sessionDataItem)
+                toast.error("Session Expired")
+            }
         }
         else {
             setSessionData({

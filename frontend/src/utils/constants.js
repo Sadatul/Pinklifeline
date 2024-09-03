@@ -3,6 +3,7 @@ import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
+export const refreshTokenUrlReq = `${baseUrl}/v1/auth/refresh`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
 export const otpUrlReq = `${baseUrl}/v1/auth/verify`;
 export const userInfoRegUrlReq = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` };
@@ -95,7 +96,8 @@ export const subscribeUrl = (user_id) => { return `${baseUrl}/v1/payment/subscri
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
 export const locationResolution = 8
-export const sessionExpirationTime = 86400000
+export const sessionExpirationTime = 86400000 - 3600000
+export const refreshTokenExpirationTime = 86400000 * 29
 
 export const dummyAvatar = (name) => { return `https://getstream.io/random_svg/?name=${name}` }
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
@@ -105,7 +107,6 @@ export const emptyAvatar = "/emptyAvatar.png"
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
 
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
-
 export const sessionDataItem = "sessionData"
 export const reportAnalysisThreshold = 0.85
 
@@ -477,23 +478,23 @@ export const DashboardPagesInfos = [
         link: pagePaths.dashboardPages.worksPage,
     },
     {
-        name : "Self Test",
-        link : pagePaths.dashboardPages.selfTestPage
+        name: "Self Test",
+        link: pagePaths.dashboardPages.selfTestPage
     }
 ]
 
 export const AdminPagesInfos = [
     {
-        name : "Complaints",
-        link : pagePaths.complaintsPage
-    },{
-        name : "Doctors",
-        link : pagePaths.unverifiedDoctorsPageForAdmin
-    },{
-        name : "Hospitals",
-        link : pagePaths.hospitalsPage
-    },{
-        name : "Medical Tests",
-        link : pagePaths.testsAdminPage
+        name: "Complaints",
+        link: pagePaths.complaintsPage
+    }, {
+        name: "Doctors",
+        link: pagePaths.unverifiedDoctorsPageForAdmin
+    }, {
+        name: "Hospitals",
+        link: pagePaths.hospitalsPage
+    }, {
+        name: "Medical Tests",
+        link: pagePaths.testsAdminPage
     }
 ]

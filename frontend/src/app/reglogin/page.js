@@ -42,7 +42,8 @@ export default function LoginRegister() {
                         isVerified: res.data?.isVerified || res.data?.roles[0] === roles.basicUser || res.data?.roles[0] === roles.patient,
                         subscribed: res.data?.subscribed,
                         isRegisterComplete: res.data?.isRegistered,
-                        time: new Date()
+                        time: new Date(),
+                        refreshTime: new Date()
                     }
                     localStorage.clear();
                     localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))
