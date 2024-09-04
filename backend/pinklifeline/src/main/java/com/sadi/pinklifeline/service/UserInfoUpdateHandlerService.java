@@ -4,11 +4,12 @@ import com.sadi.pinklifeline.models.entities.BasicUserDetails;
 import com.sadi.pinklifeline.models.entities.DoctorDetails;
 import com.sadi.pinklifeline.models.entities.PatientSpecificDetails;
 import com.sadi.pinklifeline.models.entities.User;
-import com.sadi.pinklifeline.models.reqeusts.AbstractUserInfoUpdateReq;
-import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
-import com.sadi.pinklifeline.models.reqeusts.DocInfoUpdateReq;
-import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
+import com.sadi.pinklifeline.models.reqeusts.*;
+import com.sadi.pinklifeline.repositories.BasicUserDetailsRepository;
 import com.sadi.pinklifeline.repositories.UserRepository;
+import com.sadi.pinklifeline.utils.SecurityUtils;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +20,16 @@ import org.springframework.stereotype.Service;
 public class UserInfoUpdateHandlerService {
 
     private final UserRepository userRepository;
+    private final SelfTestReminderHandlerService selfTestReminderHandlerService;
+    private final UserService userService;
+    private final BasicUserDetailsRepository basicUserDetailsRepository;
     Logger logger = LoggerFactory.getLogger(UserInfoUpdateHandlerService.class);
 
-    public UserInfoUpdateHandlerService(UserRepository userRepository) {
+    public UserInfoUpdateHandlerService(UserRepository userRepository, SelfTestReminderHandlerService selfTestReminderHandlerService, UserService userService, BasicUserDetailsRepository basicUserDetailsRepository) {
         this.userRepository = userRepository;
+        this.selfTestReminderHandlerService = selfTestReminderHandlerService;
+        this.userService = userService;
+        this.basicUserDetailsRepository = basicUserDetailsRepository;
     }
 
     private BasicUserDetails getBasicUserDetails(AbstractUserInfoUpdateReq req, User user) {
@@ -100,5 +107,13 @@ public class UserInfoUpdateHandlerService {
         catch (UnsupportedOperationException e){
             logger.info("This error is thrown during doctor info update {}",e.toString());
         }
+    }
+
+    @Transactional
+    public void updatePeriodData(@Valid PeriodDataUpdateReq req) {
+        Long userId = SecurityUtils.getOwnerID();
+        userService.getUserIfRegisteredOnlyId(userId);
+        basicUserDetailsRepository.updatePeriodDataById(req.getLastPeriodDate(), req.getAvgGap(), userId);
+        selfTestReminderHandlerService.setNewReminder(req.getLastPeriodDate(), req.getAvgGap(), userId, true);
     }
 }

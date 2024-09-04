@@ -5,6 +5,7 @@ import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.models.dtos.WebPushMessage;
 import com.sadi.pinklifeline.models.reqeusts.SetReminderReq;
 import com.sadi.pinklifeline.repositories.BasicUserDetailsRepository;
+import com.sadi.pinklifeline.repositories.notifications.ScheduledNotificationRepository;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,11 +20,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SelfTestReminderHandlerService {
+    private final ScheduledNotificationRepository scheduledNotificationRepository;
     @Value("${FRONTEND_HOST}")
     private String frontendHost;
 
     private final NotificationHandlerService notificationHandlerService;
     private final BasicUserDetailsRepository basicUserDetailsRepository;
+
+    private final static String reactToReminderEndpoint = "/self-test/reminder";
+    private final static String selfTestEndpoint = "/self-test";
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void pingForPeriodStart(){
@@ -31,7 +36,7 @@ public class SelfTestReminderHandlerService {
                 "Hi Fighter",
                 "Did your period start today?",
                 List.of(new WebPushMessage.Action("open_url", "Set Reminder for self test")),
-                Collections.singletonMap("url", String.format("%s/self-test/reminder", frontendHost))
+                Collections.singletonMap("url", String.format("%s%s", frontendHost, reactToReminderEndpoint))
         );
 
         notificationHandlerService.setScheduledNotification(message, SecurityUtils.getOwnerID(),
@@ -60,7 +65,7 @@ public class SelfTestReminderHandlerService {
                 "Hi Fighter",
                 "Self Test for breast cancer",
                 List.of(new WebPushMessage.Action("open_url", "Open Self Test")),
-                Collections.singletonMap("url", String.format("%s/self-test", frontendHost))
+                Collections.singletonMap("url", String.format("%s%s", frontendHost, selfTestEndpoint))
         );
 
         notificationHandlerService.setScheduledNotification(selfTestMessage, userId,
@@ -70,11 +75,11 @@ public class SelfTestReminderHandlerService {
                 "Hi Fighter",
                 "Did your period start today?",
                 List.of(new WebPushMessage.Action("open_url", "Set Reminder for self test")),
-                Collections.singletonMap("url", String.format("%s/self-test/reminder", frontendHost))
+                Collections.singletonMap("url", String.format("%s%s", frontendHost, reactToReminderEndpoint))
         );
 
         notificationHandlerService.setScheduledNotification(periodStartMessage, userId,
-                LocalDate.now().plusDays((Integer) data.get(1)), NotificationType.PERIOD_START);
+                ((LocalDate) data.getFirst()).plusDays((Integer) data.get(1)), NotificationType.PERIOD_START);
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
@@ -90,5 +95,23 @@ public class SelfTestReminderHandlerService {
 
         basicUserDetailsRepository.updatePeriodDataById(newDate, newAvgGap, userId);
         return List.of(newDate, newAvgGap);
+    }
+
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
+    public void setNewReminder(LocalDate lastDate, Integer avgGap,
+                               Long userId, Boolean deletePrevious) {
+
+        if(deletePrevious)
+            scheduledNotificationRepository.deleteByUserIdAndType(userId, NotificationType.PERIOD_START);
+
+        WebPushMessage periodStartMessage = new WebPushMessage(
+                "Hi Fighter",
+                "Did your period start today?",
+                List.of(new WebPushMessage.Action("open_url", "Set Reminder for self test")),
+                Collections.singletonMap("url", String.format("%s%s", frontendHost, reactToReminderEndpoint))
+        );
+
+        notificationHandlerService.setScheduledNotification(periodStartMessage, userId,
+                lastDate.plusDays(avgGap), NotificationType.PERIOD_START);
     }
 }
