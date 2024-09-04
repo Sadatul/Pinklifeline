@@ -39,8 +39,6 @@ public class UserInfoUpdateHandlerService {
         basic.setWeight(req.getWeight());
         basic.setCancerHistory(req.getCancerHistory());
         basic.setCancerRelatives(req.getCancerRelatives());
-        basic.setLastPeriodDate(req.getLastPeriodDate());
-        basic.setAvgCycleLength(req.getAvgCycleLength());
         basic.setMedications(req.getMedications());
         basic.setAllergies(req.getAllergies());
         basic.setFullName(req.getFullName());
