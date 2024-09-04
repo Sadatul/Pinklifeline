@@ -20,15 +20,28 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SelfTestReminderHandlerService {
-    private final ScheduledNotificationRepository scheduledNotificationRepository;
+
     @Value("${FRONTEND_HOST}")
     private String frontendHost;
 
+    @Value("${reminder.react-to-reminder.endpoint}")
+    private  String reactToReminderEndpoint;
+
+    @Value("${reminder.self-test.endpoint}")
+    private  String selfTestEndpoint;
+
+    @Value("${reminder.period-start-ping.days}")
+    private  int pingDays;
+
+    @Value("${reminder.self-test-reminder.days}")
+    private  int selfTestReminderDays;
+
+    @Value("${reminder.abnormality.threshold.days}")
+    private  int abnormalityThresholdDays;
+
+    private final ScheduledNotificationRepository scheduledNotificationRepository;
     private final NotificationHandlerService notificationHandlerService;
     private final BasicUserDetailsRepository basicUserDetailsRepository;
-
-    private final static String reactToReminderEndpoint = "/self-test/reminder";
-    private final static String selfTestEndpoint = "/self-test";
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void pingForPeriodStart(){
@@ -40,7 +53,7 @@ public class SelfTestReminderHandlerService {
         );
 
         notificationHandlerService.setScheduledNotification(message, SecurityUtils.getOwnerID(),
-                LocalDate.now().plusDays(2), NotificationType.PERIOD_START);
+                LocalDate.now().plusDays(pingDays), NotificationType.PERIOD_START);
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
@@ -69,7 +82,7 @@ public class SelfTestReminderHandlerService {
         );
 
         notificationHandlerService.setScheduledNotification(selfTestMessage, userId,
-                ((LocalDate) data.getFirst()).plusDays(11), NotificationType.SELF_TEST);
+                ((LocalDate) data.getFirst()).plusDays(selfTestReminderDays), NotificationType.SELF_TEST);
 
         WebPushMessage periodStartMessage = new WebPushMessage(
                 "Hi Fighter",
@@ -102,7 +115,17 @@ public class SelfTestReminderHandlerService {
                                Long userId, Boolean deletePrevious) {
 
         if(deletePrevious)
-            scheduledNotificationRepository.deleteByUserIdAndType(userId, NotificationType.PERIOD_START);
+            scheduledNotificationRepository.deleteByUserIdAndType(userId, List.of(NotificationType.SELF_TEST,
+                    NotificationType.PERIOD_START));
+
+        if(avgGap < abnormalityThresholdDays){
+            return;
+        }
+
+        if(!lastDate.plusDays(avgGap).isAfter(LocalDate.now())) {
+            pingForPeriodStart();
+            return;
+        }
 
         WebPushMessage periodStartMessage = new WebPushMessage(
                 "Hi Fighter",
@@ -113,5 +136,19 @@ public class SelfTestReminderHandlerService {
 
         notificationHandlerService.setScheduledNotification(periodStartMessage, userId,
                 lastDate.plusDays(avgGap), NotificationType.PERIOD_START);
+
+        if(!lastDate.plusDays(selfTestReminderDays).isAfter(LocalDate.now())) {
+            return;
+        }
+
+        WebPushMessage selfTestMessage = new WebPushMessage(
+                "Hi Fighter",
+                "Self Test for breast cancer",
+                List.of(new WebPushMessage.Action("open_url", "Open Self Test")),
+                Collections.singletonMap("url", String.format("%s%s", frontendHost, selfTestEndpoint))
+        );
+
+        notificationHandlerService.setScheduledNotification(selfTestMessage, userId,
+                lastDate.plusDays(selfTestReminderDays), NotificationType.SELF_TEST);
     }
 }

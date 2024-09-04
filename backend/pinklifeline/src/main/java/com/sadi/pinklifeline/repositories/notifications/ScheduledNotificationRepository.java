@@ -15,6 +15,6 @@ public interface ScheduledNotificationRepository extends JpaRepository<Scheduled
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("delete from ScheduledNotification sn where sn.user.id = :userId and sn.type = :type")
-    void deleteByUserIdAndType(Long userId, NotificationType type);
+    @Query("delete from ScheduledNotification sn where sn.user.id = :userId and sn.type in :type")
+    void deleteByUserIdAndType(Long userId, List<NotificationType> type);
 }
