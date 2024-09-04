@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.models.dtos.UserTokenDTO;
 import com.sadi.pinklifeline.models.responses.JwtTokenResponse;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class JwtTokenService {
     private final JwtEncoder jwtEncoder;
     private final DoctorDetailsRepository doctorDetailsRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${auth.jwt.audiences}")
     private String[] audiences;
@@ -35,10 +37,11 @@ public class JwtTokenService {
     private final UserRepository userRepository;
 
     public JwtTokenService(JwtEncoder jwtEncoder,
-                           UserRepository userRepository, DoctorDetailsRepository doctorDetailsRepository) {
+                           UserRepository userRepository, DoctorDetailsRepository doctorDetailsRepository, RefreshTokenService refreshTokenService) {
         this.jwtEncoder = jwtEncoder;
         this.userRepository = userRepository;
         this.doctorDetailsRepository = doctorDetailsRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public JwtTokenResponse generateToken(Authentication authentication) {
@@ -61,7 +64,28 @@ public class JwtTokenService {
                                 .claim("subscribed", subscribed)
                                 .build();
         String token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return new JwtTokenResponse(token, user.getId(), user.getUsername(),
+        String refreshToken = refreshTokenService.getRefreshTokenForUser(user.getId());
+        return new JwtTokenResponse(token, refreshToken, user.getId(), user.getUsername(),
                 user.getIsRegistered().equals(YesNo.Y), isVerified, subscribed, user.getRoles());
+    }
+
+    public String getJwtTokenFromUserId(Long userId) {
+        UserTokenDTO user = userRepository.findUserTokenDTOUserId(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setRoles(userRepository.getRolesById(user.getId()));
+        int subscribed = (user.getExpiryDate() != null && LocalDateTime.now().isBefore(user.getExpiryDate()))
+                ? user.getSubscriptionType().getValue() : 0;
+        var scope = user.getRoles().stream().map(Roles::toString).collect(Collectors.joining(" "));
+
+        var claims = JwtClaimsSet.builder()
+                .issuer(issuer)
+                .issuedAt(Instant.now())
+                .audience(List.of(audiences))
+                .expiresAt(Instant.now().plusSeconds(timeout))
+                .subject(user.getId().toString())
+                .claim("scp", scope)
+                .claim("subscribed", subscribed)
+                .build();
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }

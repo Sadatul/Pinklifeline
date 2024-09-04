@@ -100,4 +100,41 @@ public class SubscriptionService extends AbstractPaymentService{
         );
         balanceHistoryRepository.save(adminBalance);
     }
+
+    public void validateUserForFreeTrial() {
+        Long userId = SecurityUtils.getOwnerID();
+        Optional<Subscription> subscription = subscriptionRepository.findById(userId);
+        if(subscription.isEmpty()) {
+            return;
+        }
+
+        Subscription sub = subscription.get();
+        if(sub.getExpiryDate() != null && sub.getExpiryDate().isAfter(LocalDateTime.now())){
+            throw new BadRequestFromUserException(
+                    String.format("A current subscription of %s is running. You can subscribe again after it expires",
+                            sub.getSubscriptionType())
+            );
+        }
+
+        if(sub.getUsedFreeTrial())
+            throw new BadRequestFromUserException(
+                    String.format("User with id:%d has already used his free trial", userId)
+            );
+    }
+
+    public void setUpFreeTrial() {
+        Subscription sub = new Subscription();
+        sub.setUserId(SecurityUtils.getOwnerID());
+
+        SubscriptionType type;
+        if(SecurityUtils.hasRole("ROLE_DOCTOR"))
+            type = SubscriptionType.DOCTOR_FREE_TRIAL;
+        else
+            type = SubscriptionType.USER_FREE_TRIAL;
+
+        sub.setUsedFreeTrial(true);
+        sub.setSubscriptionType(type);
+        sub.setExpiryDate(LocalDateTime.now().plusMonths(type.getTimeInMonths()));
+        subscriptionRepository.save(sub);
+    }
 }

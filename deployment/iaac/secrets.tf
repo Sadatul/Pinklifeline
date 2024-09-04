@@ -177,3 +177,31 @@ resource "google_secret_manager_secret_version" "rsa_private_key_version" {
   secret      = google_secret_manager_secret.rsa_private_key.id
   secret_data = base64decode(data.external.convert_to_pkcs8.result.pkcs8_key)
 }
+
+resource "google_secret_manager_secret" "vapid_public_key" {
+  provider  = google
+  secret_id = "vapid_public_key"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secret_manager_api]
+}
+
+resource "google_secret_manager_secret_version" "vapid_public_key_version" {
+  secret      = google_secret_manager_secret.vapid_public_key.id
+  secret_data = var.vapid_public_key
+}
+
+resource "google_secret_manager_secret" "vapid_private_key" {
+  provider  = google
+  secret_id = "vapid_private_key"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secret_manager_api]
+}
+
+resource "google_secret_manager_secret_version" "vapid_private_key_version" {
+  secret      = google_secret_manager_secret.vapid_private_key.id
+  secret_data = var.vapid_private_key
+}

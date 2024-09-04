@@ -4,6 +4,7 @@ import com.sadi.pinklifeline.models.entities.User;
 import com.sadi.pinklifeline.models.reqeusts.BasicUserInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.DocInfoUpdateReq;
 import com.sadi.pinklifeline.models.reqeusts.PatientInfoUpdateReq;
+import com.sadi.pinklifeline.models.reqeusts.PeriodDataUpdateReq;
 import com.sadi.pinklifeline.service.UserInfoUpdateHandlerService;
 import com.sadi.pinklifeline.service.UserService;
 import jakarta.validation.Valid;
@@ -29,8 +30,16 @@ public class UserInfoUpdateHandlerV1 {
     }
 
     @PutMapping("/profile_picture/{id}")
+    @PreAuthorize("(#id.toString() == authentication.name)")
     public ResponseEntity<Void> updateProfilePicture(@PathVariable Long id, @Valid @RequestBody ProfilePictureUpdateReq req) {
         updateHandlerService.updateProfilePicture(id, req.getProfilePicture());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/period-data")
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
+    public ResponseEntity<Void> updatePeriodData(@Valid @RequestBody PeriodDataUpdateReq req) {
+        updateHandlerService.updatePeriodData(req);
         return ResponseEntity.noContent().build();
     }
 

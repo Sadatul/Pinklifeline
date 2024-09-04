@@ -90,6 +90,7 @@ public class UserInfoForOwnerHandlerV1 {
         Map<String, Object> response = new HashMap<>();
         response.put("type", subscription.getSubscriptionType());
         response.put("expiryDate", subscription.getExpiryDate());
+        response.put("usedFreeTrial", subscription.getUsedFreeTrial());
         return ResponseEntity.ok(response);
     }
 }
