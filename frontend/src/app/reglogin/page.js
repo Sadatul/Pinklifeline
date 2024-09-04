@@ -6,11 +6,12 @@ import { Separator } from "@/components/ui/separator"
 import axiosInstance from "@/utils/axiosInstance"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
-import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem } from "@/utils/constants"
+import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem, forgotPasswordUrlReq } from "@/utils/constants"
+import Link from "next/link"
 
 export default function LoginRegister() {
     const router = useRouter()
-    const { register, handleSubmit, formState: { errors } } = useForm()
+    const { register, handleSubmit, formState: { errors }, getValues } = useForm()
     const [currentSection, setCurrentSection] = useState("Login")
     const [showPassword, setShowPassword] = useState(false)
     useEffect(() => {
@@ -121,7 +122,7 @@ export default function LoginRegister() {
                 <Separator className="bg-purple-400 m-2 w-80" />
                 <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5 " onSubmit={handleSubmit(submitForm)}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
+                    <input id="email-input" type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
                         {...register("email", {
                             required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }
                         })} />
@@ -164,6 +165,32 @@ export default function LoginRegister() {
                     <button id="submit-button-text" type="submit" className="bg-pink-500 text-white p-2 m-4 w-1/2 rounded-md hover:scale-105 hover:bg-pink-100 hover:text-pink-950 hover:border-double hover:border-pink-900 hover:border-2 transition ease-out duration-300">
                         <span >{currentSection}</span>
                     </button>
+                    <div className="text-base hover:underline text-blue-500 cursor-pointer" onClick={() => {
+                        if(!document.getElementById("email-input")?.value || document.getElementById("email-input")?.value === "") {
+                            document.getElementById("error-email-empty").innerText = "Email is missing enter email please"
+                            return 
+                        }
+                        else{
+                            document.getElementById("error-email-empty").innerText = ""
+                        }
+                        toast.loading("requesting password reset link")
+                        axiosInstance.get(forgotPasswordUrlReq(document.getElementById("email-input").value)).then((res) => {
+                            toast.success("Password reset link sent to email",{
+                                duration: 5000,
+                                position: 'top-right',
+                                description: "Password reset link has been sent to your email. Please check your email to reset your password"
+                            })
+                        }).catch((err) => {
+                            toast.error("An error occured", {
+                                description: "An error occured. Please try again later"
+                            })
+                        }).finally(() => {
+                            toast.dismiss()
+                        })
+                    }}>
+                        Forgot Password?
+                    </div>
+                    <span id="error-email-empty" className="text-red-500 text-sm"></span>
                 </form>
             </div>
         </div>

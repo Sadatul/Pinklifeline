@@ -2,6 +2,7 @@ import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
+export const forgotPasswordUrlReq = (email) => { return `${baseUrl}/v1/auth/reset-password?email=${email}` }
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
 export const refreshTokenUrlReq = `${baseUrl}/v1/auth/refresh`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
@@ -104,6 +105,7 @@ export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content
 export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
 export const emptyAvatar = "/emptyAvatar.png"
 
+export const passwordRegex = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{2,}$"
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
 
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
@@ -208,6 +210,7 @@ export const pagePaths = {
     compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
     searchPage: (query) => { return `/search?query=${query}` },
+    forgotPassword: (email, token) => { return `/forgotpassword?email=${email}&token=${token}` },
 }
 
 export const ReportTypes = {
