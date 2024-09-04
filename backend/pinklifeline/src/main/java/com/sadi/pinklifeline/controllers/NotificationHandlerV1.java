@@ -1,9 +1,5 @@
 package com.sadi.pinklifeline.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sadi.pinklifeline.enums.NotificationType;
-import com.sadi.pinklifeline.models.dtos.WebPushMessage;
 import com.sadi.pinklifeline.models.entities.NotificationSubscription;
 import com.sadi.pinklifeline.models.reqeusts.NotificationSubscriptionReq;
 import com.sadi.pinklifeline.service.NotificationHandlerService;
@@ -16,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,7 +22,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class NotificationHandlerV1 {
     private final NotificationHandlerService notificationHandlerService;
-    private final ObjectMapper jacksonObjectMapper;
 
     @PostMapping("/subscriptions")
     public ResponseEntity<Void> subscribe(@RequestBody NotificationSubscriptionReq req){
@@ -63,14 +56,6 @@ public class NotificationHandlerV1 {
 
         return ResponseEntity.ok(res);
     }
-
-//    @GetMapping("/send")
-//    public ResponseEntity<Map<String, Object>> sendNotification() throws JsonProcessingException {
-//        String payload = jacksonObjectMapper.writeValueAsString(new WebPushMessage("Adil Vai", "AdilVai",
-//                List.of(new WebPushMessage.Action("open_url", "open_url")), Collections.singletonMap("url", "https://www.youtube.com/")));
-//        notificationHandlerService.sendNotification(payload, 2L, NotificationType.PERIOD_START);
-//        return ResponseEntity.ok().build();
-//    }
 
     @Getter
     @Setter

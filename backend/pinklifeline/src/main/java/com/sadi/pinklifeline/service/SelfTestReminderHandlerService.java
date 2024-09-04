@@ -8,15 +8,21 @@ import com.sadi.pinklifeline.repositories.BasicUserDetailsRepository;
 import com.sadi.pinklifeline.repositories.notifications.ScheduledNotificationRepository;
 import com.sadi.pinklifeline.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Period;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SelfTestReminderHandlerService {
@@ -38,6 +44,9 @@ public class SelfTestReminderHandlerService {
 
     @Value("${reminder.abnormality.threshold.days}")
     private  int abnormalityThresholdDays;
+
+    @Value("${send.scheduled.notifications.cron}")
+    private  String scheduledNotificationCron;
 
     private final ScheduledNotificationRepository scheduledNotificationRepository;
     private final NotificationHandlerService notificationHandlerService;
@@ -73,26 +82,8 @@ public class SelfTestReminderHandlerService {
         Long userId = SecurityUtils.getOwnerID();
 
         List<Object> data = updatePeriodData(req.getDays(), userId);
-
-        WebPushMessage selfTestMessage = new WebPushMessage(
-                "Hi Fighter",
-                "Self Test for breast cancer",
-                List.of(new WebPushMessage.Action("open_url", "Open Self Test")),
-                Collections.singletonMap("url", String.format("%s%s", frontendHost, selfTestEndpoint))
-        );
-
-        notificationHandlerService.setScheduledNotification(selfTestMessage, userId,
-                ((LocalDate) data.getFirst()).plusDays(selfTestReminderDays), NotificationType.SELF_TEST);
-
-        WebPushMessage periodStartMessage = new WebPushMessage(
-                "Hi Fighter",
-                "Did your period start today?",
-                List.of(new WebPushMessage.Action("open_url", "Set Reminder for self test")),
-                Collections.singletonMap("url", String.format("%s%s", frontendHost, reactToReminderEndpoint))
-        );
-
-        notificationHandlerService.setScheduledNotification(periodStartMessage, userId,
-                ((LocalDate) data.getFirst()).plusDays((Integer) data.get(1)), NotificationType.PERIOD_START);
+        setNewReminder((LocalDate)data.getFirst(), (Integer) data.get(1),
+                userId, true);
     }
 
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
@@ -113,7 +104,6 @@ public class SelfTestReminderHandlerService {
     @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
     public void setNewReminder(LocalDate lastDate, Integer avgGap,
                                Long userId, Boolean deletePrevious) {
-
         if(deletePrevious)
             scheduledNotificationRepository.deleteByUserIdAndType(userId, List.of(NotificationType.SELF_TEST,
                     NotificationType.PERIOD_START));
@@ -122,7 +112,11 @@ public class SelfTestReminderHandlerService {
             return;
         }
 
-        if(!lastDate.plusDays(avgGap).isAfter(LocalDate.now())) {
+        CronExpression expression = CronExpression.parse(scheduledNotificationCron);
+        LocalTime nextRunTime = Objects.requireNonNull(expression.next(LocalDateTime.now())).toLocalTime();
+
+        LocalDate targetDateForSPReminder = lastDate.plusDays(avgGap);
+        if(isNotNotifiable(targetDateForSPReminder, nextRunTime)) {
             pingForPeriodStart();
             return;
         }
@@ -135,9 +129,10 @@ public class SelfTestReminderHandlerService {
         );
 
         notificationHandlerService.setScheduledNotification(periodStartMessage, userId,
-                lastDate.plusDays(avgGap), NotificationType.PERIOD_START);
+                targetDateForSPReminder, NotificationType.PERIOD_START);
 
-        if(!lastDate.plusDays(selfTestReminderDays).isAfter(LocalDate.now())) {
+        LocalDate targetDateForSTReminder = lastDate.plusDays(selfTestReminderDays);
+        if(isNotNotifiable(targetDateForSTReminder, nextRunTime)) {
             return;
         }
 
@@ -149,6 +144,12 @@ public class SelfTestReminderHandlerService {
         );
 
         notificationHandlerService.setScheduledNotification(selfTestMessage, userId,
-                lastDate.plusDays(selfTestReminderDays), NotificationType.SELF_TEST);
+                targetDateForSTReminder, NotificationType.SELF_TEST);
+    }
+
+    private boolean isNotNotifiable(LocalDate targetDateForSTReminder, LocalTime nextRunTime) {
+        return !(targetDateForSTReminder.isAfter(LocalDate.now()) || (
+                targetDateForSTReminder.isEqual(LocalDate.now()) &&
+                        LocalTime.now().isBefore(nextRunTime)));
     }
 }
