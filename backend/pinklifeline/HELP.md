@@ -2279,3 +2279,98 @@ transId=17208953344777288
 **<span style="color:red">Notes:</span>**
 * Remember you will get the token from the query parameter.
 * If the user sends request, his previous refresh tokens will be invalidated.
+
+## Subscribe For Notification
+``` Endpoint: POST /v1/notifications/subscriptions```
+<br><br>
+```Response status: created(201)```
+### Request Body
+```
+{
+  "endpoint": "https://wns2-pn1p.notify.windows.com/w/?token=BQYAAABgQ8mh7rugPiIxNmZ4hgbiVHkj9sQjKIyRFOaHv%2b97AVdiozLdYak4M6rwL%2fZissevscMQpF4%2b%2bUj0uzGcrApy0MdD7gKeKA02Eq9IfLAC4FQdW4Kn7TYjrWgoCq%2bLygG5CHEg1gJCvd1Du1LEXl0PRs3hdlI7fAy6v2%2buTxyEuGmpYuRhkp6v0wuLHxNLqCv3RPMQRN%2f2ZcxO%2f3Y9Qw5eLsrSY4%2byzVxsvCsNQFU17oNdd1CRyKAv%2fgN6zNVxS1zgQSRU4Dg3NSMWsRAXu6ZL1iX%2fz2IHyGR9c8XYq%2fOVJAqZcRWgKeS9SUOoRRv6UaM%3d",
+  "publicKey": "BAd_uwF2U_2kc-WgJN02lJK_8stF4b5DdPGy8c4ksYvDj8mq-oLQrRlywaA33LxwoYka6uZa5O-ZV0BoEXFK3mQ",
+  "auth": "O79IkqH5rNEYA2uefOu53Q",
+  "permissions": 1
+}
+```
+**<span style="color:red">Notes:</span>**
+* permissions is a bit mapped integer. Ask sadi for more details.
+
+## Get permissions for notification in a certain browser
+``` Endpoint: GET /v1/notifications/subscriptions```
+<br><br>
+``` Query params: endpoint=https%3A%2F%2Fwns2-pn1p.notify.windows.com (Required)```
+<br><br>
+```Response status: ok(200)```
+### Response Body
+```
+{
+  "permissions": 1,
+  "id": 1
+}
+```
+**<span style="color:red">Notes:</span>**
+* permissions is a bit mapped integer. Ask sadi for more details.
+* *Very very important:* endpoint query param must encoded with encodeURIComponent function in js
+
+## Update permissions for notification in a certain browser
+``` Endpoint: PUT /v1/notifications/subscriptions/{subscription_id}```
+<br><br>
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "permissions": 3
+}
+```
+**<span style="color:red">Notes:</span>**
+* permissions is a bit mapped integer. Ask sadi for more details.
+
+## Register for self-test reminders
+``` Endpoint: POST /v1/self-test/reminder```
+<br><br>
+``` Query params: deletePrevious=true```
+<br><br>
+```Response status: ok(200)```
+
+**<span style="color:red">Notes:</span>**
+* By default, deletePrevious is false. If set true and reminder of Start-period and self-test will be deleted and reset based on current lastPeriodDate and avgCycleLength
+* This endpoint is meant to be called with register
+* if avgCycleLength becomes less than 15 that means there is some issues and the users cycle is highly un-reliable, so no reminders will be set but previous reminders will be deleted. Very important no error will be shown from servers endpoint but no reminder will be registered. But database will be updated
+
+## React to reminders
+``` Endpoint: PUT /v1/self-test/reminder```
+<br><br>
+```Response status: ok(200)```
+### Request Body
+```
+{
+  "days": 2
+}
+```
+**<span style="color:red">Notes:</span>**
+* If the user says no, then days should be negative number(-1 is preferable). else it should be a positive number which represents the number of days since period started for the user
+* If you set -1 then a new scheduled notification will be set for period_start(2 days forward from current date). Else lastPeriod date and avgCycleLength will be updated accordingly and notifications will be set for next period start and self test (if possible)
+* if avgCycleLength becomes less than 15 that means there is some issues and the users cycle is highly un-reliable, so no reminders will be set but previous reminders will be deleted.
+## Update Period Date
+``` Endpoint: PUT /v1/infos/period-data```
+<br><br>
+```Response status: noContent(204)```
+### Request Body
+```
+{
+  "lastPeriodDate": "2024-08-12",
+  "avgGap": 23
+}
+```
+**<span style="color:red">Notes:</span>**
+* lastPeriod date and avgCycleLength will be updated accordingly and notifications will be set for next period start and self test (if possible)
+* if avgCycleLength becomes less than 15 that means there is some issues and the users cycle is highly un-reliable, so no reminders will be set but previous reminders will be deleted. But database will be updated
+
+## Force Push notifications: Only for admin
+``` Endpoint: GET /v1/ROLE_ADMIN/send-notifications```
+<br><br>
+```Response status: ok(200)```
+
+**<span style="color:red">Notes:</span>**
+* Only admin can use this to push notifications scheduled for that day before the scheduled time. For demonstrations and testing purposes.
