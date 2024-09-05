@@ -11,7 +11,7 @@ export function middleware(request) {
         return NextResponse.redirect(new URL('/reglogin', request.nextUrl));
     }
     if( path === "/dashboard"){
-        return NextResponse.redirect(new URL(pagePaths.dashboardPages.userdetailsPage), request.nextUrl);
+        return NextResponse.redirect(new URL(pagePaths.dashboardPages.userdetailsPage, request.nextUrl));
     }
 }
 

@@ -1,4 +1,4 @@
-import { differenceInDays, format, formatDistanceToNow } from "date-fns";
+import { differenceInDays, format, formatDistanceToNow, sub } from "date-fns";
 
 const baseUrl = 'http://localhost:8080';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
@@ -93,6 +93,9 @@ export const finishWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_i
 export const subscriptionPlansUrl = `${baseUrl}/v1/anonymous/subscriptions`
 export const userSubscriptionUrl = `${baseUrl}/v1/infos/subscription`
 export const subscribeUrl = (user_id) => { return `${baseUrl}/v1/payment/subscription/${user_id}/initiate` }
+export const subscribeNotficationsUrl = `${baseUrl}/v1/notifications/subscriptions`
+export const subscribeNotficationByIdUrl = (id) => { return `${baseUrl}/v1/notifications/subscriptions/${id}` }
+export const selfTestReminderUrl = `${baseUrl}/v1/self-test/reminder`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -111,6 +114,7 @@ export const messageImageUploaPath = (roomId, userId, fileName) => { return `mes
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
 export const sessionDataItem = "sessionData"
 export const reportAnalysisThreshold = 0.85
+export const notificationData = "notificationData"
 
 export const workStatus = {
     POSTED: "POSTED",
@@ -184,6 +188,8 @@ export const pagePaths = {
         worksPage: "/dashboard/works",
         addWorkPage: "/dashboard/works/add",
         worksByIdPage: (workId) => { return `/dashboard/works/${workId}` },
+        notificationPage: "/dashboard/notifications",
+        subscriptionPage: "/dashboard/subscription",
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
@@ -483,6 +489,10 @@ export const DashboardPagesInfos = [
     {
         name: "Self Test",
         link: pagePaths.dashboardPages.selfTestPage
+    },
+    {
+        name: "Subscription",
+        link: pagePaths.dashboardPages.subscriptionPage
     }
 ]
 

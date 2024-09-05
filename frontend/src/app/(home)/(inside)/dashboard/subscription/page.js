@@ -5,7 +5,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogTitle } 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { radicalGradient, subscribeUrl, subscriptionPlansUrl, userSubscriptionUrl } from "@/utils/constants"
+import { radicalGradient, roles, subscribeUrl, subscriptionPlansUrl, userSubscriptionUrl } from "@/utils/constants"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -19,25 +19,27 @@ export default function SubsriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState(null)
 
     useEffect(() => {
-        axiosInstance.get(subscriptionPlansUrl).then((response) => {
-            setSubscriptionPlans(Object.entries(response.data).map(([name, price]) => ({
-                name,
-                price
-            })))
-        }).catch((error) => {
-            console.log(error)
-        }).finally(() => {
-            setLoading(false)
-        })
-        axiosInstance.get(userSubscriptionUrl).then((response) => {
-            setCrrentPlan(response.data)
-            console.log(response.data)
-            // setSelectedPlan(response.data.type)
-        }).catch((error) => {
-            console.log(error)
-        }).finally(() => {
-        })
-    }, [])
+        if (sessionContext.sessionData) {
+            axiosInstance.get(subscriptionPlansUrl).then((response) => {
+                setSubscriptionPlans(Object.entries(response.data).filter(([name]) => name.startsWith(sessionContext.sessionData.role === roles.doctor ? "DOCTOR" : "USER")).map(([name, price]) => ({
+                    name,
+                    price
+                })))
+            }).catch((error) => {
+                console.log(error)
+            }).finally(() => {
+                setLoading(false)
+            })
+            axiosInstance.get(userSubscriptionUrl).then((response) => {
+                setCrrentPlan(response.data)
+                console.log(response.data)
+                // setSelectedPlan(response.data.type)
+            }).catch((error) => {
+                console.log(error)
+            }).finally(() => {
+            })
+        }
+    }, [sessionContext.sessionData])
 
     useEffect(() => {
         if (subscriptionPlans.length > 0) {
@@ -104,30 +106,30 @@ export default function SubsriptionPage() {
                             <span className="text-sm font-semibold">Plan {selectedPlan}</span>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <button className="w-32 h-12 bg-gray-100 border border-gray-500 shadow-inner text-black font-bold rounded-lg " 
-                                    onClick={()=>{
-                                        if(currentPlan.type === selectedPlan){
-                                            return toast.error("You are already subscribed to this plan")
-                                        }
-                                        if(!selectedPlan){
-                                            return toast.error("Select a plan to subscribe")
-                                        }
-                                        toast.loading("Subscribing...")
-                                        axiosInstance.post(subscribeUrl(sessionContext.sessionData.userId), {
+                                    <button className="w-32 h-12 bg-gray-100 border border-gray-500 shadow-inner text-black font-bold rounded-lg "
+                                        onClick={() => {
+                                            if (currentPlan.type === selectedPlan) {
+                                                return toast.error("You are already subscribed to this plan")
+                                            }
+                                            if (!selectedPlan) {
+                                                return toast.error("Select a plan to subscribe")
+                                            }
+                                            toast.loading("Subscribing...")
+                                            axiosInstance.post(subscribeUrl(sessionContext.sessionData.userId), {
                                                 "customerName": document.getElementById("customerName").value,
                                                 "customerEmail": document.getElementById("customerEmail").value,
                                                 "customerPhone": document.getElementById("customerNumber").value,
                                                 "subscriptionType": selectedPlan
-                                        }).then((response) => {
-                                            console.log(response)
-                                            toast.dismiss()
-                                            toast.success("Subscribed successfully")
-                                            window.location.href = response.data.gatewayUrl
-                                        }).catch((error) => {
-                                            console.log(error)
-                                            toast.error("Subscription failed")
-                                        })
-                                    }}>Subscribe</button>
+                                            }).then((response) => {
+                                                console.log(response)
+                                                toast.dismiss()
+                                                toast.success("Subscribed successfully")
+                                                window.location.href = response.data.gatewayUrl
+                                            }).catch((error) => {
+                                                console.log(error)
+                                                toast.error("Subscription failed")
+                                            })
+                                        }}>Subscribe</button>
                                 </DialogClose>
                             </DialogFooter>
                         </DialogContent>

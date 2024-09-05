@@ -1,6 +1,7 @@
 'use client'
 
 import axiosInstance from "@/utils/axiosInstance";
+import { subscribeNotficationsUrl } from "@/utils/constants";
 import { useEffect, useState } from "react";
 
 const subscribeUser = async () => {
@@ -23,8 +24,13 @@ const subscribeUser = async () => {
                 });
 
                 console.log('User is subscribed:', subscription);
-                // Send subscription to your server to store it using Axios
-                await axiosInstance.post('/api/subscribe', subscription, {
+                const subscriptionJson = subscription.toJSON();
+                await axiosInstance.post(subscribeNotficationsUrl, {
+                    "endpoint": subscriptionJson.endpoint,
+                    "publicKey": subscriptionJson.keys.p256dh,
+                    "auth": subscriptionJson.keys.auth,
+                    "permissions": 1
+                  }, {
                     headers: {
                         'Content-Type': 'application/json'
                     }

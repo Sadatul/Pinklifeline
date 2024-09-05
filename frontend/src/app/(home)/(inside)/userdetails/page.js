@@ -7,7 +7,7 @@ import { UserInfoSection, ImageUploadSection, DoctorInfoSection, NurseInfoSectio
 import { latLngToCell } from 'h3-js'
 import React from 'react';
 import axiosInstance from "@/utils/axiosInstance"
-import { locationResolution, pagePaths, roles, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
+import { locationResolution, pagePaths, roles, selfTestReminderUrl, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useSessionContext } from "@/app/context/sessionContext"
@@ -134,8 +134,18 @@ export default function UserDetailsPage() {
             if (sessionContext.sessionData.role === roles.doctor) {
                 router.push(pagePaths.addConsultation)
             }
-            else {
-                router.push(pagePaths.dashboard)
+            else if (sessionContext.sessionData.role !== roles.doctor) {
+                axiosInstance.post(selfTestReminderUrl, {}, {
+                    params: {
+                        deletePrevious: true
+                    }
+                }).then((response) => {
+                    console.log(response)
+                    router.push(pagePaths.dashboard)
+                }).catch((error) => {
+                    toast.error("An error occured")
+                    console.log(error)
+                })
             }
         }
         ).catch((error) => {
