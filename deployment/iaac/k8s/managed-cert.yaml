@@ -2,6 +2,9 @@ apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
   name: api-ssl-cert
+  labels:
+    app: pinklifeline
+  namespace: default
 spec:
   domains:
     - pinklifeline.xyz
