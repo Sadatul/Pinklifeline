@@ -6,7 +6,11 @@ metadata:
     app: pinklifeline
   namespace: default
   annotations:
+    kubernetes.io/ingress.allow-http: "false"
     kubernetes.io/ingress.global-static-ip-name: "pinklifeline-appserver-ip"
+    networking.gke.io/managed-certificates: "api-ssl-cert"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   rules:
   - http:

@@ -23,8 +23,9 @@ resource "kubernetes_config_map" "pinklifeline-config" {
 
   data = {
     PINKLIFELINE_REDIS_SERVICE_HOST = google_redis_instance.pinklifeline_redis_instance.host
-    BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
-    FRONTEND_HOST                   = "http://localhost:3000"
+    # BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
+    BACKEND_HOST  = "https://pinklifeline.xyz"
+    FRONTEND_HOST = "http://localhost:3000"
   }
 
   depends_on = [google_container_cluster.pinklifeline_cluster]
