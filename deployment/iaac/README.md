@@ -35,8 +35,10 @@ kubectl create secret generic sm-secret --from-file=sm-sa.json=./secret_accessor
 ```export $(grep -v '^#' .env | xargs)``` 
 To verify -> you can use this command ```env | grep TF_VAR_```
 2. Run ```terraform apply -target=google_container_cluster.pinklifeline_cluster```. This will create the kubernets cluster and kubernetes service account. We are creating it first because in the next step, with terraform apply will create deployments in the cluster too.
-3. We have commented out certificate and ingress creation part. If your certificate is not already created. You can directly uncomment this part and apply. If you have a certificate already created. Then you have to manually apply the ingress. Remember first apply the managed-cert.yaml and then immidiately apply the ingress. Because to make the certificate active your ingress will need to be active. After adding ingress.yaml, your endpoint will not be readily available. It will take almost an hour for the certificate to active. You can use ```kubectl get managedcertificate```. If the certificate's status shows Active, then the certificate is ready your endpoint will be available.
-4. Run ```terraform apply```. This should bring up the infrastructure and also deploy the kubernetes deployment, service and ingress.
+3. Run ```terraform apply```. This should bring up the infrastructure and also deploy the kubernetes deployment, service and ingress.
+4. This is bring up your structure except for ingress and the ssl certificate.
+5. first take the static ip and add it your domain record in namecheap.
+6. Now first apply managed-cert and then immidiatly apply ingress.yaml. It will take almost 1 hour to provision the certificate. After the certificate is active you can use your domain name with https to connect your backend. ```kubectl get managedcertificate``` use this command to see whether your certificate is active or not
 ## Latest update -> Bring down everything
 1. To eliminate everything, you can run ```terraform destroy```, will bring down the entire infrastructure
 2. To delete the environment varibles you can use, ```unset "${!TF_VAR_@}"```
