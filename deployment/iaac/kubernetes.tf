@@ -23,8 +23,9 @@ resource "kubernetes_config_map" "pinklifeline-config" {
 
   data = {
     PINKLIFELINE_REDIS_SERVICE_HOST = google_redis_instance.pinklifeline_redis_instance.host
-    BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
-    FRONTEND_HOST                   = "http://localhost:3000"
+    # BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
+    BACKEND_HOST  = "https://pinklifeline.xyz"
+    FRONTEND_HOST = "http://localhost:3000"
   }
 
   depends_on = [google_container_cluster.pinklifeline_cluster]
@@ -90,15 +91,28 @@ resource "kubernetes_manifest" "backend_service" {
   ]
 }
 
-resource "kubernetes_manifest" "ingress" {
-  manifest = yamldecode(file("${path.module}/k8s/ingress.yaml"))
+# resource "kubernetes_manifest" "ssl-certificate" {
+#   manifest = yamldecode(file("${path.module}/k8s/managed-cert.yaml"))
 
-  depends_on = [
-    google_container_cluster.pinklifeline_cluster,
-    kubernetes_manifest.backend_service
-    # backend_service is dependent on backend_deployment,
-    # backend_deployment is dependent on sm_secret and cloud_sql_secret and pinklifeline-config
-    # configMap is dependent on the static ip.
-    # Thus only backend_service is enough to maintain the dependency chain.
-  ]
-}
+#   depends_on = [
+#     google_container_cluster.pinklifeline_cluster,
+#     kubernetes_manifest.backend_service
+#     # backend_service is dependent on backend_deployment,
+#     # backend_deployment is dependent on sm_secret and cloud_sql_secret and pinklifeline-config
+#     # configMap is dependent on the static ip.
+#     # Thus only backend_service is enough to maintain the dependency chain.
+#   ]
+# }
+
+# resource "kubernetes_manifest" "ingress" {
+#   manifest = yamldecode(file("${path.module}/k8s/ingress.yaml"))
+
+#   depends_on = [
+#     google_container_cluster.pinklifeline_cluster,
+#     kubernetes_manifest.ssl-certificate
+#     # backend_service is dependent on backend_deployment,
+#     # backend_deployment is dependent on sm_secret and cloud_sql_secret and pinklifeline-config
+#     # configMap is dependent on the static ip.
+#     # Thus only backend_service is enough to maintain the dependency chain.
+#   ]
+# }

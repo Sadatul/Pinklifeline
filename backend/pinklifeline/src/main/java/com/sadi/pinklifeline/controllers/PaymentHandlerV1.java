@@ -50,7 +50,7 @@ public class PaymentHandlerV1 {
     }
 
     @PostMapping("/{type}/{id}/ssl-redirect")
-    @CrossOrigin("null")
+    @CrossOrigin(origins = {"https://sandbox.sslcommerz.com", "null"})
     public ResponseEntity<Void> paymentRedirect(@PathVariable Long id,
                                                 @PathVariable String type,
                                                 @RequestParam String transId,
