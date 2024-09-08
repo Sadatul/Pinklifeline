@@ -96,6 +96,8 @@ export const subscribeUrl = (user_id) => { return `${baseUrl}/v1/payment/subscri
 export const subscribeNotficationsUrl = `${baseUrl}/v1/notifications/subscriptions`
 export const subscribeNotficationByIdUrl = (id) => { return `${baseUrl}/v1/notifications/subscriptions/${id}` }
 export const selfTestReminderUrl = `${baseUrl}/v1/self-test/reminder`
+export const updatePeriodDateUrl = `${baseUrl}/v1/infos/period-data`
+export const adminSendNotifications = `${baseUrl}/v1/ROLE_ADMIN/send-notifications`
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"

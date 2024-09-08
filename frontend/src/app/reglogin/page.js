@@ -48,9 +48,10 @@ export default function LoginRegister() {
                     }
                     localStorage.clear();
                     localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))
-                    console.log("Content from local storage")
-                    console.log(JSON.parse(localStorage.getItem(sessionDataItem)))
-                    if (res.data?.roles[0] === roles.admin) {
+                    if(res.data?.isRegistered === false) {
+                        router.push(pagePaths.userdetails)
+                    }
+                    else if (res.data?.roles[0] === roles.admin) {
                         router.push(pagePaths.complaintsPage)
                     } else {
                         router.push(pagePaths.dashboardPages.userdetailsPage)

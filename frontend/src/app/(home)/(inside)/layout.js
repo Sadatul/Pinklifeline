@@ -18,6 +18,7 @@ import { SocketInitializer } from "../../components/stompInitializer";
 import axiosInstance from "@/utils/axiosInstance";
 import { useSessionContext } from "@/app/context/sessionContext";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
+import { ExternalLink } from "lucide-react";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
@@ -100,6 +101,17 @@ export default function Layout({ children }) {
                             </Popover>
                         </div>
                     </nav>
+                    {sessionContext?.sessionData?.isRegisterComplete !== true &&
+                        <div className="flex flex-row p-3 w-full bg-red-100 justify-evenly">
+                            <span className="text-lg font-semibold text-gray-800">
+                                Your registration is not complete. Please complete your registration to access the site properly.
+                            </span>
+                            <Link href={pagePaths.userdetails} className="text-lg font-semibold text-blue-800 hover:underline flex items-center">
+                            Complete Registration
+                            <ExternalLink className="ml-1" size={20} />
+                            </Link>
+                        </div>
+                    }
                     <SocketInitializer />
                     <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto rounded-l-lg overflow-x-hidden">
                         {children}

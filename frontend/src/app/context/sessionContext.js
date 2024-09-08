@@ -68,6 +68,7 @@ export function SessionContextProvider({ children }) {
     return (
         <sessionContext.Provider value={{
             sessionData,
+            setSessionData,
         }}>
             {children}
         </sessionContext.Provider>

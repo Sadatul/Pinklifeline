@@ -141,7 +141,15 @@ export default function UserDetailsPage() {
                     }
                 }).then((response) => {
                     console.log(response)
-                    router.push(pagePaths.dashboard)
+                    sessionContext.setSessionData({
+                        ...sessionContext.sessionData,
+                        isRegisterComplete: true
+                    })
+                    localStorage.setItem(sessionDataItem, JSON.stringify({
+                        ...sessionContext.sessionData,
+                        isRegisterComplete: true
+                    }))
+                    router.push(pagePaths.dashboardPages.userdetailsPage)
                 }).catch((error) => {
                     toast.error("An error occured")
                     console.log(error)

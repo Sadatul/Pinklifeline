@@ -5,7 +5,7 @@ export function middleware(request) {
     const path = request.nextUrl.pathname;
     const publicPaths = ["/", "/reglogin", "/verifyotp"];
     const tokenName = "access_token";
-    console.log(request.cookies.get(tokenName));
+    console.log("");
     if (!publicPaths.find((publicPath) => path === publicPath) && !request.cookies.get(tokenName)) {
         console.log('middleware.js: redirecting to /reglogin');
         return NextResponse.redirect(new URL('/reglogin', request.nextUrl));

@@ -1,7 +1,7 @@
 'use client'
 
 import ScrollableContainer from "@/app/components/StyledScrollbar"
-import { convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, toggleLocationShare, updateUserDetailsUrl } from "@/utils/constants"
+import { convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, generateOptions, getFeetFromCm, getInchFromCm, getUserInfoUrl, locationResolution, roles, toggleLocationShare, updatePeriodDateUrl, updateUserDetailsUrl } from "@/utils/constants"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import AddIcon from '@mui/icons-material/Add';
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/tooltip"
 import { red } from "@mui/material/colors"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
+import { differenceInDays, format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import axiosInstance from "@/utils/axiosInstance"
 import { useSessionContext } from "@/app/context/sessionContext"
@@ -32,6 +32,7 @@ import Loading from "@/app/components/loading"
 import { set } from "lodash"
 import EditUserMapView from "./editUserdetailsmapComponent"
 import { Switch } from "@/components/ui/switch"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 const dummyData = {
     "allergies": ["Peanut"],
@@ -61,6 +62,8 @@ const dummyData = {
 }
 
 export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
+    const [editingPeriodDate, setEditingPeriodDate] = useState(false)
+    const newPeriodDateRef = useRef(null)
     const sessionContext = useSessionContext()
     const [currentPosition, setCurrentPosition] = useState(null)
     const [editable, setEditable] = useState(false)
@@ -282,6 +285,11 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                     Last Period Date
                                 </span>
                                 <span>: {userData?.lastPeriodDate}</span>
+                                <button onClick={()=>[
+                                    setEditingPeriodDate(true)
+                                ]}>
+                                    <Pencil size={17} />
+                                </button>
                             </div>
                         </div>
                     }
@@ -760,6 +768,41 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     <Loader2 size={52} className="animate-spin" />
                 }
             </div>
+            <AlertDialog open={editingPeriodDate} >
+                <AlertDialogTrigger>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        Update Period Date
+                    </AlertDialogHeader>
+                    <input type="date" ref={newPeriodDateRef} className="w-fit" />
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => {
+                            setEditingPeriodDate(false)
+                        }}>
+                            Cancer
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={() => {
+                            axiosInstance.put(updatePeriodDateUrl, {
+                                lastPeriodDate: newPeriodDateRef.current.value,
+                                avgGap: differenceInDays(new Date(newPeriodDateRef.current.value), new Date(userData.lastPeriodDate))
+                            }).then((response) => {
+                                setUserData({ ...userData, lastPeriodDate: newPeriodDateRef.current.value })
+                                setEditedData({ ...editedData, lastPeriodDate: newPeriodDateRef.current.value })
+                                setEditingPeriodDate(false)
+                                toast.message("Period Date Updated")
+                            }).catch((error) => {
+                                console.log(error)
+                                toast.error("An error occured", {
+                                    description: error.response?.data?.message
+                                })
+                            })
+                        }}>
+                            Confirm
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
