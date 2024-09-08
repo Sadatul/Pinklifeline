@@ -12,7 +12,6 @@ export function SessionContextProvider({ children }) {
 
     useEffect(() => {
         const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
-        console.log(sessionData)
         if (!sessionData) {
             setSessionData({
                 userId: null,

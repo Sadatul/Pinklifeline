@@ -32,7 +32,7 @@ import Loading from "@/app/components/loading"
 import { set } from "lodash"
 import EditUserMapView from "./editUserdetailsmapComponent"
 import { Switch } from "@/components/ui/switch"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 const dummyData = {
     "allergies": ["Peanut"],
@@ -285,7 +285,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                     Last Period Date
                                 </span>
                                 <span>: {userData?.lastPeriodDate}</span>
-                                <button onClick={()=>[
+                                <button onClick={() => [
                                     setEditingPeriodDate(true)
                                 ]}>
                                     <Pencil size={17} />
@@ -744,10 +744,10 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     </div>
                 </div>
             </div>
+            <h2 className="text-2xl font-bold text-black translate-y-4">Location</h2>
             <div className="flex flex-col items-center justify-center w-full border border-gray-500 bg-gray-100 relative rounded-md p-3 gap-5">
                 <div className="flex flex-row justify-between w-full items-center">
-                    <h2 className="text-2xl font-bold text-black">Location</h2>
-                    <div className="flex flex-row items-center gap-2">
+                    <div className="flex flex-row items-center gap-2 justify-end w-full">
                         <Switch checked={userData?.locationShare} onCheckedChange={(checked) => {
                             axiosInstance.put(toggleLocationShare).then((response) => {
                                 setUserData({ ...userData, locationShare: response?.data?.locationShare })
@@ -773,7 +773,9 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        Update Period Date
+                        <AlertDialogTitle>
+                            Update Period Date
+                        </AlertDialogTitle>
                     </AlertDialogHeader>
                     <input type="date" ref={newPeriodDateRef} className="w-fit" />
                     <AlertDialogFooter>

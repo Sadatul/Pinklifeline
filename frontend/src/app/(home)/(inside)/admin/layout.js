@@ -15,8 +15,13 @@ export default function Layout({ children }) {
     const [isVerified, setIsverified] = useState(false)
     const sessionContext = useSessionContext()
     useEffect(() => {
-        if (!(sessionContext?.sessionData?.role === roles.admin)) {
-            // window.location.href = pagePaths.login
+        if (sessionContext.sessionData) {
+            if (sessionContext.sessionData.role === roles.admin) {
+                setIsverified(true)
+            }
+            else {
+                window.location.href = pagePaths.login
+            }
         }
     }, [sessionContext.sessionData])
 
@@ -29,7 +34,7 @@ export default function Layout({ children }) {
                 <div className="flex flex-col gap-6 flex-1  mb-10 justify-between">
                     <div className="flex flex-col gap-6 flex-1 justify-center mb-10">
                         {AdminPagesInfos.map((page, index) => (
-                            <Link key={index} href={page.link} className={cn("text-black text-xl text-center w-52 py-1", pathname === page.link ? "bg-zinc-400 rounded bg-opacity-50" : "text-shadow-lg")} >
+                            <Link key={index} href={page.link} className={cn("text-black text-xl text-center w-52 py-1", pathname === page.link ? "bg-zinc-400 rounded bg-opacity-50" : "text-opacity-75")} >
                                 {page.name}
                             </Link>
                         ))}

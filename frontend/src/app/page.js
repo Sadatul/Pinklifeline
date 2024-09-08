@@ -109,7 +109,7 @@ export default function Home() {
         id="navbar" className="bg-white min-h-20 flex sticky top-0 z-50 flex-row justify-center items-center flex-wrap flex-shrink"
       >
         <Link href={"/"} className="w-4/12 pt-3 h-full flex flex-row justify-center items-center flex-wrap">
-          <Image loading="lazy" className="hidden md:block mr-5 shrink animate-bounce delay-700" src={logoIcon.src} alt="logo" width={50} height={60} />
+          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={logoIcon.src} alt="logo" width={50} height={60} />
           <Image loading='lazy' className="shrink" src={logoText.src} alt="logo-text" width={250} height={100} />
         </Link >
         <div className="w-6/12 text-xl text-center h-full flex flex-row justify-center items-center space-x-6 flex-wrap">
@@ -217,10 +217,10 @@ export default function Home() {
               <BlogCard key={index} title={blogPost.title} imageUrl={blogPost.imageUrl} description={blogPost.description} blogUrl={blogPost.blogUrl} />
             ))}
           </div>
-          <button className="mt-1 items-center gap-3 w-56 flex flex-row text-lg hover:underline hover:scale-110 transition ease-in-out duration-300" >
+          <Link className="mt-1 items-center gap-3 w-56 flex flex-row text-lg hover:underline hover:scale-110 transition ease-in-out duration-300" href={pagePaths.blogsPage} >
             <ArrowCircleRightOutlinedIcon fontSize="large" sx={{ color: 'blue' }} />
             Go to Blogs
-          </button>
+          </Link>
         </div>
       </SlideAnimate>
       <SlideAnimate direction="rightToLeft" color="Cornsilk">
@@ -231,10 +231,10 @@ export default function Home() {
               <span className="block relative after:content-[''] after:absolute after:w-2/3 after:h-1 after:bg-pink-500 after:left-0 after:bottom-[-15px] after:transform "></span>
             </h1>
             <h2 className="mt-5 text-2xl font-semibold">Ask, Discuss, Share, Help</h2>
-            <button className="mt-5 items-center gap-3 w-56 flex flex-row text-lg hover:underline hover:scale-110 transition ease-in-out duration-300" >
+            <Link href={pagePaths.forumPage} className="mt-5 items-center gap-3 w-56 flex flex-row text-lg hover:underline hover:scale-110 transition ease-in-out duration-300" >
               <ArrowCircleRightOutlinedIcon fontSize="large" sx={{ color: 'rgb(255,20,147)' }} />
               Go to Forum
-            </button>
+            </Link>
           </div>
           <div className="relative w-8/12 min-h-80 justify-center items-center m-auto">
             <ForumPostCard
@@ -299,7 +299,7 @@ export default function Home() {
           <h1 className="text-3xl font-sans font-bold text-white text-center p-5 underline underline-offset-4">Contact Us</h1>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-row divide-x flex-wrap flex-shrink justify-center items-center w-full p-5">
             <div className="w-1/2 p-15 m-auto flex flex-col justify-center items-center">
-              <textarea {...register("Text", { required: true, maxLength: 200 })} className="w-3/4 m-auto min-h-40 p-5 rounded-xl border-2 border-gray-100" placeholder="Enter your message here"></textarea>
+              <textarea maxLength={200} {...register("Text", { required: true, maxLength: 200 })} className="w-3/4 m-auto min-h-40 p-5 rounded-xl border-2 border-gray-100" placeholder="Enter your message here"></textarea>
               {errors.Text?.type === "required" && (
                 <p role="alert" className="text-pink-100">Text is required</p>
               )}
@@ -333,9 +333,9 @@ export default function Home() {
           </form>
         </div>
       </SlideAnimate>
-      <div id="footer" className="flex flex-col justify-center bg-gray-800 text-sm text-white w-full text-center h-24 items-center" >
+      <div id="footer" className="flex flex-col justify-center bg-gray-800 text-sm text-white w-full text-center h-12 items-center" >
         <p>
-          &copy; This website is done by Sadatul Islam Sadi and MD. Hasnaen Adil for JavaFest 2024 by Therap. All rights reserved.
+          &copy; This website is done by Sadatul Islam Sadi and MD. Hasnaen Adil for JavaFest 2024 arranged by Therap.
         </p>
       </div>
     </main>

@@ -10,7 +10,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { getProfilePicUrl, logoutUrlReq, pagePaths, testingAvatar } from "@/utils/constants";
+import { getProfilePicUrl, logoutUrlReq, pagePaths, roles, testingAvatar } from "@/utils/constants";
 import { PrimeReactProvider } from 'primereact/api';
 import { StompContextProvider } from "@/app/context/stompContext";
 
@@ -19,16 +19,16 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useSessionContext } from "@/app/context/sessionContext";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { ExternalLink } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
 
     const [profilePic, setProfilePic] = useState(testingAvatar)
     const sessionContext = useSessionContext()
+    const pathname = usePathname()
 
     const checkScroll = () => {
-        console.log("scrolling")
-        console.log(window.scrollY)
         if (window.scrollY > 0) {
             document.getElementById('navbar').classList.add('scale-90', 'shadow-md');
         }
@@ -45,7 +45,6 @@ export default function Layout({ children }) {
                     if (res.data.profilePicture && res.data.profilePicture !== "") {
                         sessionStorage.setItem("profilePicLink", res.data.profilePicture)
                         setProfilePic(res.data.profilePicture)
-                        console.log("profilepic", res.data.profilePicture)
                     }
                 }).catch((error) => {
                     console.log("error getting profilepic", error)
@@ -53,7 +52,6 @@ export default function Layout({ children }) {
             }
             else {
                 setProfilePic(profilePicLink)
-                console.log("profilepic", profilePicLink)
             }
         }
     }, [sessionContext.sessionData])
@@ -101,7 +99,7 @@ export default function Layout({ children }) {
                             </Popover>
                         </div>
                     </nav>
-                    {sessionContext?.sessionData?.isRegisterComplete !== true &&
+                    {sessionContext?.sessionData?.isRegisterComplete === false && !pathname.startsWith("/userdetails") && sessionContext.sessionData.role !== roles.admin &&
                         <div className="flex flex-row p-3 w-full bg-red-100 justify-evenly">
                             <span className="text-lg font-semibold text-gray-800">
                                 Your registration is not complete. Please complete your registration to access the site properly.

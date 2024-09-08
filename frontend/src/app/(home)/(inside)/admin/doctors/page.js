@@ -9,43 +9,7 @@ import { Loader } from "lucide-react"
 import { useEffect, useState } from "react"
 
 export default function DoctorsVerifyPage() {
-    const [doctors, setDoctors] = useState([{
-        "qualifications": ["MBBS", "DO"],
-        "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-        "contactNumber": "01730445524",
-        "fullName": "Dr. Rahima Begum",
-        "id": 3,
-        "designation": "Head",
-        "department": "Cancer",
-        "workplace": "Rajshahi Medical College"
-    }, {
-        "qualifications": ["MBBS", "DO"],
-        "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-        "contactNumber": "01730445524",
-        "fullName": "Dr. Rahima Begum",
-        "id": 3,
-        "designation": "Head",
-        "department": "Cancer",
-        "workplace": "Rajshahi Medical College"
-    }, {
-        "qualifications": ["MBBS", "DO"],
-        "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-        "contactNumber": "01730445524",
-        "fullName": "Dr. Rahima Begum",
-        "id": 3,
-        "designation": "Head",
-        "department": "Cancer",
-        "workplace": "Rajshahi Medical College"
-    }, {
-        "qualifications": ["MBBS", "DO"],
-        "registrationNumber": "dfasdfsadfsdfsdfsdfsdf",
-        "contactNumber": "01730445524",
-        "fullName": "Dr. Rahima Begum",
-        "id": 3,
-        "designation": "Head",
-        "department": "Cancer",
-        "workplace": "Rajshahi Medical College"
-    }])
+    const [doctors, setDoctors] = useState([])
     const [filter, setFilter] = useState({
         fullName: null,
         regNo: null,
@@ -54,7 +18,7 @@ export default function DoctorsVerifyPage() {
         designation: null,
         contactNumber: null,
         qualifications: null,
-        isVerified :"N",
+        isVerified: "N",
         pageNo: 0
     })
     const [loading, setLoading] = useState(true)
@@ -66,7 +30,6 @@ export default function DoctorsVerifyPage() {
             setLoading(true)
         }
 
-        console.log("Filter habijabi")
         axiosInstance.get(unverifiedDoctors, { params: filter }).then((res) => {
             setDoctors(res.data?.content)
             setPageInfo(res.data?.page)
@@ -149,7 +112,7 @@ export default function DoctorsVerifyPage() {
             </div>
             <div className="flex flex-col w-10/12 p-3 rounded-md bg-white items-center justify-between">
                 <div className="flex flex-col w-full items-center">
-                    {loading ? <Loader size={44} className="text-gray-600 animate-spin"/> : doctors.map((doctor, index) => {
+                    {loading ? <Loader size={44} className="text-gray-600 animate-spin" /> : doctors.map((doctor, index) => {
                         return (
                             <div key={index} className="flex flex-col w-full p-3 rounded-md gap-2">
                                 <DoctorInfo doctor={doctor} fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />

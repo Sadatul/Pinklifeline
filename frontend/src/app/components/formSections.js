@@ -9,7 +9,7 @@ import Image from "next/image"
 import { useGeolocated } from "react-geolocated"
 import MapView from "@/app/components/map"
 import { format, set } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { ArrowLeft, ArrowRight, Calendar as CalendarIcon } from "lucide-react"
 import AddIcon from '@mui/icons-material/Add';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -132,7 +132,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     return (
         <>
             <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly h-full w-9/12"
+                <motion.div className="flex flex-col items-center justify-between h-full w-9/12"
                     initial={{ opacity: 0, x: '100%' }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: '-100%' }}
@@ -255,20 +255,18 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                     </AlertDialog>
                 </motion.div>
             </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
                         userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
-                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
-                >
-                    Previous
+                    className="text-lg font-bold text-center border rounded-2xl px-5 hover:scale-105 transition ease-out">
+                    <ArrowLeft size={32} className="text-pink-500" />
                 </button>
                 <button type='button' onClick={handleSubmit(onSubmit)}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : <ArrowRight size={32} className="text-gray-800" />}
                 </button>
                 {currentSection === (totalSections - 1) && (
                     <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
@@ -705,100 +703,7 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
     )
 }
 
-export function NurseInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
-    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm()
-    const fileTypes = ["JPEG", "PNG"];
-    const handleFileChange = (file) => {
-        setValue("nurseDocs", file)
-        trigger("nurseDocs")
-    }
-    useEffect(() => {
-        register("nurseDocs", { required: "Document is required" });
-    }, [register]);
 
-    const onSubmit = (data) => {
-        userDataRef.current = { ...userDataRef.current, ...data }
-        if (currentSection < totalSections - 1) {
-            setCurrentSection(a => ((a + 1) % totalSections))
-        }
-        else {
-            setConfirmDialogOpen(true)
-        }
-    }
-    return (
-        <>
-            <AnimatePresence>
-                <motion.div className="flex flex-col items-center justify-evenly"
-                    initial={{ opacity: 0, x: '100%' }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: '-100%' }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <h1 className="text-2xl font-bold m-2 text-pink-500">Nurse info</h1>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <label className="text-md font-semibold mx-2">Full Name
-                            <div className="w-full flex flex-col">
-                                <input type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
-                            </div>
-                        </label>
-                    </div>
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold mx-2 p-2">Current Hospital</p>
-                        <div className="w-full flex flex-col">
-                            <input type="text" className="border-2 border-blue-500 rounded-md p-2" {...register("currentHospital", { maxLength: { value: 32, message: "Max length 32" } })} />
-                            {errors.currentHospital && <span className="text-red-500">{errors.currentHospital?.message}</span>}
-                        </div>
-                    </div>
-                    <div className="flex flex-col justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold m-2 p-2">Experience and Other description(optional but recommended)</p>
-                        <div className="w-full flex flex-col">
-                            <textarea {...register("description", { maxLength: { value: 200, message: "Max length 200" } })} className="w-3/4 m-auto min-h-24 p-2 rounded-xl border-2 border-gray-100"></textarea>
-                            {errors.description && <span className="text-red-500">{errors.description?.message}</span>}
-                        </div>
-                    </div>
-                    <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-                    <div className="flex flex-row justify-evenly items-center w-11/12">
-                        <p className="text-md font-semibold m-2 p-2">Upload Documents(multiple if needed) as image for verification</p>
-                        <div className="w-full flex flex-col">
-                            <FileUploader multiple={true} handleChange={handleFileChange} name="nurseDocs" types={fileTypes} required={true} />
-                            {errors.nurseDocs && <span className="text-red-500">{errors.nurseDocs?.message}</span>}
-                        </div>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0)} onClick={() => { setCurrentSection(a => ((a - 1) % totalSections)) }} className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out">Previous</button>
-                <button type='button' onClick={handleSubmit(onSubmit)}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
-                </button>
-                {currentSection === (totalSections - 1) && (
-                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
-                        <AlertDialogTrigger asChild>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={saveForm}>
-                                    Continue
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
-            </div>
-        </>
-    )
-}
 
 export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSection, totalSections, role, saveForm }) {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -938,7 +843,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         <Button
                                             variant={"outline"}
                                             className={cn(
-                                                "w-[160px] ml-3 justify-start text-left font-normal",
+                                                "min-w-[160px] ml-3 justify-start text-left font-normal",
                                                 !date && "text-muted-foreground"
                                             )}
                                         >
@@ -983,7 +888,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-[160px] ml-3 justify-start text-left font-normal",
+                                                    "min-w-[160px] ml-3 justify-start text-left font-normal",
                                                     !diagnosisDate && "text-muted-foreground"
                                                 )}
                                             >
@@ -1330,20 +1235,18 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                     </div>
                 </motion.div>
             </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8 mt-5">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
                         userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
-                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
-                >
-                    Previous
+                    className="text-lg font-bold text-center border rounded-2xl px-5 hover:scale-105 transition ease-out">
+                    <ArrowLeft size={32} className="text-pink-500" />
                 </button>
                 <button type='button' onClick={handleSubmit(onSubmit)}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : <ArrowRight size={32} className="text-gray-800" />}
                 </button>
                 {currentSection === (totalSections - 1) && (
                     <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
@@ -1407,20 +1310,18 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
                     <MapView position={position} setPosition={setPosition} />
                 </motion.div>
             </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
-            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
+            <div className="flex flex-row justify-between items-center w-full m-2 px-8 mt-5">
                 <button type='button' disabled={!(currentSection > 0)}
                     onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, location: position }
+                        userDataRef.current = { ...userDataRef.current, ...getValues() }
                         setCurrentSection(a => ((a - 1) % totalSections))
                     }}
-                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
-                >
-                    Previous
+                    className="text-lg font-bold text-center border rounded-2xl px-5 hover:scale-105 transition ease-out">
+                    <ArrowLeft size={32} className="text-pink-500" />
                 </button>
                 <button type='button' onClick={onSubmit}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
+                    className="text-lg px-5 font-bold text-center  border hover:shadow-md rounded-2xl hover:scale-105 transition ease-out" >
+                    {currentSection === totalSections - 1 ? "Save" : <ArrowRight size={32} className="text-gray-800" />}
                 </button>
                 {currentSection === (totalSections - 1) && (
                     <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >

@@ -55,7 +55,9 @@ const subscribeUser = async () => {
 
 const HomeLayout = ({ children }) => {
   useEffect(() => {
-    subscribeUser()
+    if (!localStorage.getItem(notificationData)) {
+      subscribeUser()
+    }
   }, [])
 
   return (

@@ -17,7 +17,7 @@ import firebase_app from "@/utils/firebaseConfig"
 
 
 export function UpdateProfilePic({ className }) {
-    const [profilePic, setProfilePic] = useState(null)
+    const [profilePic, setProfilePic] = useState(undefined)
     const [loading, setLoading] = useState(true)
     const [imageFile, setImageFile] = useState(null)
     const storage = getStorage(firebase_app)
@@ -36,7 +36,7 @@ export function UpdateProfilePic({ className }) {
     if (loading) {
         return <Loading />
     }
-    if (!profilePic) {
+    if (profilePic === undefined) {
         return <p className="m-auto text-2xl font-bold">Profile picture not found</p>
     }
 
@@ -46,7 +46,7 @@ export function UpdateProfilePic({ className }) {
     }
 
     return (
-        <div className={cn("flex flex-col items-center w-full bg-gray-100 p-5", className)}>
+        <div className={cn("flex flex-col items-center w-full bg-gray-100 p-5 flex-1", className)}>
             <div className="w-10/12 flex flex-col rounded bg-white p-4 gap-2">
                 <h1 className="text-2xl font-bold">Profile Picture</h1>
                 <Separator />
@@ -63,7 +63,7 @@ export function UpdateProfilePic({ className }) {
                     handleChange={handleFileChange}
 
                 />
-                <Image src={profilePic} alt="profile picture" width={400} height={400} />
+                {profilePic && <Image src={profilePic} alt="profile picture" width={400} height={400} />}
                 <div className="flex flex-row gap-5 justify-end items-center">
                     <button className="bg-blue-500 text-white p-2 rounded" onClick={() => {
                         window.location.href = pagePaths.dashboardPages.userdetailsPage
