@@ -16,7 +16,7 @@ export default function Layout({ children }) {
     const sessionContext = useSessionContext()
     useEffect(() => {
         if (!(sessionContext?.sessionData?.role === roles.admin)) {
-            window.location.href = pagePaths.login
+            // window.location.href = pagePaths.login
         }
     }, [sessionContext.sessionData])
 

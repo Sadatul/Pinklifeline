@@ -132,6 +132,14 @@ export default function UserDetailsPage() {
             console.log(response)
             toast.success("Information saved successfully")
             if (sessionContext.sessionData.role === roles.doctor) {
+                sessionContext.setSessionData({
+                    ...sessionContext.sessionData,
+                    isRegisterComplete: true
+                })
+                localStorage.setItem(sessionDataItem, JSON.stringify({
+                    ...sessionContext.sessionData,
+                    isRegisterComplete: true
+                }))
                 router.push(pagePaths.addConsultation)
             }
             else if (sessionContext.sessionData.role !== roles.doctor) {
@@ -170,24 +178,28 @@ export default function UserDetailsPage() {
     return (
         <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto flex-grow" style={{ backgroundImage: `url(${formBgImage.src})` }}>
             <div className="w-full flex-grow justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)" }}>
-                <div className="flex flex-row justify-evenly items-center w-5/6" >
-                    {sections?.map((section, index) => (
-                        <React.Fragment key={index}>
-                            <h3 id={`section-${index}`} className={`text-2xl font-bold text-center ${index === currentSection ? "text-pink-500" : "text-white"}`}>
-                                {section?.section_name}
-                            </h3>
-                            {index !== sections.length - 1 && (
-                                <Separator
-                                    id={`separator-${index}`}
-                                    className="w-[2px] h-8 bg-purple-400 ml-2"
-                                    orientation="vertical"
-                                />
-                            )}
-                        </React.Fragment>
-                    ))}
+                {(sessionContext.sessionData?.role !== roles.doctor) &&
+                    <div className="flex flex-row justify-evenly items-center w-5/6" >
+                        {sections?.map((section, index) => (
+                            <React.Fragment key={index}>
 
-                </div>
-                <Separator className="bg-purple-400 m-2 max-w-[1200px] shrink " />
+                                <h3 id={`section-${index}`} className={`text-2xl font-bold text-center ${index === currentSection ? "text-pink-500" : "text-white"}`}>
+                                    {section?.section_name}
+                                </h3>
+                                {index !== sections.length - 1 && (
+                                    <Separator
+                                        id={`separator-${index}`}
+                                        className="w-[2px] h-8 bg-purple-400 ml-2"
+                                        orientation="vertical"
+                                    />
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                }
+                {(sessionContext.sessionData?.role !== roles.doctor) &&
+                    <Separator className="bg-purple-400 m-2 max-w-[1200px] shrink " />
+                }
                 <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly py-5">
                     {sections[currentSection] && sections[currentSection].section_components &&
                         React.createElement(sections[currentSection].section_components, {

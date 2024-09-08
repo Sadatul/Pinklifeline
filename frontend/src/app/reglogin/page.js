@@ -48,13 +48,16 @@ export default function LoginRegister() {
                     }
                     localStorage.clear();
                     localStorage.setItem(sessionDataItem, JSON.stringify(sessionData))
-                    if(res.data?.isRegistered === false) {
-                        router.push(pagePaths.userdetails)
+                    if(res.data?.roles[0] === roles.admin) {
+                        // router.push(pagePaths.unverifiedDoctorsPageForAdmin)
+                    }
+                    else if(res.data?.isRegistered === false) {
+                        // router.push(pagePaths.userdetails)
                     }
                     else if (res.data?.roles[0] === roles.admin) {
-                        router.push(pagePaths.complaintsPage)
+                        // router.push(pagePaths.complaintsPage)
                     } else {
-                        router.push(pagePaths.dashboardPages.userdetailsPage)
+                        // router.push(pagePaths.dashboardPages.userdetailsPage)
                     }
                 }
             }).catch((err) => {

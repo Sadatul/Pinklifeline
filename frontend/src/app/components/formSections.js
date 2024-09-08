@@ -662,7 +662,6 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                     </div>
                 </motion.div>
             </AnimatePresence>
-            <Separator className="bg-pink-500 m-2 w-11/12 h-[2px]" />
             <div className="flex flex-row justify-between items-center w-full m-2 px-8">
                 <button type='button' disabled={!(currentSection > 0) || disableButtons}
                     onClick={() => {

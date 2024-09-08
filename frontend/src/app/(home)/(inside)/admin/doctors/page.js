@@ -65,6 +65,8 @@ export default function DoctorsVerifyPage() {
         if (!loading) {
             setLoading(true)
         }
+
+        console.log("Filter habijabi")
         axiosInstance.get(unverifiedDoctors, { params: filter }).then((res) => {
             setDoctors(res.data?.content)
             setPageInfo(res.data?.page)

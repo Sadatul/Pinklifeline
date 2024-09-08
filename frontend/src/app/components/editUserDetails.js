@@ -145,7 +145,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
 
     if (!sessionContext.sessionData) return <Loading />
     return (
-        <div className="flex flex-col w-full gap-7 p-7 relative">
+        <div className="flex flex-col w-full gap-7 p-7 relative break-normal">
             <div className="flex flex-row justify-between absolute top-5 right-5 gap-4">
                 {editable ? (
                     <>
