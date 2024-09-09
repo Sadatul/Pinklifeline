@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { radicalGradient, unverifiedDoctors, verifyDoctor } from "@/utils/constants"
 import { Pagination } from "@mui/material"
-import { Loader } from "lucide-react"
+import { ExternalLink, Loader } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 export default function DoctorsVerifyPage() {
@@ -94,24 +95,32 @@ export default function DoctorsVerifyPage() {
                             <span className="text-xs">Separate with commas</span>
                         </label>
                     </div>
-                    <button className="text-base font-semibold text-white bg-gray-600 hover:scale-95 px-2 py-1 rounded-md w-fit" onClick={() => {
-                        setFilter({
-                            fullName: document.getElementById("fullName").value,
-                            regNo: document.getElementById("regNo").value,
-                            workplace: document.getElementById("workplace").value,
-                            department: document.getElementById("department").value,
-                            designation: document.getElementById("designation").value,
-                            contactNumber: document.getElementById("contactNumber").value,
-                            qualifications: document.getElementById("qualifications").value,
-                            pageNo: 0
-                        })
-                    }}>
-                        Filter
-                    </button>
+                    <div className="flex flex-row w-full items-center gap-6 justify-end px-6">
+                        <button className="text-base text-white bg-gray-600 hover:scale-95 px-4 py-1 rounded-md w-fit" onClick={() => {
+                            setFilter({
+                                fullName: document.getElementById("fullName").value,
+                                regNo: document.getElementById("regNo").value,
+                                workplace: document.getElementById("workplace").value,
+                                department: document.getElementById("department").value,
+                                designation: document.getElementById("designation").value,
+                                contactNumber: document.getElementById("contactNumber").value,
+                                qualifications: document.getElementById("qualifications").value,
+                                pageNo: 0
+                            })
+                        }}>
+                            Filter
+                        </button>
+                    </div>
                 </div>
             </div>
             <div className="flex flex-col w-10/12 p-3 rounded-md bg-white items-center justify-between">
                 <div className="flex flex-col w-full items-center">
+                    <div className="flex flex-col items-end w-full">
+                        <Link href={"https://verify.bmdc.org.bd/"} target='_blank' className="flex flex-row items-center gap-2 hover:underline">
+                            <span className="text-base">BMDC Verification</span>
+                            <ExternalLink size={24} />
+                        </Link>
+                    </div>
                     {loading ? <Loader size={44} className="text-gray-600 animate-spin" /> : doctors.map((doctor, index) => {
                         return (
                             <div key={index} className="flex flex-col w-full p-3 rounded-md gap-2">
@@ -144,11 +153,11 @@ function DoctorInfo({ doctor, fetchAgain, setFetchAgain }) {
     const [showFull, setShowFull] = useState(false)
 
     return (
-        <div className="flex flex-col w-full gap-2">
+        <div className="flex flex-col w-full gap-2 relative">
             <div className="flex flex-row w-full justify-between items-center">
                 <span className="text-lg font-semibold">{doctor.fullName}</span>
                 <div className="flex flex-row gap-4 px-16">
-                    <button className="text-sm font-semibold text-white bg-green-600 hover:scale-95 px-2 py-1 rounded-md" onClick={() => {
+                    <button className="text-2xl font-semibold text-white bg-green-600 hover:scale-95 px-4 py-1 rounded-md absolute top-1/2 right-32" onClick={() => {
                         axiosInstance.put(verifyDoctor(doctor.id)).then((res) => {
                             console.log(res)
                             setFetchAgain(true)

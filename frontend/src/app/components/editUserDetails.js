@@ -250,7 +250,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                         <Button
                                             variant={"outline"}
                                             className={cn(
-                                                "w-[160px] justify-start text-left font-normal",
+                                                "min-w-[160px] justify-start text-left font-normal border border-gray-600",
                                                 !editedData.lastPeriodDate && "text-muted-foreground"
                                             )}
                                         >
@@ -296,7 +296,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                     <div className="flex flex-row items-end">
                         {editable ?
                             <>
-                                <div className="text-md font-semibold flex flex-row gap-2 items-end">Average Cycle Length (days):
+                                <div className="text-md font-semibold flex flex-row gap-2 items-end">Menstrual Cycle (days):
                                     <input defaultValue={userData?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2 w-20" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
                                 </div>
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
@@ -304,7 +304,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             :
                             <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
                                 <span className="w-32">
-                                    Average Cycle Length
+                                    Menstrual Cycle
                                 </span>
                                 <span>: {userData?.avgCycleLength} days</span>
                             </div>
@@ -319,7 +319,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    " justify-start text-left font-normal",
+                                                    "min-w-[160px] justify-start text-left font-normal border border-gray-600",
                                                     !editedData.diagnosisDate && "text-muted-foreground"
                                                 )}
                                             >
@@ -605,7 +605,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                         {editable ?
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-5">
-                                    <div className="text-md font-semibold flex items-center gap-2">Organs WithChronic Condition
+                                    <div className="text-md font-semibold flex items-center gap-2">Chronic Diseases
                                         <input className="border border-blue-500 rounded-md px-2" id="organsWithChronicCondition" />
                                     </div>
                                     <Button
@@ -661,7 +661,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             <div className="flex items-center justify-between w-full">
                                 <div className="text-md font-semibold text-gray-800 flex items-center gap-2">
                                     <span className="w-40">
-                                        Organs With Chronic Condition
+                                        Chronic Diseases
                                     </span>
                                     <span>: {userData?.organsWithChronicCondition?.join(", ")}</span>
                                 </div>

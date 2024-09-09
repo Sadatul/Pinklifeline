@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { getDoctorProfileDetailsUrl, getDoctorsUrl, getHospitalsAnonymousUrl, pagePaths, radicalGradient, round } from "@/utils/constants"
 import { Pagination } from "@mui/material"
-import { Loader, Loader2, Search, Star, StarHalf } from "lucide-react"
+import { ExternalLink, Loader, Loader2, Search, Star, StarHalf } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
@@ -222,7 +222,7 @@ function SearchComponent() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col w-11/12 gap-4 bg-white p-6 rounded-md">
+            <div className="flex flex-col w-7/12 gap-4 bg-white p-6 rounded-md">
                 <div className="flex flex-col gap-2 w-full">
                     < div className="flex flex-row gap-4 w-full items-center" >
                         <button className={cn("w-fit p-2", currentTab === 0 && "border-b border-gray-600 bg-gradient-to-t from-purple-100 to-transparent")} onClick={() => {
@@ -256,60 +256,35 @@ function Doctors({ doctors, pageInfo, setDoctorFilter, loadingDoctors }) {
         <div className="flex flex-col w-full gap-4">
             {loadingDoctors && <Loader size={44} className="m-auto animate-spin" />}
             {doctors?.map(doctor => (
-                <div key={doctor.id} className="flex flex-row gap-5 w-full px-4 pt-4 pb-2 bg-white border-b border-gray-500">
-                    <HoverCard >
-                        <HoverCardTrigger asChild>
-                            <div className="flex flex-col gap-2 items-start w-fit">
-                                <Link href={pagePaths.doctorProfile(doctor?.id)} className="text-lg font-semibold text-slate-900 hover:underline">{doctor.fullName}</Link>
-                                <span className="text-base text-slate-700">{doctor.workplace}</span>
-                            </div>
-                        </HoverCardTrigger>
-                        <HoverCardContent side="right">
-                            <div className="flex flex-col gap-3 w-full break-words">
-                                <div className="text-base text-slate-700 flex flex-row flex-wrap items-center gap-2">
-                                    <span className="text-base font-semibold w-fit">
-                                        Contact:
-                                    </span>
-                                    <span className="text-base break-all">
-                                        {doctor.contactNumber}
-                                    </span>
-                                </div>
-                                <div className="text-base text-slate-700 flex flex-row flex-wrap items-center gap-2">
-                                    <span className="text-base font-semibold w-fit">
-                                        Designation:
-                                    </span>
-                                    <span className="text-base break-all">
-                                        {doctor.designation}
-                                    </span>
-                                </div>
-                                <div className="text-base text-slate-700 flex flex-row flex-wrap items-center gap-2">
-                                    <span className="text-base font-semibold w-fit">
-                                        Department:
-                                    </span>
-                                    <span className="text-base break-all">
-                                        {doctor.department}
-                                    </span>
-                                </div>
-                                <div className="text-base text-slate-700 flex flex-row flex-wrap items-center gap-2">
-                                    <span className="text-base font-semibold w-fit">
-                                        Reg No:
-                                    </span>
-                                    <span className="text-base break-all">
-                                        {doctor.registrationNumber}
-                                    </span>
-                                </div>
-                                <div className="text-base text-slate-700 flex flex-row flex-wrap items-center gap-2">
-                                    <span className="text-base font-semibold w-fit">
-                                        Qualifications:
-                                    </span>
-                                    <span className="text-base break-all">
-                                        {doctor.qualifications.join(', ')}
-                                    </span>
-                                </div>
-                            </div>
-                        </HoverCardContent>
-                    </HoverCard>
-                    <RatingCard doctorId={doctor.id} />
+                <div key={doctor.id} className="flex flex-row gap-5 w-full px-4 pt-4 pb-2 bg-white border-b border-gray-500 justify-between">
+                    <div className="flex flex-col gap-1 items-start text-nowrap">
+                        <div className="text-lg font-semibold text-slate-900 ">
+                            {doctor.fullName}
+                        </div>
+                        <div className="flex flex-row gap-2 items-center">
+                            <span className="text-base text-slate-700">
+                                {doctor.designation},
+                            </span>
+                            <span className="text-base text-slate-700">
+                                {doctor.department}
+                            </span>
+                            <span className="text-base text-slate-700">
+                                {doctor.workplace}
+                            </span>
+                        </div>
+                        <span className="text-base text-slate-700">
+                            {doctor.qualifications.join(', ')}
+                        </span>
+                        <span className="text-base">
+                            {doctor.contactNumber}
+                        </span>
+                    </div>
+                    <div className="flex flex-col gap-2 h-full justify-evenly">
+                        <RatingCard doctorId={doctor.id} />
+                        <Link href={pagePaths.doctorProfile(doctor?.id)} target='_blank' className="text-lg font-semibold text-slate-900 hover:underline">
+                            <ExternalLink size={24} />
+                        </Link>
+                    </div>
                 </div>
             ))}
             <Pagination

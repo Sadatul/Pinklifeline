@@ -58,6 +58,19 @@ export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
 
     const { register, handleSubmit, watch, formState: { errors } } = useForm()
 
+
+    return (
+        <div className="flex flex-col w-full h-full gap-5 p-5">
+            <h1 className="text-2xl font-bold">Doctor Details</h1>
+            <DoctorPersonalInfo userData={userData} />
+            <ChambersPage />
+        </div>
+    )
+}
+
+function DoctorPersonalInfo({ userData }) {
+    const { register, handleSubmit, watch, formState: { errors } } = useForm()
+    const [editable, setEditable] = useState(false)
     const onSubmitData = (data) => {
         if (isSubset(data, userData)) {
             console.log("No data change")
@@ -80,19 +93,6 @@ export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
             toast.error("Doctor details update failed")
         })
     }
-
-    return (
-        <div className="flex flex-col w-full h-full gap-5 p-5">
-            <h1 className="text-2xl font-bold">Doctor Details</h1>
-            <DoctorPersonalInfo userData={userData} onSubmitData={onSubmitData} />
-            <ChambersPage />
-        </div>
-    )
-}
-
-function DoctorPersonalInfo({ userData, onSubmitData }) {
-    const [editable, setEditable] = useState(false)
-    const { register, handleSubmit, watch, formState: { errors } } = useForm()
 
     return (
         <div className="flex flex-col gap-3 relative bg-purple-50 p-5 rounded-md">

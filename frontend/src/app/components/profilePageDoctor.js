@@ -931,7 +931,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                     <AlertDialogTrigger className="bg-gradient-to-br from-pink-600 to-pink-700 text-gray-200 px-2 py-2 text-sm rounded-md ml-2 font-semibold hover:bg-gray-200 hover:text-purple-100 transition hover:scale-95"
                         onClick={() => setOpenDialog(true)}>
                         Request Appointment</AlertDialogTrigger>
-                    <AlertDialogContent className="w-auto bg-gray-100  flex flex-col justify-between">
+                    <AlertDialogContent className="w-auto bg-gray-100 z-50 flex flex-col justify-between">
                         <AlertDialogHeader className={"gap-3"}>
                             <AlertDialogTitle>Appointment Request Form</AlertDialogTitle>
                             <AlertDialogDescription asChild>
@@ -952,20 +952,21 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        "w-2/3 justify-start text-left font-normal border border-gray-600",
-                                                        !appointmentDate && "text-muted-foreground"
-                                                    )}>
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" asChild>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-2/3 justify-start text-left font-normal border border-gray-600",
+                                                    !appointmentDate && "text-muted-foreground"
+                                                )}>
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 z-50" asChild>
+                                            <div className="flex flex-col items-center gap-2 p-2">
+
                                                 <Calendar
                                                     mode="single"
                                                     selected={appointmentDate}
@@ -976,25 +977,27 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                                         String(workdaysArray[(new Date(date).getDay() + 1) % 7]) === '0' || date < new Date()
                                                     }
                                                     initialFocus
+                                                    className={"z-50"}
                                                 />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
                                     <input type="number" id="patient-contact-number" className="w-full number-input h-10 p-2 border text-black border-gray-600 rounded-md" placeholder="Enter your Contact Number" pattern="[0-9]{11}" title="Please enter a valid 11 digit phone number" />
                                 </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="gap-2">
+                        <div className="gap-2 flex items-center justify-between w-full">
                             <AlertDialogCancel className="bg-red-700 border border-red-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-gray-50 hover:text-red-600"
                                 onClick={() => {
                                     setAppointmentDate(null)
                                     setOpenDialog(false)
-                                }}
-                            >Cancel</AlertDialogCancel>
+                                }}>
+                                Cancel
+                            </AlertDialogCancel>
                             <AlertDialogAction className="bg-green-700 border border-green-600 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-gray-100 hover:text-green-600"
                                 onClick={() => requestAppointment()}
                             >Request</AlertDialogAction>
-                        </AlertDialogFooter>
+                        </div>
                     </AlertDialogContent>
                 </AlertDialog>
             </div>

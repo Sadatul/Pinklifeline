@@ -136,25 +136,24 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                     initial={{ opacity: 0, x: '100%' }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: '-100%' }}
-                    transition={{ duration: 0.3 }}
-                >
+                    transition={{ duration: 0.3 }}>
                     <h1 className="text-2xl font-bold m-2 text-pink-500">User Details</h1>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <label className="text-md font-semibold m-2">Full Name
+                        <div className="text-md font-semibold m-2">Full Name
                             <div className="w-full flex flex-col">
                                 <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
-                        </label>
-                        <label className="text-md font-semibold m-2 ">Weight(kg)
+                        </div>
+                        <div className="text-md font-semibold m-2 ">Weight(kg)
                             <div className="w-full flex flex-col">
                                 <input defaultValue={userDataRef.current?.weight} type="number" className="number-input border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
                             </div>
-                        </label>
+                        </div>
                     </div>
                     <div className="flex flex-row justify-between items-center w-full m-2">
-                        <label className="text-md font-semibold m-2 text-center">
+                        <div className="text-md font-semibold m-2 text-center">
                             Date of Birth
                             <div className="flex gap-4 mt-2">
                                 <div>
@@ -185,9 +184,9 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                     {errors.dobYear && <p className="text-red-500 text-sm">{errors.dobYear?.message}</p>}
                                 </div>
                             </div>
-                        </label>
+                        </div>
                         <div className="flex">
-                            <label className="text-md font-semibold m-2 text-center">
+                            <div className="text-md font-semibold m-2 text-center">
                                 Height
                                 <div className="flex gap-4 mt-2">
                                     <div>
@@ -209,7 +208,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                         {errors.heightInch && <p className="text-red-500 text-sm">{errors.heightInch?.message}</p>}
                                     </div>
                                 </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
                     <AlertDialog >
@@ -386,28 +385,28 @@ export function DoctorChamberLocationSection({ }) {
                     <div className="flex flex-col w-full items-center my-2">
                         <h1 className="text-center text-2xl font-semibold">Location and Fees</h1>
                         <div className="flex flex-row justify-evenly items-center w-11/12">
-                            <label className="text-md font-semibold mx-2">Location
+                            <div className="text-md font-semibold mx-2">Location
                                 <div className="w-full flex flex-col mt-2 relative">
                                     <input disabled={isOnline} defaultValue={userDataRef.current?.location} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("location", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                     {errors.location && <span className="text-red-500 mt-7 absolute">{errors.location?.message}</span>}
                                 </div>
-                            </label>
-                            <label className="text-md font-semibold mt-8 relative">isOnline
+                            </div>
+                            <div className="text-md font-semibold mt-8 relative">isOnline
                                 <Checkbox checked={isOnline} onCheckedChange={() => setIsOnline(!isOnline)} className="border-2 ml-2 absolute top-1" />
-                            </label>
-                            <label className="text-md font-semibold mx-2">Fees
+                            </div>
+                            <div className="text-md font-semibold mx-2">Fees
                                 <div className="w-full flex flex-col mt-2 relative">
                                     <input defaultValue={userDataRef.current?.fees} type="number" min={0} className={cn("number-input border-2 border-blue-500 rounded-md px-2 w-32")} {...register("fees", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                     {errors.fees && <span className="text-red-500 mt-7 absolute">{errors.fees?.message}</span>}
                                 </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-col w-full items-center mt-10">
                         <h1 className="text-center text-2xl font-semibold">Time</h1>
                         <div className="flex flex-row w-10/12 justify-evenly">
                             <div className="flex flex-col">
-                                <label htmlFor="starttime" className="block text-sm font-medium text-gray-900 dark:text-white">Start time:</label>
+                                <div htmlFor="starttime" className="block text-sm font-medium text-gray-900 dark:text-white">Start time:</div>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -419,7 +418,7 @@ export function DoctorChamberLocationSection({ }) {
                                 {errors.startTime && <span className="text-red-500">{errors.startTime?.message}</span>}
                             </div>
                             <div className="flex flex-col">
-                                <label htmlFor="time" className="block text-sm font-medium text-gray-900 dark:text-white">End time:</label>
+                                <div htmlFor="time" className="block text-sm font-medium text-gray-900 dark:text-white">End time:</div>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -437,7 +436,7 @@ export function DoctorChamberLocationSection({ }) {
                         <div className="text-md font-semibold mx-2 text-center">Work days
                             <div className="flex flex-row space-x-2 mt-2">
                                 {workdays.current.map((day, index) => (
-                                    <label key={index} className="cursor-pointer select-none">
+                                    <div key={index} className="cursor-pointer select-none">
                                         <input value={day.on} type="checkbox" className="hidden peer" />
                                         <div onClick={() => {
                                             workdays.current[index].on = !workdays.current[index].on
@@ -446,7 +445,7 @@ export function DoctorChamberLocationSection({ }) {
                                         }} className="peer-checked:bg-green-600 bg-red-600 text-white font-semibold peer-checked:text-white px-2 rounded-md transition-colors border border-gray-400 shadow-inner capitalize">
                                             {day.day}
                                         </div>
-                                    </label>
+                                    </div>
                                 ))}
                             </div>
                             {errors.workdays && <span className="text-red-500">{errors.workdays?.message}</span>}
@@ -563,16 +562,59 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Doctor info</h1>
-                    <div className="flex flex-row justify-evenly items-center w-11/12 relative">
-                        <label className="text-md font-semibold mx-2">Full Name
+                    <div className="flex flex-col justify-evenly w-8/12 relative items-center">
+                        <div className="text-md font-semibold mx-2">Full Name
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
-                        </label>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Registration Number
+                            <div className="w-full flex flex-col">
+                                <input type="text" defaultValue={userDataRef.current?.registrationNumber} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("registrationNumber", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.registrationNumber && <span className="text-red-500">{errors.registrationNumber?.message}</span>}
+                            </div>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Qualifications
+                            <div className="w-full flex flex-col">
+                                <input type="text" defaultValue={userDataRef.current?.qualifications} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.qualifications && <span className="text-red-500">{errors.qualifications?.message}</span>}
+                                <span className="text-sm text-gray-500">Add your qualifications separated by commas.</span>
+                            </div>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Work Place
+                            <div className="w-full flex flex-col">
+                                <input type="text" defaultValue={userDataRef.current?.workplace} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.workplace && <span className="text-red-500">{errors.workplace?.message}</span>}
+                            </div>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Department
+                            <div className="w-full flex flex-col">
+                                <input type="text" defaultValue={userDataRef.current?.department} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.department && <span className="text-red-500">{errors.department?.message}</span>}
+                            </div>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Designation
+                            <div className="w-full flex flex-col">
+                                <input type="text" defaultValue={userDataRef.current?.designation} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                {errors.designation && <span className="text-red-500">{errors.designation?.message}</span>}
+                            </div>
+                        </div>
+                        <div className="text-md font-semibold mx-2">Contact Number
+                            <div className="w-full flex flex-col">
+                                <input type="tel" defaultValue={userDataRef.current?.contactNumber} className="border-2 w-80 border-blue-500 rounded-md px-2" {...register("contactNumber", {
+                                    required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
+                                    validate: (value) => {
+                                        return (value.length === 11 && /^\d+$/.test(value) && String(value).startsWith("01")) || "Invalid contact number"
+                                    }
+                                })} />
+                                {errors.contactNumber && <span className="text-red-500">{errors.contactNumber?.message}</span>}
+                                <span className="text-sm text-gray-500">Contact number for patients</span>
+                            </div>
+                        </div>
                         <AlertDialog >
                             <AlertDialogTrigger asChild>
-                                <button disabled={disableButtons} className="px-2 border bg-gray-700 text-white rounded-lg h-8 mt-5">Add Profile Picture</button>
+                                <button disabled={disableButtons} className="px-2 border bg-gray-700 text-white rounded-lg h-8 mt-5 w-80 translate-x-2">Add Profile Picture</button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -610,95 +652,39 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                        <label className="text-md font-semibold mx-2">Registration Number
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.registrationNumber} className="border-2 border-blue-500 rounded-md px-2" {...register("registrationNumber", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.registrationNumber && <span className="text-red-500">{errors.registrationNumber?.message}</span>}
-                            </div>
-                        </label>
-                    </div>
-                    <div className="flex flex-row justify-evenly items-strech w-11/12">
-                        <label className="text-md font-semibold mx-2 w-7/12">Qualifications
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.qualifications} className="border-2 border-blue-500 rounded-md px-2" {...register("qualifications", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.qualifications && <span className="text-red-500">{errors.qualifications?.message}</span>}
-                                <span className="text-sm text-gray-500">Add your qualifications separated by commas. Eg: MBBS, MD, DM</span>
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold mx-2 w-5/12">Work Place
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.workplace} className="border-2 border-blue-500 rounded-md px-2" {...register("workplace", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.workplace && <span className="text-red-500">{errors.workplace?.message}</span>}
-                            </div>
-                        </label>
-                    </div>
-                    <div className="flex flex-row justify-evenly items-strech w-11/12">
-                        <label className="text-md font-semibold mx-2 w-7/12">Department
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.department} className="border-2 border-blue-500 rounded-md px-2" {...register("department", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.department && <span className="text-red-500">{errors.department?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold mx-2 w-5/12">Designation
-                            <div className="w-full flex flex-col">
-                                <input type="text" defaultValue={userDataRef.current?.designation} className="border-2 border-blue-500 rounded-md px-2" {...register("designation", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
-                                {errors.designation && <span className="text-red-500">{errors.designation?.message}</span>}
-                            </div>
-                        </label>
-                        <label className="text-md font-semibold mx-2 w-5/12">Contact Number
-                            <div className="w-full flex flex-col">
-                                <input type="tel" defaultValue={userDataRef.current?.contactNumber} className="border-2 border-blue-500 rounded-md px-2" {...register("contactNumber", {
-                                    required: "This field is required", maxLength: { value: 32, message: "Max length 32" },
-                                    validate: (value) => {
-                                        return (value.length === 11 && /^\d+$/.test(value) && String(value).startsWith("01")) || "Invalid contact number"
-                                    }
-                                })} />
-                                {errors.contactNumber && <span className="text-red-500">{errors.contactNumber?.message}</span>}
-                                <span className="text-sm text-gray-500">Contact number for patients</span>
-                            </div>
-                        </label>
+                        <div className="flex flex-row justify-center items-center w-full m-2 px-12 mt-4">
+                            <button disabled={disableButtons} type='button' onClick={() => {
+                                console.log("Hello")
+                                console.log(errors)
+                                handleSubmit(onSubmit)()
+                            }}
+                                className="text-lg text-white px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-tr from-pink-600 to-pink-400 flex items-center rounded-2xl hover:scale-105 transition ease-out" >
+                                {"Save"}
+                            </button>
+                            {currentSection === (totalSections - 1) && (
+                                <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
+                                    <AlertDialogTrigger asChild>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                You can&apos;t change your full name and date of birth once you save the form.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={saveForm}>
+                                                Continue
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
+                        </div>
                     </div>
                 </motion.div>
             </AnimatePresence>
-            <div className="flex flex-row justify-between items-center w-full m-2 px-8">
-                <button type='button' disabled={!(currentSection > 0) || disableButtons}
-                    onClick={() => {
-                        userDataRef.current = { ...userDataRef.current, ...getValues() }
-                        setCurrentSection(a => ((a - 1) % totalSections))
-                    }}
-                    className="text-lg font-bold text-center border bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl px-5 hover:scale-105 transition ease-out"
-                >
-                    Previous
-                </button>
-                <button disabled={disableButtons} type='button' onClick={() => {
-                    console.log("Hello")
-                    console.log(errors)
-                    handleSubmit(onSubmit)()
-                }}
-                    className="text-lg px-5 font-bold text-center  border hover:shadow-md bg-gradient-to-br from-pink-300 to-pink-500 rounded-2xl hover:scale-105 transition ease-out" >
-                    {currentSection === totalSections - 1 ? "Save" : "Next"}
-                </button>
-                {currentSection === (totalSections - 1) && (
-                    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen} >
-                        <AlertDialogTrigger asChild>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={saveForm}>
-                                    Continue
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
-            </div>
         </>
     )
 }
@@ -752,26 +738,26 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Medical Information Form</h1>
-                    <div className="flex justify-between w-full px-5">
+                    <div className="flex justify-between w-full px-5 items-end">
                         <div>
-                            <label className="text-md font-semibold m-2 text-center">Cancer History:
+                            <div className="text-md font-semibold m-2 flex items-center">
+                                <span className="w-40">Cancer History:</span>
                                 <select defaultValue={userDataRef.current?.cancerHistory || "N"} id="cancerHistory" {...register('cancerHistory', { required: "This field is required" })} className="px-2 border rounded-lg w-20 bg-white border-blue-500 ml-3">
                                     <option value="N">No</option>
                                     <option value="Y">Yes</option>
                                 </select>
-                            </label>
+                            </div>
                             {errors.cancerHistory && <span className="text-red-500 text-sm">{errors.cancerHistory?.message}</span>}
                         </div>
 
                         {cancerHistory === 'Y' && (
-                            <div className="flex items-center">
-                                <label className="text-md font-semibold m-2 text-center">Cancer Relatives:
+                            <div className="flex items-end">
+                                <div className="text-md font-semibold m-2 text-center">Cancer Relatives:
                                     <input className="border border-blue-500 rounded-md px-2" id="cancerRelatives" />
-                                </label>
+                                </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-
                                             <Button
                                                 onClick={() => {
                                                     setCancerRelatives([...cancerRelatives, document.getElementById('cancerRelatives').value])
@@ -782,7 +768,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                                 }}
                                                 variant={"outline"}
                                                 className={cn(
-                                                    " h-7 mx-4 justify-start text-left font-normal",
+                                                    " h-7 mx-4 justify-start text-left font-normal -translate-y-1",
                                                     !date && "text-muted-foreground"
                                                 )}
                                             ><AddIcon fontSize="medium" />
@@ -799,33 +785,26 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                             variant={"outline"}
                                             className={cn(
                                                 "w-[160px] ml-3 justify-start text-left font-normal",
-                                            )}
-                                        >Added Relatives</Button>
+                                            )}>
+                                            Added Relatives
+                                        </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">
                                         <ScrollArea className="rounded-md border h-52 min-w-64">
                                             {cancerRelatives.map((relative, index) => (
                                                 <div key={index} className="flex justify-between p-2 border-b border-gray-300">
                                                     <span>{relative}</span>
-                                                    <TooltipProvider delayDuration={400}>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Button
-                                                                    onClick={() => {
-                                                                        setCancerRelatives(cancerRelatives.filter((_, i) => i !== index))
-                                                                        toast.message("Relative removed")
-                                                                    }}
-                                                                    variant={"outline"}
-                                                                    className={cn(
-                                                                        " h-7 mx-4 justify-start text-left font-normal",
-                                                                    )}
-                                                                ><RemoveIcon sx={{ color: red[500] }} /></Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Remove relative</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
+                                                    <Button
+                                                        onClick={() => {
+                                                            setCancerRelatives(cancerRelatives.filter((_, i) => i !== index))
+                                                            toast.message("Relative removed")
+                                                        }}
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            " h-7 mx-4 justify-start text-left font-normal",
+                                                        )}>
+                                                        <RemoveIcon sx={{ color: red[500] }} />
+                                                    </Button>
                                                 </div>
                                             ))}
                                         </ScrollArea >
@@ -836,14 +815,15 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                     </div >
 
                     <div className="flex justify-between w-full items-center px-5">
-                        <div className="flex flex-col">
-                            <label className="text-md m-2 font-semibold text-center" >Last Period Date:
+                        <div className="flex flex-col flex-1">
+                            <div className="text-md m-2 font-semibold flex items-center w-full" >
+                                <span className="w-40">Last Period Date:</span>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant={"outline"}
                                             className={cn(
-                                                "min-w-[160px] ml-3 justify-start text-left font-normal",
+                                                "min-w-[160px] ml-3 justify-start text-left font-normal border border-gray-600",
                                                 !date && "text-muted-foreground"
                                             )}
                                         >
@@ -868,27 +848,28 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         />
                                     </PopoverContent>
                                 </Popover>
-                            </label>
+                            </div>
                             {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
                         </div>
 
                         <div className=" w-1/3">
-                            <label className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
+                            <div className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
                                 <input defaultValue={userDataRef.current?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
-                            </label>
+                            </div>
                             {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
                         </div>
                     </div>
                     {role === "ROLE_PATIENT" &&
                         <div className="flex justify-between w-full items-center px-5">
-                            <div className="flex flex-col">
-                                <label className="text-md m-2 font-semibold text-center" >Diagnose Date:
+                            <div className="flex flex-col flex-1">
+                                <div className="text-md m-2 font-semibold w-full flex items-center" >
+                                    <span className="w-40">Diagnosis Date:</span>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "min-w-[160px] ml-3 justify-start text-left font-normal",
+                                                    "min-w-[160px] ml-3 justify-start text-left font-normal border border-gray-600",
                                                     !diagnosisDate && "text-muted-foreground"
                                                 )}
                                             >
@@ -913,15 +894,15 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                </label>
+                                </div>
                                 {errors.diagnosisDate && <span className="text-red-500 text-sm">{errors.diagnosisDate?.message}</span>}
                             </div>
 
-                            <div className=" w-1/3">
-                                <label className="text-md font-semibold m-2 text-center">Current Stage:
-                                    <select defaultValue={userDataRef.current?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 w-28 ml-1 border rounded-lg bg-white border-blue-500 text-sm">
+                            <div className="">
+                                <div className="text-md font-semibold m-2 text-center">Current Stage:
+                                    <select defaultValue={userDataRef.current?.cancerStage || "cancerStage"} {...register("cancerStage", { required: 'Cancter stage is required', validate: value => value != "cancerStage" || 'Please select a stage' })} className="p-2 ml-1 border rounded-lg bg-white border-blue-500 text-sm">
                                         <option value="cancerStage" disabled  >
-                                            Current Cancer Stage
+                                            select stage
                                         </option>
                                         <option value="STAGE_0">Stage 0</option>
                                         <option value="STAGE_1">Stage 1</option>
@@ -930,7 +911,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         <option value="STAGE_4">Stage 4</option>
                                         <option value="SURVIVOR">Survivor</option>
                                     </select>
-                                </label>
+                                </div>
                                 {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.cancerStage?.message}</span>}
                             </div>
                         </div>
@@ -938,10 +919,11 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
 
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center">
-                                <label className="text-md font-semibold m-2 text-center">Period Irregularities:
+                            <div className="flex items-center flex-1 justify-between">
+                                <div className="text-md font-semibold m-2 w-full flex items-center">
+                                    <span className="w-40">Period Irregularities</span>
                                     <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities" />
-                                </label>
+                                </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1010,10 +992,13 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
 
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center">
-                                <label className="text-md font-semibold m-2 text-center">Allergies
+                            <div className="flex items-center flex-1 justify-between">
+                                <div className="text-md font-semibold m-2 w-full flex items-center">
+                                    <span className="w-40">
+                                        Allergies
+                                    </span>
                                     <input className="border border-blue-500 rounded-md px-2 m-2" id="allergies" />
-                                </label>
+                                </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1053,25 +1038,17 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         {allergies.map((allergy, index) => (
                                             <div key={index} className="flex justify-between p-2 border-b border-gray-300">
                                                 <span>{allergy}</span>
-                                                <TooltipProvider delayDuration={400}>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                onClick={() => {
-                                                                    setAllergies(allergies.filter((_, i) => i !== index))
-                                                                    toast.message("Allergy removed")
-                                                                }}
-                                                                variant={"outline"}
-                                                                className={cn(
-                                                                    " h-7 mx-4 justify-start text-left font-normal",
-                                                                )}
-                                                            ><RemoveIcon sx={{ color: red[500] }} /></Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Remove allergy</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                                <Button
+                                                    onClick={() => {
+                                                        setAllergies(allergies.filter((_, i) => i !== index))
+                                                        toast.message("Allergy removed")
+                                                    }}
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        " h-7 mx-4 justify-start text-left font-normal",
+                                                    )}>
+                                                    <RemoveIcon sx={{ color: red[500] }} />
+                                                </Button>
                                             </div>
                                         ))}
                                     </ScrollArea >
@@ -1081,10 +1058,13 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                     </div>
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center">
-                                <label className="text-md font-semibold text-center">Organs WithChronic Condition
+                            <div className="flex items-center flex-1 justify-between">
+                                <div className="text-md m-2 font-semibold flex items-center">
+                                    <span className="w-40">
+                                        Chronic Diseases
+                                    </span>
                                     <input className="border border-blue-500 rounded-md px-2 m-2" id="organsWithChronicCondition" />
-                                </label>
+                                </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1124,25 +1104,17 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         {organsWithChronicCondition.map((organ, index) => (
                                             <div key={index} className="flex justify-between p-2 border-b border-gray-300">
                                                 <span>{organ}</span>
-                                                <TooltipProvider delayDuration={400}>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                onClick={() => {
-                                                                    setOrgansWithChronicCondition(organsWithChronicCondition.filter((_, i) => i !== index))
-                                                                    toast.message("Organ removed")
-                                                                }}
-                                                                variant={"outline"}
-                                                                className={cn(
-                                                                    " h-7 mx-4 justify-start text-left font-normal",
-                                                                )}
-                                                            ><RemoveIcon sx={{ color: red[500] }} /></Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Remove organ</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                                <Button
+                                                    onClick={() => {
+                                                        setOrgansWithChronicCondition(organsWithChronicCondition.filter((_, i) => i !== index))
+                                                        toast.message("Organ removed")
+                                                    }}
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        " h-7 mx-4 justify-start text-left font-normal",
+                                                    )}>
+                                                    <RemoveIcon sx={{ color: red[500] }} />
+                                                </Button>
                                             </div>
                                         ))}
                                     </ScrollArea >
@@ -1153,12 +1125,12 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                     <div className="w-full px-5">
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
-                                <label className="text-md font-semibold m-1 text-center" >Medicine Name
+                                <div className="text-md font-semibold m-1 text-center" >Medicine Name
                                     <input className="border border-blue-500 rounded-md px-2" id="medicineName" />
-                                </label>
-                                <label className="text-md font-semibold m-1 text-center" >Dose description
+                                </div>
+                                <div className="text-md font-semibold m-1 text-center" >Dose description
                                     <input className="border border-blue-500 rounded-md px-2" id="doseDescription" />
-                                </label>
+                                </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1179,7 +1151,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                                 }}
                                                 variant={"outline"}
                                                 className={cn(
-                                                    " h-7 mx-4 justify-start text-left font-normal",
+                                                    " h-7 mx-4 justify-start text-left font-normal -translate-x-3",
                                                 )}
                                             ><AddIcon fontSize="medium" />
                                             </Button>
@@ -1207,25 +1179,17 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                                 <Separator className="bg-pink-500  w-[2px] h-5 " orientation="vertical" />
                                                 <ScrollableContainer style={{ display: 'flex', flexWrap: 'wrap', width: '10rem' }}>{medication.doseDescription}
                                                 </ScrollableContainer>
-                                                <TooltipProvider delayDuration={400}>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                onClick={() => {
-                                                                    setMedications(medications.filter((_, i) => i !== index))
-                                                                    toast.message("Medication removed")
-                                                                }}
-                                                                variant={"outline"}
-                                                                className={cn(
-                                                                    " h-7 mx-4 justify-start text-left font-normal",
-                                                                )}
-                                                            ><RemoveIcon sx={{ color: red[500] }} /></Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Remove Medication</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                                <Button
+                                                    onClick={() => {
+                                                        setMedications(medications.filter((_, i) => i !== index))
+                                                        toast.message("Medication removed")
+                                                    }}
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        " h-7 mx-4 justify-start text-left font-normal",
+                                                    )}>
+                                                    <RemoveIcon sx={{ color: red[500] }} />
+                                                </Button>
                                             </div>
                                         ))}
                                     </ScrollArea >
@@ -1376,7 +1340,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
 //                             multiple={false}
 //                             types={fileTypes}
 //                             name="file"
-//                             label={"Upload your profile picture. Only jpg or png files are allowed."}
+//                             div={"Upload your profile picture. Only jpg or png files are allowed."}
 //                             onTypeError={() => {
 //                                 toast.error("Invalid file type", {
 //                                     description: "Only jpg or png files are allowed",

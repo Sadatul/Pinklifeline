@@ -57,7 +57,7 @@ export default function LoginRegister() {
                         window.location.href = pagePaths.userdetails
                     }
                     else {
-                        window.location.href = pagePaths.dashboardPages.userDashboard
+                        window.location.href = pagePaths.dashboardPages.userdetailsPage
                     }
                 }
             }).catch((err) => {

@@ -39,7 +39,7 @@ export default function Layout({ children }) {
                             </Link>
                         ))}
                     </div>
-                    <button className="text-gray-200 text-xl text-center w-52 py-1 shadow rounded border border-gray-100 bg-gray-600 hover:scale-95 hover:shadow-inner" onClick={() => {
+                    <button className="text-gray-200 text-xl text-center w-48 py-1 shadow rounded border border-gray-100 bg-gray-600 hover:scale-95 hover:shadow-inner" onClick={() => {
                         axiosInstance.get(adminSendNotifications).then((res) => {
                             toast.success("Success sending todays notifications forcefully")
                         }).catch((error) => {

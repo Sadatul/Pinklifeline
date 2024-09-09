@@ -27,18 +27,27 @@ const subscribeUser = async () => {
 
         console.log('User is subscribed:', subscription);
         const subscriptionJson = subscription.toJSON();
-        axiosInstance.post(subscribeNotficationsUrl, {
-          "endpoint": subscriptionJson.endpoint,
-          "publicKey": subscriptionJson.keys.p256dh,
-          "auth": subscriptionJson.keys.auth,
-          "permissions": 1
-        }).then((response) => {
-          console.log(response)
-          console.log("Notification data: ")
-          localStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
-        }).catch((error) => {
-          console.log("Error: ")
-          console.log(error)
+        axiosInstance.get(subscribeNotficationsUrl, {
+          params: {
+            "endpoint": encodeURIComponent(subscriptionJson.endpoint),
+          }
+        }).then((response) => {}).catch((error) => {
+          console.log("Error: ", error)
+          if (error?.response?.status === 404) {
+            axiosInstance.post(subscribeNotficationsUrl, {
+              "endpoint": subscriptionJson.endpoint,
+              "publicKey": subscriptionJson.keys.p256dh,
+              "auth": subscriptionJson.keys.auth,
+              "permissions": 1
+            }).then((response) => {
+              console.log(response)
+              console.log("Notification data: ")
+              sessionStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
+            }).catch((error) => {
+              console.log("Error: ")
+              console.log(error)
+            })
+          }
         })
 
         console.log('User is subscribed:', subscription);
@@ -55,7 +64,7 @@ const subscribeUser = async () => {
 
 const HomeLayout = ({ children }) => {
   useEffect(() => {
-    if (!localStorage.getItem(notificationData)) {
+    if (!sessionStorage.getItem(notificationData)) {
       subscribeUser()
     }
   }, [])

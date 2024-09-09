@@ -60,17 +60,17 @@ export default function Layout({ children }) {
         window.addEventListener('scroll', checkScroll);
     }, []);
 
-
     return (
         <PrimeReactProvider value={{ ripple: true }}>
             <StompContextProvider>
                 <div className="w-screen h-screen flex flex-col text-black break-all">
                     <nav id="navbar" className="bg-zinc-100 h-14 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink shadow" >
                         <Link href={"/"} className=" pt-3 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
-                            <Image loading="lazy" className="hidden md:block mr-5 shrink animate-bounce delay-700" src={logoIcon.src} alt="logo" width={35} height={35} />
+                            <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={35} height={35} />
                             <Image loading='lazy' className="shrink hidden md:block mb-3" src={logoText.src} alt="logo-text" width={170} height={75} />
                         </Link >
                         <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
+                            <Link href={pagePaths.dashboard} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Dashboard</Link>
                             <Link href={pagePaths.inbox} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
                             <Link href={pagePaths.blogsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
                             <Link href={pagePaths.forumPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>

@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "@/app/components/loading"
+import { cn } from "@/lib/utils"
 
 
 export default function UserDetailsPage() {
@@ -168,7 +169,7 @@ export default function UserDetailsPage() {
     return (
         <div className=" w-full bg-cover bg-center flex flex-col justify-center items-center bg-opacity-100 overflow-auto flex-grow" style={{ backgroundImage: `url(${formBgImage.src})` }}>
             <div className="w-full flex-grow justify-center items-center flex flex-col" style={{ background: "rgba(0, 0, 0, 0.6)" }}>
-                <div className="bg-gray-100 w-[800px] min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly py-5">
+                <div className={cn("bg-gray-200 min-h-[500px] rounded-2xl m-3 flex flex-col items-center justify-evenly py-5 bg-opacity-85", sessionContext.sessionData.role === roles.doctor ? "w-[700px]" : "w-[800px]")}>
                     {sections[currentSection] && sections[currentSection].section_components &&
                         React.createElement(sections[currentSection].section_components, {
                             userDataRef: userDataRef,

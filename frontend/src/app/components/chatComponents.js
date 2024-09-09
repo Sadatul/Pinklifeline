@@ -98,8 +98,8 @@ export function ChatLayout() {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel
-                defaultSize={70}
-                minSize={70}
+                defaultSize={76}
+                minSize={76}
                 className="flex-grow overflow-auto"
             >
                 {stompContext.openedChat ? (
@@ -147,7 +147,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
 
     return (
         <>
-            <div className="flex flex-row items-center p-2 justify-evenly shadow rounded-md">
+            <div className="flex flex-col items-center p-2 justify-evenly shadow rounded-md">
                 <div className="flex flex-row items-center">
                     <h1 className="text-3xl font-bold text-zinc-700 font-mono">Chats</h1>
                 </div>
