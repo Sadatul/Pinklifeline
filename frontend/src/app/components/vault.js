@@ -39,6 +39,7 @@ export function AddPrescriptionPage() {
     const [answers, setAnswer] = useState(null);
     const [extractedText, setExtractedText] = useState(null);
     const router = useRouter()
+    const [verified, setVerified] = useState(false)
 
     const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY)
 
@@ -85,23 +86,35 @@ If you don't find answer for a field then put null. I will parse your answer thr
     }
 
     const handleTextExtract = async () => {
-        if (!workerRef.current) {
-            workerRef.current = await createWorker(['eng', 'ben'], 1,
-                {
-                    logger: (m) => {
-                        console.log(m);
-                        setUploadProgress(Number(m.progress) * 100);
+        try {
+            if (document.getElementById("extract-text-button")) {
+                document.getElementById("extract-text-button").disabled = true
+            }
+            if (!workerRef.current) {
+                workerRef.current = await createWorker(['eng', 'ben'], 1,
+                    {
+                        logger: (m) => {
+                            console.log(m);
+                            setUploadProgress(Number(m.progress) * 100);
+                        }
                     }
-                }
-            );
-        }
-        workerRef.current.setParameters({
-            tessedit_pageseg_mode: '3'
-        })
+                );
+            }
+            workerRef.current.setParameters({
+                tessedit_pageseg_mode: '3'
+            })
 
-        workerRef.current.recognize(imagePath).then(({ data: { text } }) => {
-            setExtractedText(text)
-        });
+            workerRef.current.recognize(imagePath).then(({ data: { text } }) => {
+                setExtractedText(text)
+            });
+            if (document.getElementById("extract-text-button")) {
+                document.getElementById("extract-text-button").disabled = false
+            }
+        } catch (error) {
+            if (document.getElementById("extract-text-button")) {
+                document.getElementById("extract-text-button").disabled = false
+            }
+        }
     }
 
     const saveDocument = async () => {
@@ -156,6 +169,20 @@ If you don't find answer for a field then put null. I will parse your answer thr
         );
     }
 
+    useEffect(() => {
+        if (sessionContext.sessionData) {
+            console.log("Session data", sessionContext.sessionData)
+            if (!(Number(sessionContext.sessionData.subscribed) > 0)) {
+                router.push(pagePaths.dashboardPages.userdetailsPage)
+            }
+            else {
+                setVerified(true)
+            }
+        }
+    }, [sessionContext.sessionData])
+
+    if (!verified) return null
+
     return (
         <div className="flex flex-col p-4 relative">
             <div className="flex flex-row justify-between items-center flex-grow mt-5 gap-3 ">
@@ -174,7 +201,9 @@ If you don't find answer for a field then put null. I will parse your answer thr
                     <input hidden id="file"></input>
                     {imagePath && <Image src={imagePath} alt="Prescription" width={400} height={400} />}
                 </div>
-                <button hidden={!image} className="bg-purple-400 text-black px-4 py-1 rounded-md" onClick={handleTextExtract}>Extract Text</button>
+                <button hidden={!image} id='extract-text-button' className="bg-purple-400 text-black px-4 py-1 rounded-md" onClick={handleTextExtract}>
+                    Extract Text
+                </button>
                 <div className="flex flex-col flex-1 px-3 h-full items-center">
                     <h1 className="text-xl font-semibold">Extracted Text</h1>
                     <div className="relative w-full p-5 gap-2 flex flex-col items-center">
@@ -182,7 +211,7 @@ If you don't find answer for a field then put null. I will parse your answer thr
                         {extractedText &&
                             <>
                                 <span className="  text-green-700 p-1 rounded-md text-lg">Text Extracted.</span>
-                                <button disabled={gettingAnswers || answers} className="bg-purple-400 text-black px-4 py-1 rounded-md w-40" onClick={getAnswers}>
+                                <button disabled={gettingAnswers || answers} className="bg-purple-400 text-black px-4 py-1 rounded-md w-44" onClick={getAnswers}>
                                     {gettingAnswers ? "Getting Answers..." : "Get Answers"}
                                 </button>
                                 {gettingAnswers && <Loader2 size={32} className="text-purple-500 animate-spin" />}
@@ -529,7 +558,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 break-all text-wrap">
                             <h2 className="text-xl font-semibold">Details</h2>
                             <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
                             <div className="flex flex-col gap-2">
@@ -539,7 +568,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                 <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {report.date}</span>
                                 <span className="text-xl font-semibold mt-2" >Summary</span>
                                 <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
-                                <pre className="text-lg flex-col gap-1 items-center">{report.summary}</pre>
+                                <pre className="text-lg flex-col gap-1 items-center break-normal text-wrap">{report.summary}</pre>
                             </div>
                         </div>
                     )}

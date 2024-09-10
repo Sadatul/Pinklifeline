@@ -45,7 +45,7 @@ import { useStompContext } from "../context/stompContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import axiosInstance from "@/utils/axiosInstance"
-import { set } from "date-fns";
+import { format, set } from "date-fns";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
 import { Progress } from "@/components/ui/progress";
@@ -147,7 +147,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
 
     return (
         <>
-            <div className="flex flex-col items-center p-2 justify-evenly shadow rounded-md">
+            <div className="flex flex-col items-center p-2 justify-evenly shadow rounded-md break-normal">
                 <div className="flex flex-row items-center">
                     <h1 className="text-3xl font-bold text-zinc-700 font-mono">Chats</h1>
                 </div>
@@ -169,7 +169,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                 {chats?.map((chat, index) => (
                     <React.Fragment key={index}>
                         <div
-                            className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group cursor-pointer"
+                            className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group cursor-pointer break-normal"
                             onClick={() => {
                                 console.log("Chat clicked")
                                 console.log(JSON.stringify(chat))
@@ -374,11 +374,13 @@ export function ChatWindow({ stompContext }) {
                                         {addDate && <p className="text-sm font-semibold text-gray-800">{message.timestamp.split('T')[0]}</p>}
                                     </div>
                                     <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
-                                        <div className={cn('flex flex-row items-center', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
+                                        <div className={cn('flex items-end', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
                                             <Avatar avatarImgSrc={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
                                             <div className={cn('flex flex-col gap-0 px-4 py-1 rounded-3xl mx-2 min-w-32 break-all text-wrap', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext.sessionData.userId)) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
                                                 {message.type === "TEXT" && <p className="text-base">{message.message}</p>}
-                                                <p className={cn("text-xs w-full",String(message.sender) === String(sessionContext.sessionData.userId) ? "text-left":"text-right" )}>{message.timestamp.split('T')[1]}</p>
+                                                <p className={cn("text-xs w-full",String(message.sender) === String(sessionContext.sessionData.userId) ? "text-left":"text-right" )}>
+                                                    {format(new Date(message.timestamp), 'hh:mm a')}
+                                                </p>
                                                 {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
                                             </div>
                                         </div>

@@ -216,17 +216,19 @@ export default function DoctorProfile({ profileId, section }) {
                                     <span className="text-base font-semibold ml-2">{round(reviewInfo.averageRating)}</span>
                                 </div>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto " asChild>
-                                {reviewInfo.ratingCount.map((rating, index) => (
-                                    <div key={index} className="flex flex-row items-center p-2">
-                                        <div className="flex flex-row flex-1">
-                                            {reviewInfo.ratingCount.slice(index).map((rating2, index2) => (
-                                                <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
-                                            ))}
+                            <PopoverContent className="w-auto " side="right" asChild>
+                                <div className="bg-white p-1 rounded-md">
+                                    {reviewInfo.ratingCount.map((rating, index) => (
+                                        <div key={index} className="flex flex-row items-center p-2">
+                                            <div className="flex flex-row flex-1">
+                                                {reviewInfo.ratingCount.slice(index).map((rating2, index2) => (
+                                                    <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
+                                                ))}
+                                            </div>
+                                            <span className="text-sm ml-2 text-right">{rating}</span>
                                         </div>
-                                        <span className="text-sm ml-2 text-right">{rating}</span>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </PopoverContent>
                         </Popover>
                     </div>
@@ -586,7 +588,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                     Add Review
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent asChild>
+                            <DialogContent >
                                 <DialogHeader>
                                     <DialogTitle>
                                         Write your message

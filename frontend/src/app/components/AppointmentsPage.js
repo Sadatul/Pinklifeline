@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useSessionContext } from "@/app/context/sessionContext"
 import axiosInstance from "@/utils/axiosInstance"
-import { acceptAppointmentUrl, appointmentStatus, cancelAppointmentUrl, closeVideoCall, convertCmtoFeetInch, createOnlineMeetingUrl, declineAppointmentUrl, finishAppointmentUrl, getAppointmentsUrl, getDoctorBalance, getDoctorBalanceHistory, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, pagePaths, patientInfoUrl, roles, validateTransactionUrl } from "@/utils/constants"
+import { acceptAppointmentUrl, appointmentStartMsg, appointmentStatus, cancelAppointmentUrl, closeVideoCall, convertCmtoFeetInch, createOnlineMeetingUrl, declineAppointmentUrl, finishAppointmentUrl, frontEndUrl, getAppointmentsUrl, getDoctorBalance, getDoctorBalanceHistory, getVideoCallToekn, joinVideoCall, locationOnline, makePaymentUrl, messageSendUrl, pagePaths, patientInfoUrl, roles, validateTransactionUrl } from "@/utils/constants"
 import Loading from "./loading"
 import { useRouter } from "next/navigation"
 import { Person, Person2 } from "@mui/icons-material"
@@ -32,6 +32,7 @@ import { useStreamVideoClient } from "@stream-io/video-react-sdk"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button, Pagination } from "@mui/material"
 import Link from "next/link"
+import { useStompContext } from "../context/stompContext"
 
 export function AppointmentsPage() {
     const [disableCard, setDisableCard] = useState(false)
@@ -67,9 +68,9 @@ export function AppointmentsPage() {
         <div className="flex flex-col items-center h-full bg-white relative gap-5">
             {(sessionContext.sessionData.role === roles.doctor) &&
                 <div className="absolute top-7 right-10" >
-                    <div className="flex flex-row w-40 shadow-inner bg-gray-200  items-center justify-center p-1 ">
+                    <div className="flex flex-row min-w-40 shadow-inner bg-gray-200  items-center justify-center p-1 ">
                         {(balance !== null) ?
-                            <div className="flex items-center w-full justify-between px-3">
+                            <div className="flex items-center w-full justify-between px-3 gap-2">
                                 <span className="text-sm font-semibold">Balance: {balance}</span>
                                 <Link target='_blank' href={pagePaths.dashboardPages.balanceHitoryPage}>
                                     <ExternalLinkIcon size={24} className="cursor-pointer" />
@@ -413,6 +414,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false)
     const [patientInfo, setPatientInfo] = useState(null)
     const router = useRouter()
+    const stompContext = useStompContext()
 
     const clocks = [
         <Clock12 key={0} size={20} />,
@@ -478,6 +480,17 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
             }).then((response) => {
                 console.log("Call created");
                 console.log(response);
+                const message = {
+                    sender: sessionContext.sessionData?.userId,
+                    receiverId: appointment?.patientID,
+                    message: appointmentStartMsg(`${frontEndUrl}/videocall/${response.call.id}`),
+                    timestamp: new Date().toISOString(),
+                    type: "TEXT",
+                }
+                stompContext.stompClientRef.current.publish({
+                    destination: messageSendUrl,
+                    body: JSON.stringify(message),
+                });
                 const newWindow = window.open(`/videocall/${response.call.id}`, '_blank');
                 if (newWindow) {
                     newWindow.focus();

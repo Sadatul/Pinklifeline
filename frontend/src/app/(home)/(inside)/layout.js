@@ -10,7 +10,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { getProfilePicUrl, logoutUrlReq, pagePaths, roles, testingAvatar } from "@/utils/constants";
+import { extractLink, getProfilePicUrl, logoutUrlReq, pagePaths, roles, testingAvatar } from "@/utils/constants";
 import { PrimeReactProvider } from 'primereact/api';
 import { StompContextProvider } from "@/app/context/stompContext";
 
@@ -20,6 +20,7 @@ import { useSessionContext } from "@/app/context/sessionContext";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Layout({ children }) {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";

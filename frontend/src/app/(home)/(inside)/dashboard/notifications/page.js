@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import axiosInstance from "@/utils/axiosInstance"
 import { notificationData, subscribeNotficationByIdUrl, subscribeNotficationsUrl } from "@/utils/constants"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 export default function NotificationPage() {
     const [notificationInfo, setNotificationInfo] = useState(null)
@@ -34,6 +35,7 @@ export default function NotificationPage() {
 
         }).catch((error) => {
             console.log(error)
+            toast.error("Error fetching notifications")
         })
     }, [])
 
@@ -60,6 +62,7 @@ export default function NotificationPage() {
                                     }))
                                 }).catch((error) => {
                                     console.log(error)
+                                    toast.error("Error updating notification permission")
                                 })
                             }} />
                         </div>

@@ -60,6 +60,8 @@ export function SessionContextProvider({ children }) {
         else {
             setSessionData({
                 ...sessionData,
+                userId: Number(sessionData.userId),
+                subscribed: Number(sessionData.subscribed),
             })
         }
     }, [])

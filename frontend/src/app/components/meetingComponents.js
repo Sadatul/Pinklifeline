@@ -193,37 +193,35 @@ export function MeetingRoom() {
     };
 
     return (
-        <section className="h-full w-full overflow-hidden text-black">
-            <div className="flex w-full flex-1 mt-16 justify-center">
-                <div className=" flex size-full max-w-[1000px]">
+        <div className="h-full w-full overflow-hidden text-black flex flex-col justify-between">
+            <div className="flex flex-col items-center w-full flex-1 mt-16 justify-center">
+                <div className="flex size-full max-w-[1000px]">
                     <CallLayout />
                 </div>
-                {showParticipants &&
-                    <div className='mx-3'>
+                {showParticipants && (
+                    <div className="mx-3">
                         <CallParticipantsList />
                     </div>
-                }
+                )}
             </div>
-            {/* video layout and call controls */}
-            <div className="fixed h-20 flex w-full items-center justify-center gap-5">
-                <div className='flex flex-row gap-3 w-auto'>
+            {/* Adding padding to avoid overlap with the fixed button row */}
+            <div className="pb-20"></div>
+            {/* Video layout and call controls */}
+            <div className="fixed bottom-0 h-16 flex w-full items-center justify-center gap-5 bg-gray-50">
+                <div className="flex flex-row gap-3 w-auto">
                     <ToggleAudioPublishingButton />
                     <ToggleVideoPublishingButton />
                     <ReactionsButton />
                     <DropdownMenu>
                         <div className="flex items-center">
-                            <DropdownMenuTrigger className="cursor-pointer rounded-full bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]  ">
+                            <DropdownMenuTrigger className="cursor-pointer rounded-full bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]">
                                 <LayoutList size={20} className="text-white" />
                             </DropdownMenuTrigger>
                         </div>
-                        <DropdownMenuContent className=" bg-gray-50 text-black">
+                        <DropdownMenuContent className="bg-gray-50 text-black">
                             {['Grid', 'Speaker-Left', 'Speaker-Right'].map((item, index) => (
                                 <div key={index}>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            setLayout(item.toLowerCase())
-                                        }
-                                    >
+                                    <DropdownMenuItem onClick={() => setLayout(item.toLowerCase())}>
                                         {item}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator className="border-dark-1" />
@@ -231,15 +229,16 @@ export function MeetingRoom() {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <button className='bg-[#19232d] px-4 rounded-3xl' onClick={() => setShowParticipants((prev) => !prev)}>
+                    <button
+                        className="bg-[#19232d] px-4 rounded-3xl"
+                        onClick={() => setShowParticipants((prev) => !prev)}
+                    >
                         <Users size={24} className="text-white" />
                     </button>
-                    <CancelCallButton
-                        onClick={endCall}
-                    />
+                    <CancelCallButton onClick={endCall} />
                 </div>
             </div>
-        </section>
+        </div>
     );
 };
 

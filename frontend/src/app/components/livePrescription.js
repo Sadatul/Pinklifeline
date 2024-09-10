@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSessionContext } from "@/app/context/sessionContext"
-import { addReportUrl, convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, joinVideoCall, livePrescriptionSendUrl, livePrescriptionSubscribe, livePrescriptionSubscribeErrors, locationOnline, roles, stompBrokerUrl } from "@/utils/constants"
-import { useParams } from "next/navigation"
+import { addReportUrl, convertCmtoFeetInch, convertFtIncToCm, generateFormattedDate, joinVideoCall, livePrescriptionSendUrl, livePrescriptionSubscribe, livePrescriptionSubscribeErrors, locationOnline, pagePaths, roles, stompBrokerUrl } from "@/utils/constants"
+import { useParams, useRouter } from "next/navigation"
 import axiosInstance from "@/utils/axiosInstance"
 import Loading from "./loading"
 import { debounce } from "lodash"
@@ -33,7 +33,7 @@ export function DoctorLivePrescriptionPage() {
         feet: 0,
         inch: 0
     })
-
+    const router = useRouter()
 
     useEffect(() => {
         if (sessionContext.sessionData && !initialized.current) {
@@ -44,8 +44,11 @@ export function DoctorLivePrescriptionPage() {
                 setPrescriptionData(res?.data)
                 initialized.current = true
             }).catch((error) => {
-                console.log("error fetching prescription data ", error)
-                toast.error("Error connecting.")
+                toast.error("No meeting may not be running right now.")
+                if (error.response?.status === 404) {
+                    setPrescriptionData(null)
+                    router.push(pagePaths.dashboardPages.appointmentsPage)
+                }
             })
         }
     }, [sessionContext.sessionData])
@@ -380,6 +383,8 @@ export function PatientLivePrescriptionPage() {
                 toast.error("Error connecting.")
                 if (error.response?.status === 404) {
                     setDataState("NOT_FOUND")
+                    toast.error("No meeting may not be running right now.")
+                    router.push(pagePaths.dashboardPages.appointmentsPage)
                 }
             })
         }
@@ -452,7 +457,7 @@ export function PatientLivePrescriptionPage() {
             const storageRef = ref(storage, `reports/${sessionContext.sessionData.userId}/${prescriptionData.prescription.id}.png`);
             const metadata = {
                 contentType: 'image/png',
-              };
+            };
             // Start the upload task with blob data
             const uploadTask = uploadBytesResumable(storageRef, byteArray, metadata);
 

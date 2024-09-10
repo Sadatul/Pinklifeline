@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Client } from '@stomp/stompjs';
 import { usePathname } from "next/navigation";
-import { getChatsUrl, sessionDataItem, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
+import { appointmentStartMsg, appointmentStartMsgPattern, extractLink, getChatsUrl, pagePaths, sessionDataItem, stompBrokerUrl, subscribeErrorUrl, subscribeMessageUrl } from "@/utils/constants";
 import { useParams } from "next/navigation";
 import axiosInstance from "@/utils/axiosInstance"
 import { useSessionContext } from "@/app/context/sessionContext";
@@ -41,6 +41,20 @@ export function SocketInitializer() {
                         const message = JSON.parse(response.body)
                         console.log('Received message')
                         console.log(message)
+                        const text = message?.message
+                        if(appointmentStartMsgPattern.test(text)){
+                            toast.message("You have an online appointment",{
+                                duration: Infinity,
+                                closeButton: true,
+                                action : {
+                                    label : "Join",
+                                    onClick : ()=>{
+                                        window.open(extractLink(text), "_blank")
+                                        window.location.href = pagePaths.dashboardPages.patientLivePrescription
+                                    }
+                                },
+                            })
+                        }
                         setMessageQueue([...messageQueue, message])
 
                     })
@@ -73,14 +87,7 @@ export function SocketInitializer() {
     useEffect(() => {
         if (messageQueue.length > 0 && sessionContext.sessionData) {
             for (const message of messageQueue) {
-                if (!pathname.startsWith('/inbox')) {
-                    if (message.type === 'TEXT') {
-                        toast.message("New message from: " + message.sender, {
-                            description: message.message
-                        })
-                    }
-                }
-                else if (pathname.startsWith('/inbox')) {
+                if (pathname.startsWith('/inbox')) {
                     if (stompContext.openedChat?.userId === message.sender) {
                         console.log("in stompInitializer/subscriber/ifroute")
                         stompContext.setMessages([...stompContext.messages, message])

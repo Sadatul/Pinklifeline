@@ -112,7 +112,7 @@ function SharedReportsComponent() {
                     <h2 className="text-lg">
                         Filter
                     </h2>
-                    <div className="flex flex-row gap-2 flex-wrap w-full justify-evenly">
+                    <div className="flex flex-row gap-2 flex-wrap w-full justify-start">
                         <label className="flex flex-col justify-evenly">
                             Doctor Name
                             <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
@@ -182,7 +182,7 @@ function SharedReportsComponent() {
                             </Popover>
                         </label>
                         <label className="flex flex-col justify-evenly">
-                            type
+                            Type
                             <select defaultValue={"ALL"} id="search-type" className="border shadow-inner border-purple-500 text-gray-800 rounded p-2">
                                 <option value="ALL">ALL Reports</option>
                                 <option value="UNLIMITED">Unlimited time</option>

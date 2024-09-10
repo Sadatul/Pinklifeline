@@ -1,6 +1,7 @@
 import { differenceInDays, format, formatDistanceToNow, sub } from "date-fns";
 
-const baseUrl = 'http://localhost:8080';
+export const baseUrl = 'http://localhost:8080';
+export const frontEndUrl = 'http://localhost:3000';
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const forgotPasswordUrlReq = (email) => { return `${baseUrl}/v1/auth/reset-password?email=${email}` }
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
@@ -109,6 +110,18 @@ export const dummyAvatar = (name) => { return `https://getstream.io/random_svg/?
 export const testingAvatar = "https://www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png"
 export const avatarAang = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
 export const emptyAvatar = "/emptyAvatar.png"
+export const appointmentStartMsgPattern = /You have an online appointment now\. Join at \S+/;
+export const appointmentStartMsg = (link) => { return `You have an online appointment now. Join at ${link}` }
+export const extractLink = (msg) => {
+    const LinkPattern = /Join at (\S+)/
+    const match = msg.match(LinkPattern);
+    if (match && match[1]) {
+        const extractedLink = match[1];
+        return extractedLink;
+      } else {
+        return null;
+      }
+}
 
 export const passwordRegex = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{2,}$"
 export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
@@ -163,7 +176,7 @@ export function generateFormattedDate(date) {
 }
 
 export const pagePaths = {
-    baseUrl: baseUrl,
+    baseUrl: "localhost:3000",
     login: "/reglogin",
     register: "/reglogin",
     verifyotp: (email) => {
@@ -192,6 +205,8 @@ export const pagePaths = {
         worksByIdPage: (workId) => { return `/dashboard/works/${workId}` },
         notificationPage: "/dashboard/notifications",
         subscriptionPage: "/dashboard/subscription",
+        lookaroundPage: "/dashboard/lookaround",
+        sharedPrescriptionPage: "/dashboard/prescription/vault/shared",
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
@@ -475,26 +490,41 @@ export const DashboardPagesInfos = [
     {
         name: "Profile",
         link: pagePaths.dashboardPages.userdetailsPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Appointments",
         link: pagePaths.dashboardPages.appointmentsPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Prescription Vault",
         link: pagePaths.dashboardPages.prescriptionVaultPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Works",
         link: pagePaths.dashboardPages.worksPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Self Test",
-        link: pagePaths.dashboardPages.selfTestPage
+        link: pagePaths.dashboardPages.selfTestPage,
+        roles: [roles.patient, roles.basicUser]
+    },
+    {
+        name: "Look Around",
+        link: pagePaths.dashboardPages.lookaroundPage,
+        roles: [roles.patient]
+    }, {
+        name: "Notifications",
+        link: pagePaths.dashboardPages.notificationPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Subscription",
-        link: pagePaths.dashboardPages.subscriptionPage
+        link: pagePaths.dashboardPages.subscriptionPage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     }
 ]
 
