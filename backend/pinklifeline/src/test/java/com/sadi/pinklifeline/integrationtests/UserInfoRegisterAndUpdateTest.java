@@ -97,8 +97,6 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 	"weight": 55,
                 	"height": 25,
                 	"cancerHistory": "N",
-                	"lastPeriodDate": "2000-07-08",
-                	"avgCycleLength": 5,
                 	"periodIrregularities": [],
                 	"allergies": ["Peanut"],
                 	"organsWithChronicCondition": ["Heart", "Throat", "Lung"],
@@ -164,8 +162,6 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
                 	"weight": 55,
                 	"height": 25,
                 	"cancerHistory": "N",
-                	"lastPeriodDate": "2000-07-08",
-                	"avgCycleLength": 5,
                 	"periodIrregularities": [],
                 	"allergies": ["Peanut"],
                 	"cancerStage": "STAGE_1",
@@ -294,8 +290,6 @@ public class UserInfoRegisterAndUpdateTest extends AbstractBaseIntegrationTest{
         Assertions.assertThat(basic.getWeight()).isEqualTo(req.getWeight());
         Assertions.assertThat(basic.getHeight()).isEqualTo(req.getHeight());
         Assertions.assertThat(basic.getCancerHistory()).isEqualTo(req.getCancerHistory());
-        Assertions.assertThat(basic.getLastPeriodDate()).isEqualTo(req.getLastPeriodDate());
-        Assertions.assertThat(basic.getAvgCycleLength()).isEqualTo(req.getAvgCycleLength());
         assertArrayEquals(req.getCancerRelatives().toArray(), basic.getCancerRelatives().toArray());
         assertArrayEquals(req.getMedications().toArray(), basic.getMedications().toArray());
         assertArrayEquals(req.getOrgansWithChronicCondition().toArray(), basic.getOrgansWithChronicCondition().toArray());

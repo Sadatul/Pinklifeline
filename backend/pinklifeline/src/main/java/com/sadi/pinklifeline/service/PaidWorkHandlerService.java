@@ -130,7 +130,7 @@ public class PaidWorkHandlerService {
         Long userId = SecurityUtils.getOwnerID();
         DoctorDetails doctor = doctorsInfoService.getDoctorIfVerified(userId);
         SecurityUtils.throwExceptionIfNotSubscribed(SubscriptionType.DOCTOR_MONTHLY,
-                SubscriptionType.DOCTOR_YEARLY);
+                SubscriptionType.DOCTOR_YEARLY, SubscriptionType.DOCTOR_FREE_TRIAL);
 
         PaidWork paidWork = getPaidWorkWithLock(id);
         if(!Objects.equals(paidWork.getStatus(), PaidWorkStatus.POSTED)){

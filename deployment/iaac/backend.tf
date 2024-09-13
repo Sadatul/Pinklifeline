@@ -1,5 +1,5 @@
-terraform {
-  backend "gcs" {
-    bucket = "pinklifeline-terraform-backend"
-  }
-}
+# terraform {
+#   backend "gcs" {
+#     bucket = "pinklifeline-terraform-backend"
+#   }
+# }
