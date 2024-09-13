@@ -17,7 +17,7 @@ const subscribeUser = async () => {
       if (permission === 'granted') {
         // Register the service worker
         const registration = await navigator.serviceWorker.register('/worker.js');
-        console.log('Service Worker registered successfully:', registration);
+        // console.log('Service Worker registered successfully:', registration);
 
         // Subscribe the user to push notifications
         const subscription = await registration.pushManager.subscribe({
@@ -25,7 +25,7 @@ const subscribeUser = async () => {
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY // Replace with your actual VAPID public key
         });
 
-        console.log('User is subscribed:', subscription);
+        // console.log('User is subscribed:', subscription);
         const subscriptionJson = subscription.toJSON();
         axiosInstance.get(subscribeNotficationsUrl, {
           params: {

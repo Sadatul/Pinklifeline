@@ -7,11 +7,11 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { displayDate, generateFormattedDate, pagePaths, radicalGradient, workStatus, worksUrl } from "@/utils/constants"
+import { displayDate, generateFormattedDate, pagePaths, radicalGradient, workStatus, worksUrl, workTagsUrl } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { format } from "date-fns"
 import { set } from "lodash"
-import { CalendarIcon, ChevronDown, ChevronUp } from "lucide-react"
+import { CalendarIcon, ChevronDown, ChevronUp, Plus } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import ReactSelect from "react-select"
@@ -31,42 +31,16 @@ const animatedComponents = makeAnimated()
 
 export default function WorksPage() {
     const sessionContext = useSessionContext()
-    const [works, setWorks] = useState([
-        {
-            "createdAt": "2024-08-24T12:45:24",
-            "description": "sequat venenatis.sdfasdfsdfsdf ",
-            "id": 5,
-            "title": "WestHamFix with the help of Social Media",
-            "status": "FINISHED"
-        }, {
-            "createdAt": "2024-08-24T12:45:24",
-            "description": "sequat venenatis.sdfasdfsdfsdf ",
-            "id": 5,
-            "title": "WestHamFix with the help of Social Media",
-            "status": "POSTED"
-        }, {
-            "createdAt": "2024-08-24T12:45:24",
-            "description": "sequat venenatis.sdfasdfsdfsdf ",
-            "id": 5,
-            "title": "WestHamFix with the help of Social Media",
-            "status": "ACCEPTED"
-        }, {
-            "createdAt": "2024-08-24T12:45:24",
-            "description": "sequat venenatis.sdfasdfsdfsdf ",
-            "id": 5,
-            "title": "WestHamFix with the help of Social Media",
-            "status": "FINISHED"
-        }
-    ])
+    const [works, setWorks] = useState([])
     const [pageInfo, setPageInfo] = useState(null)
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState({
-        startDate: '',
-        endDate: '',
-        tags: '',
-        userId: '',
+        startDate: null,
+        endDate: null,
+        tags: null,
+        userId: null,
         status: workStatus.POSTED,
-        providerId: '',
+        providerId: null,
         sortDirection: "ASC",
         pageNo: 0
     })
@@ -81,7 +55,10 @@ export default function WorksPage() {
 
     useEffect(() => {
         console.log("filter", filter)
-        axiosInstance.get(worksUrl, { params: filter }).then(res => {
+        axiosInstance.get(worksUrl, {
+            params: filter
+        }).then(res => {
+            console.log("works", res.data)
             setWorks(res.data?.content)
             setPageInfo(res.data?.page)
         }).catch(err => {
@@ -95,17 +72,19 @@ export default function WorksPage() {
 
     return (
         <div className={cn(radicalGradient, "from-slate-200 to-slate-100 p-4 flex flex-col items-center w-full flex-1 gap-6")}>
-            <div className="w-11/12 bg-white p-4 rounded flex flex-col gap-6">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">Works</h1>
-                    <button className="w-fit px-2 py-1 flex items-center bg-gray-100 rounded" onClick={() => {
-                        setShowFilter(prev => !prev)
-                    }}>
-                        {showFilter ? "Hide Filter" : "Show Filter"}
-                        {
-                            showFilter ? <ChevronUp size={28} /> : <ChevronDown size={28} />
-                        }
-                    </button>
+            <div className="w-11/12 bg-white px-4 py-2 rounded flex flex-col gap-6">
+                <div className="flex items-center gap-2 justify-between">
+                    <div className="flex flex-row gap-2 items-center">
+                        <h1 className="text-2xl font-bold">Works</h1>
+                        <button className="w-fit px-2 py-1 flex items-center bg-gray-100 rounded" onClick={() => {
+                            setShowFilter(prev => !prev)
+                        }}>
+                            {showFilter ? "Hide Filter" : "Show Filter"}
+                            {
+                                showFilter ? <ChevronUp size={28} /> : <ChevronDown size={28} />
+                            }
+                        </button>
+                    </div>
                 </div>
                 <div className={cn("flex flex-col gap-4 transition-transform duration-500 ease-linear", showFilter ? "scale-100" : "scale-0")}>
                     {showFilter &&
@@ -183,20 +162,20 @@ export default function WorksPage() {
                                         startDate: generateFormattedDate(dateRange.from),
                                         endDate: generateFormattedDate(dateRange.to),
                                         tags: selectedTags.map(tag => tag.value).join(","),
-                                        userId: document.getElementById("user-id").value,
-                                        providerId: document.getElementById("provider-id").value,
-                                        address: document.getElementById("address").value,
+                                        userId: document.getElementById("user-id").value === "" ? null : document.getElementById("user-id").value,
+                                        providerId: document.getElementById("provider-id").value === "" ? null : document.getElementById("provider-id").value,
+                                        address: document.getElementById("address").value === "" ? null : document.getElementById("address").value,
                                     })
                                 }}>Filter</button>
                                 <button className="p-2 bg-red-500 text-white rounded-md hover:scale-95" onClick={() => {
                                     setFilter({
-                                        startDate: '',
-                                        endDate: '',
-                                        tags: '',
-                                        userId: '',
-                                        status: '',
-                                        providerId: '',
-                                        address: '',
+                                        startDate: null,
+                                        endDate: null,
+                                        tags: null,
+                                        userId: null,
+                                        status: workStatus.POSTED,
+                                        providerId: null,
+                                        address: null,
                                         sortDirection: "ASC",
                                         pageNo: 0
                                     })
@@ -275,6 +254,9 @@ export default function WorksPage() {
                             <option value="ASC">Ascending</option>
                             <option value="DESC">Descending</option>
                         </select>
+                        <Link href={pagePaths.dashboardPages.addWorkPage} className="flex items-center gap-1 hover:underline text-lg">
+                            Add Work <Plus size={24} />
+                        </Link>
                     </div>
                 </div>
                 <div className="flex flex-col gap-5 bg-white p-4 rounded">
@@ -289,18 +271,7 @@ export default function WorksPage() {
                             </div>
                         ) : (
                             works.map((work, index) => (
-                                <Link href={pagePaths.worksByIdPage(work.id)} key={index} className="flex flex-col items-center gap-4 p-2 border-b border-gray-500 break-all w-full">
-                                    <div className="flex flex-row gap-4 justify-between w-full">
-                                        <span className="font-bold text-lg flex items-center gap-2">
-                                            {work.title}
-                                            <Badge className={cn(work.status === workStatus.FINISHED && "bg-blue-700", work.status === workStatus.ACCEPTED && "bg-red-700", work.status === workStatus.POSTED && "bg-green-700", "text-white")}>{work.status}</Badge>
-                                        </span>
-                                        <span>{displayDate(work.createdAt)}</span>
-                                    </div>
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <span>{work.description}</span>
-                                    </div>
-                                </Link>
+                                <WorkComponent key={index} work={work} />
                             ))
                         )}
                     </div>
@@ -321,6 +292,45 @@ export default function WorksPage() {
                         />
                     </div>
                 </div>
+            </div>
+        </div>
+    )
+}
+
+function WorkComponent({ work }) {
+    const [tags, setTags] = useState([])
+    useEffect(() => {
+        if (work) {
+            axiosInstance.get(workTagsUrl(work.id)).then(res => {
+                setTags(res.data)
+            }).catch(err => {
+                console.error("error getting tags for work:", work.id, err)
+            })
+        }
+    }, [work])
+
+    return (
+        <div className="flex flex-col items-center gap-2 p-2 border-b border-gray-500 break-all w-full">
+            <div className="flex flex-col gap-1 w-full">
+                <div className="flex flex-row gap-4 justify-between w-full">
+                    <Link href={pagePaths.dashboardPages.worksByIdPage(work.id)} className="font-bold text-lg flex items-center gap-2 ">
+                        <span className="hover:underline">
+                            {work.title}
+                        </span>
+                        <Badge className={cn(work.status === workStatus.FINISHED && "bg-blue-700", work.status === workStatus.ACCEPTED && "bg-red-700", work.status === workStatus.POSTED && "bg-green-700", "text-white hover:no-underline")}>{work.status}</Badge>
+                    </Link>
+                    <span>{displayDate(work.createdAt)}</span>
+                </div>
+                <div className="flex flex-row gap-2 text-xs">
+                    {tags.map((tag, index) => (
+                        <div key={index} className="flex items-center gap-1 w-fit p-1 rounded bg-gray-100">
+                            {tag}
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+                <span>{work.description}</span>
             </div>
         </div>
     )

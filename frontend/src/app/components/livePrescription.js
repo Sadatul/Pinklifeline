@@ -330,6 +330,7 @@ export function DoctorLivePrescriptionPage() {
 
 export function PatientLivePrescriptionPage() {
     const params = useParams()
+    const [disableButton, setDisableButton] = useState(false)
     const storage = getStorage(firebase_app)
     const [dataState, setDataState] = useState("FOUND")
     const [isPaidUser, setIsPaidUser] = useState(true)
@@ -377,6 +378,7 @@ export function PatientLivePrescriptionPage() {
         if (sessionContext.sessionData) {
             axiosInstance.get(joinVideoCall).then((res) => {
                 setPrescriptionData(res?.data)
+                callId.current = res?.data?.callId
                 initialized.current = true
             }).catch((error) => {
                 console.log("error fetching prescription data ", error)
@@ -517,6 +519,9 @@ ${prescriptionData.prescription.tests.join(', ')}
                     }).catch((error) => {
                         console.log("error adding report to vault ", error)
                         toast.error("Error adding report to vault")
+                    }).finally(() => {
+                        setLoadingReportAdd(false);
+                        setDisableButton(false);
                     })
                 }
             );
@@ -544,18 +549,20 @@ ${prescriptionData.prescription.tests.join(', ')}
             <h1 className="text-2xl font-semibold text-center w-full">Live Prescription</h1>
             <div className="w-4/5 gap-6 flex flex-col bg-blue-50 p-2">
                 <div className="flex flex-row fixed top-16 right-7 gap-5 items-center z-10 ">
-                    <button disabled={loading} className="bg-purple-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
+                    <button disabled={loading || disableButton} className="bg-purple-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
                         setLoading(true);
+                        setDisableButton(true);
                         handleGeneratePDF();
                         setLoading(false);
+                        setDisableButton(false);
                     }}>
                         {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Generate PDF"}
                     </button>
                     {isPaidUser &&
-                        <button disabled={loadingRportAdd} className="bg-pink-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
+                        <button disabled={loadingRportAdd || disableButton} className="bg-pink-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
                             setLoadingReportAdd(true);
+                            setDisableButton(true);
                             addReportToVault();
-                            setLoadingReportAdd(false);
                         }}>
                             {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Add to Vault"}
                         </button>

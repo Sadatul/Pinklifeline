@@ -124,7 +124,10 @@ export default function LoginRegister() {
                     <button onClick={() => { setCurrentSection("Register") }} id="registersection" className="text-2xl font-bold text-center m-2">Register</button>
                 </div>
                 <Separator className="bg-purple-400 m-2 w-80" />
-                <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5 " onSubmit={handleSubmit(submitForm)}>
+                <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5 " onSubmit={(e) => {
+                    e.preventDefault()
+                    handleSubmit(submitForm)()
+                }}>
                     <label className="text-xl font-bold m-2">Email</label>
                     <input id="email-input" type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
                         {...register("email", {

@@ -58,9 +58,9 @@ function SharedReportsComponent() {
             const endDate = generateFormattedDate(dateRange.to)
             axiosInstance.get(shareReportUrl, {
                 params: {
-                    doctorName: doctorName,
-                    hospitalName: hospitalName,
-                    keywords: selectedKeywords.current.map((keyword) => keyword.value),
+                    doctorName: doctorName === "" ? null : doctorName,
+                    hospitalName: hospitalName === "" ? null : hospitalName,
+                    keywords: selectedKeywords.current.length === 0 ? null : selectedKeywords.current.map((keyword) => keyword.value).join(","),
                     startDate: startDate,
                     endDate: endDate,
                     type: type,

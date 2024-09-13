@@ -301,32 +301,7 @@ function PostSection({ userId, className, userData }) {
     const [currentForumQuestionPage, setCurrentForumQuestionPage] = useState(1)
     const [totalBlogPostPages, setTotalBlogPostPages] = useState(15)
     const [totalForumQuestionPages, setTotalForumQuestionPages] = useState(12)
-    const [posts, setPosts] = useState([
-        {
-            title: "Does hormone replacement therapy increase cancer risk?",
-            content: "Hormone replacement therapies (HRT) are hormonal medications that can help reduce menopause symptoms. While these therapies offer welcome symptom relief for many people, they have also been associated with side effects, including increased breast cancer risk.",
-            date: "2021-09-01",
-            imageSrc: "https://www.mdanderson.org/cancerwise/2024/07/medullary-thyroid-cancer-survivor-trusts-md-anderson-for-long-term-care/jcr:content/blog/adaptiveimage.resize.648.0.medium.dir.jpg/1720705182439.jpg"
-        },
-        {
-            title: "Does hormone replacement therapy increase cancer risk?",
-            content: "Hormone replacement therapies (HRT) are hormonal medications that can help reduce menopause symptoms. While these therapies offer welcome symptom relief for many people, they have also been associated with side effects, including increased breast cancer risk.",
-            date: "2021-09-01",
-            imageSrc: "https://www.mdanderson.org/cancerwise/2024/07/does-hormone-replacement-therapy-increase-cancer-risk/jcr:content/blog/adaptiveimage.resize.648.0.medium.dir.jpg/1719869273826.jpg"
-        },
-        {
-            title: "Does hormone replacement therapy increase cancer risk?",
-            content: "Hormone replacement therapies (HRT) are hormonal medications that can help reduce menopause symptoms. While these therapies offer welcome symptom relief for many people, they have also been associated with side effects, including increased breast cancer risk.",
-            date: "2021-09-01",
-            imageSrc: "https://www.mdanderson.org/cancerwise/2024/07/does-hormone-replacement-therapy-increase-cancer-risk/jcr:content/blog/adaptiveimage.resize.648.0.medium.dir.jpg/1719869273826.jpg"
-        },
-        {
-            title: "Does hormone replacement therapy increase cancer risk?",
-            content: "Hormone replacement therapies (HRT) are hormonal medications that can help reduce menopause symptoms. While these therapies offer welcome symptom relief for many people, they have also been associated with side effects, including increased breast cancer risk.",
-            date: "2021-09-01",
-            imageSrc: "https://www.mdanderson.org/cancerwise/2024/07/does-hormone-replacement-therapy-increase-cancer-risk/jcr:content/blog/adaptiveimage.resize.648.0.medium.dir.jpg/1719869273826.jpg"
-        },
-    ])
+    const [posts, setPosts] = useState([])
     const [forumQuestions, setForumQuestions] = useState([])
     const [similarPersons, setSimilarPersons] = useState([])
     const [loadingSimilarPersons, setLoadingSimilarPersons] = useState(true)
@@ -341,7 +316,7 @@ function PostSection({ userId, className, userData }) {
         axiosInstance.get(blogsAnonymousUrl, {
             params: {
                 docId: userId,
-                pageNo: currentBlogPostPage - 0,
+                pageNo: currentBlogPostPage - 1,
             }
         }).then((res) => {
             console.log("blog posts", res.data)
@@ -367,7 +342,7 @@ function PostSection({ userId, className, userData }) {
         axiosInstance.get(forumQuestionsAnonymousUrl, {
             params: {
                 userId: userId,
-                pageNo: currentForumQuestionPage - 0,
+                pageNo: currentForumQuestionPage - 1,
             }
         }).then((res) => {
             setForumQuestions(res.data?.content?.map((question) => {
@@ -452,7 +427,7 @@ function PostSection({ userId, className, userData }) {
                         <div className="flex flex-col">
                             {posts.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
                             {posts.map((post, index) => (
-                                <BlogCard key={index} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} />
+                                <BlogCard key={index} id={post.id} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} />
                             ))}
                         </div>
                     </TabsContent>
@@ -460,7 +435,7 @@ function PostSection({ userId, className, userData }) {
                         <div className="flex flex-col">
                             {forumQuestions.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No questions found</h1>}
                             {forumQuestions.map((question, index) => (
-                                <ForumCard key={index} title={question.title} date={question.date} likesCount={question.likesCount} />
+                                <ForumCard key={index} id={question.id} title={question.title} date={question.date} likesCount={question.likesCount} />
                             ))}
                         </div>
                     </TabsContent>
@@ -507,7 +482,7 @@ function PostSection({ userId, className, userData }) {
     )
 }
 
-function BlogCard({ title, content, date, imageSrc }) {
+function BlogCard({ title, content, date, imageSrc, id }) {
     return (
         <div className="flex flex-row w-full mx-2 my-3 bg-white rounded-md shadow">
             <div className="relative w-full h-40 rounded-l-md overflow-hidden">
@@ -519,7 +494,7 @@ function BlogCard({ title, content, date, imageSrc }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-white from-75%  to-transparent to-90% rounded-t-md flex flex-col items-end">
                     <div className="relative w-9/12 z-10 px-4 py-2 text-black flex flex-col items-end text-end">
-                        <h1 className="text-2xl font-bold line-clamp-1">{title}</h1>
+                        <Link href={pagePaths.blogPageById(id)} className="text-2xl font-bold line-clamp-1">{title}</Link>
                         <p className="mt-4 line-clamp-3">{content}</p>
                         <span className="mt-2 text-sm font-semibold">{date}</span>
                     </div>
@@ -530,15 +505,15 @@ function BlogCard({ title, content, date, imageSrc }) {
     )
 }
 
-function ForumCard({ title, content, date, likesCount }) {
+function ForumCard({ title, content, date, likesCount, id }) {
     return (
-        <div className="flex flex-row w-full m-1 bg-white rounded-md drop-shadow-sm h-28 to-zinc-100">
+        <div className="flex flex-row w-full m-1 bg-white rounded-md drop-shadow-sm to-zinc-100">
             <div className="flex flex-col w-full px-4 py-2">
-                <h1 className="text-2xl font-bold line-clamp-1">{title}</h1>
+                <Link href={pagePaths.questionPageById(id)} className="text-2xl font-bold line-clamp-1">{title}</Link>
                 <p className="mt-2 line-clamp-2">{content}</p>
                 <div className="flex flex-row justify-between mt-1 py-1 w-full">
                     <div className="flex flex-row">
-                        <span className="flex">
+                        <span className="flex text-nowrap gap-1">
                             <ThumbsUp size={20} fill="white" className="text-blue-400" />
                             {likesCount}
                         </span>

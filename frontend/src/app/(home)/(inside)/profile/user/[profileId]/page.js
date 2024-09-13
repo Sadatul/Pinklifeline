@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, deleteDoctorReview, getUserProfileDetails, locationOnline, messageSendUrl, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, deleteDoctorReview, displayDate, forumQuestionsAnonymousUrl, getUserProfileDetails, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -56,8 +56,9 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import Loading from "@/app/components/loading";
 import { role } from "@stream-io/video-react-sdk";
+import Link from "next/link";
 
-export default function USerProfilePage () {
+export default function USerProfilePage() {
     const sessionContext = useSessionContext()
     const [userData, setUserData] = useState(null)
     const params = useParams()
@@ -123,7 +124,7 @@ export default function USerProfilePage () {
                     </div>
                     <div className="flex flex-col ml-56 gap-1">
                         <h1 className="text-2xl font-bold ">{userData.fullName}</h1>
-                        <h1 className="text-base ">{userData.username}</h1>
+                        <Link href={`mailto:${userData.username}`} className="text-base ">{userData.username}</Link>
                         {userData.role === roles.patient &&
                             <h1 className="text-sm ">{userData.diagnosisDate}</h1>
                         }
@@ -155,70 +156,72 @@ export default function USerProfilePage () {
 }
 
 function PostSection({ userId, className }) {
+    const [forumQuestions, setForumQuestions] = useState([])
     const [currentForumQuestionPage, setCurrentForumQuestionPage] = useState(1)
     const [totalForumQuestionPages, setTotalForumQuestionPages] = useState(12)
+    const [page, setPage] = useState(null)
     const [similarPersons, setSimilarPersons] = useState([
         { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
         { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
         { name: "Robin", profilePic: testingAvatar, workPlace: "Dhaka Medical College" },
     ])
 
+    useEffect(() => {
+        axiosInstance.get(forumQuestionsAnonymousUrl, {
+            params: {
+                userId: userId,
+                page: (page?.number || 1) - 1
+            }
+        }).then((res) => {
+            setForumQuestions(res.data?.content?.map((question) => ({
+                title: question.title,
+                likesCount: question.voteCount,
+                id: question.id,
+                date: displayDate(question.createdAt),
+            })))
+            setPage(res.data.page)
+        }).catch((error) => {
+            console.log(error)
+        })
+    }, [page?.number])
+
     return (
         <div className={cn("flex flex-row w-full mt-4 p-4 rounded", className)}>
-            <div className="flex flex-col rounded w-9/12 gap-3">
+            <div className="flex flex-col rounded w-full gap-3">
                 <h1 className={"text-xl font-bold bg-white px-2 py-1 text-indigo-500 w-52 rounded"}>Forum Questions</h1>
-                <div className="flex flex-col">
-                    <ForumCard title="How to deal with anxiety?" content="I have been feeling anxious lately. How do I deal with it?" date="2021-09-01" likesCount={10} commentsCount={15} />
-                    <ForumCard title="How to deal with anxiety?" content="I have been feeling anxious lately. How do I deal with it?" date="2021-09-01" likesCount={14} commentsCount={9} />
+                <div className="flex flex-col items-center w-full">
+                    {forumQuestions.map((question, index) => (
+                        <ForumCard key={index} title={question.title} content={question.content} date={question.date} likesCount={question.likesCount} id={question.id} />
+                    ))}
                 </div>
                 <div className="w-full flex justify-center mt-4">
-                    <Pagination count={totalForumQuestionPages}
-                        page={currentForumQuestionPage}
+                    <Pagination count={page?.totalPages || 0}
+                        page={page?.number || 1}
                         boundaryCount={3}
                         size="large"
                         variant="outlined"
                         onChange={(event, value) => {
-                            setCurrentForumQuestionPage(value)
+                            setPage({ ...page, number: value })
                         }}
                         color={"secondary"}
                     />
-                </div>
-            </div>
-            <div className="flex flex-col bg-white rounded-md items-center p-4 m-3 ml-7 w-3/12">
-                <h1 className="text-xl ">Similar Persons</h1>
-                <Separator className="w-11/12 h-[1.5px] mt-2 bg-purple-100" />
-                <div className="flex flex-col w-full mt-3">
-                    {similarPersons.map((person, index) => (
-                        <div key={index} className="flex flex-row items-center justify-between w-full h-16 py-2 px-1 border border-gray-300 rounded-md mt-2">
-                            <Avatar avatarImgSrc={person.profilePic} size={40} />
-                            <div className="flex flex-col ml-2">
-                                <h1 className="text-base">{person.name}</h1>
-                                <h1 className="text-sm">{person.workPlace}</h1>
-                            </div>
-                            <button className=" bg-violet-300 text-black px-2 py-1 text-sm rounded-md ml-2">View</button>
-                        </div>
-                    ))}
                 </div>
             </div>
         </div>
     )
 }
 
-function ForumCard({ title, content, date, likesCount, commentsCount }) {
+function ForumCard({ title, content, date, likesCount, id }) {
     return (
-        <div className="flex flex-row w-full m-1 bg-white rounded-md drop-shadow-sm h-28 to-zinc-100">
+        <div className="flex flex-row w-10/12 m-1 bg-white bg-opacity-70 drop-shadow-sm border-b border-b-gray-700 px-10">
             <div className="flex flex-col w-full px-4 py-2">
-                <h1 className="text-2xl font-bold line-clamp-1">{title}</h1>
+                <Link href={pagePaths.questionPageById(id)} className="hover:underline text-2xl font-bold line-clamp-1">{title}</Link>
                 <p className="mt-2 line-clamp-2">{content}</p>
                 <div className="flex flex-row justify-between mt-1 py-1 w-full">
                     <div className="flex flex-row">
-                        <span className="flex">
+                        <span className="flex text-nowrap gap-1">
                             <ThumbsUp size={20} fill="white" className="text-blue-400" />
                             {likesCount}
-                        </span>
-                        <span className="flex">
-                            <MessageCircleReply size={20} className="text-pink-400 ml-6" />
-                            {commentsCount}
                         </span>
                     </div>
                     <span className="text-sm font-semibold text-end w-full">{date}</span>

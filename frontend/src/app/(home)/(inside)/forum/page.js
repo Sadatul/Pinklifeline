@@ -94,9 +94,8 @@ export default function ForumPage() {
         axiosInstance.get(forumQuestionsUrl, {
             params: {
                 pageNo: filter.pageNo,
-                title: filter.title,
-                tags: filter.tags,
-                userId: filter.userId,
+                title: filter.title === "" ? null : filter.title,
+                tags: filter.tags === "" ? null : filter.tags,
                 startDate: filter.startDate,
                 endDate: filter.endDate,
                 sortType: filter.sortType,
@@ -155,10 +154,6 @@ export default function ForumPage() {
                                 <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400 w-10/12 mx-auto" />
                                 <div className="flex flex-col gap-5 px-4 mt-5 w-full h-96 justify-between">
                                     <div className="flex flex-col gap-5">
-                                        <div className="flex flex-col gap-2">
-                                            User Id to filter
-                                            <input id="userId-input" type="number" className="border border-gray-600 shadow-inner px-2 text-base rounded number-input" defaultValue={filter.userId} />
-                                        </div>
                                         <CreatableSelect
                                             options={tagOptions}
                                             isMulti={true}

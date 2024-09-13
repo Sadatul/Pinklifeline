@@ -9,7 +9,7 @@ import AsyncSelect from 'react-select/async';
 import makeAnimated from 'react-select/animated';
 import { debounce, set } from "lodash"
 import Loading from "./loading"
-import { ChevronDown, ChevronRight, ChevronUp, ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, ChevronUp, ExternalLink, Loader2, Pencil, Plus, Trash2 } from "lucide-react"
 import { Pagination } from "@mui/material"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -20,16 +20,8 @@ const animatedComponents = makeAnimated();
 
 export function HospitalsComponent({ isAdmin }) {
     const [isMounted, setIsMounted] = useState(false)
-    const [hospitals, setHospitals] = useState([
-        {
-            "name": "City Medical College, Khulna",
-            "contactNumber": "01738223344",
-            "description": "A hospital with all kinds of facilities",
-            "location": "Moylapota, Khulna",
-            "id": 5,
-            "email": "infos@gazimedicalcollege.com"
-        },
-    ])
+    const [showFilters, setShowFilters] = useState(isAdmin)
+    const [hospitals, setHospitals] = useState([])
     const [loading, setLoading] = useState(true)
     const [pageInfo, setPageInfo] = useState(null)
     const [filter, setFilter] = useState({
@@ -82,48 +74,62 @@ export function HospitalsComponent({ isAdmin }) {
         <ScrollableContainer className={cn("flex flex-col w-full items-center p-4 flex-1 gap-3 overflow-x-hidden", radicalGradient, "from-zinc-200 to-slate-100")} >
             <div className="w-11/12 bg-white rounded p-3 flex flex-col gap-5">
                 <div className="flex flex-col items-center gap-2">
-                    <h1 className="text-2xl font-bold">Hospitals</h1>
+                    <div className="flex flex-row items-center gap-2">
+                        <h1 className="text-2xl font-bold">Hospitals</h1>
+                        <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button className="flex items-center gap-2 w-fit" onClick={() => setShowFilters(prev => !prev)}>
+                                        {showFilters ? <ChevronUp size={28} /> : <ChevronDown size={28} />}
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">Click to toggle filters of hospitals</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                     <Separator className="w-1/4 h-[1.5px] bg-gray-400" />
                 </div>
-                <div className="flex flex-col w-full gap-6">
-                    <div className="flex flex-row gap-8 flex-wrap w-full">
-                        <label className="flex flex-row gap-2 items-center">
-                            <span>Name:</span>
-                            <input autoComplete="off" id="name" type="text" className="border px-2 py-1 border-gray-400 w-52 shadow-inner rounded" />
-                        </label>
-                        <label className="flex flex-row gap-2 items-center">
-                            <span>Location:</span>
-                            <input autoComplete="off" id="location" type="text" className="border px-2 py-1 border-gray-400 w-52 shadow-inner rounded" />
-                        </label>
-                        <label className="flex flex-row gap-2 items-center">
-                            <span>Tests</span>
-                            <AsyncSelect
-                                cacheOptions
-                                isMulti
-                                components={animatedComponents}
-                                closeMenuOnSelect={false}
-                                value={selectedTests}
-                                onChange={(selected) => setSelectedTests(selected)}
-                                loadOptions={(inputValue, callback) => {
-                                    getTestOptions(inputValue, callback);
-                                }}
-                                className="min-w-80"
-                            />
-                        </label>
+                {showFilters &&
+                    <div className="flex flex-col w-full gap-6 transition-all ease-linear duration-500">
+                        <div className="flex flex-row gap-8 flex-wrap w-full">
+                            <label className="flex flex-row gap-2 items-center">
+                                <span>Name:</span>
+                                <input autoComplete="off" id="name" type="text" className="border px-2 py-1 border-gray-400 w-52 shadow-inner rounded" />
+                            </label>
+                            <label className="flex flex-row gap-2 items-center">
+                                <span>Location:</span>
+                                <input autoComplete="off" id="location" type="text" className="border px-2 py-1 border-gray-400 w-52 shadow-inner rounded" />
+                            </label>
+                            <label className="flex flex-row gap-2 items-center">
+                                <span>Tests</span>
+                                <AsyncSelect
+                                    cacheOptions
+                                    isMulti
+                                    components={animatedComponents}
+                                    closeMenuOnSelect={false}
+                                    value={selectedTests}
+                                    onChange={(selected) => setSelectedTests(selected)}
+                                    loadOptions={(inputValue, callback) => {
+                                        getTestOptions(inputValue, callback);
+                                    }}
+                                    className="min-w-80"
+                                />
+                            </label>
+                        </div>
+                        <button className="bg-blue-500 text-white px-3 py-1 rounded w-fit" onClick={() => {
+                            setFilter({
+                                ...filter,
+                                name: document.getElementById('name').value === '' ? null : document.getElementById('name').value,
+                                location: document.getElementById('location').value === '' ? null : document.getElementById('location').value,
+                                testIds: selectedTests.length > 0 ? selectedTests.map((test) => test.value).join(',') : null,
+                                pageNo: 0
+                            })
+                            setLoading(true)
+                        }}>
+                            Search
+                        </button>
                     </div>
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded w-fit" onClick={() => {
-                        setFilter({
-                            ...filter,
-                            name: document.getElementById('name').value === '' ? null : document.getElementById('name').value,
-                            location: document.getElementById('location').value === '' ? null : document.getElementById('location').value,
-                            testIds: selectedTests.length > 0 ? selectedTests.map((test) => test.value).join(',') : null,
-                            pageNo: 0
-                        })
-                        setLoading(true)
-                    }}>
-                        Search
-                    </button>
-                </div>
+                }
             </div>
             <div className="flex flex-col w-11/12 p-3 gap-2">
                 <div className="flex flex-row justify-end items-center w-full gap-6">
@@ -139,12 +145,18 @@ export function HospitalsComponent({ isAdmin }) {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Link href={pagePaths.addHospitalPage}>
-                                        <ExternalLink size={28} className="text-gray-800 cursor-pointer" />
+                                        <Plus size={28} className="text-gray-800 cursor-pointer" />
                                     </Link>
                                 </TooltipTrigger>
                                 <TooltipContent>Click to add a new hospital</TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
+                    }
+                    {!isAdmin &&
+                        <div className="flex flex-row gap-2 items-center">
+                            <Link href={pagePaths.compareHospitalsPage} className="text-gray-700 font-semibold bg-white border border-gray-600 rounded px-2 py-1 hover:underline flex items-center gap-1">Compare Hospitals <ExternalLink size={16} /> </Link>
+                            <Link href={pagePaths.compareTestsUserPage} className="text-gray-700 font-semibold bg-white border border-gray-600 rounded px-2 py-1 hover:underline flex items-center gap-1">Compare Tests <ExternalLink size={16} /> </Link>
+                        </div>
                     }
                 </div>
                 <div className="flex flex-col gap-3 w-full bg-white p-5 rounded">
@@ -206,7 +218,7 @@ function HospitalCard({ hospital, isAdmin, setFetchLoading, fetching }) {
             {isAdmin &&
                 <div className="flex flex-row gap-5  items-center right-2 top-2 absolute">
                     <Link href={pagePaths.addTestHospitalpage(hospital.id)} className="border bg-zinc-800 text-white px-2 py-1 rounded-md">
-                        Add Test
+                        See Details
                     </Link>
                     <button className="" disabled={fetching} onClick={() => {
                         window.open(pagePaths.updateHospitalsPage(hospital.id), '_blank')
@@ -228,10 +240,10 @@ function HospitalCard({ hospital, isAdmin, setFetchLoading, fetching }) {
             }
             <div className="flex flex-row flex-wrap">
                 <div className="flex flex-col gap-2 w-1/2">
-                    <div className="flex flex-row gap-2">
+                    <Link href={pagePaths.hospitalByIdPage(hospital.id)} className="flex flex-row gap-2 hover:underline">
                         <span className="font-bold w-24">Name:</span>
                         <span>{hospital.name}</span>
-                    </div>
+                    </Link>
                     <div className="flex flex-row gap-2">
                         <span className="font-bold w-24">Email:</span>
                         <span>{hospital.email}</span>
@@ -246,78 +258,6 @@ function HospitalCard({ hospital, isAdmin, setFetchLoading, fetching }) {
                         <span className="font-bold w-20">Contact:</span>
                         <span>{hospital.contactNumber}</span>
                     </div>
-                </div>
-            </div>
-            <div className="flex flex-row gap-2">
-                <span className="font-bold w-24">Description:</span>
-                <span>{hospital.description}</span>
-            </div>
-            <div>
-                <button
-                    className="text-gray-700 rounded flex items-center text-base"
-                    onClick={() => {
-                        setShowTests((prev) => !prev);
-                    }}
-                >
-                    Get Tests
-                    {!showTests ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
-                </button>
-                <div
-                    className={cn(
-                        "flex flex-col gap-2 w-full items-center transition-transform duration-700 ease-in-out overflow-hidden",
-                        showTests ? "transform scale-y-100" : "transform scale-y-0",
-                        !loading && "bg-white"
-                    )}
-                    style={{ transformOrigin: 'top' }}
-                >
-                    {showTests && (
-                        <>
-                            {loading && (
-                                <div className="flex flex-row justify-center items-center w-72">
-                                    <Loading chose="dots" />
-                                </div>
-                            )}
-                            {!loading && tests.length === 0 && (
-                                <div className="flex flex-row justify-center items-center w-full">
-                                    No tests found
-                                </div>
-                            )}
-                            {!loading && tests.length > 0 && tests.map((test, index) => (
-                                <div
-                                    key={index}
-                                    className="flex flex-col gap-2 p-2 border-b border-gray-700 w-11/12">
-                                    <TooltipProvider delayDuration={300}>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <span className="font-bold w-fit">{test.name}</span>
-                                            </TooltipTrigger>
-                                            <TooltipContent side='right'>{test.description}</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <span>{test.fee} Taka</span>
-                                </div>
-                            ))}
-                            <div
-                                className={cn(
-                                    "flex flex-row justify-center items-center w-full pb-3",
-                                    loading && "hidden"
-                                )}
-                            >
-                                <Pagination
-                                    count={pageInfo?.totalPages}
-                                    page={filter.pageNo + 1}
-                                    showLastButton
-                                    showFirstButton
-                                    onChange={(e, page) => {
-                                        setFilter({ ...filter, pageNo: page - 1 });
-                                    }}
-                                    className="m-auto"
-                                    variant="outlined"
-                                    color="primary"
-                                />
-                            </div>
-                        </>
-                    )}
                 </div>
             </div>
         </div>

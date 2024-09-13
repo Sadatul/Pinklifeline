@@ -6,6 +6,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { radicalGradient, roles, subscribeUrl, subscriptionPlansUrl, userSubscriptionUrl } from "@/utils/constants"
+import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -33,7 +34,6 @@ export default function SubsriptionPage() {
             axiosInstance.get(userSubscriptionUrl).then((response) => {
                 setCrrentPlan(response.data)
                 console.log(response.data)
-                // setSelectedPlan(response.data.type)
             }).catch((error) => {
                 console.log(error)
             }).finally(() => {
@@ -54,11 +54,16 @@ export default function SubsriptionPage() {
         <div className={cn(radicalGradient, "from-neutral-200 to-neutral-100 w-full flex flex-col items-center p-5 gap-4 flex-1")}>
             <h1 className="text-2xl font-bold">Subscriptions</h1>
             <div className="w-full flex flex-col bg-white items-center p-5 rounded">
-                <span className="flex flex-row items-center gap-2 w-full text-left text-lg font-semibold">
-                    <span>Current Plan</span>
-                    <span className="text-lg font-semibold">{currentPlan && currentPlan.type || "Free"}</span>
-                    <span className="text-base font-semibold">{currentPlan && currentPlan.expiryDate}</span>
-                </span>
+                <div className="flex flex-col items-start gap-2 w-full text-left text-lg font-semibold">
+                    <div className="flex items-center gap-2 text-nowrap text-base">
+                        <span className="w-24">Current Plan</span>
+                        <span className="">: {currentPlan && currentPlan.type || "Free"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-nowrap text-base">
+                        <span className="w-24">Expiry Date</span>
+                        <span className="">: {currentPlan && format(new Date(currentPlan.expiryDate), "dd/MM/yyyy hh:mm a") || "N/A"}</span>
+                    </div>
+                </div>
                 <div className="w-full flex flex-row items-center justify-center gap-4 flex-wrap p-4">
                     {subscriptionPlans.map((plan, index) => (
                         <SubscriptionCard

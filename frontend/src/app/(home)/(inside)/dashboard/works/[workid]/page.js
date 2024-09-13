@@ -8,54 +8,44 @@ import axiosInstance from "@/utils/axiosInstance"
 import { displayDate, finishWorkUrl, messageSendUrl, pagePaths, radicalGradient, reserveWorkUrl, worksByIdUrl, workStatus } from "@/utils/constants"
 import { CalendarIcon, Loader, Mail, Phone } from "lucide-react"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
 export default function WorkPage() {
-    const [workInfo, setWorkInfo] = useState({
-        "address": "Chittagong, Bangladesh",
-        "userFullName": "Sadatul",
-        "description": "sequat venenatis.sdfasdfsdfsdf ",
-        "providerMail": "2005077@ugrad.cse.buet.ac.bd",
-        "title": "WestHamFix with the help of Social Media",
-        "userId": 2,
-        "tags": ["NURSING"],
-        "createdAt": "2024-08-24T12:45:24",
-        "providerId": 4,
-        "id": 5,
-        "providerName": "Dr. Sadi Ahmed",
-        "status": workStatus.FINISHED,
-        "providerContactNumber": "01730445524",
-        "username": "sadatulislamsadi@gmail.com"
-    })
+    const [workInfo, setWorkInfo] = useState(null)
     const [isOwnerOrProvider, setIsOwnerOrProvider] = useState(false)
     const [loading, setLoading] = useState(true)
     const sendMessageRef = useRef(null)
     const sessionContext = useSessionContext()
     const stompContext = useStompContext()
+    const params = useParams()
 
     useEffect(() => {
         if (loading) {
-            axiosInstance.get(worksByIdUrl).then((response) => {
+            axiosInstance.get(worksByIdUrl(params.workid)).then((response) => {
                 setWorkInfo(response.data)
-                setIsOwnerOrProvider(response.data.isOwnerORProvider)
-            }).catch((error) =>
+                setIsOwnerOrProvider(sessionContext.sessionData.userId === response.data.userId || sessionContext.sessionData.userId === response.data.providerId)
+            }).catch((error) => {
                 console.log(error)
-            ).finally(() => {
+                if (error.response.status === 404) {
+                    setWorkInfo(undefined)
+                }
+            }).finally(() => {
                 setLoading(false)
             })
         }
     }, [loading])
 
     const deleteWork = () => {
-        axiosInstance.delete(worksByIdUrl).then((response) => {
+        axiosInstance.delete(worksByIdUrl(params.workid)).then((response) => {
             console.log(response)
-            window.location.href = pagePaths.worksPage
+            window.location.href = pagePaths.dashboardPages.worksPage
         }).catch((error) => {
             console.log(error)
         })
     }
     const reserveWork = () => {
-        axiosInstance.put(reserveWorkUrl).then((response) => {
+        axiosInstance.put(reserveWorkUrl(params.workid)).then((response) => {
             console.log(response)
             setLoading(true)
         }).catch((error) => {
@@ -82,7 +72,7 @@ export default function WorkPage() {
         }
     }
     const rejectWork = () => {
-        axiosInstance.delete(reserveWorkUrl).then((response) => {
+        axiosInstance.delete(reserveWorkUrl(params.workid)).then((response) => {
             console.log(response)
             setLoading(true)
         }).catch((error) => {
@@ -90,7 +80,7 @@ export default function WorkPage() {
         })
     }
     const finishWork = () => {
-        axiosInstance.put(finishWorkUrl).then((response) => {
+        axiosInstance.put(finishWorkUrl(params.workid)).then((response) => {
             console.log(response)
             setLoading(true)
         }).catch((error) => {
@@ -100,10 +90,11 @@ export default function WorkPage() {
 
     if (!sessionContext.sessionData) return null
     if (loading) return <Loader size={44} className="animate-spin m-auto" />
+    if (workInfo === undefined) return <h1 className="text-2xl text-center m-auto text-red-500 font-semibold">Work not found</h1>
 
     return (
         <div className={cn("flex flex-col w-full flex-1 p-6 gap-6", radicalGradient, "from-zinc-200 to-zinc-100")}>
-            <div className="w-7/12 flex flex-col bg-white gap-3 p-4 mt-5">
+            <div className="w-9/12 flex flex-col bg-white gap-3 p-4 mt-5">
                 <div className="flex flex-col gap-1 w-full">
                     <div className="flex flex-row items-center gap-3 px-3">
                         <h1 className="text-lg font-bold text-center">{workInfo.title}</h1>
@@ -113,17 +104,17 @@ export default function WorkPage() {
                     </div>
                     <div className="flex flex-col gap-1 w-full px-3">
                         <div className="flex flex-col gap-2 w-full">
-                            <div className="flex flex-row items-center gap-4">
+                            <div className="flex flex-col items-start gap-1">
                                 {isOwnerOrProvider &&
-                                    <span className="text-sm text-gray-800">{workInfo.userFullName}</span>
+                                    <div className="flex flex-col gap-0 items-start">
+                                        <Link href={pagePaths.userProfile(workInfo.userId)} className="text-base text-gray-900 items-center flex">{workInfo.userFullName}</Link>
+                                        <Link href={`mailto:${workInfo.username}`} className="text-xs text-gray-800 flex items-center gap-1">
+                                            <Mail size={14} /> {workInfo.username}
+                                        </Link>
+                                    </div>
                                 }
-                                {isOwnerOrProvider &&
-                                    <Link href={`mailto:${workInfo.username}`} className="text-sm text-gray-800 flex items-center gap-1">
-                                        <Mail size={20} /> {workInfo.username}
-                                    </Link>
-                                }
-                                <p className="text-sm text-gray-800 flex items-center gap-1">
-                                    <CalendarIcon size={20} /> {displayDate(workInfo.createdAt)}
+                                <p className="text-xs text-gray-800 flex items-center gap-1">
+                                    <CalendarIcon size={14} /> {displayDate(workInfo.createdAt)}
                                 </p>
                             </div>
                         </div>
@@ -136,7 +127,7 @@ export default function WorkPage() {
                     </div>
                 </div>
                 <p className="text-base text-gray-800 break-all px-3">{workInfo.description}</p>
-                <div className="flex flex-row items-center w-full justify-end pt-5 pb-2 px-3">
+                <div className="flex flex-row items-center w-full justify-end pt-2 pb-2 px-3 flex-wrap">
                     {sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED &&
                         <div className="flex flex-row gap-3 items-center flex-1 justify-start">
                             <textarea className="w-48 h-10 border border-gray-300 rounded-md p-1" placeholder="Enter your message" ref={sendMessageRef} onChange={(e) => {
@@ -166,7 +157,7 @@ export default function WorkPage() {
                                 Reject Work
                             </button>
                         }
-                        {(sessionContext.sessionData.userId === workInfo.providerId || sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
+                        {(sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
                             <button className="bg-gray-800 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { finishWork() }}>
                                 Finish Work
                             </button>
@@ -175,7 +166,7 @@ export default function WorkPage() {
                 </div>
             </div>
             {(sessionContext.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
-                <div className="flex flex-col gap-5 w-7/12 p-4 rounded bg-white">
+                <div className="flex flex-col gap-5 w-9/12 p-4 rounded bg-white">
                     <div className="flex flex-row gap-2 items-center justify-between">
                         <h1 className="text-lg font-bold">Provider details</h1>
                         <button className="h-8 w-40 text-white rounded bg-red-700 hover:bg-opacity-90 hover:scale-95" onClick={() => { rejectWork() }}>

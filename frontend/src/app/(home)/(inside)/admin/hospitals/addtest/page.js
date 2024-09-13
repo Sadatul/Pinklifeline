@@ -3,11 +3,12 @@ import Loading from "@/app/components/loading"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAdminUrl, medicalTestHospitalAnonymousUrl, medicalTestHospitalByIdAdminUrl, radicalGradient } from "@/utils/constants"
+import { getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAdminUrl, medicalTestHospitalAnonymousUrl, medicalTestHospitalByIdAdminUrl, pagePaths, radicalGradient } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { debounce, set } from "lodash"
-import { Loader, Plus } from "lucide-react"
+import { Loader, Pencil, Plus } from "lucide-react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -32,7 +33,6 @@ function AddTest() {
             axiosInstance.get(getHospitalsAnonymousUrl, {
                 params: {
                     id: hospitalId,
-
                 }
             }).then((response) => {
                 setHospital(response.data?.content[0])
@@ -52,6 +52,7 @@ function AddTest() {
                     pageNo: currentPage.current - 1,
                 }
             }).then((response) => {
+                console.log("added tests", response.data)
                 setAddedTests(response.data?.content)
                 setPageInfo(response.data?.page)
             }).catch((error) => {
@@ -60,14 +61,14 @@ function AddTest() {
                 setLoadingAddedTests(false)
             })
         }
-    }, [hospitalId])
+    }, [hospitalId, loadingAddedTests])
 
     const getTestOptions = useCallback(debounce((searchText) => {
         setLoadingTest(true)
         setTestOptions([])
         axiosInstance.get(getMedicalTestAnonymousUrl, {
             params: {
-                name: searchText
+                name: searchText === "" ? null : searchText
             }
         }).then((response) => {
             console.log(response.data)
@@ -82,7 +83,7 @@ function AddTest() {
     useEffect(() => {
         if (searchTest !== "" && selectedTest?.name !== searchTest) {
             console.log("searching", searchTest)
-            getTestOptions(searchTest)
+            getTestOptions(searchTest.trim())
         }
     }, [searchTest])
 
@@ -90,11 +91,16 @@ function AddTest() {
 
     return (
         <div className={cn(radicalGradient, "flex flex-col w-full flex-1 from-slate-200 to-slate-100 gap-4 p-4")}>
-            <div className="flex flex-col gap-4 w-10/12 mx-auto bg-white rounded-md p-5">
-                <h1 className="text-2xl font-bold text-slate-900 m-auto">Add Test To Hospital</h1>
+            <div className="flex flex-col gap-4 w-10/12 mx-auto bg-white rounded-md p-5 ">
+                <h1 className="text-2xl font-bold text-slate-900 m-auto">Details Hospital</h1>
                 <div className="flex flex-col gap-4 w-full">
                     <div className="flex flex-col gap-2 w-full">
-                        <h2 className="text-lg font-bold text-slate-900">Hospital Details</h2>
+                        <div className="flex flex-row gap-2 w-full items-center justify-between">
+                            <h2 className="text-lg font-bold text-slate-900">Hospital Details</h2>
+                            <Link href={pagePaths.updateHospitalsPage(hospital.id)} className="rounded shadow-md px-2 py-1 flex items-center gap-2 text-lg" >
+                                Edit<Pencil scale={12} className="text-blue-500" />
+                            </Link>
+                        </div>
                         <Separator className="w-1/4 h-[1.5px] bg-gray-400" />
                     </div>
                     <div className="flex flex-col gap-2 w-full">
@@ -168,11 +174,6 @@ function AddTest() {
                                     "testId": selectedTest?.testId,
                                     "fee": document.getElementById("test-fee")?.value
                                 }).then((response) => {
-                                    setAddedTests([...addedTests, {
-                                        testId: selectedTest?.testId,
-                                        name: selectedTest?.name,
-                                        fee: document.getElementById("test-fee")?.value
-                                    }])
                                     document.getElementById("search-box-test").value = ""
                                     document.getElementById("test-fee").value = ""
                                     setSelectedTest(null)
@@ -230,6 +231,7 @@ function AddedTest({ test, setLoadingAddedTests }) {
     const [mutableTest, setMutableTest] = useState(test)
     const [editabled, setEditabled] = useState(false)
     const testFeeRef = useRef(null)
+    console.log("mutabletest", mutableTest)
 
     return (
         <div className="flex flex-row gap-2 w-full justify-between">
@@ -264,6 +266,7 @@ function AddedTest({ test, setLoadingAddedTests }) {
                     <div className="flex flex-row gap-2">
                         <button className="flex flex-row gap-2 items-center bg-green-600 text-white rounded-md px-2 py-1 hover:scale-95 h-8 text-base"
                             onClick={() => {
+                                console.log("Mutable", mutableTest)
                                 axiosInstance.put(medicalTestHospitalByIdAdminUrl(mutableTest.id), {
                                     fee: testFeeRef.current.value
                                 }).then((response) => {

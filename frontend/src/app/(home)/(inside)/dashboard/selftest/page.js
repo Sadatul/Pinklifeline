@@ -45,7 +45,7 @@ export default function SelfTestPage() {
         <div className="flex flex-col p-4 w-full gap-2 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 to-gray-100">
             <h1 className="text-2xl font-bold">Self Test Page</h1>
             <div className="flex flex-col w-full">
-                <div className="flex flex-row gap-1 px-5 justify-between w-10/12 h-14 bg-gradient-to-t from-zinc-200 via-zinc-300 to-zinc-400 items-center rounded-t-2xl">
+                <div className="flex flex-row gap-1 px-5 justify-between w-10/12 h-14 bg-gradient-to-t from-zinc-100 via-zinc-100 to-zinc-100 items-center rounded-t-2xl">
                     <div className="flex flex-row gap-6 h-14 mt-2">
                         {Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className={cn("w-12 h-12", questionCompletedCount > i ? "bg-pink-500" : "bg-gray-700")} style={{

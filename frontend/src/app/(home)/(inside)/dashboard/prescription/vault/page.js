@@ -66,9 +66,9 @@ export default function PrescriptionVaultPage() {
             const endDate = generateFormattedDate(dateRange.to)
             axiosInstance.get(addReportUrl, {
                 params: {
-                    doctorName: doctorName,
-                    hospitalName: hospitalName,
-                    keywords: selectedKeywords.current.map((keyword) => keyword.value),
+                    doctorName: doctorName === "" ? null : doctorName,
+                    hospitalName: hospitalName  === "" ? null : hospitalName,
+                    keywords: selectedKeywords.current.length > 0 ? selectedKeywords.current.map((keyword) => keyword.value).join(",") : null,
                     startDate: startDate,
                     endDate: endDate,
                     sort: sort,

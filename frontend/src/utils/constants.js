@@ -88,6 +88,7 @@ export const medicalTestHospitalAnonymousUrl = `${baseUrl}/v1/anonymous/hospital
 export const compareHospitalsAnonymous = `${baseUrl}/v1/anonymous/hospitals/compare`
 export const toggleLocationShare = `${baseUrl}/v1/ROLE_PATIENT/toggle-location-share`
 export const worksUrl = `${baseUrl}/v1/works`
+export const workTagsUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/tags` }
 export const worksByIdUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}` }
 export const reserveWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/reserve` }
 export const finishWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/finish` }
@@ -118,9 +119,9 @@ export const extractLink = (msg) => {
     if (match && match[1]) {
         const extractedLink = match[1];
         return extractedLink;
-      } else {
+    } else {
         return null;
-      }
+    }
 }
 
 export const passwordRegex = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{2,}$"
@@ -230,7 +231,8 @@ export const pagePaths = {
     testsAdminPage: "/admin/tests",
     allHospitalsPage: "/hospitals",
     hospitalByIdPage: (hospitalId) => { return `/hospitals/details/${hospitalId}` },
-    compareHospitalsPage: (hospitalId_one, hospitalId_two) => { return `/hospitals/compare?compareHospital_one=${hospitalId_one}&compareHospital_two=${hospitalId_two}` },
+    compareHospitalsPage: `/hospitals/compare`,
+    compareTestsUserPage: `hospitals/tests/compare`,
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
     searchPage: (query) => { return `/search?query=${query}` },
     forgotPassword: (email, token) => { return `/forgotpassword?email=${email}&token=${token}` },

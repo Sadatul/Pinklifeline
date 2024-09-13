@@ -43,7 +43,7 @@ export default function QuestionThreadPage() {
                 console.log("error getting related questions", error)
             })
         }
-    }, [params.questionid,questionTags])
+    }, [params.questionid, questionTags])
 
 
     if (notFound) {
@@ -78,9 +78,9 @@ export default function QuestionThreadPage() {
                                 <Link key={index} href={pagePaths.questionPageById(question.id)} className="hover:underline">
                                     <div className="flex flex-row gap-2 items-start">
                                         <ArrowRight className="w-1/12" />
-                                        <p className="text-base text-blue-600 w-11/12">
+                                        <div className="text-base text-blue-600 w-11/12">
                                             {question.title}
-                                        </p>
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
@@ -216,12 +216,12 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                     {questionInfo?.title}
                 </h1>
                 <div className="flex flex-row gap-2">
-                    <p className="text-base text-gray-900 flex items-center gap-1">
+                    <div className="text-base text-gray-900 flex items-center gap-1">
                         <Avatar avatarImgSrc={questionInfo?.authorProfilePicture} size={24} />
-                        <Link href={pagePaths.redirectUserToProfileWithId(questionInfo?.authorId)} className=" hover:underline">
+                        <Link href={pagePaths.userProfile(questionInfo?.authorId)} className=" hover:underline">
                             {questionInfo?.author}
                         </Link>
-                    </p>
+                    </div>
                     {"--"}
                     <span className="text-sm text-gray-600 flex items-center gap-1">
                         <CalendarClockIcon size={16} />
@@ -235,9 +235,9 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                         </div>
                     ))}
                 </div>
-                <p className="text-lg text-gray-950 p-2 flex flex-wrap text-wrap break-all">
+                <div className="text-lg text-gray-950 p-2 flex flex-wrap text-wrap break-all">
                     {questionInfo?.body}
-                </p>
+                </div>
                 <Separator className="w-full bg-gray-500 h-[1.5px] mx-auto" />
                 <div className="flex flex-row gap-7 items-center justify-between pr-20">
                     <div className="flex flex-row gap-1 items-center">
@@ -327,7 +327,7 @@ const AnswerSection = React.memo(
                     setLoadingAns(false)
                 })
             }
-        }, [params.questionid,isMounted])
+        }, [params.questionid, isMounted])
 
         useEffect(() => {
             if (fetchRepliesAgain) {
@@ -499,6 +499,7 @@ const Answer = React.memo(
 
         return (
             <div ref={baseRef} className="flex items-start space-x-4 w-full relative">
+                {showReplies && <div className="absolute left-8 top-[10px] bottom-[10px] w-[1px] bg-gray-400"></div>}
                 {(mutableAnswer.numberOfReplies > 0 && !showReplies) &&
                     <div ref={designLineRef} className="absolute top-[36px] left-[30px] w-[2px] bg-black z-10 "></div>
                 }
@@ -523,7 +524,7 @@ const Answer = React.memo(
                         </div>
                         {!editable ? (
                             <>
-                                <p className="text-gray-900 text-wrap break-all">{mutableAnswer.body}</p>
+                                <div className="text-gray-900 text-wrap break-all">{mutableAnswer.body}</div>
                                 <div className="flex flex-row gap-7 items-center justify-between">
                                     <div className="flex flex-row gap-1 items-center">
                                         <div className="flex flex-row gap-2 items-center">
