@@ -21,7 +21,7 @@ function ComplaintsDetails() {
     const complaintId = params.complaintid
     const type = searchParams.get('type')
     const resourceId = searchParams.get('resourceId')
-    const dataCollectUrl = type === ReportTypes.blog ? blogByIdAnonymousUrl(resourceId) : (type === ReportTypes.forumQuestion ? forumQuestionByIdAnonymousUrl(resourceId) : (type === ReportTypes.forumQuestion ? forumAnswersByIdAnonymous(resourceId) : null))
+    const dataCollectUrl = type === ReportTypes.blog ? blogByIdAnonymousUrl(resourceId) : (type === ReportTypes.forumQuestion ? forumQuestionByIdAnonymousUrl(resourceId) : (type === ReportTypes.forumAnswer ? forumAnswersByIdAnonymous(resourceId) : null))
     const [data, setData] = useState(null)
     const [blogContent, setBlogContent] = useState(null)
     const [model, setModel] = useState(null)
@@ -39,9 +39,10 @@ function ComplaintsDetails() {
             tempElement.innerHTML = html
             return tempElement.innerText || ''
         }
-
+        console.log("Data Collect URL: ", dataCollectUrl)
         if (dataCollectUrl) {
             axiosInstance.get(dataCollectUrl).then((response) => {
+                console.log("Data: ", response)
                 if (type === ReportTypes.blog) {
                     const contentMatched = response.data?.content.match(/<content>(.*?)<\/content>/s)
                     setData(extractText(contentMatched ? contentMatched[1] : null))
@@ -59,7 +60,7 @@ function ComplaintsDetails() {
                 setLoadingData(false)
             })
         }
-    }, [])
+    }, [dataCollectUrl])
 
     useEffect(() => {
         const getModel = async () => {

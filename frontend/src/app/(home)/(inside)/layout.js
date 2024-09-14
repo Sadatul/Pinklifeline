@@ -72,6 +72,7 @@ export default function Layout({ children }) {
                         </Link >
                         <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
                             <Link href={pagePaths.dashboard} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Dashboard</Link>
+                            <Link href={pagePaths.allHospitalsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Hospitals</Link>
                             <Link href={pagePaths.inbox} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
                             <Link href={pagePaths.blogsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
                             <Link href={pagePaths.forumPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>

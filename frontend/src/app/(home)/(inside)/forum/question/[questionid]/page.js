@@ -501,10 +501,10 @@ const Answer = React.memo(
             <div ref={baseRef} className="flex items-start space-x-4 w-full relative">
                 {showReplies && <div className="absolute left-8 top-[10px] bottom-[10px] w-[1px] bg-gray-400"></div>}
                 {(mutableAnswer.numberOfReplies > 0 && !showReplies) &&
-                    <div ref={designLineRef} className="absolute top-[36px] left-[30px] w-[2px] bg-black z-10 "></div>
+                    <div ref={designLineRef} className="absolute top-[36px] left-[30px] w-[2px] bg-gray-500 z-10 "></div>
                 }
                 {(!showReplies && mutableAnswer.numberOfReplies > 0) &&
-                    <div ref={verticalDesignLineRef} className="absolute left-[14px] h-[7px] bg-black z-30 flex flex-row justify-end " style={{ clipPath: "polygon(0 42%, 50% 41%, 50% 3%, 100% 50%, 50% 100%, 49% 66%, 0 65%)" }}>
+                    <div ref={verticalDesignLineRef} className="absolute left-[14px] h-[7px] bg-gray-500 z-30 flex flex-row justify-end " style={{ clipPath: "polygon(0 42%, 50% 41%, 50% 3%, 100% 50%, 50% 100%, 49% 66%, 0 65%)" }}>
                     </div>
                 }
                 <div className="flex flex-col">

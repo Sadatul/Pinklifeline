@@ -10,9 +10,7 @@ const subscribeUser = async () => {
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     try {
       // Request notification permission
-      console.log('Requesting notification permission...');
       const permission = await Notification.requestPermission();
-      console.log('Notification permission:', permission);
 
       if (permission === 'granted') {
         // Register the service worker
@@ -31,7 +29,7 @@ const subscribeUser = async () => {
           params: {
             "endpoint": encodeURIComponent(subscriptionJson.endpoint),
           }
-        }).then((response) => {}).catch((error) => {
+        }).then((response) => { }).catch((error) => {
           console.log("Error: ", error)
           if (error?.response?.status === 404) {
             axiosInstance.post(subscribeNotficationsUrl, {
@@ -49,8 +47,6 @@ const subscribeUser = async () => {
             })
           }
         })
-
-        console.log('User is subscribed:', subscription);
       } else {
         console.warn('Notification permission denied');
       }
@@ -65,7 +61,7 @@ const subscribeUser = async () => {
 const HomeLayout = ({ children }) => {
   useEffect(() => {
     if (!sessionStorage.getItem(notificationData)) {
-      subscribeUser()
+      // subscribeUser()
     }
   }, [])
 
@@ -73,7 +69,7 @@ const HomeLayout = ({ children }) => {
     <>
       <SessionContextProvider>
         <StreamVideoProvider>
-        {children}
+          {children}
         </StreamVideoProvider>
       </SessionContextProvider>
     </>

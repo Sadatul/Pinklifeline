@@ -3,10 +3,11 @@ import AsyncSelect from 'react-select/async'
 import { useCallback, useEffect, useState } from 'react'
 import makeAnimated from 'react-select/animated'
 import { cn } from '@/lib/utils'
-import { compareHospitalsAnonymous, generatePairs, getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAnonymousUrl, radicalGradient } from '@/utils/constants'
+import { compareHospitalsAnonymous, generatePairs, getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAnonymousUrl, pagePaths, radicalGradient } from '@/utils/constants'
 import { debounce } from 'lodash'
 import axiosInstance from '@/utils/axiosInstance'
-import { Loader } from 'lucide-react'
+import { ArrowLeft, Loader } from 'lucide-react'
+import Link from 'next/link'
 
 const animatedComponents = makeAnimated()
 
@@ -51,7 +52,12 @@ export default function CompareTestFees() {
     return (
         <div className={cn(radicalGradient, "from-slate-200 to-slate-100 flex flex-col w-full flex-1 gap-4 p-5 items-center")}>
             <div className="flex flex-col w-11/12 gap-4 bg-white p-6 rounded-md">
-                <h1 className="text-2xl font-bold text-slate-900">Compare Test Fees</h1>
+                <div className='flex flex-row gap-2 items-center w-full'>
+                    <Link href={pagePaths.allHospitalsPage} className="w-fit" >
+                        <ArrowLeft className="cursor-pointer" size={24} />
+                    </Link>
+                    <h1 className="text-2xl font-bold text-slate-900">Compare Test Fees</h1>
+                </div>
                 <div className="flex flex-col gap-2 w-full">
                     <label className="text-base flex items-center gap-2 w-fit">
                         <span className='text-base w-32'>Select Test</span>

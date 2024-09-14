@@ -9,7 +9,7 @@ import { getVideoCallToekn, sessionDataItem } from '@/utils/constants';
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
 const StreamVideoProvider = ({ children }) => {
-  const [videoClient, setVideoClient] = useState();
+  const [videoClient, setVideoClient] = useState(null);
 
   useEffect(() => {
     const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
@@ -19,6 +19,7 @@ const StreamVideoProvider = ({ children }) => {
     const tokenProvider = async () => {
       try {
         const response = await axiosInstance.get(getVideoCallToekn);
+        console.log("Token response: ", response.data.token);
         return response.data.token;
       }
       catch (err) {

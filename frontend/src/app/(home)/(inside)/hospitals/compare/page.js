@@ -4,7 +4,7 @@ import Loading from "@/app/components/loading"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useCallback, useDebugValue, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
-import { alignArrays, getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAnonymousUrl, radicalGradient } from "@/utils/constants"
+import { alignArrays, getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, medicalTestHospitalAnonymousUrl, pagePaths, radicalGradient } from "@/utils/constants"
 import { debounce, set } from "lodash"
 import axiosInstance from "@/utils/axiosInstance"
 import AsyncSelect from 'react-select/async';
@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Pagination } from "@mui/material"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 const animatedComponents = makeAnimated();
 
@@ -113,22 +115,27 @@ function ComparePageComponent() {
         }
     }, [searchHospitalTwo])
 
-    useEffect(()=>{
-        console.log("Page Info",pageInfo)
-    },[pageInfo])
+    useEffect(() => {
+        console.log("Page Info", pageInfo)
+    }, [pageInfo])
 
     if (!isMounted) return null
 
     return (
-        <ScrollableContainer className={cn(radicalGradient, "from-slate-200 to-slate-100 w-full flex-1 flex flex-col items-center overflow-x-hidden gap-4 p-4")}>
-            <h1 className="text-3xl font-bold text-slate-900 mt-8">Compare Hospitals</h1>
+        <ScrollableContainer className={cn(radicalGradient, "from-slate-200 to-slate-100 w-full flex-1 flex flex-col items-center overflow-x-hidden gap-4 p-6 relative")}>
             <div className="flex flex-col bg-white rounded-md p-4 w-11/12 gap-4">
+                <div className="flex flex-row gap-2 items-center">
+                    <Link href={pagePaths.allHospitalsPage} className="w-fit" >
+                        <ArrowLeft className="cursor-pointer" size={24} />
+                    </Link>
+                    <h1 className="text-xl font-semi text-slate-900 ">Compare Hospitals</h1>
+                </div>
                 <div className="flex flex-row items-center gap-14 px-5 w-full flex-wrap">
                     <label className="flex flex-row items-center gap-2 w-fit">
                         <span className="text-lg font-semibold text-slate-800">Hospital One name</span>
                         <div className="flex flex-col w-72 bg-white rounded-md relative">
                             <input autoComplete="off" id="hospitalOne" type="text" placeholder="Hospital One" className="h-8 border border-gray-600 focus:ring-0 focus:outline-none rounded p-2 shadow-inner" onChange={(e) => {
-                                console.log("Hospital one",e.target.value)
+                                console.log("Hospital one", e.target.value)
                                 setSearchHospitalOne(e.target.value)
                                 setShowOptionOne(true)
                             }} />
