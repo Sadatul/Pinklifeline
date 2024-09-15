@@ -30,6 +30,7 @@ import java.security.Security;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -72,13 +73,13 @@ public class NotificationHandlerService {
         Long userId = SecurityUtils.getOwnerID();
         User user = userService.getUserWithIdAndRegistrationStatus(userId);
 
-        notificationSubscriptionRepository.findByUserAndEndpoint(user, req.getEndpoint()).ifPresent(
-                notificationSubscription -> {throw new BadRequestFromUserException(
-                            String.format("Notification subscription for endpoint %s for user %d already exists",
-                                    req.getEndpoint(), userId)
-                    );
-                }
-        );
+        Optional<NotificationSubscription> notificationSubscriptionOptional = notificationSubscriptionRepository.findByUserAndEndpoint(user, req.getEndpoint());
+        if(notificationSubscriptionOptional.isPresent()){
+            throw new BadRequestFromUserException(
+                    String.format("Notification subscription for endpoint %s for user %d already exists",
+                            req.getEndpoint(), userId)
+            );
+        }
 
         NotificationSubscription notificationSubscription = new NotificationSubscription(user, req.getEndpoint(),
                 req.getPublicKey(), req.getAuth(), req.getPermissions());
