@@ -62,6 +62,7 @@ export default function NotificationPage() {
                                         }
                                         return prevNotification
                                     }))
+                                    toast.success("Notification permission updated")
                                 }).catch((error) => {
                                     console.log(error)
                                     toast.error("Error updating notification permission")
