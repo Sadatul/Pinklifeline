@@ -33,22 +33,23 @@ const subscribeUser = async () => {
             "endpoint": encodeURIComponent(subscriptionJson.endpoint),
           }
         }).then((response) => {
-        }).catch((error) => {
+        }).catch(async (error) => {
           console.log("Error: ", error)
           if (error?.response?.status === 404) {
-            axiosInstance.post(subscribeNotficationsUrl, {
-              "endpoint": subscriptionJson.endpoint,
-              "publicKey": subscriptionJson.keys.p256dh,
-              "auth": subscriptionJson.keys.auth,
-              "permissions": 1
-            }).then((response) => {
-              console.log(response)
+            try {
+              const responseNotificationPost = await axiosInstance.post(subscribeNotficationsUrl, {
+                "endpoint": subscriptionJson.endpoint,
+                "publicKey": subscriptionJson.keys.p256dh,
+                "auth": subscriptionJson.keys.auth,
+                "permissions": 1
+              })
+              console.log(responseNotificationPost)
               console.log("Notification data: ")
               localStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
-            }).catch((error) => {
-              console.log("Error: ")
-              console.log(error)
-            })
+            }
+            catch (error) {
+              console.log("Error: ", error)
+            }
           }
         })
       } else {
