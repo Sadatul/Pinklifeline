@@ -15,7 +15,7 @@ const subscribeUser = async () => {
       if (permission === 'granted') {
         // Register the service worker
         const registration = await navigator.serviceWorker.register('/worker.js');
-        // console.log('Service Worker registered successfully:', registration);
+        console.log('Service Worker registered successfully:', registration);
 
         // Subscribe the user to push notifications
         const subscription = await registration.pushManager.subscribe({
@@ -23,13 +23,17 @@ const subscribeUser = async () => {
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY // Replace with your actual VAPID public key
         });
 
-        // console.log('User is subscribed:', subscription);
+        console.log('User is subscribed:', subscription);
         const subscriptionJson = subscription.toJSON();
+        if (!subscriptionJson.endpoint) return;
+        localStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
+        console.log("Saved subscription data: ", subscriptionJson)
         axiosInstance.get(subscribeNotficationsUrl, {
           params: {
             "endpoint": encodeURIComponent(subscriptionJson.endpoint),
           }
-        }).then((response) => { }).catch((error) => {
+        }).then((response) => {
+        }).catch((error) => {
           console.log("Error: ", error)
           if (error?.response?.status === 404) {
             axiosInstance.post(subscribeNotficationsUrl, {
@@ -40,7 +44,7 @@ const subscribeUser = async () => {
             }).then((response) => {
               console.log(response)
               console.log("Notification data: ")
-              sessionStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
+              localStorage.setItem(notificationData, JSON.stringify(subscriptionJson))
             }).catch((error) => {
               console.log("Error: ")
               console.log(error)
@@ -60,9 +64,7 @@ const subscribeUser = async () => {
 
 const HomeLayout = ({ children }) => {
   useEffect(() => {
-    if (!sessionStorage.getItem(notificationData)) {
-      // subscribeUser()
-    }
+    subscribeUser()
   }, [])
 
   return (

@@ -19,8 +19,8 @@ const StreamVideoProvider = ({ children }) => {
     const tokenProvider = async () => {
       try {
         const response = await axiosInstance.get(getVideoCallToekn);
-        console.log("Current time:", new Date().getTime());
-        console.log("Token response: ", response.data.token);
+        // console.log("Current time:", new Date().getTime());
+        // console.log("Token response: ", response.data.token);
         return response.data.token;
       }
       catch (err) {
@@ -37,7 +37,7 @@ const StreamVideoProvider = ({ children }) => {
       },
       tokenProvider: tokenProvider,
     });
-    console.log("Client from getStreamio: ", client)
+    // console.log("Client from getStreamio: ", client)
     setVideoClient(client);
   }, []);
 

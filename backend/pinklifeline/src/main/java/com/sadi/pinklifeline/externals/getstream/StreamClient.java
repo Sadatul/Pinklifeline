@@ -43,8 +43,8 @@ public class StreamClient {
         Long owner = SecurityUtils.getOwnerID();
         Map<String, Object> payload = new HashMap<>();
         payload.put("user_id", owner.toString());
-        payload.put("exp", System.currentTimeMillis() / 1000 + tokenExpiration);
-        payload.put("iat", System.currentTimeMillis() / 1000);
+        payload.put("exp", Math.round(System.currentTimeMillis() / 1000.0 + tokenExpiration));
+        payload.put("iat", Math.floor((System.currentTimeMillis() - 1000 ) / 1000.0));
         return generateToken(payload);
     }
 }

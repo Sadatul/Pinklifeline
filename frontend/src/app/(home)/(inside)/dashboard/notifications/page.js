@@ -19,6 +19,8 @@ export default function NotificationPage() {
 
     useEffect(() => {
         const subscriptionJson = JSON.parse(localStorage.getItem(notificationData))
+        console.log("Retriving Subscription JSON: ", subscriptionJson)
+        if (!subscriptionJson?.endpoint) return
         axiosInstance.get(subscribeNotficationsUrl, {
             params: {
                 endpoint: encodeURIComponent(subscriptionJson?.endpoint)
