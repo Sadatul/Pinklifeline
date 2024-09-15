@@ -228,8 +228,6 @@ export function DoctorLivePrescriptionPage() {
                                     <span>{irregularity}</span>
                                     <Button
                                         onClick={() => {
-                                            setTests([...tests, document.getElementById('tests').value])
-                                                (tests.filter((_, i) => i !== index))
                                             toast.message("Irregularity removed")
                                             setPrescriptionData({
                                                 ...prescriptionData,
