@@ -71,9 +71,9 @@ const HomeLayout = ({ children }) => {
   return (
     <>
       <SessionContextProvider>
-        <StreamVideoProvider>
+        {/* <StreamVideoProvider> */}
           {children}
-        </StreamVideoProvider>
+        {/* </StreamVideoProvider> */}
       </SessionContextProvider>
     </>
   );

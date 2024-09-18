@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, avatarAang, blogsAnonymousUrl, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractCoverImage, extractCoverText, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, avatarAang, blogsAnonymousUrl, convertToAmPm, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractCoverImage, extractCoverText, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, Loader, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -71,7 +71,6 @@ export default function DoctorProfile({ profileId, section }) {
     }
 
     const [userData, setUserData] = useState(null)
-    const [doctorReviews, setDoctorReviews] = useState([])
     const sessionContext = useSessionContext()
     const [reviewInfo, setReviewInfo] = useState({
         count: 0,
@@ -425,24 +424,24 @@ function PostSection({ userId, className, userData }) {
                     </TabsList>
                     <TabsContent value={"blogPosts"}>
                         <div className="flex flex-col">
-                            {posts.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
-                            {posts.map((post, index) => (
+                            {posts?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
+                            {posts?.map((post, index) => (
                                 <BlogCard key={index} id={post.id} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} />
                             ))}
                         </div>
                     </TabsContent>
                     <TabsContent value={"forumQuestions"}>
                         <div className="flex flex-col">
-                            {forumQuestions.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No questions found</h1>}
-                            {forumQuestions.map((question, index) => (
+                            {forumQuestions?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No questions found</h1>}
+                            {forumQuestions?.map((question, index) => (
                                 <ForumCard key={index} id={question.id} title={question.title} date={question.date} likesCount={question.likesCount} />
                             ))}
                         </div>
                     </TabsContent>
                 </Tabs>
                 <div className="w-full flex justify-center mt-4">
-                    {(selectedTab === "blogPosts" && blogPageInfo.totalPages > 1) || (selectedTab === "forumQuestions" && forumPageInfo?.totalPages > 1) &&
-                        <Pagination count={selectedTab === "blogPosts" ? blogPageInfo.totalPages : forumPageInfo?.totalPages}
+                    {(selectedTab === "blogPosts" && blogPageInfo?.totalPages > 1) || (selectedTab === "forumQuestions" && forumPageInfo?.totalPages > 1) &&
+                        <Pagination count={selectedTab === "blogPosts" ? blogPageInfo?.totalPages : forumPageInfo?.totalPages}
                             page={selectedTab === "blogPosts" ? currentBlogPostPage : currentForumQuestionPage}
                             boundaryCount={3}
                             size="large"
@@ -467,8 +466,8 @@ function PostSection({ userId, className, userData }) {
                 <Separator className="w-11/12 h-[1.5px] mt-2 bg-purple-100" />
                 <div className="flex flex-col w-full gap-3">
                     {loadingSimilarPersons && <Loader size={30} />}
-                    {similarPersons.length === 0 && !loadingSimilarPersons && <h1 className="text-3xl font-semibold text-center m-4">No similar persons found</h1>}
-                    {similarPersons.map((person, index) => (
+                    {similarPersons?.length === 0 && !loadingSimilarPersons && <h1 className="text-3xl font-semibold text-center m-4">No similar persons found</h1>}
+                    {similarPersons?.map((person, index) => (
                         <div key={index} className="flex flex-row items-center justify-between w-full h-16 py-2 px-1 border-b border-gray-300">
                             <div className="flex flex-col ml-2">
                                 <Link href={pagePaths.doctorProfile(person?.id)} className="text-lg hover:underline">{person.fullName}</Link>
@@ -486,12 +485,14 @@ function BlogCard({ title, content, date, imageSrc, id }) {
     return (
         <div className="flex flex-row w-full mx-2 my-3 bg-white rounded-md shadow">
             <div className="relative w-full h-40 rounded-l-md overflow-hidden">
-                <Image
-                    src={imageSrc}
-                    fill={true}
-                    className="absolute inset-0 w-full h-full object-left object-contain rounded-l-md"
-                    alt="Blog Image"
-                />
+                {imageSrc &&
+                    <Image
+                        src={imageSrc}
+                        fill={true}
+                        className="absolute inset-0 w-full h-full object-left object-contain rounded-l-md"
+                        alt="Blog Image"
+                    />
+                }
                 <div className="absolute inset-0 bg-gradient-to-l from-white from-75%  to-transparent to-90% rounded-t-md flex flex-col items-end">
                     <div className="relative w-9/12 z-10 px-4 py-2 text-black flex flex-col items-end text-end">
                         <Link href={pagePaths.blogPageById(id)} className="text-2xl font-bold line-clamp-1">{title}</Link>
@@ -912,14 +913,14 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                         <AlertDialogHeader className={"gap-3"}>
                             <AlertDialogTitle>Appointment Request Form</AlertDialogTitle>
                             <AlertDialogDescription asChild>
-                                <div className="flex flex-col gap-5 mx-3 w-full">
-                                    <p className="text-base font-semibold text-black">Location: {location}</p>
-                                    <div className="flex flex-row items-center w-full justify-between">
+                                <div className="flex flex-col gap-5 w-full">
+                                    <div className="flex flex-col gap-2" >
+                                        <p className="text-base font-semibold text-black">Location: {location}</p>
                                         <p className="text-base font-semibold text-black">Fees: {fees}</p>
-                                        <div className="flex gap-4">
-                                            <p className="text-base font-semibold text-black">{startTime}</p>
+                                        <div className="flex flex-row items-center gap-2">
+                                            <p className="text-base font-semibold text-black">{convertToAmPm(startTime)}</p>
                                             <p className="text-base font-semibold text-black">To</p>
-                                            <p className="text-base font-semibold text-black">{endTime}</p>
+                                            <p className="text-base font-semibold text-black">{convertToAmPm(endTime)}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-row items-center justify-start gap-2">
@@ -934,7 +935,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-2/3 justify-start text-left font-normal border border-gray-600",
+                                                    "w-full justify-start text-left font-normal border border-gray-600",
                                                     !appointmentDate && "text-muted-foreground"
                                                 )}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -963,8 +964,8 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
                                 </div>
                             </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <div className="gap-2 flex items-center justify-between w-full">
-                            <AlertDialogCancel className="bg-red-700 border border-red-700 text-white px-3 py-1 text-sm rounded-md ml-2 font-semibold hover:bg-gray-50 hover:text-red-600"
+                        <div className=" flex items-center justify-between w-full">
+                            <AlertDialogCancel className="bg-red-700 border border-red-700 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-gray-50 hover:text-red-600"
                                 onClick={() => {
                                     setAppointmentDate(null)
                                     setOpenDialog(false)

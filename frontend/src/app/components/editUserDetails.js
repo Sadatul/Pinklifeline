@@ -777,7 +777,7 @@ export function EditUserDetailsPage({ isPatient, userData, setUserData }) {
                             Update Period Date
                         </AlertDialogTitle>
                     </AlertDialogHeader>
-                    <input type="date" ref={newPeriodDateRef} className="w-fit" />
+                    <input type="date" defaultValue={userData?.lastPeriodDate} ref={newPeriodDateRef} className="w-fit" />
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => {
                             setEditingPeriodDate(false)

@@ -1,6 +1,6 @@
 'use client'
 
-import { pagePaths, transactionStatus, validateTransactionUrl } from "@/utils/constants";
+import { pagePaths, transactionStatus, validateTransactionUrl, validationSubscriptionPaymentUrl } from "@/utils/constants";
 import axiosInstance from "@/utils/axiosInstance"
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ export default function ValidatePage() {
     const type = searchParams.get("type");
     const appointmentId = searchParams.get("id");
     const [unvalidatedTransaction, setUnvalidatedTransaction] = useState(true)
+    const validationUrl = type === "SUBSCRIPTION" ? validationSubscriptionPaymentUrl(id, transactionId) : validateTransactionUrl(appointmentId, transactionId)
     const warningText = "Are you sure you want to leave this page? You have an unvalidated transaction that will be lost."
 
     useEffect(() => {
@@ -39,7 +40,7 @@ export default function ValidatePage() {
         if (countdown === 0) {
             if (status === transactionStatus.pending && tryCountLeft > 0) {
                 setTryCountLeft((prev) => prev - 1)
-                axiosInstance.get(validateTransactionUrl(appointmentId, transactionId)).then((response) => {
+                axiosInstance.get(validationUrl).then((response) => {
                     console.log("Response from validate transaction", response)
                     setCountdown(5)
                     if (response.status === 200) {
@@ -56,6 +57,7 @@ export default function ValidatePage() {
                 })
             }
             else if (status === transactionStatus.success || status === transactionStatus.failed) {
+                window.removeEventListener('beforeunload', () => { }, { capture: true });
                 window.location.href = pagePaths.dashboard
             }
         }

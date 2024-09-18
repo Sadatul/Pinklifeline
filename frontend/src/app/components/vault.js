@@ -408,7 +408,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                         </DialogHeader>
                                         <div className="flex flex-col gap-2 ">
                                             <div className="flex text-lg font-semibold gap-2">
-                                                <span className='w-40'>Doctor ID:</span>
+                                                <span className='w-40'>Doctor</span>
                                                 <div className='relative flex-1'>
                                                     <input id='reportShareDoctorId' type="text" className="number-input rounded border border-gray-700 px-2 py-1 w-full" onChange={(e) => {
                                                         if (e.target.value.length > 0) {

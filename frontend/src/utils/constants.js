@@ -94,6 +94,7 @@ export const reserveWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_
 export const finishWorkUrl = (work_id) => { return `${baseUrl}/v1/works/${work_id}/finish` }
 export const subscriptionPlansUrl = `${baseUrl}/v1/anonymous/subscriptions`
 export const userSubscriptionUrl = `${baseUrl}/v1/infos/subscription`
+export const validationSubscriptionPaymentUrl = (userId, transId) => { return `${baseUrl}/v1/payment/subscription/${userId}/validate?transId=${transId}` }
 export const subscribeUrl = (user_id) => { return `${baseUrl}/v1/payment/subscription/${user_id}/initiate` }
 export const subscribeNotficationsUrl = `${baseUrl}/v1/notifications/subscriptions`
 export const subscribeNotficationByIdUrl = (id) => { return `${baseUrl}/v1/notifications/subscriptions/${id}` }
@@ -208,6 +209,7 @@ export const pagePaths = {
         subscriptionPage: "/dashboard/subscription",
         lookaroundPage: "/dashboard/lookaround",
         sharedPrescriptionPage: "/dashboard/prescription/vault/shared",
+        chatbotpage: "/dashboard/chatbot",
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
@@ -262,6 +264,18 @@ export const convertCmtoFeetInch = (cm) => {
     const feet = Math.floor(cm / 30.48)
     const inch = Math.round((cm - feet * 30.48) / 2.54)
     return `${feet} ft ${inch} in`
+}
+
+export function convertToAmPm(timeString) {
+    // Split the time string into hours, minutes, and seconds
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+
+    // Create a new Date object and set the hours, minutes, and seconds
+    const date = new Date();
+    date.setHours(hours, minutes, seconds);
+
+    // Format the date into the desired format (hh:mm:ss a)
+    return format(date, 'hh:mm a');
 }
 
 export const rountToTwo = (num) => {
@@ -513,6 +527,11 @@ export const DashboardPagesInfos = [
         name: "Self Test",
         link: pagePaths.dashboardPages.selfTestPage,
         roles: [roles.patient, roles.basicUser]
+    },
+    {
+        name: "Chatbot",
+        link: pagePaths.dashboardPages.chatbotpage,
+        roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
         name: "Look Around",

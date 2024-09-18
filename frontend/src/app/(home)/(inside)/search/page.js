@@ -59,6 +59,7 @@ function SearchComponent() {
     }, [sessionContext.sessionData])
 
     useEffect(() => {
+        console.log(doctorFilter)
         if (isLogged) {
             setLoadingDoctors(true)
             axiosInstance.get(getDoctorsUrl, {
@@ -171,12 +172,12 @@ function SearchComponent() {
                                             </label>
                                         </div>
                                         <button className="w-fit bg-zinc-700 text-zinc-100 p-2 rounded-md hover:scale-95" onClick={() => {
-                                            const regNo = document.getElementById('regNo').value
-                                            const workplace = document.getElementById('workplace').value
-                                            const department = document.getElementById('department').value
-                                            const designation = document.getElementById('designation').value
-                                            const contactNumber = document.getElementById('contactNumber').value
-                                            const qualifications = document.getElementById('qualifications').value
+                                            const regNo = document.getElementById('regNo').value === "" ? null : document.getElementById('regNo').value
+                                            const workplace = document.getElementById('workplace').value === "" ? null : document.getElementById('workplace').value
+                                            const department = document.getElementById('department').value === "" ? null : document.getElementById('department').value
+                                            const designation = document.getElementById('designation').value === "" ? null : document.getElementById('designation').value
+                                            const contactNumber = document.getElementById('contactNumber').value === "" ? null : document.getElementById('contactNumber').value
+                                            const qualifications = document.getElementById('qualifications').value === "" ? null : document.getElementById('qualifications').value.split(',').map(qualification => qualification.trim()).join(',')
                                             setDoctorFilter({
                                                 ...doctorFilter,
                                                 regNo,
