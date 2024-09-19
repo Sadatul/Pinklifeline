@@ -24,8 +24,8 @@ resource "kubernetes_config_map" "pinklifeline-config" {
   data = {
     PINKLIFELINE_REDIS_SERVICE_HOST = google_redis_instance.pinklifeline_redis_instance.host
     # BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
-    BACKEND_HOST  = "https://pinklifeline.xyz"
-    FRONTEND_HOST = "http://localhost:3000"
+    BACKEND_HOST  = "https://api.pinklifeline.xyz"
+    FRONTEND_HOST = "https://pinklifeline.xyz"
   }
 
   depends_on = [google_container_cluster.pinklifeline_cluster]
@@ -67,29 +67,29 @@ resource "kubernetes_secret" "cloud_sql_secret" {
   ]
 }
 
-# resource "kubernetes_manifest" "backend_deployment" {
-#   manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-deployment.yaml"))
+resource "kubernetes_manifest" "backend_deployment" {
+  manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-deployment.yaml"))
 
-#   depends_on = [
-#     google_container_cluster.pinklifeline_cluster,
-#     kubernetes_config_map.pinklifeline-config,
-#     kubernetes_secret.sm_secret,
-#     kubernetes_secret.cloud_sql_secret,
-#     google_sql_database.pinklifeline_database,
-#     google_sql_user.pinklifeline_database_uesr,
-#     google_project_service.sqladmin-api,
-#     google_redis_instance.pinklifeline_redis_instance
-#   ]
-# }
+  depends_on = [
+    google_container_cluster.pinklifeline_cluster,
+    kubernetes_config_map.pinklifeline-config,
+    kubernetes_secret.sm_secret,
+    kubernetes_secret.cloud_sql_secret,
+    google_sql_database.pinklifeline_database,
+    google_sql_user.pinklifeline_database_uesr,
+    google_project_service.sqladmin-api,
+    google_redis_instance.pinklifeline_redis_instance
+  ]
+}
 
-# resource "kubernetes_manifest" "backend_service" {
-#   manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-service.yaml"))
+resource "kubernetes_manifest" "backend_service" {
+  manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-service.yaml"))
 
-#   depends_on = [
-#     google_container_cluster.pinklifeline_cluster,
-#     kubernetes_manifest.backend_deployment
-#   ]
-# }
+  depends_on = [
+    google_container_cluster.pinklifeline_cluster,
+    kubernetes_manifest.backend_deployment
+  ]
+}
 
 # resource "kubernetes_manifest" "ssl-certificate" {
 #   manifest = yamldecode(file("${path.module}/k8s/managed-cert.yaml"))

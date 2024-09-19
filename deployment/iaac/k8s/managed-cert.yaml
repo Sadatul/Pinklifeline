@@ -7,4 +7,4 @@ metadata:
   namespace: default
 spec:
   domains:
-    - pinklifeline.xyz
+    - api.pinklifeline.xyz
