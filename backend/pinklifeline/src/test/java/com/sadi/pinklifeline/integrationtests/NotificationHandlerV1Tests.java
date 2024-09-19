@@ -21,6 +21,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -100,7 +102,7 @@ public class NotificationHandlerV1Tests extends AbstractBaseIntegrationTest{
         // Get Notification subscription
         String res = mockMvc.perform(get("/v1/notifications/subscriptions")
                         .header("Authorization", String.format("Bearer %s", token))
-                        .param("endpoint", req.getEndpoint()))
+                        .param("endpoint", URLEncoder.encode(req.getEndpoint(), StandardCharsets.UTF_8)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.permissions").value(req.getPermissions()))
                 .andExpect(jsonPath("$.id").value(notificationId))
