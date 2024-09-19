@@ -13,7 +13,7 @@ CREATE TABLE pinklifeline.reports
     date          date                  NOT NULL,
     timestamp     datetime              NOT NULL,
     summary       VARCHAR(1000)          NOT NULL,
-    file_link     VARCHAR(255)          NOT NULL,
+    file_link     VARCHAR(512)          NOT NULL,
     CONSTRAINT pk_reports PRIMARY KEY (id)
 );
 

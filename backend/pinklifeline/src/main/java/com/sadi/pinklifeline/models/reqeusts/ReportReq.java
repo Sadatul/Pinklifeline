@@ -32,6 +32,7 @@ public class ReportReq {
     private String summary;
 
     @NotNull
+    @Size(max = 512)
     private String fileLink;
 
     @NotNull
