@@ -5,6 +5,8 @@ metadata:
     app: pinklifeline
   name: pinklifeline
   namespace: default
+  # annotations:
+  #   cloud.google.com/backend-config: '{"default": "websocket-backend-config"}'
 spec:
   ports:
   - name: http
