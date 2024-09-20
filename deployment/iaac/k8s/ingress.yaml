@@ -9,6 +9,8 @@ metadata:
     # kubernetes.io/ingress.allow-http: "false"
     kubernetes.io/ingress.global-static-ip-name: "pinklifeline-appserver-ip"
     networking.gke.io/managed-certificates: "api-ssl-cert"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "7200"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "7200"
     # nginx.ingress.kubernetes.io/ssl-redirect: "true"
     # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:

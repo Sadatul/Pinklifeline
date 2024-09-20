@@ -6,11 +6,13 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.sadi.pinklifeline.service.JpaUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -45,6 +47,9 @@ public class SecurityConfig {
     @Value("${auth.jwt.cookie.name}")
     private String cookieName;
 
+    @Autowired
+    private Environment environment;
+
     private final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
@@ -68,7 +73,7 @@ public class SecurityConfig {
                         .bearerTokenResolver(new CookieBearerTokenResolver(cookieName))
                         .jwt(jwt -> jwt
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(cookieName)) // Last we had added this entrypoint... If any issues occurs its like due to this.
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(cookieName, environment)) // Last we had added this entrypoint... If any issues occurs its like due to this.
                 )
                 .build();
     }
