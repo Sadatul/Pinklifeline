@@ -82,22 +82,22 @@ resource "kubernetes_manifest" "backend_deployment" {
   ]
 }
 
-# resource "kubernetes_manifest" "backend_config" {
-#   manifest = yamldecode(file("${path.module}/k8s/backend-config.yaml"))
+resource "kubernetes_manifest" "backend_config" {
+  manifest = yamldecode(file("${path.module}/k8s/backend-config.yaml"))
 
-#   depends_on = [
-#     google_container_cluster.pinklifeline_cluster,
-#     kubernetes_manifest.backend_deployment
-#   ]
-# }
+  depends_on = [
+    google_container_cluster.pinklifeline_cluster,
+    kubernetes_manifest.backend_deployment
+  ]
+}
 
 resource "kubernetes_manifest" "backend_service" {
   manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-service.yaml"))
 
   depends_on = [
     google_container_cluster.pinklifeline_cluster,
-    kubernetes_manifest.backend_deployment
-    # kubernetes_manifest.backend_config
+    kubernetes_manifest.backend_deployment,
+    kubernetes_manifest.backend_config
   ]
 }
 
