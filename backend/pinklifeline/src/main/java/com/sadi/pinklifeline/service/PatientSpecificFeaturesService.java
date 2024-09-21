@@ -35,6 +35,12 @@ public class PatientSpecificFeaturesService {
         return userRepository.findNearbyUsers(nearByCells, id);
     }
 
+    @PreAuthorize("hasAnyRole('BASICUSER', 'PATIENT')")
+    public List<NearbyUserRes> getNearbyUsers(String location){
+        List<String> nearByCells = h3.gridDisk(location, gridSize);
+        return userRepository.findNearbyUsers(nearByCells, SecurityUtils.getOwnerID());
+    }
+
     @PreAuthorize("hasRole('PATIENT')")
     public Boolean updatePatientLocationShare() {
         Long userId = SecurityUtils.getOwnerID();

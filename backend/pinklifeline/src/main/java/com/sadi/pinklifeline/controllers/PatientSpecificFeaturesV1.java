@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v1/ROLE_PATIENT")
+@RequestMapping("/v1")
 @Slf4j
 public class PatientSpecificFeaturesV1 {
 
@@ -21,12 +21,19 @@ public class PatientSpecificFeaturesV1 {
         this.patientService = patientService;
     }
 
-    @GetMapping("/nearby/{id}")
+    @GetMapping("/ROLE_PATIENT/nearby/{id}")
     public ResponseEntity<List<NearbyUserRes>> nearByUsers(@PathVariable Long id){
         return ResponseEntity.ok(patientService.getNearbyUsers(id));
     }
 
-    @PutMapping("/toggle-location-share")
+    @GetMapping("/nearby")
+    public ResponseEntity<List<NearbyUserRes>> nearByUsersByLocation(
+            @RequestParam String location
+    ){
+        return ResponseEntity.ok(patientService.getNearbyUsers(location));
+    }
+
+    @PutMapping("/ROLE_PATIENT/toggle-location-share")
     public ResponseEntity<Map<String, Object>> updateLocationShare(){
 
         log.debug("location share update req received for user");
