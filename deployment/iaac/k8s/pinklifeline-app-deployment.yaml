@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: pinklifeline
-        image: sadatul/pinklifeline_prod:1.0.5-RELEASE
+        image: sadatul/pinklifeline_prod:1.0.6-RELEASE
         imagePullPolicy: Always
         ports:
         - name: liveness-port
