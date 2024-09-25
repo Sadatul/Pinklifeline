@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.models.reqeusts;
 
+import com.sadi.pinklifeline.enums.SubscriptionType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,4 +20,5 @@ public class InitiatePaymentReq {
     private String customerEmail;
     @NotNull(message = "'customerPhone' must be provided")
     private String customerPhone;
+    private SubscriptionType subscriptionType;
 }

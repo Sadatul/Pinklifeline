@@ -71,6 +71,14 @@ public class AppointmentsHandlerV1 {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/finish")
+    public ResponseEntity<Void> finishAppointment(
+            @PathVariable Long id
+    ){
+        appointmentService.finishAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAppointments(){
         List<Map<String, Object>> res;

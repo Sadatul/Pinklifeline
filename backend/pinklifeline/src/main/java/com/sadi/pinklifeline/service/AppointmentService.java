@@ -9,6 +9,7 @@ import com.sadi.pinklifeline.models.dtos.AppointmentDataForLivePrescriptionDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentDoctorDTO;
 import com.sadi.pinklifeline.models.dtos.AppointmentUserDTO;
 import com.sadi.pinklifeline.models.entities.*;
+import com.sadi.pinklifeline.models.reqeusts.InitiatePaymentReq;
 import com.sadi.pinklifeline.models.reqeusts.RegisterAppointmentReq;
 import com.sadi.pinklifeline.repositories.AppointmentRepository;
 import com.sadi.pinklifeline.repositories.BalanceHistoryRepository;
@@ -183,11 +184,22 @@ public class AppointmentService extends AbstractPaymentService{
     }
 
     @Override
+    public Integer getTotalAmount(Long id, InitiatePaymentReq req) {
+        return 0;
+    }
+
+    @Override
     public void updatePaymentStatus(Long id){
         // Very important updatePaymentStatus is called from validatePayment which requires a transaction id
         // A transaction id means we validated the resource. That's why here we will directly update the database.
         appointmentRepository.updatePaymentStatusById(id, true);
     }
+
+    @Override
+    public void setup(Long id, InitiatePaymentReq req) {
+
+    }
+
     @PreAuthorize("hasRole('DOCTOR')")
     public List<Map<String, Object>> getAppointmentsByDocId() {
         Long docId = SecurityUtils.getOwnerID();
@@ -238,5 +250,22 @@ public class AppointmentService extends AbstractPaymentService{
 
     public void updateAppointmentStatus(Long appointmentId, AppointmentStatus appointmentStatus) {
         appointmentRepository.updateAppointmentStatus(appointmentId, appointmentStatus);
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public void finishAppointment(Long id) {
+        Long owner = SecurityUtils.getOwnerID();
+        Appointment appointment = getAppointment(id);
+        verifyAppointmentDoctorAccess(appointment, owner);
+        if(appointment.getStatus() != AppointmentStatus.ACCEPTED){
+            throw new BadRequestFromUserException(String.format("Appointment with status %s cannot be finished", appointment.getStatus()));
+        }
+        if(appointment.getIsOnline()){
+            throw new BadRequestFromUserException("Online appointments can't be finished like this.");
+        }
+        appointment.setStatus(AppointmentStatus.FINISHED);
+        appointment.setIsPaymentComplete(true);
+
+        appointmentRepository.save(appointment);
     }
 }

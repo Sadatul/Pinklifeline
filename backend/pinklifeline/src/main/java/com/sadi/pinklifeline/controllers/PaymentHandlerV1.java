@@ -1,10 +1,12 @@
 package com.sadi.pinklifeline.controllers;
 
+import com.sadi.pinklifeline.exceptions.BadRequestFromUserException;
 import com.sadi.pinklifeline.exceptions.ResourceNotFoundException;
 import com.sadi.pinklifeline.models.reqeusts.InitiatePaymentReq;
 import com.sadi.pinklifeline.models.responses.InitiatePaymentRes;
 import com.sadi.pinklifeline.service.AbstractPaymentService;
 import com.sadi.pinklifeline.service.AppointmentService;
+import com.sadi.pinklifeline.service.SubscriptionService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,13 +20,15 @@ import java.io.IOException;
 @Slf4j
 @RequestMapping("/v1/payment")
 public class PaymentHandlerV1 {
+    private final SubscriptionService subscriptionService;
     @Value("${payment.redirect.uri.frontend}")
     private String frontendRedirectUri;
 
     private final AppointmentService appointmentService;
 
-    public PaymentHandlerV1(AppointmentService appointmentService) {
+    public PaymentHandlerV1(AppointmentService appointmentService, SubscriptionService subscriptionService) {
         this.appointmentService = appointmentService;
+        this.subscriptionService = subscriptionService;
     }
 
     @PostMapping("/{type}/{id}/initiate")
@@ -32,6 +36,7 @@ public class PaymentHandlerV1 {
             @PathVariable String type,
             @PathVariable Long id, @RequestBody InitiatePaymentReq req){
         AbstractPaymentService service = paymentServiceFactory(type);
+        RequestCheckBasedOnType(type, req);
         InitiatePaymentRes res = service.initiatePayment(id, type, req);
         return ResponseEntity.ok(res);
     }
@@ -45,7 +50,7 @@ public class PaymentHandlerV1 {
     }
 
     @PostMapping("/{type}/{id}/ssl-redirect")
-    @CrossOrigin("null")
+    @CrossOrigin(origins = {"https://sandbox.sslcommerz.com", "null"})
     public ResponseEntity<Void> paymentRedirect(@PathVariable Long id,
                                                 @PathVariable String type,
                                                 @RequestParam String transId,
@@ -73,6 +78,18 @@ public class PaymentHandlerV1 {
         if(type.equalsIgnoreCase("appointment")){
             return appointmentService;
         }
+        else if(type.equalsIgnoreCase("subscription"))
+        {
+            return subscriptionService;
+        }
         throw new ResourceNotFoundException("URL not found");
+    }
+
+    private void RequestCheckBasedOnType(String type, InitiatePaymentReq req) {
+        if(type.equalsIgnoreCase("subscription")){
+            if(req.getSubscriptionType() == null){
+                throw new BadRequestFromUserException("Subscription type is required");
+            }
+        }
     }
 }

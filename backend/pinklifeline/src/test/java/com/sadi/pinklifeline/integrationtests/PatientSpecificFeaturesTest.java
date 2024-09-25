@@ -36,19 +36,35 @@ public class PatientSpecificFeaturesTest extends AbstractBaseIntegrationTest{
     @Autowired
     private JwtEncoder jwtEncoder;
 
-    private final Logger logger = LoggerFactory.getLogger(AuthControllerV1Tests.class);
+    private final Logger logger = LoggerFactory.getLogger(PatientSpecificFeaturesTest.class);
 
     @Test
     @Sql("/test/patient_specific_features_test/nearbyUsers.sql")
     public void nearbySearchTest() throws Exception {
         Long id = 2L;
+        Long locationShareUserId = 7L;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        String out = mockMvc.perform(get("/v1/ROLE_PATIENT/nearby/{id}", id)
+        String out = mockMvc.perform(get("/v1/nearby")
+                        .param("location", "883cf1760bfffff")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(2))).andReturn().getResponse().getContentAsString();
+        logger.info("first query output: {}", out);
+
+        String updateToken = mint(locationShareUserId, List.of(Roles.ROLE_PATIENT));
+        mockMvc.perform(put("/v1/ROLE_PATIENT/toggle-location-share")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", String.format("Bearer %s", updateToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locationShare").value(true));
+
+        out = mockMvc.perform(get("/v1/ROLE_PATIENT/nearby/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", String.format("Bearer %s", token)))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*", hasSize(3))).andReturn().getResponse().getContentAsString();
-        logger.info("out: {}", out);
+        logger.info("second query output: {}", out);
     }
 
     private String mint(Long id, List<Roles> roles){
@@ -58,7 +74,8 @@ public class PatientSpecificFeaturesTest extends AbstractBaseIntegrationTest{
                 .subject(id.toString())
                 .issuer("self")
                 .audience(List.of("pinklifeline"))
-                .claim("scope", roles);
+                .claim("scope", roles)
+                .claim("subscribed", 0);
         JwtEncoderParameters parameters = JwtEncoderParameters.from(builder.build());
         return this.jwtEncoder.encode(parameters).getTokenValue();
     }

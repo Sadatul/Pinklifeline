@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserInfoUnregisteredException;
 import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
@@ -13,6 +14,7 @@ import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -33,6 +35,10 @@ public class UserService {
     }
     public String getProfilePicture(Long id){
         return userRepository.getProfilePictureById(id);
+    }
+
+    public String getUsernameById(Long id){
+        return userRepository.findUsernameById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     public User getUserIfRegistered(Long id){
@@ -76,7 +82,7 @@ public class UserService {
         response.put("avgCycleLength", basicUserDetails.getAvgCycleLength());
         response.put("periodIrregularities", basicUserDetails.getPeriodIrregularities());
         response.put("allergies", basicUserDetails.getAllergies());
-        response.put("organsWithChronicConditions", basicUserDetails.getOrgansWithChronicCondition());
+        response.put("organsWithChronicCondition", basicUserDetails.getOrgansWithChronicCondition());
         response.put("medications", basicUserDetails.getMedications());
     }
 
@@ -84,6 +90,7 @@ public class UserService {
         response.put("cancerStage", patient.getCancerStage());
         response.put("diagnosisDate", patient.getDiagnosisDate());
         response.put("location", patient.getLocation());
+        response.put("locationShare", patient.getLocationShare());
     }
 
     public void injectDoctorDetailsToMap(DoctorDetails doctorDetails, Map<String, Object> response){
@@ -95,5 +102,9 @@ public class UserService {
         response.put("designation", doctorDetails.getDesignation());
         response.put("contactNumber", doctorDetails.getContactNumber());
         response.put("isVerified", doctorDetails.getIsVerified());
+    }
+
+    public List<Roles> getRolesById(Long id) {
+        return userRepository.getRolesById(id);
     }
 }

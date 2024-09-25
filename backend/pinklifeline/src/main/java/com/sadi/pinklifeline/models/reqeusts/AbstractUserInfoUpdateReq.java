@@ -40,12 +40,6 @@ public abstract class AbstractUserInfoUpdateReq {
         }
     }
 
-    @NotNull(message = "lastPeriodDate field not provided")
-    private LocalDate lastPeriodDate;
-
-    @NotNull(message = "avgCycleLength field not provided")
-    private int avgCycleLength;
-
     private List<String> periodIrregularities;
 
     private List<String> allergies;
