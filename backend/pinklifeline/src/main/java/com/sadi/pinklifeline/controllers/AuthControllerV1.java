@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +40,7 @@ public class AuthControllerV1 {
     private final Logger logger = LoggerFactory.getLogger(AuthControllerV1.class);
     private final RefreshTokenService refreshTokenService;
     private final ResetPasswordService resetPasswordService;
+    private final Environment environment;
 
     @Value("${auth.jwt.timeout}")
     private int cookieExpiration;
@@ -53,12 +55,13 @@ public class AuthControllerV1 {
     private int refreshTokenTimeout;
 
     public AuthControllerV1(JwtTokenService jwtTokenService, AuthenticationManager authenticationManager,
-                            UserRegistrationAndVerificationService userRegVerService, RefreshTokenService refreshTokenService, ResetPasswordService resetPasswordService) {
+                            UserRegistrationAndVerificationService userRegVerService, RefreshTokenService refreshTokenService, ResetPasswordService resetPasswordService, Environment environment) {
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
         this.userRegVerService = userRegVerService;
         this.refreshTokenService = refreshTokenService;
         this.resetPasswordService = resetPasswordService;
+        this.environment = environment;
     }
 
     @PostMapping
@@ -70,12 +73,20 @@ public class AuthControllerV1 {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(cookieExpiration); // 7 days
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            cookie.setAttribute("SameSite", "None");
+            cookie.setSecure(true);
+        }
         response.addCookie(cookie);
 
         Cookie refreshCookie = new Cookie(refreshTokenCookieName, tokenResponse.refreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(refreshTokenTimeout);
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            refreshCookie.setAttribute("SameSite", "None");
+            refreshCookie.setSecure(true);
+        }
         response.addCookie(refreshCookie);
 
         return ResponseEntity.ok(tokenResponse);
@@ -90,12 +101,20 @@ public class AuthControllerV1 {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0); // 7 days
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            cookie.setAttribute("SameSite", "None");
+            cookie.setSecure(true);
+        }
         response.addCookie(cookie);
 
         Cookie refreshCookie = new Cookie(refreshTokenCookieName, "");
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0);
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            refreshCookie.setAttribute("SameSite", "None");
+            refreshCookie.setSecure(true);
+        }
         response.addCookie(refreshCookie);
         return ResponseEntity.ok("Logout successful");
     }
@@ -145,6 +164,10 @@ public class AuthControllerV1 {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(cookieExpiration); // 7 days
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            cookie.setAttribute("SameSite", "None");
+            cookie.setSecure(true);
+        }
         response.addCookie(cookie);
 
         return ResponseEntity.ok(Collections.singletonMap("token", token));

@@ -24,8 +24,8 @@ resource "kubernetes_config_map" "pinklifeline-config" {
   data = {
     PINKLIFELINE_REDIS_SERVICE_HOST = google_redis_instance.pinklifeline_redis_instance.host
     # BACKEND_HOST                    = "http://${google_compute_global_address.pinklife_line_ip.address}"
-    BACKEND_HOST  = "https://pinklifeline.xyz"
-    FRONTEND_HOST = "http://localhost:3000"
+    BACKEND_HOST  = "https://api.pinklifeline.xyz"
+    FRONTEND_HOST = "https://www.pinklifeline.xyz"
   }
 
   depends_on = [google_container_cluster.pinklifeline_cluster]
@@ -82,12 +82,22 @@ resource "kubernetes_manifest" "backend_deployment" {
   ]
 }
 
+resource "kubernetes_manifest" "backend_config" {
+  manifest = yamldecode(file("${path.module}/k8s/backend-config.yaml"))
+
+  depends_on = [
+    google_container_cluster.pinklifeline_cluster,
+    kubernetes_manifest.backend_deployment
+  ]
+}
+
 resource "kubernetes_manifest" "backend_service" {
   manifest = yamldecode(file("${path.module}/k8s/pinklifeline-app-service.yaml"))
 
   depends_on = [
     google_container_cluster.pinklifeline_cluster,
-    kubernetes_manifest.backend_deployment
+    kubernetes_manifest.backend_deployment,
+    kubernetes_manifest.backend_config
   ]
 }
 

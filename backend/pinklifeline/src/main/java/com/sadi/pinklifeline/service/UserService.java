@@ -1,5 +1,6 @@
 package com.sadi.pinklifeline.service;
 
+import com.sadi.pinklifeline.enums.Roles;
 import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.exceptions.UserInfoUnregisteredException;
 import com.sadi.pinklifeline.exceptions.UserRegistrationAlreadyCompleteException;
@@ -13,6 +14,7 @@ import com.sadi.pinklifeline.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -100,5 +102,9 @@ public class UserService {
         response.put("designation", doctorDetails.getDesignation());
         response.put("contactNumber", doctorDetails.getContactNumber());
         response.put("isVerified", doctorDetails.getIsVerified());
+    }
+
+    public List<Roles> getRolesById(Long id) {
+        return userRepository.getRolesById(id);
     }
 }

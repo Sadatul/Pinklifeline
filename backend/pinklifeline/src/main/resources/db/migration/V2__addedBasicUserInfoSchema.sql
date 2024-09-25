@@ -14,7 +14,7 @@ CREATE TABLE basic_users_details
 CREATE TABLE pinklifeline.profile_pictures
 (
     user_id   BIGINT       NOT NULL,
-    profile_picture VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(512) NOT NULL,
     CONSTRAINT pk_profile_pictures PRIMARY KEY (user_id)
 );
 
