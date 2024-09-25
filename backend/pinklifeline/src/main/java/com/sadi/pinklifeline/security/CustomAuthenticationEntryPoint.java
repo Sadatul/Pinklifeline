@@ -3,6 +3,7 @@ package com.sadi.pinklifeline.security;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -12,15 +13,18 @@ import org.springframework.security.oauth2.server.resource.BearerTokenError;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final String cookieName;
+    private final Environment environment;
 
-    public CustomAuthenticationEntryPoint(String cookieName) {
+    public CustomAuthenticationEntryPoint(String cookieName, Environment environment) {
         this.cookieName = cookieName;
+        this.environment = environment;
     }
 
     @Override
@@ -29,6 +33,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equalsIgnoreCase("prod"))) {
+            cookie.setAttribute("SameSite", "None");
+            cookie.setSecure(true);
+        }
         response.addCookie(cookie);
 
         HttpStatus status = HttpStatus.UNAUTHORIZED;

@@ -132,7 +132,11 @@ need to be passed, then pass an empty list like this:
 
 
 ## Get Nearby Users
-``` Endpoint: GET /v1/ROLE_PATIENT/nearby/{id}```
+``` Endpoint: GET /v1/nearby```
+<br><br>
+``` Query params: location=883cf1760bfffff```
+<br><br>
+```Response status: ok(200)```
 ### Sample Return Object
 ```
 [

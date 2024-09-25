@@ -9,6 +9,7 @@ import com.sadi.pinklifeline.service.UserInfoUpdateHandlerService;
 import com.sadi.pinklifeline.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +86,7 @@ public class UserInfoUpdateHandlerV1 {
     @ToString
     public static class ProfilePictureUpdateReq{
         @NotNull
+        @Size(max = 512)
         private String profilePicture;
     }
 }

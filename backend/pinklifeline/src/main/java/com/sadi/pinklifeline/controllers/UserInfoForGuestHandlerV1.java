@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,5 +63,11 @@ public class UserInfoForGuestHandlerV1 {
             response.put("diagnosisDate", res.getDiagnosisDate());
         }
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/roles/{id}")
+    public ResponseEntity<Map<String, Object>> getRoles(@PathVariable Long id){
+
+        return ResponseEntity.ok(Collections.singletonMap("roles", userService.getRolesById(id)));
     }
 }

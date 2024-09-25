@@ -4,6 +4,7 @@ import com.sadi.pinklifeline.enums.YesNo;
 import com.sadi.pinklifeline.models.entities.Medication;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -49,6 +50,7 @@ public abstract class AbstractUserInfoRegisterReq {
     @NotNull(message = "avgCycleLength field not provided")
     private int avgCycleLength;
 
+    @Size(max = 512)
     private String profilePicture;
 
     private List<String> periodIrregularities;

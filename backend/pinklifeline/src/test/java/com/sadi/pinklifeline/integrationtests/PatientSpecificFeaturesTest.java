@@ -44,7 +44,8 @@ public class PatientSpecificFeaturesTest extends AbstractBaseIntegrationTest{
         Long id = 2L;
         Long locationShareUserId = 7L;
         String token = mint(id, List.of(Roles.ROLE_PATIENT));
-        String out = mockMvc.perform(get("/v1/ROLE_PATIENT/nearby/{id}", id)
+        String out = mockMvc.perform(get("/v1/nearby")
+                        .param("location", "883cf1760bfffff")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", String.format("Bearer %s", token)))
                 .andExpect(status().isOk())
