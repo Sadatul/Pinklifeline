@@ -18,7 +18,36 @@ export default function CompareTestFees() {
     const [loading, setLoading] = useState(false)
     const [hospitalNameMap, setHospitalNameMap] = useState(null)
     const [compareData, setCompareData] = useState([])
+    const [testName, setTestName] = useState(null)
 
+    const loadHospitalOptions = (inputValue) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                axiosInstance.get(getHospitalsAnonymousUrl, { params: { name: inputValue.trim() } }).then((response) => {
+                    const options = response.data?.content?.map((hospital) => ({ value: hospital.id, label: hospital.name }));
+                    resolve(options);
+                }).catch((error) => {
+                    console.log(error);
+                    resolve([]);
+                });
+            }, 500);
+        })
+    }
+
+    const loadTestOptions = (inputValue) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                axiosInstance.get(getMedicalTestAnonymousUrl, { params: { name: inputValue.trim() } }).then((response) => {
+                    const options = response.data?.map((test) => ({ value: test.id, label: test.name }));
+                    resolve(options);
+                }).catch((error) => {
+                    console.log(error);
+                    resolve([]);
+                });
+                // resolve(filterTests(inputValue));
+            }, 500);
+        })
+    }
 
     useEffect(() => {
         setIsMounted(true)
@@ -64,7 +93,7 @@ export default function CompareTestFees() {
                         <AsyncSelect
                             cacheOptions
                             isMulti={false}
-                            loadOptions={getTestOptions}
+                            loadOptions={loadTestOptions}
                             components={animatedComponents}
                             placeholder="Search for a test"
                             className="w-64"
@@ -79,7 +108,7 @@ export default function CompareTestFees() {
                         <AsyncSelect
                             cacheOptions
                             isMulti={true}
-                            loadOptions={getHospitalOptions}
+                            loadOptions={loadHospitalOptions}
                             components={animatedComponents}
                             placeholder="Search for a hospital"
                             className="w-1/2"
@@ -108,6 +137,7 @@ export default function CompareTestFees() {
                         }
                         setCompareData([...tempCompareData])
                         setLoading(false)
+                        setTestName(selectedTest.label)
                     } catch (error) {
                         console.log(error)
                         setLoading(false)
@@ -124,7 +154,7 @@ export default function CompareTestFees() {
                                 <tr>
                                     <th className="text-base text-slate-900 border border-slate-300 px-4 py-2">Hospital</th>
                                     <th className="text-base text-slate-900 border border-slate-300 px-4 py-2">
-                                        {selectedTest.label} Fee
+                                        {testName} Fee
                                     </th>
                                 </tr>
                             </thead>

@@ -86,7 +86,7 @@ export function UpdateProfilePic({ className }) {
                             },
                             async () => {
                                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                                axiosInstance.put(updateProfilePictureUrl(sessionContext.sessionData?.userId), {
+                                axiosInstance.put(updateProfilePictureUrl(sessionContext?.sessionData?.userId), {
                                     profilePicture: downloadURL
                                 }).then((res) => {
                                     toast.dismiss()

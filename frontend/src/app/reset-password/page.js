@@ -21,8 +21,8 @@ function ResetPassword() {
             document.getElementById('error-message').innerText = 'Password cannot be empty'
             return
         }
-        if (password.length < 8) {
-            document.getElementById('error-message').innerText = 'Password must be at least 8 characters long'
+        if (password.length < 6) {
+            document.getElementById('error-message').innerText = 'Password must be at least 6 characters long'
             return
         }
         else if (password !== confirmPassword) {

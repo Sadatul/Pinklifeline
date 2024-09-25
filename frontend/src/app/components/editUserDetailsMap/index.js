@@ -18,6 +18,10 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
         watchLocationPermissionChange: true,
     });
 
+    useEffect(()=>{
+        console.log("coords", coords)
+    },[coords])
+
     const MakrerUrl = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png';
     const customIcon = L.icon({
         iconUrl: MakrerUrl,
@@ -63,7 +67,7 @@ export default function EditUserLocationMap({ editable, currentPosition, setCurr
 
     return (
         <div className='relative size-full'>
-            <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md'
+            <button className='absolute top-5 right-10 bg-white z-50 p-1 bg-opacity-90 hover:bg-opacity-100 hover:scale-95 rounded-md shadow-md border border-gray-300'
                 onClick={() => {
                     if (mapRef.current) {
                         mapRef.current.flyTo({

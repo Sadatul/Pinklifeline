@@ -5,7 +5,8 @@ import { addDays, format } from "date-fns"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Infinity } from "lucide-react"
+import {  Clock, Infinity } from "lucide-react"
+import { Calendar } from "@/components/ui/calendar"
 import {
     Popover,
     PopoverContent,
@@ -17,7 +18,7 @@ import { act, Suspense, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Pagination } from "@mui/material"
-import { addReportUrl, cleanString, generateFormattedDate, getImageDimensions, pagePaths, shareReportUrl } from "@/utils/constants"
+import { addReportUrl, capitalizeFirstLetter, cleanString, generateFormattedDate, getImageDimensions, pagePaths, shareReportUrl } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { FaUserDoctor } from "react-icons/fa6"
 import { HospitalIcon, Key, Loader2, LoaderCircle } from "lucide-react"
@@ -26,6 +27,7 @@ import { set } from "lodash"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import Loading from "@/app/components/loading"
 import { useSearchParams } from "next/navigation"
+import CreatableSelect from 'react-select/creatable'
 
 function SharedReportsComponent() {
     const animatedComponents = makeAnimated();
@@ -34,33 +36,29 @@ function SharedReportsComponent() {
     const [imageDimension, setImageDimension] = useState(null)
     const [selectedReport, setSelectedReport] = useState(null)
     const [loading, setLoading] = useState(true)
-    const selectedKeywords = useRef([])
+    const [selectedKeywords, setSelectedKeywords] = useState([])
+    const [keyWordsOption, setKeyWordsOption] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [isMounted, setIsMounted] = useState(false)
-    const keyWordsOption = [
-        { value: 'kidney', label: 'Kidney' },
-        { value: 'acl', label: 'ACL' },
-        { value: 'knee', label: 'Knee' },
-        { value: 'pain', label: 'Pain' },
-    ]
     const [dateRange, setDateRange] = useState({
         from: null,
         to: null,
     })
 
-
     useEffect(() => {
         const handleFilter = () => {
             const doctorName = cleanString(document.getElementById("search-doctorName")?.value)
             const hospitalName = cleanString(document.getElementById("search-hospitalName")?.value)
+            const patientUsername = cleanString(document.getElementById("search-patientUsername")?.value)
             const type = document.getElementById("search-type")?.value
             const startDate = generateFormattedDate(dateRange.from)
             const endDate = generateFormattedDate(dateRange.to)
             axiosInstance.get(shareReportUrl, {
                 params: {
                     doctorName: doctorName === "" ? null : doctorName,
+                    username: patientUsername === "" ? null : patientUsername,
                     hospitalName: hospitalName === "" ? null : hospitalName,
-                    keywords: selectedKeywords.current.length === 0 ? null : selectedKeywords.current.map((keyword) => keyword.value).join(","),
+                    keywords: selectedKeywords.length === 0 ? null : selectedKeywords.map((keyword) => keyword.value).join(","),
                     startDate: startDate,
                     endDate: endDate,
                     type: type,
@@ -84,7 +82,10 @@ function SharedReportsComponent() {
         if (loading) {
             handleFilter()
         }
-    }, [currentPage, loading])
+    }, [loading])
+    useEffect(() => {
+        setLoading(true)
+    }, [currentPage])
 
     useEffect(() => {
         const fetchImageDimensions = async (imgUrl) => {
@@ -118,8 +119,8 @@ function SharedReportsComponent() {
                             <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         <label className="flex flex-col justify-evenly">
-                            Doctor Username
-                            <input autoComplete="off" id="search-doctorUsername" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
+                            Patient Username
+                            <input autoComplete="off" id="search-patientUsername" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
                         </label>
                         <label className="flex flex-col justify-evenly">
                             Hospital Name
@@ -128,15 +129,20 @@ function SharedReportsComponent() {
                         {isMounted ?
                             <label className="flex flex-col gap-1">
                                 Select Keywords
-                                <ReactSelect className="w-64 border-purple-500 border rounded"
+                                <CreatableSelect className="w-64 border-purple-500 border rounded"
                                     id="search-keywords"
                                     options={keyWordsOption}
                                     isMulti={true}
                                     closeMenuOnSelect={false}
+                                    value={selectedKeywords}
                                     components={animatedComponents}
                                     onChange={(newValue, actionMeta) => {
                                         console.log(newValue, actionMeta)
-                                        selectedKeywords.current = newValue
+                                        setSelectedKeywords(newValue)
+                                    }}
+                                    onCreateOption={(keyword) => {
+                                        setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
+                                        setSelectedKeywords([...selectedKeywords, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
                                     }}
                                 />
                             </label>
@@ -190,9 +196,26 @@ function SharedReportsComponent() {
                             </select>
                         </label>
                     </div>
-                    <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
-                        Search
-                    </button>
+                    <div className="flex flex-row justify-center items-center gap-4 m-3">
+                        <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => {
+                            document.getElementById("search-doctorName").value = ""
+                            document.getElementById("search-patientUsername").value = ""
+                            document.getElementById("search-hospitalName").value = ""
+                            document.getElementById("search-type").value = "ALL"
+                            setSelectedReport(null)
+                            setDateRange({
+                                from: null,
+                                to: null,
+                            })
+                            setSelectedKeywords([])
+                            setKeyWordsOption([])
+                        }}>
+                            Reset
+                        </button>
+                        <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
+                            Search
+                        </button>
+                    </div>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <h2 className="text-lg">
@@ -205,7 +228,7 @@ function SharedReportsComponent() {
                             </div>
                             :
                             <>
-                                {data?.empty === true &&
+                                {(data?.content?.length === 0) &&
                                     <h2 className="text-lg w-full text-center">
                                         No Documents Found
                                     </h2>
@@ -251,59 +274,63 @@ function SharedReportsComponent() {
                             </>
                         }
                     </div>
-                    <div className="flex flex-col w-full items-center mb-5">
-                        <Pagination
-                            count={data?.page?.totalPages}
-                            page={currentPage}
-                            onChange={(event, page) => setCurrentPage(page)}
-                            variant="outlined"
-                            color="secondary"
-                            shape="rounded"
-                            boundaryCount={2} />
+                    {(data?.content?.length > 0) &&
+                        <div className="flex flex-col w-full items-center mb-5">
+                            <Pagination
+                                count={data?.page?.totalPages}
+                                page={currentPage}
+                                onChange={(event, page) => setCurrentPage(page)}
+                                variant="outlined"
+                                color="secondary"
+                                shape="rounded"
+                                boundaryCount={2} />
+                        </div>
+                    }
+                </div>
+            </div>
+            {(data?.content?.length > 0) &&
+                <div className="flex flex-col gap-2 w-full bg-purple-100 rounded-md">
+                    <div className="flex flex-row gap-2 w-full justify-between px-5 py-2">
+                        <h2 className="text-2xl text-black">Selected Report</h2>
+                        {selectedReport &&
+                            <button className="bg-red-500 text-white rounded p-2 w-44 hover:scale-95" onClick={() => {
+                                setSelectedReport(null)
+                            }}>
+                                Remove Selected
+                            </button>
+                        }
+                    </div>
+                    <div className={cn("flex flex-col gap-7 w-full rounded-md p-2 overflow-hidden transition-[max-height] ease-in-out duration-500", selectedReport ? "max-h-full" : "max-h-12")}>
+                        {selectedReport ?
+                            <>
+                                <div className="flex flex-col gap-4">
+                                    <h2 className="text-xl font-semibold">Details</h2>
+                                    <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-lg flex gap-1 items-center font-semibold">Shared By: {selectedReport.fullName}</span>
+                                        <span className="text-lg flex gap-1 items-center">Doctor Name: {selectedReport.doctorName}</span>
+                                        <span className="text-lg flex gap-1 items-center">Hospital Name: {selectedReport.hospitalName}</span>
+                                        <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {selectedReport.date}</span>
+                                        <span className="text-lg flex gap-1 items-center"> <Clock size={24} /> {selectedReport.expirationTime ? `${selectedReport.expirationTime} hrs` : <Infinity size={24} />}</span>
+                                        <span className="text-xl font-semibold mt-2" >Summary</span>
+                                        <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
+                                        <span className="text-lg flex-col gap-1 items-center">{selectedReport.summary}</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2 items-center">
+                                    <h3 className="text-2xl font-semibold">Prescription/Report Image</h3>
+                                    {imageDimension ?
+                                        <Image src={selectedReport.fileLink} alt="Prescription" width={imageDimension.width} height={imageDimension.height} className=" border-4 border-purple-200" />
+                                        :
+                                        <LoaderCircle size={44} className="text-purple-500 animate-spin" />
+                                    }
+                                </div>
+                            </>
+                            : <h2 className="text-lg text-center">No Report Selected</h2>
+                        }
                     </div>
                 </div>
-            </div>
-            <div className="flex flex-col gap-2 w-full bg-purple-100 rounded-md">
-                <div className="flex flex-row gap-2 w-full justify-between px-5 py-2">
-                    <h2 className="text-2xl text-black">Selected Report</h2>
-                    {selectedReport &&
-                        <button className="bg-red-500 text-white rounded p-2 w-44 hover:scale-95" onClick={() => {
-                            setSelectedReport(null)
-                        }}>
-                            Remove Selected
-                        </button>
-                    }
-                </div>
-                <div className={cn("flex flex-col gap-7 w-full rounded-md p-2 overflow-hidden transition-[max-height] ease-in-out duration-500", selectedReport ? "max-h-full" : "max-h-12")}>
-                    {selectedReport ?
-                        <>
-                            <div className="flex flex-col gap-4">
-                                <h2 className="text-xl font-semibold">Details</h2>
-                                <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-lg flex gap-1 items-center font-semibold">Shared By: {selectedReport.fullName}</span>
-                                    <span className="text-lg flex gap-1 items-center">Doctor Name: {selectedReport.doctorName}</span>
-                                    <span className="text-lg flex gap-1 items-center">Hospital Name: {selectedReport.hospitalName}</span>
-                                    <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {selectedReport.date}</span>
-                                    <span className="text-lg flex gap-1 items-center"> <Clock size={24} /> {selectedReport.expirationTime ? `${selectedReport.expirationTime} hrs` : <Infinity size={24} />}</span>
-                                    <span className="text-xl font-semibold mt-2" >Summary</span>
-                                    <Separator className="w-1/3 h-[1.5px] bg-gray-400" />
-                                    <span className="text-lg flex-col gap-1 items-center">{selectedReport.summary}</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-2 items-center">
-                                <h3 className="text-2xl font-semibold">Prescription/Report Image</h3>
-                                {imageDimension ?
-                                    <Image src={selectedReport.fileLink} alt="Prescription" width={imageDimension.width} height={imageDimension.height} className=" border-4 border-purple-200" />
-                                    :
-                                    <LoaderCircle size={44} className="text-purple-500 animate-spin" />
-                                }
-                            </div>
-                        </>
-                        : <h2 className="text-lg text-center">No Report Selected</h2>
-                    }
-                </div>
-            </div>
+            }
         </div>
     )
 }

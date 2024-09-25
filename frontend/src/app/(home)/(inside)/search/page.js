@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { getDoctorProfileDetailsUrl, getDoctorsUrl, getHospitalsAnonymousUrl, pagePaths, radicalGradient, round } from "@/utils/constants"
 import { Pagination } from "@mui/material"
-import { ExternalLink, Loader, Loader2, Search, Star, StarHalf } from "lucide-react"
+import { ArrowLeft, ExternalLink, Loader, Loader2, MoveLeft, Search, Star, StarHalf } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
@@ -56,7 +56,7 @@ function SearchComponent() {
         if (sessionContext?.sessionData && sessionContext?.sessionData?.userId) {
             setIsLogged(true)
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData])
 
     useEffect(() => {
         console.log(doctorFilter)
@@ -81,6 +81,7 @@ function SearchComponent() {
 
     useEffect(() => {
         setLoadingHospitals(true)
+        console.log(hospitalFilter)
         axiosInstance.get(getHospitalsAnonymousUrl, {
             params: hospitalFilter
         }).then(response => {
@@ -102,7 +103,18 @@ function SearchComponent() {
     return (
         <div className={cn(radicalGradient, "from-slate-200 to-slate-100 flex flex-col w-full flex-1 gap-4 p-5 items-center")}>
             <div className="flex flex-col w-11/12 gap-4 bg-white p-6 rounded-md">
-                <h1 className="text-2xl font-bold text-slate-900">Search</h1>
+                <div className="flex flex-row gap-3 items-center">
+                    <button className="w-fit bg-transparent" onClick={() => {
+                        if (sessionContext?.sessionData?.userId) {
+                            window.history.back()
+                        } else {
+                            window.location.href = pagePaths.baseUrl
+                        }
+                    }}>
+                        <MoveLeft size={24} />
+                    </button>
+                    <h1 className="text-2xl font-bold text-slate-900">Search</h1>
+                </div>
                 <div className="flex flex-col gap-4 w-full items-center">
                     <div className="flex flex-row gap-4 w-full items-center">
                         <label className="text-base flex items-center gap-2 w-fit">
@@ -110,16 +122,32 @@ function SearchComponent() {
                             <input id="search-text" autoComplete="" type="text" placeholder="Search" defaultValue={query} className="w-64 px-2 py-1 rounded shadow-inner border border-slate-500" />
                         </label>
                         <button className="w-fit bg-zinc-700 text-zinc-100 p-2 rounded-md hover:scale-95" onClick={() => {
-                            const searchText = document.getElementById('search-text').value
-                            if (searchText) {
+                            const searchText = document.getElementById('search-text').value.trim()
+                            if (currentTab === 0) {
+                                const regNo = document.getElementById('regNo') ? document.getElementById('regNo').value.trim() === "" ? null : document.getElementById('regNo').value.trim() : null
+                                const workplace = document.getElementById('workplace') ? document.getElementById('workplace').value.trim() === "" ? null : document.getElementById('workplace').value.trim() : null
+                                const department = document.getElementById('department') ? document.getElementById('department').value.trim() === "" ? null : document.getElementById('department').value.trim() : null
+                                const designation = document.getElementById('designation') ? document.getElementById('designation').value.trim() === "" ? null : document.getElementById('designation').value.trim() : null
+                                const contactNumber = document.getElementById('contactNumber') ? document.getElementById('contactNumber').value.trim() === "" ? null : document.getElementById('contactNumber').value.trim() : null
+                                const qualifications = document.getElementById('qualifications') ? document.getElementById('qualifications').value.trim() === "" ? null : document.getElementById('qualifications').value.trim().split(',').map(qualification => qualification.trim()).join(',') : null
                                 setDoctorFilter({
-                                    ...doctorFilter,
-                                    fullName: searchText,
+                                    fullName: searchText || null,
+                                    regNo: regNo,
+                                    workplace: workplace,
+                                    department: department,
+                                    designation: designation,
+                                    contactNumber: contactNumber,
+                                    qualifications: qualifications,
+                                    isVerified: "Y",
                                     pageNo: 0
                                 })
+                            } else {
+                                const location = document.getElementById('location') ? document.getElementById('location').value.trim() === "" ? null : document.getElementById('location').value.trim() : null
+                                const contactNumberHospital = document.getElementById('contactNumberHospital') ? document.getElementById('contactNumberHospital').value.trim() === "" ? null : document.getElementById('contactNumberHospital').value.trim() : null
                                 setHospitalFilter({
-                                    ...hospitalFilter,
-                                    name: searchText,
+                                    name: searchText || null,
+                                    location: location,
+                                    contactNumber: contactNumberHospital,
                                     pageNo: 0
                                 })
                             }
@@ -171,26 +199,6 @@ function SearchComponent() {
                                                 </div>
                                             </label>
                                         </div>
-                                        <button className="w-fit bg-zinc-700 text-zinc-100 p-2 rounded-md hover:scale-95" onClick={() => {
-                                            const regNo = document.getElementById('regNo').value === "" ? null : document.getElementById('regNo').value
-                                            const workplace = document.getElementById('workplace').value === "" ? null : document.getElementById('workplace').value
-                                            const department = document.getElementById('department').value === "" ? null : document.getElementById('department').value
-                                            const designation = document.getElementById('designation').value === "" ? null : document.getElementById('designation').value
-                                            const contactNumber = document.getElementById('contactNumber').value === "" ? null : document.getElementById('contactNumber').value
-                                            const qualifications = document.getElementById('qualifications').value === "" ? null : document.getElementById('qualifications').value.split(',').map(qualification => qualification.trim()).join(',')
-                                            setDoctorFilter({
-                                                ...doctorFilter,
-                                                regNo,
-                                                workplace,
-                                                department,
-                                                designation,
-                                                contactNumber,
-                                                qualifications,
-                                                pageNo: 0
-                                            })
-                                        }}>
-                                            Filter
-                                        </button>
                                     </div>
                                 ) : (
                                     <div className={"flex flex-col gap-3 w-full "}>
@@ -204,18 +212,6 @@ function SearchComponent() {
                                                 <input className="px-2 py-1 rounded shadow-inner border border-slate-500 number-input" type="number" id="contactNumberHospital" />
                                             </label>
                                         </div>
-                                        <button className="w-fit bg-zinc-700 text-zinc-100 p-2 rounded-md hover:scale-95" onClick={() => {
-                                            const location = document.getElementById('location').value
-                                            const contactNumberHospital = document.getElementById('contactNumberHospital').value
-                                            setHospitalFilter({
-                                                ...hospitalFilter,
-                                                location,
-                                                contactNumberHospital,
-                                                pageNo: 0
-                                            })
-                                        }}>
-                                            Filter
-                                        </button>
                                     </div>
                                 )}
                             </>
@@ -241,7 +237,7 @@ function SearchComponent() {
                 </div>
                 {currentTab === 0 ? (
                     <>
-                        {!isLogged && <span className="text-lg text-slate-900 font-bold">You need to login to view doctors</span>}
+                        {!isLogged && <div className="text-lg text-slate-900 font-bold">You need to <Link href={pagePaths.login} className="text-blue-500 underline">login</Link> to view doctors</div>}
                         {isLogged && <Doctors doctors={doctors} pageInfo={doctorsPageInfo} setDoctorFilter={setDoctorFilter} loadingDoctors={loadingDoctors} />}
                     </>
                 ) : (
@@ -340,10 +336,10 @@ function RatingCard({ doctorId }) {
     return (
         <div className="flex flex-col gap-2 w-full">
             <Popover>
-                <PopoverTrigger className="w-12">
+                <PopoverTrigger className="w-20">
                     <div className="flex flex-row mt-1">
                         {ratingIcon}
-                        <span className="text-sm font-semibold ml-2">{round(reviewInfo.averageRating)}</span>
+                        <span className="text-sm font-semibold ml-2 w-10 break-normal text-left">{round(reviewInfo.averageRating)}</span>
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto " side="right">
@@ -354,7 +350,7 @@ function RatingCard({ doctorId }) {
                                     <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
                                 ))}
                             </div>
-                            <span className="text-sm ml-2 text-right">{rating}</span>
+                            <span className="text-sm ml-2 text-right break-normal">{rating}</span>
                         </div>
                     ))}
                 </PopoverContent>

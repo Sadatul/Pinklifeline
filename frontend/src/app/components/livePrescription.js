@@ -19,6 +19,7 @@ import Loading from "./loading"
 import { debounce } from "lodash"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
 import firebase_app from "@/utils/firebaseConfig"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 
 export function DoctorLivePrescriptionPage() {
@@ -36,7 +37,7 @@ export function DoctorLivePrescriptionPage() {
     const router = useRouter()
 
     useEffect(() => {
-        if (sessionContext.sessionData && !initialized.current) {
+        if (sessionContext?.sessionData && !initialized.current) {
             axiosInstance.get(joinVideoCall).then((res) => {
                 setAnalysis(res?.data?.prescription?.analysis)
                 setMedications(res?.data?.prescription?.medications)
@@ -51,27 +52,27 @@ export function DoctorLivePrescriptionPage() {
                 }
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData, router])
 
     useEffect(() => {
-        if (sessionContext.sessionData && !socketRef.current && initialized.current) {
+        if (sessionContext?.sessionData && !socketRef.current && initialized.current) {
             socketRef.current = new Client({
                 brokerURL: stompBrokerUrl,
                 debug: function (str) {
                     console.log(str)
                 },
-                reconnectDelay: 0,
-                heartbeatIncoming: 4000,
-                heartbeatOutgoing: 4000
+                reconnectDelay: 5000,
+                heartbeatIncoming: 10000,
+                heartbeatOutgoing: 10000
             })
             socketRef.current.onConnect = (frame) => {
-                socketRef.current.subscribe(livePrescriptionSubscribe(sessionContext.sessionData.userId), (response) => {
+                socketRef.current.subscribe(livePrescriptionSubscribe(sessionContext?.sessionData.userId), (response) => {
                     console.log(response)
                     const message = JSON.parse(response.body)
                     console.log('Received message')
                     console.log(message)
                 })
-                socketRef.current.subscribe(livePrescriptionSubscribeErrors(sessionContext.sessionData.userId), (error) => {
+                socketRef.current.subscribe(livePrescriptionSubscribeErrors(sessionContext?.sessionData.userId), (error) => {
                     console.log(error)
                     console.log(JSON.parse(error.body))
                 })
@@ -87,7 +88,7 @@ export function DoctorLivePrescriptionPage() {
             socketRef.current?.deactivate()
             console.log('Disconnected')
         }
-    }, [sessionContext.sessionData, initialized.current])
+    }, [sessionContext?.sessionData, initialized.current])
 
 
     const sendPrescription = useCallback(debounce((message) => {
@@ -308,6 +309,13 @@ export function DoctorLivePrescriptionPage() {
                                     <Button
                                         onClick={() => {
                                             setMedications(medications.filter((_, i) => i !== index))
+                                            setPrescriptionData({
+                                                ...prescriptionData,
+                                                prescription: {
+                                                    ...prescriptionData.prescription,
+                                                    medications: [...prescriptionData.prescription.medications.filter((_, i) => i !== index)]
+                                                }
+                                            })
                                             toast.message("Medication removed")
                                         }}
                                         variant={"outline"}
@@ -351,7 +359,7 @@ export function PatientLivePrescriptionPage() {
             "doctorName": "Dr. Rahima Begum",
             "date": "2024-08-03",
             "age": 23,
-            "analysis": "Roma 1",
+            "analysis": "Problem with kidney",
             "weight": 58.0,
             "height": 25.0,
             "medications": [
@@ -365,15 +373,14 @@ export function PatientLivePrescriptionPage() {
                 }
             ],
             "tests": [
-                "Name",
-                "Name",
-                "Nani"
+                "X Ray",
+                "MRI",
             ],
         }
     })
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
+        if (sessionContext?.sessionData) {
             axiosInstance.get(joinVideoCall).then((res) => {
                 setPrescriptionData(res?.data)
                 callId.current = res?.data?.callId
@@ -388,10 +395,10 @@ export function PatientLivePrescriptionPage() {
                 }
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData])
 
     useEffect(() => {
-        if (sessionContext.sessionData && !socketRef.current && initialized.current) {
+        if (sessionContext?.sessionData && !socketRef.current && initialized.current) {
             socketRef.current = new Client({
                 brokerURL: stompBrokerUrl,
                 debug: function (str) {
@@ -402,12 +409,12 @@ export function PatientLivePrescriptionPage() {
                 heartbeatOutgoing: 4000
             })
             socketRef.current.onConnect = (frame) => {
-                socketRef.current.subscribe(livePrescriptionSubscribe(sessionContext.sessionData.userId), (response) => {
+                socketRef.current.subscribe(livePrescriptionSubscribe(sessionContext?.sessionData.userId), (response) => {
                     console.log(response)
                     const message = JSON.parse(response.body)
                     console.log('Received message')
                     console.log(message)
-                    if (sessionContext.sessionData.userId === message.receiverId && callId.current === message.callId) {
+                    if (sessionContext?.sessionData.userId === message.receiverId && callId.current === message.callId) {
                         setPrescriptionData(prev => ({
                             ...prev,
                             prescription: {
@@ -422,10 +429,10 @@ export function PatientLivePrescriptionPage() {
                     }
                     else {
                         console.log("Mismatch callId or recieverId. Refresh with correct credential")
-                        console.log("user id: ", sessionContext.sessionData.userId, " reciever id", message.receiverId, " callId user", callId.current, " call id message", message.callId)
+                        console.log("user id: ", sessionContext?.sessionData.userId, " reciever id", message.receiverId, " callId user", callId.current, " call id message", message.callId)
                     }
                 })
-                socketRef.current.subscribe(livePrescriptionSubscribeErrors(sessionContext.sessionData.userId), (error) => {
+                socketRef.current.subscribe(livePrescriptionSubscribeErrors(sessionContext?.sessionData.userId), (error) => {
                     console.log(error)
                     console.log(JSON.parse(error.body))
                 })
@@ -441,10 +448,11 @@ export function PatientLivePrescriptionPage() {
             socketRef.current?.deactivate()
             console.log('Disconnected')
         }
-    }, [sessionContext.sessionData, initialized.current])
+    }, [sessionContext?.sessionData, initialized.current])
 
     const addReportToVault = async () => {
         try {
+            toast.loading("Adding report to vault")
             const imageDataUrl = await getImage('prescriptionSection'); // Get image data URL
             const byteCharacters = atob(imageDataUrl.split(',')[1]); // Decode the base64 string
             const byteNumbers = new Array(byteCharacters.length);
@@ -454,7 +462,7 @@ export function PatientLivePrescriptionPage() {
             const byteArray = new Uint8Array(byteNumbers);
 
             // Define storage reference
-            const storageRef = ref(storage, `reports/${sessionContext.sessionData.userId}/${prescriptionData.prescription.id}.png`);
+            const storageRef = ref(storage, `reports/${sessionContext?.sessionData.userId}/${prescriptionData.prescription.id}.png`);
             const metadata = {
                 contentType: 'image/png',
             };
@@ -477,7 +485,9 @@ export function PatientLivePrescriptionPage() {
                 async () => {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     console.log('File available at', downloadURL);
+                    toast.dismiss();
                     toast.success("Image uploaded successfully");
+                    toast.loading("Generating report summary")
                     const prescriptionSummary = `
 Prescription Summary:
 ---------------------
@@ -503,19 +513,35 @@ ${prescriptionData.prescription.medications.map(med => `- ${med.name}: ${med.dos
 Tests Ordered:
 ${prescriptionData.prescription.tests.join(', ')}
 `;
+                    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY)
+                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                    const result = await model.generateContent([
+                        `
+Context: ${prescriptionSummary}
+This is a summary of a prescription. Generate some keywords based on the content. Give a json stringified array of keywords. Consider organ names, medicine names(Don't include description), test name etc. Character limit for each keywords is 255. If you can't generate any keywords, return an empty array.
+Response Format:
+{
+    "keywords": ["keyword1", "keyword2", "keyword3"]
+}
+Please don't any other information in the response. I will JSON.parse the response and extract the keywords. So adding a single character will break the code. Stick to the format and don't add a single extra character.
+                        `
+                    ])
+                    const keywords = JSON.parse(result.response.text()).keywords;
                     const reportData = {
-                        "doctorName": "Dr. Morshad Hossain",
+                        "doctorName": prescriptionData?.prescription?.doctorName,
                         "hospitalName": locationOnline,
                         "date": generateFormattedDate(new Date()),
                         "summary": prescriptionSummary,
                         "fileLink": downloadURL,
-                        "keywords": [...medications.map(med => med.name), ...tests]
+                        "keywords": [...new Set(keywords)]
                     }
-                    console.log("report data ", reportData.fileLink)
+                    console.log("report data ", reportData)
                     axiosInstance.post(addReportUrl, reportData).then((res) => {
+                        toast.dismiss();
                         toast.success("Report added to vault successfully")
                     }).catch((error) => {
                         console.log("error adding report to vault ", error)
+                        toast.dismiss();
                         toast.error("Error adding report to vault")
                     }).finally(() => {
                         setLoadingReportAdd(false);
@@ -536,7 +562,7 @@ ${prescriptionData.prescription.tests.join(', ')}
         generatePDF('prescriptionSection');
     };
 
-    if (sessionContext.sessionData?.role === roles.doctor) return <h1 className="font-bold text-3xl text-black w-full text-center mt-10">You are not authorized to view this page.</h1>
+    if (sessionContext?.sessionData?.role === roles.doctor) return <h1 className="font-bold text-3xl text-black w-full text-center mt-10">You are not authorized to view this page.</h1>
 
     if (prescriptionData === null) return <Loading chose="hand" />
 
@@ -546,7 +572,7 @@ ${prescriptionData.prescription.tests.join(', ')}
         <div className="flex flex-col items-center gap-5 relative w-full p-3">
             <h1 className="text-2xl font-semibold text-center w-full">Live Prescription</h1>
             <div className="w-4/5 gap-6 flex flex-col bg-blue-50 p-2">
-                <div className="flex flex-row fixed top-16 right-7 gap-5 items-center z-10 ">
+                <div className="flex flex-row fixed top-20 right-7 gap-5 items-center z-10 ">
                     <button disabled={loading || disableButton} className="bg-purple-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
                         setLoading(true);
                         setDisableButton(true);
@@ -556,7 +582,7 @@ ${prescriptionData.prescription.tests.join(', ')}
                     }}>
                         {loading ? <LoaderCircle size={28} className="text-white animate-spin" /> : "Generate PDF"}
                     </button>
-                    {isPaidUser &&
+                    {(sessionContext?.sessionData?.subscribed > 0) &&
                         <button disabled={loadingRportAdd || disableButton} className="bg-pink-400 hover:scale-90 transition ease-in-out duration-200 text-black px-4 py-1 rounded-md" onClick={() => {
                             setLoadingReportAdd(true);
                             setDisableButton(true);

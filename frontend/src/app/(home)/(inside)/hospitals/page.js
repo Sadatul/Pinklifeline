@@ -4,6 +4,6 @@ import { HospitalsComponent } from "@/app/components/hospitals"
 
 export default function HospitalsPage() {
     return (
-        HospitalsComponent({ isAdmin: false })
+        <HospitalsComponent isAdmin={false} />
     )
 }

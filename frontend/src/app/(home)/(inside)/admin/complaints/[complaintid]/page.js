@@ -1,7 +1,7 @@
 'use client'
 
 import Loading from "@/app/components/loading"
-import { blogByIdAnonymousUrl, blogByIdUrl, forumAnsById, forumAnswersByIdAnonymous, forumQuestionByIdAnonymousUrl, forumQuestionByIdUrl, pagePaths, radicalGradient, reportAnalysisThreshold, ReportTypes, resolveComplaint, rountToTwo } from "@/utils/constants"
+import { blogByIdAnonymousUrl, blogByIdUrl, extractTextFromHtml, forumAnsById, forumAnswersByIdAnonymous, forumQuestionByIdAnonymousUrl, forumQuestionByIdUrl, pagePaths, radicalGradient, reportAnalysisThreshold, ReportTypes, resolveComplaint, rountToTwo } from "@/utils/constants"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 import * as toxicity from '@tensorflow-models/toxicity';
@@ -34,18 +34,14 @@ function ComplaintsDetails() {
     }
 
     useEffect(() => {
-        const extractText = (html) => {
-            const tempElement = document.createElement('div')
-            tempElement.innerHTML = html
-            return tempElement.innerText || ''
-        }
+        
         console.log("Data Collect URL: ", dataCollectUrl)
         if (dataCollectUrl) {
             axiosInstance.get(dataCollectUrl).then((response) => {
                 console.log("Data: ", response)
                 if (type === ReportTypes.blog) {
                     const contentMatched = response.data?.content.match(/<content>(.*?)<\/content>/s)
-                    setData(extractText(contentMatched ? contentMatched[1] : null))
+                    setData(extractTextFromHtml(contentMatched ? contentMatched[1] : null))
                     setBlogContent(contentMatched ? contentMatched[1] : null)
                 }
                 else if (type === ReportTypes.forumQuestion) {
@@ -60,7 +56,7 @@ function ComplaintsDetails() {
                 setLoadingData(false)
             })
         }
-    }, [dataCollectUrl])
+    }, [dataCollectUrl, type])
 
     useEffect(() => {
         const getModel = async () => {

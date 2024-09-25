@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { complaintUrl, getComplaints, pagePaths, radicalGradient, reportCategories, ReportTypes, resolveComplaint } from "@/utils/constants"
+import { complaintUrl, generateFormattedDate, getComplaints, pagePaths, radicalGradient, reportCategories, ReportTypes, resolveComplaint } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { format } from "date-fns"
 import { CalendarIcon, Check, ExternalLink, Loader2, X } from "lucide-react"
@@ -18,37 +18,7 @@ import { toast } from "sonner"
 
 export default function ComplaintsPage() {
     const animatedComponents = makeAnimated()
-    const [complaints, setComplaints] = useState([
-        {
-            "createdAt": "2024-08-19T22:18:24",
-            "resourceId": 3,
-            "description": "This was very offensive content",
-            "id": 1,
-            "type": "BLOG",
-            "category": "Sexual content"
-        }, {
-            "createdAt": "2024-08-19T22:18:24",
-            "resourceId": 3,
-            "description": "This was very offensive content",
-            "id": 1,
-            "type": "BLOG",
-            "category": "Sexual content"
-        }, {
-            "createdAt": "2024-08-19T22:18:24",
-            "resourceId": 3,
-            "description": "This was very offensive content",
-            "id": 1,
-            "type": "BLOG",
-            "category": "Sexual content"
-        }, {
-            "createdAt": "2024-08-19T22:18:24",
-            "resourceId": 3,
-            "description": "This was very offensive content",
-            "id": 1,
-            "type": "BLOG",
-            "category": "Sexual content"
-        },
-    ])
+    const [complaints, setComplaints] = useState([])
 
     const [isMounted, setIsMounted] = useState(false)
 
@@ -73,7 +43,7 @@ export default function ComplaintsPage() {
         if (!isMounted) {
             setIsMounted(true)
         }
-    }, [])
+    }, [isMounted])
 
     useEffect(() => {
         if (fetchAgain) {
@@ -90,7 +60,11 @@ export default function ComplaintsPage() {
                 setFetchAgain(false)
             })
         }
-    }, [filter, fetchAgain])
+    }, [fetchAgain])
+
+    useEffect(() => {
+        setFetchAgain(true)
+    }, [filter])
 
     const handleViolated = (complaintId, isViolated) => {
         axiosInstance.delete(resolveComplaint(complaintId), {
@@ -109,69 +83,83 @@ export default function ComplaintsPage() {
     return (
         <div className={cn("flex flex-col gap-10 w-full flex-1 p-4", radicalGradient, "from-zinc-300 to-zinc-200")}>
             <h1 className="text-2xl font-bold">Complaints</h1>
-            <div className="flex flex-row gap-4 w-full flex-wrap p-7 bg-gray-50 rounded-md">
-                <label className="flex flex-col gap-2 w-fit">
-                    Category
-                    <ReactSelect
-                        options={reportCategories.map((category) => ({ value: category.label, label: category.label }))}
-                        isMulti={false}
-                        components={animatedComponents}
-                        onChange={(selected) => {
-                            setSelectedCategories(selected)
-                        }}
-                        value={selectedCategories}
-                        placeholder="Select Category"
-                        className="w-64 rounded-md border border-gray-600"
-                        isClearable
-                    />
-                </label>
-                <label className="flex flex-col gap-2 w-fit">
-                    Type
-                    <select id="complaints-category" defaultValue={"select-category"} className="w-fit px-3 py-2 text-lg text-gray-600 border border-gray-500 rounded-md focus:outline-none">
-                        <option value="select-category" disabled>Select Category</option>
-                        <option value={ReportTypes.blog}>Blog</option>
-                        <option value={ReportTypes.forumQuestion}>Forum Question</option>
-                        <option value={ReportTypes.forumAnswer}>Forum Answer</option>
-                    </select>
-                </label>
-                <div className="flex flex-col gap-2 w-fit">
-                    Date range
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                id="date"
-                                variant={"outline"}
-                                className={cn(
-                                    "w-fit justify-start text-left font-normal border border-purple-500",
-                                    !dateRange && "text-muted-foreground"
-                                )}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange?.from ? (
-                                    dateRange.to ? (
-                                        <>
-                                            {format(dateRange.from, "LLL dd, y")} -{" "}
-                                            {format(dateRange.to, "LLL dd, y")}
-                                        </>
+            <div className="flex flex-col gap-3 w-full p-7 bg-gray-50 rounded-md">
+                <div className="flex flex-row gap-4 w-full flex-wrap ">
+                    <label className="flex flex-col gap-2 w-fit">
+                        Category
+                        <ReactSelect
+                            options={reportCategories.map((category) => ({ value: category.label, label: category.label }))}
+                            isMulti={false}
+                            components={animatedComponents}
+                            onChange={(selected) => {
+                                setSelectedCategories(selected)
+                            }}
+                            value={selectedCategories}
+                            placeholder="Select Category"
+                            className="w-64 rounded-md border border-gray-600"
+                            isClearable
+                        />
+                    </label>
+                    <label className="flex flex-col gap-2 w-fit">
+                        Type
+                        <select id="complaints-category" defaultValue={"select-category"} className="w-fit px-3 py-2 text-lg text-gray-600 border border-gray-500 rounded-md focus:outline-none">
+                            <option value="select-category" disabled>Select Category</option>
+                            <option value={ReportTypes.blog}>Blog</option>
+                            <option value={ReportTypes.forumQuestion}>Forum Question</option>
+                            <option value={ReportTypes.forumAnswer}>Forum Answer</option>
+                        </select>
+                    </label>
+                    <div className="flex flex-col gap-2 w-fit">
+                        Date range
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    id="date"
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-fit justify-start text-left font-normal border border-purple-500",
+                                        !dateRange && "text-muted-foreground"
+                                    )}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateRange?.from ? (
+                                        dateRange.to ? (
+                                            <>
+                                                {format(dateRange.from, "LLL dd, y")} -{" "}
+                                                {format(dateRange.to, "LLL dd, y")}
+                                            </>
+                                        ) : (
+                                            format(dateRange.from, "LLL dd, y")
+                                        )
                                     ) : (
-                                        format(dateRange.from, "LLL dd, y")
-                                    )
-                                ) : (
-                                    <span>Pick a date range</span>
-                                )}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={dateRange?.from}
-                                selected={dateRange}
-                                onSelect={setDateRange}
-                                numberOfMonths={2}
-                            />
-                        </PopoverContent>
-                    </Popover>
+                                        <span>Pick a date range</span>
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    initialFocus
+                                    mode="range"
+                                    defaultMonth={dateRange?.from}
+                                    selected={dateRange}
+                                    onSelect={setDateRange}
+                                    numberOfMonths={2}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                 </div>
+                <button className="rounded w-fit px-2 py-1 border text-base bg-blue-300 text-black shadow-inner hover:scale-95" onClick={() => {
+                    setFilter({
+                        ...filter,
+                        category: selectedCategories?.value,
+                        type: document.getElementById("complaints-category").value === "select-category" ? null : document.getElementById("complaints-category")?.value,
+                        startDate: generateFormattedDate(dateRange.from),
+                        endDate: generateFormattedDate(dateRange.to),
+                        pageNo: 0
+                    })
+                }}>
+                    Filter
+                </button>
             </div>
             <div className="flex flex-col gap-3 w-full px-7">
                 <div className="flex flex-row gap-4 w-full justify-end items-center text-black font-semibold">

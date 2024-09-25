@@ -21,15 +21,17 @@ import { toast } from "sonner";
 import { set } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { blogsUrl, pagePaths } from "@/utils/constants";
+import { blogsUrl, pagePaths, roles } from "@/utils/constants";
 import axiosInstance from "@/utils/axiosInstance";
 import { Vault } from "@/app/components/firebaseVault";
 
 import dynamic from "next/dynamic";
+import { useSessionContext } from "@/app/context/sessionContext";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 export default function AddBlogPage() {
+    const sessionContext = useSessionContext()
     const config = useMemo(() => ({
         readonly: false,
         height: "480px",
@@ -55,8 +57,12 @@ export default function AddBlogPage() {
     };
 
     useEffect(() => {
-        console.log("char count", charCount);
-    }, [charCount]);
+        if (sessionContext?.sessionData) {
+            if (!sessionContext?.sessionData?.userId || sessionContext?.sessionData?.role !== roles.doctor) {
+                window.location.href = pagePaths.blogsPage
+            }
+        }
+    }, [sessionContext?.sessionData]);
 
     return (
         <div className="flex flex-col w-full h-full items-center gap-2 px-3 py-1 overflow-x-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 via-gray-200 to-gray-300 relative">

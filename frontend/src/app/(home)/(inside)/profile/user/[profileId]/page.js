@@ -67,7 +67,7 @@ export default function USerProfilePage() {
     const stompContext = useStompContext();
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
+        if (sessionContext?.sessionData) {
             axiosInstance.get(getUserProfileDetails(params.profileId)).then((res) => {
                 setUserData({
                     ...res.data,
@@ -78,16 +78,16 @@ export default function USerProfilePage() {
                 toast.error("Error loading. Check internet.")
             })
         }
-    }, [sessionContext.sessionData, params.profileId])
+    }, [sessionContext?.sessionData, params.profileId])
 
     const sendMessage = () => {
-        if (!sessionContext.sessionData) return toast.message("Log in to send messages")
+        if (!sessionContext?.sessionData) return toast.message("Log in to send messages")
         const messageInput = document.getElementById('message')?.value
-        if (messageInput !== '' && params.profileId) {
+        if (messageInput && messageInput?.trim() !== '' && params.profileId) {
             const messageObject = {
                 receiverId: params.profileId,
                 message: messageInput,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                 type: "TEXT"
             }
             console.log('Sending message')
@@ -98,6 +98,8 @@ export default function USerProfilePage() {
                     body: JSON.stringify(messageObject),
                 }
             );
+            toast.success("Message sent")
+            document.getElementById('message').value = ''
         }
     }
 

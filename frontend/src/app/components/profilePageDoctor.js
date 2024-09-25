@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, avatarAang, blogsAnonymousUrl, convertToAmPm, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractCoverImage, extractCoverText, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import { addAppointment, addReview, avatarAang, blogByIdAnonymousUrl, blogsAnonymousUrl, convertToAmPm, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractContent, extractCoverImage, extractCoverText, extractTextFromHtml, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, Loader, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -111,13 +111,27 @@ export default function DoctorProfile({ profileId, section }) {
     }, [reviewInfo])
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
+        if (sessionContext?.sessionData) {
+            // fetch(getDoctorProfileDetailsUrl(profileId),{
+            //     method: 'GET',
+            //     credentials: 'include'
+            //   }).then(tempRes => {
+            //     tempRes.json().then(res => {
+            //         console.log("doctor data from fetch", res)
+            //     }).catch(error => {
+            //         console.log(error)
+            //         if (error.response?.status === 404) {
+            //             toast.error("Doctor not found")
+            //             setUserData("EMPTY")
+            //         }
+            //     })
+            // })
             axiosInstance.get(getDoctorProfileDetailsUrl(profileId)).then((res) => {
-                console.log("doctor data", res.data)
+                console.log("doctor data from axios", res.data)
                 setUserData({
                     ...res.data,
                     profilePicture: res.data?.profilePicture || testingAvatar,
-                    isNurse: (res?.data?.qualifications?.includes("BSN") || res?.data?.qualifications?.includes("MSN") && !res?.data?.qualifications?.includes("MBBS")),
+                    isNurse: ((res?.data?.qualifications?.includes("BSN") || res?.data?.qualifications?.includes("MSN")) && !res?.data?.qualifications?.includes("MBBS")),
                 })
                 setReviewInfo({
                     ...res.data?.reviewSummary,
@@ -131,7 +145,7 @@ export default function DoctorProfile({ profileId, section }) {
                 }
             })
         }
-    }, [sessionContext.sessionData, profileId])
+    }, [sessionContext?.sessionData, profileId])
 
     const sendMessage = () => {
         const messageInput = document.getElementById('message')?.value
@@ -139,7 +153,7 @@ export default function DoctorProfile({ profileId, section }) {
             const messageObject = {
                 receiverId: profileId,
                 message: messageInput,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                 type: "TEXT"
             }
             console.log('Sending message')
@@ -155,7 +169,7 @@ export default function DoctorProfile({ profileId, section }) {
     }
 
     if (!userData) return <Loading />
-    else if (userData === "EMPTY") return <h1 className="text-3xl font-semibold text-center m-4">Doctor not found</h1>
+    // else if (userData === "EMPTY") return <h1 className="text-3xl font-semibold text-center m-4">Doctor not found</h1>
 
     return (
         <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}
@@ -209,10 +223,10 @@ export default function DoctorProfile({ profileId, section }) {
                         <div className="text-base font-semibold">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</div>
                         <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
                         <Popover>
-                            <PopoverTrigger className="w-12">
+                            <PopoverTrigger className="w-fit">
                                 <div className="flex flex-row items-center mt-3">
                                     {ratingIcon}
-                                    <span className="text-base font-semibold ml-2">{round(reviewInfo.averageRating)}</span>
+                                    <span className="text-base font-semibold ml-2 break-normal w-10 text-left">{round(reviewInfo.averageRating)}</span>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto " side="right" asChild>
@@ -234,7 +248,7 @@ export default function DoctorProfile({ profileId, section }) {
                     <div className="flex flex-row items-center mr-3 mt-12">
                         <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
                             <PopoverTrigger asChild>
-                                <button disabled={!sessionContext.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
+                                <button disabled={!sessionContext?.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
                                     <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
                                     <span className="ml-1 font-semibold">Message</span>
                                 </button>
@@ -298,8 +312,6 @@ function PostSection({ userId, className, userData }) {
     const [selectedTab, setSelectedTab] = useState("blogPosts")
     const [currentBlogPostPage, setCurrentBlogPostPage] = useState(1)
     const [currentForumQuestionPage, setCurrentForumQuestionPage] = useState(1)
-    const [totalBlogPostPages, setTotalBlogPostPages] = useState(15)
-    const [totalForumQuestionPages, setTotalForumQuestionPages] = useState(12)
     const [posts, setPosts] = useState([])
     const [forumQuestions, setForumQuestions] = useState([])
     const [similarPersons, setSimilarPersons] = useState([])
@@ -317,25 +329,37 @@ function PostSection({ userId, className, userData }) {
                 docId: userId,
                 pageNo: currentBlogPostPage - 1,
             }
-        }).then((res) => {
+        }).then(async (res) => {
             console.log("blog posts", res.data)
-            setPosts(res.data?.content?.map((post) => {
-                const covertText = extractCoverText(post.content)
-                const coverImage = extractCoverImage(post.content)
-                return {
-                    id: post.id,
-                    title: post.title,
-                    content: covertText,
-                    date: displayDate(post?.createdAt),
-                    imageSrc: coverImage
+            try {
+                const posts = []
+                for (const post of res.data?.content) {
+                    // const covertText = extractCoverText(post.content)
+                    const response = await axiosInstance.get(blogByIdAnonymousUrl(post.id))
+                    const coverImage = extractCoverImage(response?.data?.content)
+                    const content = extractContent(response?.data?.content)
+                    const contentText = extractTextFromHtml(content)
+                    posts.push({
+                        id: post.id,
+                        title: post.title,
+                        content: contentText.length > 200 ? contentText.substring(0, 200) + "..." : contentText,
+                        date: post?.createdAt,
+                        imageSrc: coverImage,
+                        upvoteCount: post.upvoteCount
+                    })
                 }
-            }))
+                setPosts([...posts])
+            }
+            catch (error) {
+                console.log(error)
+                return null
+            }
             setBlogPageInfo(res.data?.page)
 
         }).catch((error) => {
             console.log(error)
         })
-    }, [currentBlogPostPage])
+    }, [currentBlogPostPage, userId])
 
     useEffect(() => {
         axiosInstance.get(forumQuestionsAnonymousUrl, {
@@ -356,7 +380,7 @@ function PostSection({ userId, className, userData }) {
         }).catch((error) => {
             console.log(error)
         })
-    }, [currentForumQuestionPage])
+    }, [currentForumQuestionPage, userId])
 
     useEffect(() => {
         const loadSimilarPersons = async () => {
@@ -405,7 +429,7 @@ function PostSection({ userId, className, userData }) {
             setLoadingSimilarPersons(false);
         };
         loadSimilarPersons();
-    }, [])
+    }, [userData?.department, userData?.designation, userData?.workplace, userId]);
 
     return (
         <div className={cn("flex flex-row w-full mt-4 p-4 rounded")}>
@@ -423,10 +447,10 @@ function PostSection({ userId, className, userData }) {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value={"blogPosts"}>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col pr-3">
                             {posts?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
                             {posts?.map((post, index) => (
-                                <BlogCard key={index} id={post.id} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} />
+                                <BlogCard key={index} id={post.id} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} upvoteCount={post.upvoteCount} />
                             ))}
                         </div>
                     </TabsContent>
@@ -481,26 +505,33 @@ function PostSection({ userId, className, userData }) {
     )
 }
 
-function BlogCard({ title, content, date, imageSrc, id }) {
+function BlogCard({ title, content, date, imageSrc, id, upvoteCount }) {
+    console.log("Date: ", date)
     return (
-        <div className="flex flex-row w-full mx-2 my-3 bg-white rounded-md shadow">
-            <div className="relative w-full h-40 rounded-l-md overflow-hidden">
+        <div className="flex flex-row w-full mx-2 h-40 my-3 bg-gradient-to-r from-zinc-50 to-zinc-200 rounded-md shadow">
+            <div className="relative flex-1 h-full rounded-l-md overflow-hidden flex flex-row items-center">
                 {imageSrc &&
                     <Image
                         src={imageSrc}
+                        alt={"alt"}
+                        quality={100}
+                        className="bg-black w-full h-full object-cover"
                         fill={true}
-                        className="absolute inset-0 w-full h-full object-left object-contain rounded-l-md"
-                        alt="Blog Image"
                     />
                 }
-                <div className="absolute inset-0 bg-gradient-to-l from-white from-75%  to-transparent to-90% rounded-t-md flex flex-col items-end">
-                    <div className="relative w-9/12 z-10 px-4 py-2 text-black flex flex-col items-end text-end">
-                        <Link href={pagePaths.blogPageById(id)} className="text-2xl font-bold line-clamp-1">{title}</Link>
-                        <p className="mt-4 line-clamp-3">{content}</p>
-                        <span className="mt-2 text-sm font-semibold">{date}</span>
+            </div>
+            <div className="relative w-8/12 z-10 text-black flex flex-col items-end text-end px-3 py-2 justify-between">
+                <div className="flex flex-col gap-3 w-full">
+                    <Link href={pagePaths.blogPageById(id)} className="text-2xl font-bold line-clamp-1 hover:underline">{title}</Link>
+                    <p className="line-clamp-3">{content}</p>
+                </div>
+                <div className="flex flex-row gap-3 items-end">
+                    <span className="mt-2 text-sm font-semibold">{displayDate(date, "dd MMMM, yyyy")}</span>
+                    <div className="flex flex-row items-end gap-1 -translate-y-[3px]">
+                        <ThumbsUp size={18} fill="white" className="text-blue-400" />
+                        <span className="text-sm translate-y-[2px]">{upvoteCount}</span>
                     </div>
                 </div>
-
             </div>
         </div>
     )
@@ -535,11 +566,11 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     const [addReviewDialog, setAddReviewDialog] = useState(false)
 
     useEffect(() => {
-        if (sessionContext.sessionData && fetchAgain) {
+        if (sessionContext?.sessionData && fetchAgain) {
             axiosInstance.get(getDoctorProfileDetailsUrlReviews(profileId)).then((res) => {
                 console.log("doctor reviews", res.data)
-                setUserReview(res.data.find((review) => review.reviewerId === sessionContext.sessionData.userId) || null)
-                setDoctorReviews(res.data.filter((review) => review.reviewerId !== sessionContext.sessionData.userId))
+                setUserReview(res.data.find((review) => review.reviewerId === sessionContext?.sessionData.userId) || null)
+                setDoctorReviews(res.data.filter((review) => review.reviewerId !== sessionContext?.sessionData.userId))
                 setLoading(false)
                 setFetchAgain(false)
             }).catch((error) => {
@@ -549,7 +580,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                 setFetchAgain(false)
             })
         }
-    }, [sessionContext.sessionData, fetchAgain, profileId])
+    }, [sessionContext?.sessionData, fetchAgain, profileId])
 
     if (loading) return <Loading chose="hand" />
 
@@ -581,7 +612,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                                 <option value={4}>4</option>
                                                 <option value={5}>5</option>
                                             </select>
-                                            <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" />
+                                            <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" maxLength={255} />
                                         </div>
                                         <span id="error-message" className="text-sm font-semibold text-end w-full text-red-500 hidden">Please provide a rating at least</span>
                                         <Button className="w-24"
@@ -589,7 +620,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                                 const comment = document.getElementById("add-review-text")?.value
                                                 const rating = document.getElementById("add-review-rating")?.value
                                                 if (Number(rating) !== 0) {
-                                                    axiosInstance.post(addReview(sessionContext.sessionData.userId), {
+                                                    axiosInstance.post(addReview(sessionContext?.sessionData.userId), {
                                                         rating: rating,
                                                         id: profileId,
                                                         comment: comment
@@ -657,7 +688,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
     const ratingRef = useRef(null)
 
     const deleteReview = () => {
-        axiosInstance.delete(deleteDoctorReview(sessionContext.sessionData.userId, id)).then((res) => {
+        axiosInstance.delete(deleteDoctorReview(sessionContext?.sessionData.userId, id)).then((res) => {
             console.log("deleted review", res.data)
             setReviewInfo(res?.data)
             setUserReview(null)
@@ -712,8 +743,8 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                                             const newContent = textContentRef.current?.value
                                             const newRating = ratingRef.current?.value
                                             if ((newRating !== data.rating && newRating) || newContent !== data.content) {
-                                                const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-                                                axiosInstance.put(updateDoctorReview(sessionContext.sessionData.userId, id), {
+                                                const headers = { 'Authorization': `Bearer ${sessionContext?.sessionData.token}` }
+                                                axiosInstance.put(updateDoctorReview(sessionContext?.sessionData.userId, id), {
                                                     rating: newRating,
                                                     comment: newContent
                                                 }).then((res) => {
@@ -802,7 +833,7 @@ function ConsultationSection({ userId, className, profileId }) {
     const [chambers, setChambers] = useState([])
     const sessionContext = useSessionContext()
     useEffect(() => {
-        if (sessionContext.sessionData) {
+        if (sessionContext?.sessionData) {
             axiosInstance.get(getDoctorProfileDetailsUrlLocations(profileId)).then((res) => {
                 console.log("chambers", res.data)
                 setChambers(res.data)
@@ -813,9 +844,9 @@ function ConsultationSection({ userId, className, profileId }) {
                 toast.error("Error loading")
             })
         }
-    }, [sessionContext.sessionData, profileId])
+    }, [sessionContext?.sessionData, profileId])
 
-    if (!sessionContext.sessionData) return <Loading />
+    if (!sessionContext?.sessionData) return <Loading />
     return (
         <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
             <div className="flex flex-col items-center rounded p-4 w-full">
@@ -859,7 +890,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         }
         const tempDate = new Date(appointmentDate)
         const formData = {
-            "patientId": sessionContext.sessionData.userId,
+            "patientId": sessionContext?.sessionData.userId,
             "doctorId": Number(profileId),
             "patientContactNumber": contactNumber,
             "locationId": id,
@@ -868,7 +899,7 @@ function ChamberCard({ location, startTime, endTime, workdays, fees, profileId, 
         }
         console.log('Requesting Appointment')
         console.log(formData)
-        const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
+        const headers = { 'Authorization': `Bearer ${sessionContext?.sessionData.token}` }
         axiosInstance.post(addAppointment, formData).then((res) => {
             toast.success("Appointment requested")
             setAppointmentDate(null)

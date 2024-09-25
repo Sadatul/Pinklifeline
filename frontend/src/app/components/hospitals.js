@@ -2,23 +2,25 @@
 
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, hospitalByIdUrl, medicalTestHospitalAnonymousUrl, pagePaths, radicalGradient } from "@/utils/constants"
+import { getHospitalsAnonymousUrl, getMedicalTestAnonymousUrl, hospitalByIdUrl, hospitalReviewSummaryUrl, hospitalReviewsUrl, medicalTestHospitalAnonymousUrl, pagePaths, radicalGradient, roles, round } from "@/utils/constants"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useCallback, useEffect, useState } from "react"
 import AsyncSelect from 'react-select/async';
 import makeAnimated from 'react-select/animated';
 import { debounce, set } from "lodash"
 import Loading from "./loading"
-import { ChevronDown, ChevronRight, ChevronUp, ExternalLink, Loader2, Pencil, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Loader2, MoveLeft, Pencil, Plus, Star, StarHalf, Trash2 } from "lucide-react"
 import { Pagination } from "@mui/material"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import ScrollableContainer from "./StyledScrollbar"
+import { useSessionContext } from "../context/sessionContext"
 
 const animatedComponents = makeAnimated();
 
 export function HospitalsComponent({ isAdmin }) {
+    const sessionContext = useSessionContext()
     const [isMounted, setIsMounted] = useState(false)
     const [showFilters, setShowFilters] = useState(isAdmin)
     const [hospitals, setHospitals] = useState([])
@@ -29,23 +31,25 @@ export function HospitalsComponent({ isAdmin }) {
         location: null,
         id: null,
         testIds: null,
-        sortDirection: 'ASC',
+        sortDirection: 'DESC',
         pageNo: 0
 
     })
     const [selectedTests, setSelectedTests] = useState([])
 
-    const getTestOptions = useCallback(
-        debounce(async (searchText, callback) => {
-            try {
-                const response = await axiosInstance.get(getMedicalTestAnonymousUrl, { params: { name: searchText } });
-                const options = response.data?.map((test) => ({ value: test.id, label: test.name }));
-                callback(options);
-            } catch (error) {
-                console.log(error);
-                callback([]);
-            }
-        }, 500), []);
+    const getTestOptions = (inputValue) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                axiosInstance.get(getMedicalTestAnonymousUrl, { params: { name: inputValue.trim() } }).then((response) => {
+                    const options = response.data?.map((test) => ({ value: test.id, label: test.name }));
+                    resolve(options);
+                }).catch((error) => {
+                    console.log(error);
+                    resolve([]);
+                });
+            }, 500);
+        })
+    }
 
     useEffect(() => {
         setIsMounted(true)
@@ -72,14 +76,30 @@ export function HospitalsComponent({ isAdmin }) {
 
     return (
         <ScrollableContainer className={cn("flex flex-col w-full items-center p-4 flex-1 gap-3 overflow-x-hidden", radicalGradient, "from-zinc-200 to-slate-100")} >
-            <div className="w-11/12 bg-white rounded p-3 flex flex-col gap-5">
-                <div className="flex flex-col items-center gap-2">
+            <div className="w-11/12 bg-white rounded p-3 flex flex-col gap-5 relative">
+                <div className="flex flex-col items-center gap-2 w-full">
                     <div className="flex flex-row items-center gap-2">
-                        <h1 className="text-2xl font-bold">Hospitals</h1>
-                        <TooltipProvider delayDuration={300}>
+                        <div className="flex flex-row gap-3 items-center">
+                            <button className="w-fit bg-transparent" onClick={() => {
+                                console.log('back')
+                                if (isAdmin) {
+                                    window.location.href = pagePaths.unverifiedDoctorsPageForAdmin
+                                }
+                                else if (sessionContext?.sessionData?.userId) {
+                                    window.location.href = pagePaths.dashboardPages.userdetailsPage
+                                }
+                                else {
+                                    window.location.href = pagePaths.baseUrl
+                                }
+                            }}>
+                                <MoveLeft size={24} />
+                            </button>
+                            <h1 className="text-2xl font-bold">Hospitals</h1>
+                        </div>
+                        <TooltipProvider delayDuration={500}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <button className="flex items-center gap-2 w-fit" onClick={() => setShowFilters(prev => !prev)}>
+                                    <button className="flex items-center gap-2 w-fit absolute right-5" onClick={() => setShowFilters(prev => !prev)}>
                                         {showFilters ? <ChevronUp size={28} /> : <ChevronDown size={28} />}
                                     </button>
                                 </TooltipTrigger>
@@ -109,9 +129,7 @@ export function HospitalsComponent({ isAdmin }) {
                                     closeMenuOnSelect={false}
                                     value={selectedTests}
                                     onChange={(selected) => setSelectedTests(selected)}
-                                    loadOptions={(inputValue, callback) => {
-                                        getTestOptions(inputValue, callback);
-                                    }}
+                                    loadOptions={getTestOptions}
                                     className="min-w-80"
                                 />
                             </label>
@@ -119,8 +137,8 @@ export function HospitalsComponent({ isAdmin }) {
                         <button className="bg-blue-500 text-white px-3 py-1 rounded w-fit" onClick={() => {
                             setFilter({
                                 ...filter,
-                                name: document.getElementById('name').value === '' ? null : document.getElementById('name').value,
-                                location: document.getElementById('location').value === '' ? null : document.getElementById('location').value,
+                                name: document.getElementById('name').value.trim() === '' ? null : document.getElementById('name').value?.trim(),
+                                location: document.getElementById('location').value.trim() === '' ? null : document.getElementById('location').value?.trim(),
                                 testIds: selectedTests.length > 0 ? selectedTests.map((test) => test.value).join(',') : null,
                                 pageNo: 0
                             })
@@ -155,7 +173,7 @@ export function HospitalsComponent({ isAdmin }) {
                     {!isAdmin &&
                         <div className="flex flex-row gap-2 items-center">
                             <Link href={pagePaths.compareHospitalsPage} className="text-gray-700 font-semibold bg-white border border-gray-600 rounded px-2 py-1 hover:underline flex items-center gap-1">Compare Hospitals <ExternalLink size={16} /> </Link>
-                            <Link href={pagePaths.compareTestsUserPage} className="text-gray-700 font-semibold bg-white border border-gray-600 rounded px-2 py-1 hover:underline flex items-center gap-1">Compare Tests <ExternalLink size={16} /> </Link>
+                            {/* <Link href={pagePaths.compareTestsUserPage} className="text-gray-700 font-semibold bg-white border border-gray-600 rounded px-2 py-1 hover:underline flex items-center gap-1">Compare Tests <ExternalLink size={16} /> </Link> */}
                         </div>
                     }
                 </div>
@@ -187,34 +205,32 @@ export function HospitalsComponent({ isAdmin }) {
 }
 
 function HospitalCard({ hospital, isAdmin, setFetchLoading, fetching }) {
-    const [tests, setTests] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [showTests, setShowTests] = useState(false)
-    const [pageInfo, setPageInfo] = useState(null)
-    const [filter, setFilter] = useState({
-        hospitalId: hospital.id,
-        pageNo: 0
-    })
-    const getTests = useCallback(debounce(() => {
-        axiosInstance.get(medicalTestHospitalAnonymousUrl, { params: { hospitalId: hospital.id } }).then((response) => {
-            setTests(response.data?.content)
-            setPageInfo(response.data?.page)
-        }).catch((error) => {
-            console.log(error)
-        }).finally(() => {
-            setLoading(false)
-        })
-    }, 500), [hospital.id])
+    const [reviewInfo, setReviewInfo] = useState(null)
+    const [ratingIcon, setRatingIcon] = useState(null)
+    const sessionContext = useSessionContext()
 
     useEffect(() => {
-        if (showTests) {
-            setLoading(true)
-            getTests()
+        if (sessionContext?.sessionData?.userId && (sessionContext?.sessionData?.role !== roles.admin)) {
+            axiosInstance.get(hospitalReviewSummaryUrl(hospital.id)).then((res) => {
+                console.log("Hospital review info ", res.data)
+                setReviewInfo(res.data)
+            }).catch((error) => {
+                console.log(error)
+            })
         }
-    }, [filter, showTests])
+    }, [sessionContext?.sessionData])
+
+    useEffect(() => {
+        if (reviewInfo) {
+            setRatingIcon(reviewInfo.averageRating <= 2.5 ? <Star strokeWidth={1.5} size={24} className={cn(" text-transparent text-[#FFD700]")} /> : reviewInfo.averageRating < 4 ? <StarHalf size={24} fill="#FFD700" className={cn("text-transparent")} /> : <Star size={24} fill="#FFD700" className={cn("text-transparent")} />)
+        }
+    }, [reviewInfo])
 
     return (
         <div className="flex flex-col gap-4 p-3 bg-gray-100 rounded relative">
+            {(sessionContext?.sessionData?.userId) && !isAdmin &&
+                <span className="absolute top-2 right-2 bg-transparent px-2 py-1 rounded-md flex flex-row items-center gap-2">{ratingIcon} {round(reviewInfo?.averageRating)}</span>
+            }
             {isAdmin &&
                 <div className="flex flex-row gap-5  items-center right-2 top-2 absolute">
                     <Link href={pagePaths.addTestHospitalpage(hospital.id)} className="border bg-zinc-800 text-white px-2 py-1 rounded-md">
@@ -263,10 +279,3 @@ function HospitalCard({ hospital, isAdmin, setFetchLoading, fetching }) {
         </div>
     )
 }
-
-// Query params: name=adil
-// Query params: location=sdfasdfsdfsdf
-// Query params: id=1
-// Query params: testIds=2,3
-// Query params: sortDirection=ASC
-// Query params: pageNo=0

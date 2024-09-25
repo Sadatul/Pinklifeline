@@ -69,8 +69,8 @@ export default function AskQuestionPage() {
                             closeMenuOnSelect={false}
                             onCreateOption={(keyword) => {
                                 if (options.find((option) => option.value === keyword)) return
-                                setOptions([...options, { value: keyword, label: keyword }])
-                                setSelectedTags([...selectedTags, { value: keyword, label: keyword }])
+                                setOptions([...options, { value: keyword.trim(), label: keyword.trim() }])
+                                setSelectedTags([...selectedTags, { value: keyword.trim(), label: keyword.trim() }])
                             }}
                             value={selectedTags}
                             className="min-w-64 -translate-y-1"
@@ -113,10 +113,10 @@ export default function AskQuestionPage() {
                     }
                     if (!title || !tags.length || !content) return
                     //remove duplicates ignoring case
-                    const uniqueTags = [...new Set(tags.map((tag) => tag.toLowerCase()))]
+                    const uniqueTags = [...new Set(tags.map((tag) => tag.toLowerCase().trim()))]
                     const data = {
-                        title: title,
-                        body: content,
+                        title: title?.trim(),
+                        body: content?.trim(),
                         tags: uniqueTags.map(tag => capitalizeFirstLetter(tag.toLowerCase())),
                     }
                     console.log(data)

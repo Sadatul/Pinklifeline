@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getChats, getMessages } from "@/utils/dataRepository";
 import Avatar from "./avatar";
-import { getChatsUrl, getMessagesUrl, messageImageUploaPath, messageSendUrl, pagePaths, testingAvatar } from "@/utils/constants";
+import { getChatsUrl, getMessagesUrl, isValidImgSrc, messageImageUploaPath, messageSendUrl, pagePaths, testingAvatar } from "@/utils/constants";
 import ScrollableContainer from "./StyledScrollbar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import React from "react";
@@ -64,7 +64,7 @@ export function ChatLayout() {
     useEffect(() => {
         console.log('Opened chat changed')
         console.log(stompContext.openedChat)
-        if (stompContext.openedChat && sessionContext.sessionData) {
+        if (stompContext.openedChat && sessionContext?.sessionData) {
             axiosInstance.get(getMessagesUrl(stompContext.openedChat.roomId)).then((response) => {
                 console.log("Messages fetched")
                 console.log(response.data)
@@ -73,7 +73,7 @@ export function ChatLayout() {
                 console.error(error)
             })
         }
-    }, [stompContext.openedChat, router, sessionContext.sessionData])
+    }, [stompContext.openedChat, router, sessionContext?.sessionData])
 
     return (
         <ResizablePanelGroup direction="horizontal" >
@@ -118,9 +118,9 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
     const [chats, setChats] = useState([])
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            const headers = { 'Authorization': `Bearer ${sessionContext.sessionData.token}` }
-            axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId)).then((response) => {
+        if (sessionContext?.sessionData) {
+            const headers = { 'Authorization': `Bearer ${sessionContext?.sessionData.token}` }
+            axiosInstance.get(getChatsUrl(sessionContext?.sessionData.userId)).then((response) => {
                 console.log("Chats fetched")
                 console.log(response.data)
                 stompContext.chatManager.current.addChats(response.data)
@@ -129,7 +129,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                 console.error(error)
             })
         }
-    }, [router, sessionContext.sessionData])
+    }, [router, sessionContext?.sessionData])
 
     useEffect(() => {
         setChats(stompContext.chats)
@@ -279,10 +279,10 @@ export function ChatWindow({ stompContext }) {
         console.log("Message sent:", message);
         if (message !== '') {
             const messageObject = {
-                sender: sessionContext.sessionData.userId,
+                sender: sessionContext?.sessionData.userId,
                 receiverId: stompContext.openedChat?.userId,
                 message: message,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                 type: "TEXT",
             }
             sendMesssage(messageObject);
@@ -292,7 +292,7 @@ export function ChatWindow({ stompContext }) {
 
     const sendImageMessage = () => {
         if (!imageFile) return;
-        const filePath = messageImageUploaPath(stompContext.openedChat?.roomId, sessionContext.sessionData.userId, imageFile.name);
+        const filePath = messageImageUploaPath(stompContext.openedChat?.roomId, sessionContext?.sessionData.userId, imageFile.name);
         const storageRef = ref(storage, filePath);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
         uploadTask.on(
@@ -310,10 +310,10 @@ export function ChatWindow({ stompContext }) {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 console.log('File available at', downloadURL);
                 const messageObject = {
-                    sender: sessionContext.sessionData.userId,
+                    sender: sessionContext?.sessionData.userId,
                     receiverId: stompContext.openedChat.userId,
                     message: downloadURL,
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                     type: "IMAGE",
                 }
                 sendMesssage(messageObject);
@@ -369,20 +369,31 @@ export function ChatWindow({ stompContext }) {
                             const addDate = (messageDateRef.current && messageDateRef.current !== message.timestamp.split('T')[0]) || (index === stompContext.messages.length - 1)
                             messageDateRef.current = message.timestamp.split('T')[0]
                             return (
-                                <div key={index} className={cn('flex flex-col ', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "items-end" : "items-start")}>
+                                <div key={index} className={cn('flex flex-col ', (String(message.sender) === String(sessionContext?.sessionData.userId)) ? "items-end" : "items-start")}>
                                     <div className="flex flex-row items-center justify-center w-full">
                                         {addDate && <p className="text-sm font-semibold text-gray-800">{message.timestamp.split('T')[0]}</p>}
                                     </div>
-                                    <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "justify-end" : "justify-start")}>
-                                        <div className={cn('flex items-end', (String(message.sender) === String(sessionContext.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
-                                            <Avatar avatarImgSrc={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
-                                            <div className={cn('flex flex-col gap-0 px-4 py-1 rounded-3xl mx-2 min-w-32 break-all text-wrap', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext.sessionData.userId)) ? "bg-gradient-to-br from-pink-500 to-pink-400 text-white" : "bg-gradient-to-tr from-gray-200 via-zinc-200 to-stone-300 text-gray-800"))}>
-                                                {message.type === "TEXT" && <p className="text-base">{message.message}</p>}
-                                                <p className={cn("text-xs w-full",String(message.sender) === String(sessionContext.sessionData.userId) ? "text-left":"text-right" )}>
-                                                    {format(new Date(message.timestamp), 'hh:mm a')}
-                                                </p>
-                                                {message.type === "IMAGE" && <Image src={message.message} width={200} height={200} alt="message-image" />}
-                                            </div>
+                                    <div className={cn('flex flex-row', (String(message.sender) === String(sessionContext?.sessionData.userId)) ? "justify-end" : "justify-start")}>
+                                        <div className={cn('flex items-end', (String(message.sender) === String(sessionContext?.sessionData.userId)) ? "flex-row-reverse" : "flex-row")}>
+                                            {(String(message.sender) === String(sessionContext?.sessionData.userId)) &&
+                                                <Avatar avatarImgSrc={sessionContext?.profilePic || testingAvatar} size={32} />
+                                            }
+                                            {(String(message.sender) !== String(sessionContext?.sessionData.userId)) &&
+                                                <Avatar avatarImgSrc={stompContext.openedChat?.profilePicture || testingAvatar} size={32} />
+                                            }
+                                            <TooltipProvider delayDuration={500}>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <div className={cn('flex flex-col gap-0 px-4 py-1 rounded-3xl mx-2 min-w-32 break-all text-wrap cursor-text', message.type !== "TEXT" ? " bg-transparent" : ((String(message.sender) === String(sessionContext?.sessionData.userId)) ? "bg-gradient-to-br from-pink-600 to-pink-500 text-white text-right" : "bg-gradient-to-tr from-gray-500 to-stone-400 text-white text-left"))}>
+                                                            {message.type === "TEXT" && <p className="text-sm">{message.message}</p>}
+                                                            {message.type === "IMAGE" && isValidImgSrc(message.message) && <Image src={message.message} width={200} height={200} alt="message-image" />}
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side={(String(message.sender) === String(sessionContext?.sessionData.userId)) ? "left" : "right"} className="bg-black bg-opacity-50 text-white">
+                                                        {format(new Date(message.timestamp), 'hh:mm a')}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </div>
                                     </div>
                                 </div>
@@ -414,6 +425,7 @@ export function ChatWindow({ stompContext }) {
                                 className="p-2 rounded-md border border-gray-300 w-full pr-10"
                                 id="message-input"
                                 autoComplete="off"
+                                maxLength={255}
                             />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                                 <Popover>

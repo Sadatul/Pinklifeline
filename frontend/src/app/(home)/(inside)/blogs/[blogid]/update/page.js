@@ -28,6 +28,7 @@ import { Vault } from "@/app/components/firebaseVault";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import Loading from "@/app/components/loading";
+import { useSessionContext } from "@/app/context/sessionContext";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -46,6 +47,7 @@ export default function UpdateBlogPage() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [charCount, setCharCount] = useState(0);
+    const sessionContext = useSessionContext()
 
     const handleContentChange = (newContent) => {
         setContent(newContent);
@@ -62,26 +64,31 @@ export default function UpdateBlogPage() {
     };
 
     useEffect(() => {
-        axiosInstance.get(blogByIdUrl(params.blogid)).then((res) => {
-            console.log(res.data)
-            const cover = res.data.content.match(/<covertext>(.*?)<\/covertext>/s);
-            const image = res.data.content.match(/<coverimage>(.*?)<\/coverimage>/s);
-            const content = res.data.content.match(/<content>(.*?)<\/content>/s);
-            setCoverText(cover ? cover[1] : "");
-            setCoverImage(image ? image[1] : "");
-            setContent(content ? content[1] : "");
-            setTitle(res.data.title);
-            handleContentChange(content ? content[1] : "");
-        }).catch((err) => {
-            console.log(err)
-            if (err?.response?.status === 404) {
-                toast.error("Blog not found")
-                window.location.href = pagePaths.blogsPage
-            }
-        }).finally(() => {
-            setLoading(false)
-        })
-    }, [params.blogid]);
+        if (sessionContext?.sessionData?.userId) {
+            axiosInstance.get(blogByIdUrl(params.blogid)).then((res) => {
+                console.log(res.data)
+                const cover = res.data.content.match(/<covertext>(.*?)<\/covertext>/s);
+                const image = res.data.content.match(/<coverimage>(.*?)<\/coverimage>/s);
+                const content = res.data.content.match(/<content>(.*?)<\/content>/s);
+                setCoverText(cover ? cover[1] : "");
+                setCoverImage(image ? image[1] : "");
+                setContent(content ? content[1] : "");
+                setTitle(res.data.title);
+                handleContentChange(content ? content[1] : "");
+            }).catch((err) => {
+                console.log(err)
+                if (err?.response?.status === 404) {
+                    toast.error("Blog not found")
+                    window.location.href = pagePaths.blogsPage
+                }
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
+        else if (sessionContext?.sessionData?.userId === null) {
+            window.location.href = pagePaths.blogsPage
+        }
+    }, [params.blogid, sessionContext?.sessionData]);
 
     if (loading) return <Loading />
 

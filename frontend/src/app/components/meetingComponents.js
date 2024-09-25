@@ -92,29 +92,6 @@ export function MeetingSetup({ setIsSetupComplete }) {
         call.camera.enable();
     }, [])
 
-
-    // if (callTimeNotArrived)
-    //     return (
-    //         <Alert>
-    //             <Terminal className="h-4 w-4" />
-    //             <AlertTitle>Your Meeting has not started yet!</AlertTitle>
-    //             <AlertDescription>
-    //                 It is scheduled for {callStartsAt.toLocaleString()}
-    //             </AlertDescription>
-    //         </Alert>
-    //     );
-
-    // if (callHasEnded)
-    //     return (
-    //         <Alert>
-    //             <Terminal className="h-4 w-4" />
-    //             <AlertTitle>Your Meeting is already over!</AlertTitle>
-    //             <AlertDescription>
-    //                 It has ended at {callHasEnded.toLocaleString()}
-    //             </AlertDescription>
-    //         </Alert>
-    //     );
-
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-black p-8">
             <h1 className="text-center text-2xl font-bold">Setup</h1>
@@ -165,7 +142,7 @@ export function MeetingRoom() {
         }).catch((err) => {
             console.log(err);
         }).finally(() => {
-            router.push(pagePaths.dashboardPages.appointmentsPage);
+            window.location.href = pagePaths.dashboardPages.appointmentsPage;
         })
     }))
 

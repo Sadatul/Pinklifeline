@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { displayDate, generateFormattedDate, pagePaths, radicalGradient, workStatus, worksUrl, workTagsUrl } from "@/utils/constants"
+import { displayDate, generateFormattedDate, pagePaths, radicalGradient, roles, workStatus, worksUrl, workTagsUrl } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { format } from "date-fns"
 import { set } from "lodash"
@@ -16,16 +16,6 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import ReactSelect from "react-select"
 import makeAnimated from "react-select/animated"
-
-// Query params: startDate=2024-08-08
-//  Query params: endDate=2024-09-08
-//  Query params: tags=doctor,nursing
-//  Query params: userId=1
-//  Query params: status=POSTED
-//  Query params: providerId=1
-//  Query params: address=dhaka
-//  Query params: sortDirection=ASC
-//  Query params: pageNo=0
 
 const animatedComponents = makeAnimated()
 
@@ -41,7 +31,7 @@ export default function WorksPage() {
         userId: null,
         status: workStatus.POSTED,
         providerId: null,
-        sortDirection: "ASC",
+        sortDirection: "DESC",
         pageNo: 0
     })
     const [allowStatusFilter, setAllowStatusFilter] = useState(false)
@@ -68,7 +58,7 @@ export default function WorksPage() {
         })
     }, [filter])
 
-    if (!sessionContext.sessionData) return null
+    if (!sessionContext?.sessionData) return null
 
     return (
         <div className={cn(radicalGradient, "from-slate-200 to-slate-100 p-4 flex flex-col items-center w-full flex-1 gap-6")}>
@@ -142,7 +132,7 @@ export default function WorksPage() {
                                         value={selectedTags}
                                     />
                                 </div>
-                                {(sessionContext.sessionData.subscribed > 0) &&
+                                {(sessionContext?.sessionData.subscribed > 0 && sessionContext?.sessionData?.role === roles.doctor) &&
                                     <div className="flex flex-row gap-2 items-center">
                                         <span>
                                             Address
@@ -157,15 +147,22 @@ export default function WorksPage() {
                             </div>
                             <div className="flex flex-row gap-5 flex-wrap">
                                 <button className="p-2 bg-blue-500 text-white rounded-md hover:scale-95" onClick={() => {
-                                    setFilter({
-                                        ...filter,
-                                        startDate: generateFormattedDate(dateRange.from),
-                                        endDate: generateFormattedDate(dateRange.to),
-                                        tags: selectedTags.map(tag => tag.value).join(","),
-                                        userId: document.getElementById("user-id").value === "" ? null : document.getElementById("user-id").value,
-                                        providerId: document.getElementById("provider-id").value === "" ? null : document.getElementById("provider-id").value,
-                                        address: document.getElementById("address").value === "" ? null : document.getElementById("address").value,
-                                    })
+                                    if (sessionContext?.sessionData.subscribed > 0) {
+                                        setFilter({
+                                            ...filter,
+                                            startDate: generateFormattedDate(dateRange.from),
+                                            endDate: generateFormattedDate(dateRange.to),
+                                            tags: selectedTags?.length > 0 ? selectedTags.map(tag => tag.value?.trim()).join(",") : null,
+                                            address: document.getElementById("address")?.value,
+                                        })
+                                    } else {
+                                        setFilter({
+                                            ...filter,
+                                            startDate: generateFormattedDate(dateRange.from),
+                                            endDate: generateFormattedDate(dateRange.to),
+                                            tags: selectedTags?.length > 0 ? selectedTags.map(tag => tag.value?.trim()).join(",") : null,
+                                        })
+                                    }
                                 }}>Filter</button>
                                 <button className="p-2 bg-red-500 text-white rounded-md hover:scale-95" onClick={() => {
                                     setFilter({
@@ -176,7 +173,7 @@ export default function WorksPage() {
                                         status: workStatus.POSTED,
                                         providerId: null,
                                         address: null,
-                                        sortDirection: "ASC",
+                                        sortDirection: "DESC",
                                         pageNo: 0
                                     })
                                     setDateRange({
@@ -184,7 +181,7 @@ export default function WorksPage() {
                                         to: null,
                                     })
                                     setSelectedTags([])
-                                    if (sessionContext.sessionData.subscribed > 0) {
+                                    if (sessionContext?.sessionData.subscribed > 0 && sessionContext?.sessionData?.role === roles.doctor) {
                                         document.getElementById("address").value = ''
                                     }
                                 }}>Clear</button>
@@ -202,8 +199,8 @@ export default function WorksPage() {
                                 setFilter({
                                     ...filter,
                                     status: workStatus.POSTED,
-                                    userId: '',
-                                    providerId: '',
+                                    userId: null,
+                                    providerId: null,
                                     pageNo: 0
                                 })
                             }
@@ -211,8 +208,8 @@ export default function WorksPage() {
                                 setAllowStatusFilter(true)
                                 setFilter({
                                     ...filter,
-                                    userId: sessionContext.sessionData.userId,
-                                    providerId: '',
+                                    userId: sessionContext?.sessionData.userId,
+                                    providerId: null,
                                     status: workStatus.POSTED,
                                     pageNo: 0
                                 })
@@ -221,8 +218,8 @@ export default function WorksPage() {
                                 setAllowStatusFilter(true)
                                 setFilter({
                                     ...filter,
-                                    providerId: sessionContext.sessionData.userId,
-                                    userId: '',
+                                    providerId: sessionContext?.sessionData.userId,
+                                    userId: null,
                                     status: workStatus.ACCEPTED,
                                     pageNo: 0
                                 })

@@ -47,7 +47,7 @@ function Report() {
                     </label>
                     <span id="error-msg=select" className="text-red-500 hidden w-4/5 text-left px-3 py-1">Select category</span>
                 </div>
-                <label className="text-gray-700 flex flex-row items-center gap-3 w-full">
+                <label className="text-gray-700 flex flex-row items-start gap-3 w-full">
                     <span className="w-1/5">Description</span>
                     <div className="flex-1 flex flex-col gap-1 items-end relative">
                         <textarea id="report-description" maxLength={300} className="w-full min-h-28 px-3 py-1 border border-gray-500 rounded-md shadow-inner" placeholder="Enter Description" onChange={(e) => {

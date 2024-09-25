@@ -17,7 +17,7 @@ export default function AddMedicalTestsPage() {
     const [filter, setFilter] = useState({
         name: null,
         desc: true,
-        sortDirection: "ASC",
+        sortDirection: "DESC",
     });
     
 

@@ -8,7 +8,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { toast } from "sonner"
 import Image from "next/image"
 import { CircularProgress } from "@mui/material"
-import { ArrowLeft, Calendar, Check, ChevronDown, ChevronUp, Loader2, LoaderCircle, Pencil, Share2, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Check, ChevronDown, ChevronUp, Loader2, LoaderCircle, MoveRight, Pencil, Share2, Trash2, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import firebase_app from "@/utils/firebaseConfig";
@@ -33,11 +33,8 @@ export function AddPrescriptionPage() {
     const workerRef = useRef(null);
     const [imagePath, setImagePath] = useState(null);
     const [image, setImage] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(null);
-    const [pictureUploadProgress, setPictureUploadProgress] = useState(null);
     const [gettingAnswers, setGettingAnswers] = useState(false);
     const [answers, setAnswer] = useState(null);
-    const [extractedText, setExtractedText] = useState(null);
     const router = useRouter()
     const [verified, setVerified] = useState(false)
 
@@ -49,26 +46,26 @@ export function AddPrescriptionPage() {
         setImage(file);
     }
 
-    const getAnswers = async () => {
+    const getAnswers = async (text) => {
         try {
             setGettingAnswers(true)
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const result = await model.generateContent([
                 `
 Below in context there is text extracted from a prescription or medical report with tesseract ocr
-Context: ${extractedText}
+Context: ${text}
 
 Question: 
-What is the doctor name found in the context ?
-What is the hospital or medical or diagnostic center name found in the context ?
-what is the date of the prescription ?
-What are the keywords found here?(Array of Organ names and disease names comma sperated)
+What is the doctor name found in the context ? (character limit 255)
+What is the hospital or medical or diagnostic center name found in the context ? (character limit 255)
+what is the date of the prescription ? (must be in format yyyy-MM-dd)
+What are the keywords found here?(Array of Organ names, disease names , test names etc. Each element must not exceed 255 characters)
 What is the summary of the prescription? (must not exceed 1000 characters)
 Please Give the answer in a json format. Here's an example answer:
 {
   "doctorName": "demo doctor name",
   "hospitalName": "demo hospital name",
-  "date": "demo date",
+  "date": "demo date"(must be in format yyyy-MM-dd),
   "summary": "demo summary",
   "keywords": ["demo organ name 1", "demo disease name 1", "Demo other organ or disease names"]
  }
@@ -87,6 +84,7 @@ If you don't find answer for a field then put null. I will parse your answer thr
 
     const handleTextExtract = async () => {
         try {
+            setGettingAnswers(true)
             if (document.getElementById("extract-text-button")) {
                 document.getElementById("extract-text-button").disabled = true
             }
@@ -95,7 +93,6 @@ If you don't find answer for a field then put null. I will parse your answer thr
                     {
                         logger: (m) => {
                             console.log(m);
-                            setUploadProgress(Number(m.progress) * 100);
                         }
                     }
                 );
@@ -105,12 +102,13 @@ If you don't find answer for a field then put null. I will parse your answer thr
             })
 
             workerRef.current.recognize(imagePath).then(({ data: { text } }) => {
-                setExtractedText(text)
+                getAnswers(text)
             });
             if (document.getElementById("extract-text-button")) {
                 document.getElementById("extract-text-button").disabled = false
             }
         } catch (error) {
+            setGettingAnswers(false)
             if (document.getElementById("extract-text-button")) {
                 document.getElementById("extract-text-button").disabled = false
             }
@@ -119,7 +117,7 @@ If you don't find answer for a field then put null. I will parse your answer thr
 
     const saveDocument = async () => {
         if (!image) return;
-        const filePath = `profileImages/${sessionContext.sessionData.userId}/${new Date()}/${image.name}`;
+        const filePath = `profileImages/${sessionContext?.sessionData.userId}/${new Date()}/${image.name}`;
         const storageRef = ref(storage, filePath);
         const savingToast = toast.loading("Saving document")
         const uploadTask = uploadBytesResumable(storageRef, image);
@@ -138,11 +136,10 @@ If you don't find answer for a field then put null. I will parse your answer thr
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 function parseDate(dateString) {
-                    const parts = dateString.split('/');
-                    const day = parseInt(parts[0], 10);
-                    const month = parseInt(parts[1], 10) - 1; // Months are zero-based in JavaScript
-                    const year = parseInt(parts[2], 10);
-                    return new Date(year, month, day);
+                    // date format yyyy-MM-dd
+                    const dateParts = dateString.split("-");
+                    // month is 0-based, that's why we need dataParts[1] - 1
+                    return new Date(+dateParts[0], dateParts[1] - 1, +dateParts[2]); // month is 0-based
                 }
                 const tempDate = parseDate(answers?.date)
                 const form = {
@@ -170,16 +167,17 @@ If you don't find answer for a field then put null. I will parse your answer thr
     }
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            console.log("Session data", sessionContext.sessionData)
-            if (!(Number(sessionContext.sessionData.subscribed) > 0)) {
-                router.push(pagePaths.dashboardPages.userdetailsPage)
+        if (sessionContext?.sessionData) {
+            console.log("Session data", sessionContext?.sessionData)
+            if (!(Number(sessionContext?.sessionData.subscribed) > 0)) {
+                // router.push(pagePaths.dashboardPages.userdetailsPage)
+                window.location.href = pagePaths.dashboardPages.userdetailsPage
             }
             else {
                 setVerified(true)
             }
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData])
 
     if (!verified) return null
 
@@ -201,41 +199,48 @@ If you don't find answer for a field then put null. I will parse your answer thr
                     <input hidden id="file"></input>
                     {imagePath && <Image src={imagePath} alt="Prescription" width={400} height={400} />}
                 </div>
-                <button hidden={!image} id='extract-text-button' className="bg-purple-400 text-black px-4 py-1 rounded-md" onClick={handleTextExtract}>
-                    Extract Text
+                <button hidden={!image} disabled={gettingAnswers} id='extract-text-button' className="bg-pink-500 text-black px-2 py-1 rounded-md border border-gray-500 shadow-inner" onClick={handleTextExtract}>
+                    <MoveRight size={40} className='' />
                 </button>
                 <div className="flex flex-col flex-1 px-3 h-full items-center">
-                    <h1 className="text-xl font-semibold">Extracted Text</h1>
-                    <div className="relative w-full p-5 gap-2 flex flex-col items-center">
-                        <textarea value={extractedText || ""} id='extracted-text' className='w-full min-h-96 bg-gray-100 rounded-md border-gray-500 shadow-inner flex flex-row items-center justify-center p-5' />
-                        {extractedText &&
-                            <>
-                                <span className="  text-green-700 p-1 rounded-md text-lg">Text Extracted.</span>
-                                <button disabled={gettingAnswers || answers} className="bg-purple-400 text-black px-4 py-1 rounded-md w-44" onClick={getAnswers}>
-                                    {gettingAnswers ? "Getting Answers..." : "Get Answers"}
-                                </button>
-                                {gettingAnswers && <Loader2 size={32} className="text-purple-500 animate-spin" />}
-                            </>
-                        }
-                        {Number(uploadProgress) > 0 && Number(uploadProgress) < 100 &&
-                            <div className="absolute inset-0 flex justify-center items-center">
-                                <CircularProgress size={100} color="success" variant="determinate" value={uploadProgress} />
-                            </div>
-                        }
-                    </div>
-                    <div className="flex flex-col gap-2 items-center bg-gray-100 w-11/12 rounded-md justify-center p-3">
+                    <div className="flex flex-col gap-2 items-center bg-gray-100 px-7 rounded-md justify-center py-3 translate-y-10">
                         <h1 className="text-xl font-semibold">Findings</h1>
                         {!answers &&
                             <p>Click on Get answers button after extraction</p>
                         }
-                        {getAnswers === true && <Loader2 size={28} className="text-purple-500 animate-spin" />}
-                        {answers !== null &&
+                        {gettingAnswers === true && <Loader2 size={28} className="text-purple-500 animate-spin" />}
+                        {answers !== null && !gettingAnswers &&
                             <div className="flex flex-col gap-2">
-                                <span>Doctor name: {answers?.doctorName}</span>
-                                <span>Hospital name: {answers?.hospitalName}</span>
-                                <span>Date: {answers?.date}</span>
-                                <span>Key words: {answers?.keywords?.join(", ")}</span>
-                                <span>Summary: {answers?.summary}</span>
+                                <div className='flex items-center gap-2'>
+                                    <span className='w-40'>Doctor name: </span>
+                                    <input value={answers?.doctorName} className="border border-gray-700 rounded-md p-1 w-72" onChange={(e) => {
+                                        setAnswer((prev) => ({ ...prev, doctorName: e.target.value }))
+                                    }} />
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='w-40'>Hospital name: </span>
+                                    <input value={answers?.hospitalName} className="border border-gray-700 rounded-md p-1 w-72" onChange={(e) => {
+                                        setAnswer((prev) => ({ ...prev, hospitalName: e.target.value }))
+                                    }} />
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='w-40'>Date: </span>
+                                    <input value={answers?.date} type="date" className="border border-gray-700 rounded-md p-1 w-72" onChange={(e) => {
+                                        setAnswer((prev) => ({ ...prev, date: e.target.value }))
+                                    }} />
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <span className='w-40'>Key words:</span>
+                                    <input value={answers?.keywords?.join(", ")} className='border border-gray-700 rounded-md p-1 w-72' onChange={(e) => {
+                                        setAnswer((prev) => ({ ...prev, keywords: e.target.value.split(",").map(word => word.trim()) }))
+                                    }} />
+                                </div>
+                                <div className='flex items-start gap-2'>
+                                    <span className='w-40'>Summary:</span>
+                                    <textarea value={answers?.summary} className='border border-gray-700 rounded-md p-1 w-72 h-64 break-normal' onChange={(e) => {
+                                        setAnswer((prev) => ({ ...prev, summary: e.target.value }))
+                                    }} />
+                                </div>
                             </div>
                         }
                     </div>
@@ -275,6 +280,7 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
     const [doctorOptions, setDoctorOptions] = useState([])
     const [loadingDoctorsOptions, setLoadingDoctorsOptions] = useState(false)
     const [selectedDoctorId, setSelectedDoctorId] = useState(null)
+    const [forceDelete, setForceDelete] = useState(false)
 
     const loadDoctorOptions = debounce((searchText) => {
         setLoadingDoctorsOptions(true)
@@ -482,31 +488,44 @@ export function PrescriptionDescriptionComponent({ report, setReport, setFetchAg
                                     </DialogDescription>
                                 </DialogHeader>
                                 {report.shareInfo.length > 0 && (
-                                    <span className='text-lg text-red-600'>
-                                        This report is shared with others. Must revoke the share before deleting the report
-                                    </span>
+                                    <div className='flex flex-col gap-2'>
+                                        <span className='text-lg text-red-600'>
+                                            This report is shared with others. It&apos;s recommended to revoke the share before deleting the report
+                                        </span>
+                                        <div className='flex flex-row gap-2 items-center'>
+                                            <span className='text-lg'>
+                                                Force delete
+                                            </span>
+                                            <input type="checkbox" id="forceDelete" className=' size-5 bg-red-400' onChange={(e) => {
+                                                console.log("Force delete", e.target.checked)
+                                                setForceDelete(e.target.checked)
+                                            }} />
+                                        </div>
+                                    </div>
                                 )}
                                 <DialogFooter>
-                                    {(report.shareInfo.length === 0) &&
-                                        <DialogClose asChild>
-                                            <Button className="bg-red-700 hover:scale-95" onClick={() => {
-                                                toast.loading("Deleting report")
-                                                axiosInstance.delete(getReportByIdUrl(report.id)).then((res) => {
-                                                    console.log("Report deleted", res)
-                                                    window.open(pagePaths.dashboardPages.prescriptionVaultPage, "_self");
-                                                    toast.dismiss()
-                                                }).catch((error) => {
-                                                    console.log("Error deleting report", error)
-                                                    toast.dismiss()
-                                                    toast.error("Error deleting report", {
-                                                        description: "Please try again later"
-                                                    })
+                                    <DialogClose asChild>
+                                        <Button id="delete-button" disabled={!(report.shareInfo.length === 0 || forceDelete)} className={cn("bg-red-700 hover:scale-95")} onClick={() => {
+                                            toast.loading("Deleting report")
+                                            axiosInstance.delete(getReportByIdUrl(report.id), {
+                                                params: {
+                                                    force: forceDelete
+                                                }
+                                            }).then((res) => {
+                                                console.log("Report deleted", res)
+                                                window.location.href = pagePaths.dashboardPages.prescriptionVaultPage
+                                                toast.dismiss()
+                                            }).catch((error) => {
+                                                console.log("Error deleting report", error)
+                                                toast.dismiss()
+                                                toast.error("Error deleting report", {
+                                                    description: "Please try again later"
                                                 })
-                                            }}>
-                                                Delete
-                                            </Button>
-                                        </DialogClose>
-                                    }
+                                            })
+                                        }}>
+                                            Delete
+                                        </Button>
+                                    </DialogClose>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>

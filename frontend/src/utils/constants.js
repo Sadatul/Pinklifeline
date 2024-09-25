@@ -1,7 +1,9 @@
 import { differenceInDays, format, formatDistanceToNow, sub } from "date-fns";
+// import Image from "next/image";
 
-export const baseUrl = 'http://localhost:8080';
-export const frontEndUrl = 'http://localhost:3000';
+export const baseUrl = 'https://api.pinklifeline.xyz';
+export const frontEndUrl = 'https://www.pinklifeline.xyz';
+export const stompBrokerUrl = `wss://api.pinklifeline.xyz/ws`
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const forgotPasswordUrlReq = (email) => { return `${baseUrl}/v1/auth/reset-password?email=${email}` }
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
@@ -9,7 +11,6 @@ export const refreshTokenUrlReq = `${baseUrl}/v1/auth/refresh`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
 export const otpUrlReq = `${baseUrl}/v1/auth/verify`;
 export const userInfoRegUrlReq = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` };
-export const stompBrokerUrl = `ws://localhost:8080/ws`
 export const subscribeMessageUrl = (id) => { return `/user/${id}/queue/messages` }
 export const livePrescriptionSubscribe = (id) => { return `/user/${id}/queue/live-prescription` }
 export const livePrescriptionSubscribeErrors = (id) => { return `/user/${id}/queue/live-prescription/errors` }
@@ -22,6 +23,7 @@ export const updateProfilePictureUrl = (id) => { return `${baseUrl}/v1/infos/pro
 export const addConsultationLocationUrl = (id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${id}/locations` }
 export const updateConsultationLocationUrl = (doctor_id, location_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doctor_id}/locations/${location_id}` }
 export const getNearByUsers = (id) => { return `${baseUrl}/v1/ROLE_PATIENT/nearby/${id}` }
+export const getNearByUsersGeneral = `${baseUrl}/v1/nearby`
 export const updateUserDetailsUrl = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` }
 export const getConsultationLocations = (doc_id) => { return `${baseUrl}/v1/ROLE_DOCTOR/${doc_id}/locations` }
 export const addReview = (userId) => { return `${baseUrl}/v1/reviews/doctor/${userId}` }
@@ -101,6 +103,11 @@ export const subscribeNotficationByIdUrl = (id) => { return `${baseUrl}/v1/notif
 export const selfTestReminderUrl = `${baseUrl}/v1/self-test/reminder`
 export const updatePeriodDateUrl = `${baseUrl}/v1/infos/period-data`
 export const adminSendNotifications = `${baseUrl}/v1/ROLE_ADMIN/send-notifications`
+export const freeTrianReqUrl = `${baseUrl}/v1/subscriptions/free-trial`
+export const getRole = (id) => { return `${baseUrl}/v1/infos/guest/roles/${id}` }
+export const hospitalReviewsUrl = (hospital_id) => { return `${baseUrl}/v1/reviews/hospital/${hospital_id}` }
+export const hospitalReviewSummaryUrl = (hospital_id) => { return `${baseUrl}/v1/reviews/hospital/${hospital_id}/summary` }
+export const getHospitalReviewByIdUrl = (hospital_id, review_id) => { return `${baseUrl}/v1/reviews/hospital/${hospital_id}/${review_id}` }
 
 // export const addConsultationLocationUrl = (id) => { return `/api/userForm` }
 export const locationOnline = "ONLINE"
@@ -126,7 +133,7 @@ export const extractLink = (msg) => {
 }
 
 export const passwordRegex = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{2,}$"
-export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date().toISOString()}/${fileName}` }
+export const messageImageUploaPath = (roomId, userId, fileName) => { return `messages/images/room_${roomId}/sender_${userId}/${new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString()}/${fileName}` }
 
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
 export const sessionDataItem = "sessionData"
@@ -178,7 +185,7 @@ export function generateFormattedDate(date) {
 }
 
 export const pagePaths = {
-    baseUrl: "localhost:3000",
+    baseUrl: frontEndUrl,
     login: "/reglogin",
     register: "/reglogin",
     verifyotp: (email) => {
@@ -190,7 +197,8 @@ export const pagePaths = {
     userdetails: "/userdetails",
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
-    dashboard: "/dashboard",
+    redirectProfile: (profileId) => { return `/profile/redirect_profile/${profileId}` },
+    dashboard: "/dashboard/userdetails",
     dashboardPages: {
         appointmentsPage: "/dashboard/appointments",
         patientLivePrescription: `/dashboard/prescription/live/patient`,
@@ -205,11 +213,12 @@ export const pagePaths = {
         worksPage: "/dashboard/works",
         addWorkPage: "/dashboard/works/add",
         worksByIdPage: (workId) => { return `/dashboard/works/${workId}` },
+        updateWorkPage: (workId) => { return `/dashboard/works/update/${workId}` },
         notificationPage: "/dashboard/notifications",
         subscriptionPage: "/dashboard/subscription",
         lookaroundPage: "/dashboard/lookaround",
         sharedPrescriptionPage: "/dashboard/prescription/vault/shared",
-        chatbotpage: "/dashboard/chatbot",
+        chatbotpage: "#",
     },
     forumPage: "/forum",
     askQuestionPage: "/forum/askquestion",
@@ -238,6 +247,7 @@ export const pagePaths = {
     addTestHospitalpage: (hospitalId) => { return `/admin/hospitals/addtest?hospitalid=${hospitalId}` },
     searchPage: (query) => { return `/search?query=${query}` },
     forgotPassword: (email, token) => { return `/forgotpassword?email=${email}&token=${token}` },
+    adminBalanceHistory: `/admin/balanceHistory`
 }
 
 export const ReportTypes = {
@@ -340,12 +350,37 @@ export const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
 }
 
-export const parseDate = (date) => {
-    if (!date) {
-        return null
+export function parseDate(date) {
+    // Check if the input is already a JS Date object
+    if (Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date)) {
+        return new Date(date);
     }
-    return new Date(date)
+
+    // Regex to detect LocalDateTime pattern with time (e.g., '2023-09-23T15:30:00')
+    const localDateTimePattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
+
+    // Regex to detect Date pattern without time (e.g., '2023-09-23')
+    const localDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+    if (typeof date === 'string') {
+        // Handle full LocalDateTime (with time)
+        if (localDateTimePattern.test(date)) {
+            const [, year, month, day, hour, minute, second] = date.match(localDateTimePattern);
+            return new Date(year, month - 1, day, hour, minute, second);
+        }
+
+        // Handle date-only format (without time)
+        if (localDatePattern.test(date)) {
+            const [, year, month, day] = date.match(localDatePattern);
+            return new Date(year, month - 1, day);
+        }
+    }
+
+    // Fallback for unsupported format
+    console.warn('Unsupported date format:', date);
+    return null;
 }
+
 
 //a function that takes two object and check if one is subset of the other checking the values of the keys
 export const isSubset = (subset, superset) => {
@@ -360,7 +395,7 @@ export const isSubset = (subset, superset) => {
     return true
 }
 
-export function displayDate(date) {
+export function displayDate(date, customFormat = null) {
     if (!date) {
         return null;
     }
@@ -372,12 +407,22 @@ export function displayDate(date) {
     if (difference < 7) {
         // Display how many days ago
         return formatDistanceToNow(givenDate, { addSuffix: true });
-    } else {
+    }
+    else if (customFormat) {
+        // Display the formatted date in the custom format
+        return format(givenDate, customFormat);
+    }
+    else {
         // Display the formatted date in "Friday, 12 August, 2023" format
         return format(givenDate, "EEEE hh:mm a, dd MMMM, yyyy");
     }
 }
 
+export const extractTextFromHtml = (html) => {
+    const tempElement = document.createElement('div')
+    tempElement.innerHTML = html
+    return tempElement.innerText || ''
+}
 
 export function alignArrays(testA, testB) {
     // Step 1: Sort both arrays by 'id'
@@ -502,6 +547,107 @@ export const SubscriptionPlans = [
     }
 ]
 
+export const DashBoardPageLinks = {
+    "ROLE_PATIENT": [
+        {
+            name: "Profile",
+            link: pagePaths.dashboardPages.userdetailsPage
+        },
+        {
+            name: "Appointments",
+            link: pagePaths.dashboardPages.appointmentsPage
+        },
+        {
+            name: "Prescription Vault",
+            link: pagePaths.dashboardPages.prescriptionVaultPage
+        },
+        {
+            name: "Works",
+            link: pagePaths.dashboardPages.worksPage
+        },
+        {
+            name: "Self Test",
+            link: pagePaths.dashboardPages.selfTestPage
+        },
+        {
+            name: "Chatbot",
+            link: pagePaths.dashboardPages.chatbotpage
+        },
+        {
+            name: "Seek Help",
+            link: pagePaths.dashboardPages.lookaroundPage
+        },
+        {
+            name: "Notifications",
+            link: pagePaths.dashboardPages.notificationPage
+        },
+        {
+            name: "Subscription",
+            link: pagePaths.dashboardPages.subscriptionPage
+        }
+    ],
+    "ROLE_BASICUSER": [
+        {
+            name: "Profile",
+            link: pagePaths.dashboardPages.userdetailsPage
+        },
+        {
+            name: "Appointments",
+            link: pagePaths.dashboardPages.appointmentsPage
+        },
+        {
+            name: "Prescription Vault",
+            link: pagePaths.dashboardPages.prescriptionVaultPage
+        },
+        {
+            name: "Works",
+            link: pagePaths.dashboardPages.worksPage
+        },
+        {
+            name: "Self Test",
+            link: pagePaths.dashboardPages.selfTestPage
+        },
+        {
+            name: "Chatbot",
+            link: pagePaths.dashboardPages.chatbotpage
+        },
+        {
+            name: "Seek Help",
+            link: pagePaths.dashboardPages.lookaroundPage
+        },
+        {
+            name: "Notifications",
+            link: pagePaths.dashboardPages.notificationPage
+        },
+        {
+            name: "Subscription",
+            link: pagePaths.dashboardPages.subscriptionPage
+        }
+    ],
+    "ROLE_DOCTOR": [
+        {
+            name: "Profile",
+            link: pagePaths.dashboardPages.userdetailsPage
+        },
+        {
+            name: "Appointments",
+            link: pagePaths.dashboardPages.appointmentsPage
+        },
+        {
+            name: "Shared Prescriptions",
+            link: pagePaths.dashboardPages.sharedPrescriptionPage
+        },
+        {
+            name: "Works",
+            link: pagePaths.dashboardPages.worksPage
+        },
+        {
+            name: "Subscription",
+            link: pagePaths.dashboardPages.subscriptionPage
+        }
+    ],
+}
+
 export const DashboardPagesInfos = [
     {
         name: "Profile",
@@ -534,13 +680,13 @@ export const DashboardPagesInfos = [
         roles: [roles.patient, roles.doctor, roles.basicUser]
     },
     {
-        name: "Look Around",
+        name: "Seek Help",
         link: pagePaths.dashboardPages.lookaroundPage,
-        roles: [roles.patient]
+        roles: [roles.patient, roles.basicUser]
     }, {
         name: "Notifications",
         link: pagePaths.dashboardPages.notificationPage,
-        roles: [roles.patient, roles.doctor, roles.basicUser]
+        roles: [roles.patient, roles.basicUser]
     },
     {
         name: "Subscription",
@@ -562,5 +708,25 @@ export const AdminPagesInfos = [
     }, {
         name: "Medical Tests",
         link: pagePaths.testsAdminPage
+    }, {
+        name: "Balance Hitory",
+        link: pagePaths.adminBalanceHistory
     }
 ]
+
+// export const CoveredToDivImage = (src) =>{
+//     return (
+//         <Image
+//             src={src}
+//             alt={"alt"}
+//             quality={100}
+//             className="bg-black w-full h-full object-cover"
+//             fill={true}
+//         />
+//     )
+// }
+
+export const isValidImgSrc = (src) => {
+    //check if the src includes any whitespace or is empty and if its an url or does it start with '/'
+    return (src && src?.trim() && !src.includes(' ') && (src.startsWith('/') || src.startsWith('http'))) ? true : false
+}

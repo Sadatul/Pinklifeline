@@ -33,10 +33,7 @@ import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { LinkIcon, Trash2 } from "lucide-react";
 
 export function Vault({ side = "right", className = "" }) {
-    const [vaultData, setVaultData] = useState([{
-        type: "image/jpeg",
-        url: "https://firebasestorage.googleapis.com/v0/b/javafest-87433.appspot.com/o/questionVault%2FMon%20Aug%2019%202024%2003%3A08%3A49%20GMT%2B0600%20(Bangladesh%20Standard%20Time)%2Fpacifier-96504_640.jpg?alt=media&token=0e62749e-8afe-407d-a209-279144f77c1a"
-    }])
+    const [vaultData, setVaultData] = useState([])
     const storage = getStorage(firebase_app)
     return (
         <Sheet >

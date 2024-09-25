@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarIcon, Filter, LoaderIcon, PencilLine, PenLine, SearchIcon, ThumbsUp } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Filter, LoaderIcon, PencilLine, PenLine, SearchIcon, ThumbsUp } from "lucide-react";
 import { useSearchParams } from "next/navigation"
 import {
     Sheet,
@@ -32,12 +32,10 @@ import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { Pagination } from "@mui/material";
 import Avatar from "@/app/components/avatar";
 import axiosInstance from "@/utils/axiosInstance";
+import { useSessionContext } from "@/app/context/sessionContext";
 
 export default function BlogsPage() {
-    
-    const searchParams = useSearchParams();
-    const pageNumber = searchParams.get('page') || 1;
-    const searchTerms = searchParams.get('search') || '';
+
     const [loadingBlogs, setLoadingBlogs] = useState(true);
     const [pageInfo, setPageInfo] = useState()
     const [blogs, setBlogs] = useState([]);
@@ -46,6 +44,7 @@ export default function BlogsPage() {
         from: null,
         to: null,
     })
+    console.log("dummmy");
     const [filter, setFilter] = useState({
         docId: null,
         doctorName: null,
@@ -53,9 +52,10 @@ export default function BlogsPage() {
         startDate: null,
         endDate: null,
         sortType: "TIME",
-        sortDirection: "ASC",
+        sortDirection: "DESC",
         pageNo: 0,
     })
+    const sessionContext = useSessionContext();
 
     function displayDate(date) {
         const currentDate = new Date();
@@ -122,13 +122,24 @@ export default function BlogsPage() {
     return (
         <ScrollableContainer className="flex flex-col w-full gap-3 p-5 overflow-x-hidden h-full">
             <div className="flex flex-col w-full bg-gradient-to-r from-purple-100 to-transparent p-3 rounded gap-3">
-                <h1 className="text-3xl font-bold">Blogs</h1>
+                <div className="flex flex-row gap-3 items-center">
+                    <button className="w-fit bg-transparent" onClick={() => {
+                        if (sessionContext?.sessionData?.userId) {
+                            window.history.back()
+                        } else {
+                            window.location.href = pagePaths.baseUrl
+                        }
+                    }}>
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h1 className="text-3xl font-bold">Blogs</h1>
+                </div>
                 <div className="flex flex-row w-full justify-between gap-5">
                     <div className="relative flex items-center gap-5">
                         <input type="text" placeholder="Search titles..." className="pl-8 pr-4 py-1 border rounded border-purple-500 shadow-inner min-w-96 text-black" id="search-title-field" defaultValue={filter.title} />
                         <SearchIcon size={20} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-700" />
                         <button className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1" onClick={() => {
-                            setFilter({ ...filter, title: document.getElementById('search-title-field').value });
+                            setFilter({ ...filter, title: document.getElementById('search-title-field') ? document.getElementById('search-title-field').value.trim() === "" ? null : document.getElementById('search-title-field').value.trim() : null });
                         }}>
                             Search
                         </button>
@@ -149,10 +160,6 @@ export default function BlogsPage() {
                                     <div className="flex flex-col gap-2">
                                         Doctor Name
                                         <input defaultValue={filter.doctorName || ""} autoComplete="off" id="doctorName" className="border shadow-inner border-purple-500 min-w-72 rounded px-2" />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        Doctor Id
-                                        <input type="number" defaultValue={filter.doctorName || ""} autoComplete="off" id="doctorId" className="border shadow-inner border-purple-500 min-w-72 rounded px-2 number-input" />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         Start Date - End Date
@@ -213,7 +220,7 @@ export default function BlogsPage() {
                                     <div className="flex flex-row justify-between items-center w-full">
                                         <Button className="bg-red-500 text-white hover:text-red-500 hover:scale-95 hover:border hover:border-red-500" size="lg" variant={"outline"} onClick={() => {
                                             document.getElementById('doctorName').value = '';
-                                            document.getElementById('sortDirection').value = 'ASC';
+                                            document.getElementById('sortDirection').value = 'DESC';
                                             document.getElementById('sortType').value = 'TIME';
                                             setDateRange({ from: null, to: null });
                                             setFilter({ doctorName: null, dateRange: null, sortDirection: null, sortType: null });
@@ -223,10 +230,10 @@ export default function BlogsPage() {
                                         <Button size="lg" onClick={() => {
                                             setFilter({
                                                 ...filter,
-                                                docId: document.getElementById('doctorId').value,
-                                                doctorName: document.getElementById('doctorName').value,
-                                                sortType: document.getElementById('sortType').value,
-                                                sortDirection: document.getElementById('sortDirection').value,
+                                                title: null,
+                                                doctorName: document.getElementById('doctorName') ? document.getElementById('doctorName').value.trim() === "" ? null : document.getElementById('doctorName').value.trim() : null,
+                                                sortType: document.getElementById('sortType') ? document.getElementById('sortType').value : 'TIME',
+                                                sortDirection: document.getElementById('sortDirection') ? document.getElementById('sortDirection').value : 'DESC',
                                                 startDate: generateFormattedDate(dateRange.from),
                                                 endDate: generateFormattedDate(dateRange.to),
                                             });

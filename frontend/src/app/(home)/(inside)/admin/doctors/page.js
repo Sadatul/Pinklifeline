@@ -30,8 +30,9 @@ export default function DoctorsVerifyPage() {
         if (!loading) {
             setLoading(true)
         }
-
+        console.log("Filter: ", filter)
         axiosInstance.get(unverifiedDoctors, { params: filter }).then((res) => {
+            console.log("Unverified Doctors: ", res.data)
             setDoctors(res.data?.content)
             setPageInfo(res.data?.page)
         }).catch((err) => {
@@ -98,13 +99,14 @@ export default function DoctorsVerifyPage() {
                     <div className="flex flex-row w-full items-center gap-6 justify-end px-6">
                         <button className="text-base text-white bg-gray-600 hover:scale-95 px-4 py-1 rounded-md w-fit" onClick={() => {
                             setFilter({
-                                fullName: document.getElementById("fullName").value,
-                                regNo: document.getElementById("regNo").value,
-                                workplace: document.getElementById("workplace").value,
-                                department: document.getElementById("department").value,
-                                designation: document.getElementById("designation").value,
-                                contactNumber: document.getElementById("contactNumber").value,
-                                qualifications: document.getElementById("qualifications").value,
+                                ...filter,
+                                fullName: document.getElementById("fullName").value.trim() === "" ? null : document.getElementById("fullName").value.trim(),
+                                regNo: document.getElementById("regNo").value.trim() === "" ? null : document.getElementById("regNo").value.trim(),
+                                workplace: document.getElementById("workplace").value.trim() === "" ? null : document.getElementById("workplace").value.trim(),
+                                department: document.getElementById("department").value.trim() === "" ? null : document.getElementById("department").value.trim(),
+                                designation: document.getElementById("designation").value.trim() === "" ? null : document.getElementById("designation").value.trim(),
+                                contactNumber: document.getElementById("contactNumber").value.trim() === "" ? null : document.getElementById("contactNumber").value.trim(),
+                                qualifications: document.getElementById("qualifications").value.trim() === "" ? null : document.getElementById("qualifications").value.trim().split(",").map((q) => q.trim()),
                                 pageNo: 0
                             })
                         }}>
@@ -177,12 +179,3 @@ function DoctorInfo({ doctor, fetchAgain, setFetchAgain }) {
         </div>
     )
 }
-
-// Query params: fullName=adil
-//  Query params: regNo=sdfasdfsdfsdf
-//  Query params: workplace=hospital
-//  Query params: department=cancer
-//  Query params: designation=ata
-//  Query params: contactNumber=01711573136
-//  Query params: qualifications=fcps,mbbs
-//  Query params: pageNo=0

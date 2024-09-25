@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react"
 import MapView from "./map"
 import Loading from "./loading"
-import { cellToLatLng } from "h3-js"
+import { cellToLatLng, latLngToCell } from "h3-js"
 import { useSessionContext } from "@/app/context/sessionContext"
 import axiosInstance from "@/utils/axiosInstance"
-import { getNearByUsers } from "@/utils/constants"
+import { getNearByUsers, getNearByUsersGeneral, locationResolution } from "@/utils/constants"
 import { toast } from "sonner"
 
 
@@ -17,12 +17,16 @@ export function LocationPage() {
         { "id": 7, "fullName": "Samiha Islam", "location": "883cf17601fffff" },
         { "id": 3, "fullName": "Faria Islam", "location": "883cf1760bfffff" }
     ]
-    const [nearByUsers, setNearByUsers] = useState()
+    const [nearByUsers, setNearByUsers] = useState([])
     const [currentLocation, setCurrentLocation] = useState(null)
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            axiosInstance.get(getNearByUsers(sessionContext.sessionData.userId)).then((res) => {
+        if (sessionContext?.sessionData && currentLocation) {
+            axiosInstance.get(getNearByUsersGeneral, {
+                params: {
+                    location: latLngToCell(currentLocation.lat, currentLocation.lng, locationResolution),
+                }
+            }).then((res) => {
                 console.log("nearByUsers", res.data)
                 let updatedUser = [];
                 for (const user of res.data) {
@@ -35,7 +39,7 @@ export function LocationPage() {
                         }
                     })
                 }
-                setNearByUsers(updatedUser)
+                setNearByUsers([...updatedUser])
             }).catch((err) => {
                 console.log("error", err)
                 toast.error("Error", {
@@ -43,16 +47,13 @@ export function LocationPage() {
                 })
             })
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData, currentLocation])
 
 
 
     return (
         <div className="flex flex-col flex-1 relative ">
             <MapView viewAll={true} nearByUsers={nearByUsers} setNearByUsers={setNearByUsers} position={currentLocation} setPosition={setCurrentLocation} />
-            <h1 className="text-xl font-bold absolute  top-5 right-36 flex flex-row bg-gray-50 z-10 items-start rounded-md p-2">
-                <p className="">Near By Users</p>
-            </h1>
         </div>
     )
 }

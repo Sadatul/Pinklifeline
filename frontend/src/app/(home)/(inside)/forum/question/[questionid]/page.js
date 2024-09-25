@@ -9,10 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/utils/axiosInstance";
-import { avatarAang, displayDate, forumAnswers, forumAnswersById, forumAnswerVote, forumQuestionByIdUrl, forumQuestionsUrl, forumQuestionvoteUrl, pagePaths, radicalGradient, ReportTypes, voteStates, voteTypes } from "@/utils/constants";
+import { avatarAang, displayDate, forumAnswers, forumAnswersAnonymous, forumAnswersById, forumAnswerVote, forumQuestionByIdAnonymousUrl, forumQuestionByIdUrl, forumQuestionsAnonymousUrl, forumQuestionsUrl, forumQuestionvoteUrl, pagePaths, radicalGradient, ReportTypes, voteStates, voteTypes } from "@/utils/constants";
 import firebase_app from "@/utils/firebaseConfig";
 import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
-import { ArrowRight, CalendarClockIcon, CornerDownRight, CornerLeftUp, Ellipsis, Filter, LinkIcon, Loader, Loader2, LoaderIcon, MessageCircle, SearchX, Send, SendHorizonal, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
+import { set } from "lodash";
+import { ArrowRight, CalendarClockIcon, CornerDownRight, CornerLeftUp, Ellipsis, Filter, LinkIcon, Loader, Loader2, LoaderIcon, MessageCircle, MoveLeft, SearchX, Send, SendHorizonal, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export default function QuestionThreadPage() {
 
     useEffect(() => {
         if (questionTags) {
-            axiosInstance.get(forumQuestionsUrl, {
+            axiosInstance.get(forumQuestionsAnonymousUrl, {
                 params: {
                     tags: questionTags?.join(",")
                 }
@@ -38,7 +39,7 @@ export default function QuestionThreadPage() {
                 setRelatedQuestions(response.data.content?.map((question) => ({
                     id: question.id,
                     title: question.title
-                })).filter((question) => question.id !== params.questionid))
+                })).filter((question) => String(question.id) !== String(params.questionid)))
             }).catch((error) => {
                 console.log("error getting related questions", error)
             })
@@ -106,8 +107,10 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
 
     function giveReply(parentId, body) {
         console.log("Giving reply", parentId, body)
-        if (!body) return
-        if (body === "") return
+        if (!body || body === "") {
+            toast.dismiss()
+            return;
+        }
         toast.loading("Giving Reply")
         axiosInstance.post(forumAnswers, {
             questionId: params.questionid,
@@ -124,18 +127,26 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
     }
 
     useEffect(() => {
-        axiosInstance.get(forumQuestionByIdUrl(params.questionid)).then((response) => {
-            setQuestionInfo(response.data)
-            setQuestionTags(response.data?.tags)
-        }).catch((error) => {
-            console.log("error getting question", error)
-            if (error.response?.status === 404) {
-                setNotFound(true)
-            }
-        }).finally(() => {
-            setLoadingQuestion(false)
-        })
-    }, [params.questionid])
+        const loadQuestion = (url) => {
+            axiosInstance.get(url).then((response) => {
+                setQuestionInfo(response.data)
+                setQuestionTags(response.data?.tags)
+            }).catch((error) => {
+                console.log("error getting question", error)
+                if (error.response?.status === 404) {
+                    setNotFound(true)
+                }
+            }).finally(() => {
+                setLoadingQuestion(false)
+            })
+        }
+        if (sessionContext?.sessionData && sessionContext?.sessionData?.userId) {
+            loadQuestion(forumQuestionByIdUrl(params.questionid))
+        }
+        else if (!sessionContext?.sessionData?.userId) {
+            loadQuestion(forumQuestionByIdAnonymousUrl(params.questionid))
+        }
+    }, [params.questionid, sessionContext?.sessionData])
 
     useEffect(() => {
         if (giveAnswer && textareaRef.current) {
@@ -157,28 +168,34 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
             textarea.style.height = `${textarea.scrollHeight}px`; // Adjust to the scroll height
         };
 
-        // Attach the input event listener
-        textarea?.addEventListener('input', handleInput);
-
+        if (textarea) {
+            // Attach the input event listener
+            textarea?.addEventListener('input', handleInput);
+        }
         // Clean up the event listener when the component unmounts
         return () => {
             textarea?.removeEventListener('input', handleInput);
         };
-    }, []);
+    }, [textareaRef.current]);
 
-    if (loadingQuestion || !sessionContext.sessionData) return <Loader2 size={66} className="animate-spin text-gray-600 m-auto" />
+    if (loadingQuestion) return <Loader2 size={66} className="animate-spin text-gray-600 m-auto" />
 
     return (
         <div className="flex flex-col w-full rounded gap-2">
             <div className="flex flex-col w-full bg-white rounded py-2 px-4 gap-1 relative">
+                <button className="w-fit bg-transparent absolute -left-12 top-1 text-gray-700" onClick={() => {
+                    window.location.href = pagePaths.forumPage
+                }}>
+                    <MoveLeft size={40} />
+                </button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button className=" absolute top-2 right-3">
-                            <Ellipsis size={30} className="text-gray-700" />
+                            <Ellipsis size={25} className="text-gray-700" />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        {(sessionContext.sessionData?.userId === questionInfo.authorId) &&
+                        {(sessionContext?.sessionData?.userId === questionInfo.authorId) &&
                             <>
                                 <DropdownMenuItem>
                                     <Link href={pagePaths.updateQuestionById(questionInfo.id)} className="flex items-center w-full">
@@ -218,7 +235,7 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                 <div className="flex flex-row gap-2">
                     <div className="text-base text-gray-900 flex items-center gap-1">
                         <Avatar avatarImgSrc={questionInfo?.authorProfilePicture} size={24} />
-                        <Link href={pagePaths.userProfile(questionInfo?.authorId)} className=" hover:underline">
+                        <Link href={pagePaths.redirectProfile(questionInfo?.authorId)} className=" hover:underline">
                             {questionInfo?.author}
                         </Link>
                     </div>
@@ -277,9 +294,11 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                             {questionInfo?.voteCount}
                         </span>
                     </div>
-                    <button className="text-green-500 rounded p-2" onClick={() => { setGiveAnswer(prev => !prev) }}>
-                        <MessageCircle size={26} />
-                    </button>
+                    {(sessionContext?.sessionData?.userId) &&
+                        <button className="text-green-500 rounded p-2" onClick={() => { setGiveAnswer(prev => !prev) }}>
+                            <MessageCircle size={26} />
+                        </button>
+                    }
                 </div>
             </div>
             <div className={cn(`transition-[max-height] duration-500 ease-in-out overflow-hidden w-full flex items-start relative bg-white rounded`, giveAnswer && "p-2")}
@@ -307,46 +326,68 @@ const AnswerSection = React.memo(
         const [ansewers, setAnswers] = useState([]);
         const [loadingAns, setLoadingAns] = useState(true)
         const [isMounted, setIsMounted] = useState(false)
+        const sessionContext = useSessionContext()
+        const [sortType, setSortType] = useState("TIME")
+        const [sortDirection, setSortDirection] = useState("DESC")
 
         useEffect(() => {
-            if (!isMounted) {
-                setIsMounted(true)
+            const loadAns = (url) => {
+                if (!isMounted) {
+                    setIsMounted(true)
+                }
+                else {
+                    axiosInstance.get(url, {
+                        params: {
+                            questionId: params.questionid,
+                            sortType: document.getElementById("sortType")?.value,
+                            sortDirection: document.getElementById("sortDirection")?.value
+                        }
+                    }).then((res) => {
+                        setAnswers(res.data)
+                    }).catch((error) => {
+                        console.log("error getting ans ", error)
+                    }).finally(() => {
+                        setLoadingAns(false)
+                    })
+                }
             }
-            else {
-                axiosInstance.get(forumAnswers, {
-                    params: {
-                        questionId: params.questionid,
-                        sortType: document.getElementById("sortType")?.value,
-                        sortDirection: document.getElementById("sortDirection")?.value
-                    }
-                }).then((res) => {
-                    setAnswers(res.data)
-                }).catch((error) => {
-                    console.log("error getting ans ", error)
-                }).finally(() => {
-                    setLoadingAns(false)
-                })
+            if (sessionContext?.sessionData && sessionContext?.sessionData?.userId) {
+                loadAns(forumAnswers)
             }
-        }, [params.questionid, isMounted])
+            else if (!sessionContext?.sessionData?.userId) {
+                loadAns(forumAnswersAnonymous)
+            }
+        }, [params.questionid, isMounted, sessionContext?.sessionData])
 
         useEffect(() => {
-            if (fetchRepliesAgain) {
-                axiosInstance.get(forumAnswers, {
-                    params: {
-                        questionId: params.questionid,
-                        sortType: document.getElementById("sortType")?.value,
-                        sortDirection: document.getElementById("sortDirection")?.value
-                    }
-                }).then((res) => {
-                    setAnswers(res.data)
-                }).catch((error) => {
-                    console.log("error getting ans ", error)
-                }).finally(() => {
-                    setLoadingAns(false)
-                    setFetchRepliesAgain(false)
-                })
+            const loadAns = (url) => {
+                console.log("loading ans again, fetchRepliesAgain", fetchRepliesAgain)
+                if (fetchRepliesAgain) {
+                    console.log("Loading answers from depth", -1)
+                    axiosInstance.get(url, {
+                        params: {
+                            questionId: params.questionid,
+                            sortType: document.getElementById("sortType")?.value,
+                            sortDirection: document.getElementById("sortDirection")?.value
+                        }
+                    }).then((res) => {
+                        setAnswers(res.data)
+                    }).catch((error) => {
+                        console.log("error getting ans ", error)
+                    }).finally(() => {
+                        setLoadingAns(false)
+                        setFetchRepliesAgain(false)
+                    })
+                }
             }
-        }, [fetchRepliesAgain])
+            console.log("UserID", sessionContext?.sessionData?.userId)
+            if (sessionContext?.sessionData?.userId) {
+                loadAns(forumAnswers)
+            }
+            else if (!sessionContext?.sessionData?.userId) {
+                loadAns(forumAnswersAnonymous)
+            }
+        }, [fetchRepliesAgain, sessionContext?.sessionData, params.questionid])
 
         if (loadingAns) return <Loading chose="hand" />
 
@@ -357,15 +398,17 @@ const AnswerSection = React.memo(
                         Answers
                     </h2>
                     <div className="flex flex-row gap-3">
-                        <select id="sortType" defaultValue={"TIME"} className="rounded-2xl p-2 bg-white shadow-inner border border-gray-300" onChange={(e) => {
+                        <select id="sortType" value={sortType} className="rounded-2xl p-2 bg-white shadow-inner border border-gray-300" onChange={(e) => {
                             setFetchRepliesAgain(true)
+                            setSortType(e.target.value)
                         }} >
                             <option value={"TIME"} >Time</option>
                             <option value={"VOTES"} >Votes</option>
                         </select>
-                        <select id="sortDirection" defaultValue={"ASC"} className="rounded-2xl p-2 bg-white shadow-inner border border-gray-300" onChange={(e) => [
+                        <select id="sortDirection" value={sortDirection} className="rounded-2xl p-2 bg-white shadow-inner border border-gray-300" onChange={(e) => {
                             setFetchRepliesAgain(true)
-                        ]} >
+                            setSortDirection(e.target.value)
+                        }} >
                             <option value={"ASC"} >Ascending</option>
                             <option value={"DESC"} >Descending</option>
                         </select>
@@ -400,7 +443,7 @@ const AnswerSection = React.memo(
     })
 
 const Answer = React.memo(
-    function Answer({ answer, allowReply = true, setParentFetchRepliesAgain }) {
+    function Answer({ answer, allowReply = true, setParentFetchRepliesAgain, depth = 0 }) {
         const sessionContext = useSessionContext();
         const textareaRef = useRef(null);
         const params = useParams()
@@ -419,6 +462,10 @@ const Answer = React.memo(
         const [fetchRepliesAgain, setFetchRepliesAgain] = useState(false);
 
         useEffect(() => {
+            setMutableAnswer(answer);
+        }, [answer]);
+
+        useEffect(() => {
             if (giveReply && textareaRef.current) {
                 const height = textareaRef.current.scrollHeight;
                 setTextareaHeight(height + 50);
@@ -428,38 +475,49 @@ const Answer = React.memo(
         }, [giveReply]);
 
         useEffect(() => {
-            if (fetchRepliesAgain) {
-                setLoadingReplies(true)
-                axiosInstance.get(forumAnswers, {
-                    params: {
-                        questionId: params.questionid,
-                        parentId: answer.id
-                    }
-                }).then((response) => {
-                    console.log(response)
-                    setReplies(response.data)
-                }).catch((error) => {
-                    console.log(error)
-                }).finally(() => {
-                    setLoadingReplies(false)
-                    setFetchRepliesAgain(false)
-                })
+            const loadReplies = (url) => {
+                if (fetchRepliesAgain) {
+                    console.log("Loading answers from depth", depth)
+                    setLoadingReplies(true)
+                    axiosInstance.get(url, {
+                        params: {
+                            questionId: params.questionid,
+                            parentId: answer.id
+                        }
+                    }).then((response) => {
+                        console.log(response)
+                        setReplies(response.data)
+                    }).catch((error) => {
+                        console.log(error)
+                    }).finally(() => {
+                        setLoadingReplies(false)
+                        setFetchRepliesAgain(false)
+                    })
+                }
             }
-        }, [fetchRepliesAgain, answer?.id, params.questionid])
+            if (sessionContext?.sessionData?.userId) {
+                loadReplies(forumAnswers)
+            }
+            else if (!sessionContext?.sessionData?.userId) {
+                loadReplies(forumAnswersAnonymous)
+            }
+        }, [fetchRepliesAgain, answer?.id, params.questionid, sessionContext?.sessionData])
 
-        useEffect(() => {
-            if (!showReplies && mutableAnswer.numberOfReplies > 0) {
-                const rectA = designLineRef.current.getBoundingClientRect();
-                const rectB = repliesButtonRef.current.getBoundingClientRect();
-                const baseRect = baseRef.current.getBoundingClientRect();
-                const height = Math.abs(rectA.top - rectB.top) + repliesButtonRef.current.clientHeight / 2 + 5;
-                designLineRef.current.style.height = `${height}px`;
-                verticalDesignLineRef.current.style.top = `${Math.abs(baseRect.top - rectA.bottom + 4)}px`;
-                verticalDesignLineRef.current.style.width = `${Math.abs(rectA.right - rectB.left)}px`;
-            }
-        }, [showReplies, mutableAnswer.numberOfReplies]);
+        // useEffect(() => {
+        //     if (!showReplies && mutableAnswer.numberOfReplies > 0) {
+        //         const rectA = designLineRef.current?.getBoundingClientRect();
+        //         const rectB = repliesButtonRef.current?.getBoundingClientRect();
+        //         const baseRect = baseRef.current?.getBoundingClientRect();
+        //         if (!rectA || !rectB || !baseRect) return;
+        //         const height = Math.abs(rectA?.top - rectB?.top) + repliesButtonRef.current?.clientHeight / 2 + 5;
+        //         designLineRef.current.style.height = `${height}px`;
+        //         // verticalDesignLineRef.current.style.top = `${Math.abs(baseRect.top - rectA.bottom + 4)}px`;
+        //         verticalDesignLineRef.current.style.width = `${Math.abs(rectA.right - rectB.left)}px`;
+        //     }
+        // }, [showReplies, mutableAnswer.numberOfReplies, answer]);
 
         const handleInput = useCallback(() => {
+            if (!textareaRef.current) return;
             const textarea = textareaRef.current;
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
@@ -490,21 +548,27 @@ const Answer = React.memo(
         }, [mutableAnswer]);
 
         useEffect(() => {
-            const textarea = textareaRef.current;
-            textarea.addEventListener('input', handleInput);
-            return () => textarea.removeEventListener('input', handleInput);
-        }, [handleInput]);
+            if (textareaRef?.current) {
+                const textarea = textareaRef.current;
+                textarea.addEventListener('input', handleInput);
+            }
+        }, [handleInput, textareaRef.current]);
 
-        if (!sessionContext.sessionData) return <Loader size={36} className="text-gray-500 animate-spin m-auto" />
+        if (!answer) return <Loader size={36} className="text-gray-500 animate-spin m-auto" />
 
         return (
             <div ref={baseRef} className="flex items-start space-x-4 w-full relative">
-                {showReplies && <div className="absolute left-8 top-[10px] bottom-[10px] w-[1px] bg-gray-400"></div>}
+                {showReplies && replies?.length > 0 && <div className={"absolute left-8 top-[10px] bottom-[10px] w-[2px] bg-gray-400"}></div>}
+                {!showReplies && (answer.numberOfReplies > 0) && <div className={"absolute left-8 top-[10px] bottom-[14px] w-[2px] bg-gray-400"}></div>}
                 {(mutableAnswer.numberOfReplies > 0 && !showReplies) &&
                     <div ref={designLineRef} className="absolute top-[36px] left-[30px] w-[2px] bg-gray-500 z-10 "></div>
                 }
                 {(!showReplies && mutableAnswer.numberOfReplies > 0) &&
-                    <div ref={verticalDesignLineRef} className="absolute left-[14px] h-[7px] bg-gray-500 z-30 flex flex-row justify-end " style={{ clipPath: "polygon(0 42%, 50% 41%, 50% 3%, 100% 50%, 50% 100%, 49% 66%, 0 65%)" }}>
+                    <div ref={verticalDesignLineRef} className="absolute left-[16px] h-[7px] bg-gray-500 z-30 flex flex-row justify-end" style={{
+                        clipPath: "polygon(0 42%, 50% 41%, 50% 3%, 100% 50%, 50% 100%, 49% 66%, 0 65%)",
+                        width: "36px",
+                        bottom: "11px",
+                    }}>
                     </div>
                 }
                 <div className="flex flex-col">
@@ -514,7 +578,7 @@ const Answer = React.memo(
                     <div className="relative bg-white px-4 pt-1 rounded-b-lg rounded-r-lg shadow-lg flex flex-col w-full gap-3">
                         <div className="absolute top-0 -left-3 w-0 h-0 border-l-[15px] border-l-transparent border-t-[15px] border-t-white"></div>
                         <div className="flex flex-row justify-between items-center">
-                            <Link href={pagePaths.redirectUserToProfileWithId(mutableAnswer.authorId)} className="hover:underline text-black text-base font-semibold">
+                            <Link href={pagePaths.redirectProfile(mutableAnswer.authorId)} className="hover:underline text-black text-base font-semibold">
                                 {mutableAnswer.author}
                             </Link>
                             <span className="text-sm text-gray-600 flex items-center gap-1">
@@ -540,59 +604,63 @@ const Answer = React.memo(
                                         <span className="text-lg">{mutableAnswer.voteCount}</span>
                                     </div>
                                     <div className="flex flex-row items-center gap-6">
-                                        <button disabled={!allowReply} className=" rounded flex items-center text-black gap-1" onClick={() => {
-                                            setGiveReply(prev => !prev)
-                                        }}>
-                                            {mutableAnswer.numberOfReplies}
-                                            <MessageCircle size={20} className="text-gray-700" />
-                                        </button>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger disabled={giveReply} asChild>
-                                                <button className="">
-                                                    <Ellipsis size={24} className="text-gray-700" />
-                                                </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                {(sessionContext.sessionData?.userId === mutableAnswer.authorId) &&
-                                                    <>
-                                                        <DropdownMenuItem>
-                                                            <button className="flex items-center w-full" onClick={() => { setEditable(true) }}>
-                                                                Edit
-                                                            </button>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem>
-                                                            <button className="flex items-center w-full" onClick={() => {
-                                                                toast.loading("Deleting Answer")
-                                                                axiosInstance.delete(forumAnswersById(answer.id)).then((response) => {
-                                                                    toast.dismiss()
-                                                                    setParentFetchRepliesAgain(true)
-                                                                    toast.success("Answer Deleted")
-                                                                }).catch((error) => {
-                                                                    toast.dismiss()
-                                                                    toast.error("Error deleting answer")
-                                                                    console.log("error deleting answer", error)
-                                                                })
-                                                            }}>
-                                                                Delete
-                                                            </button>
-                                                        </DropdownMenuItem>
-                                                    </>
-                                                }
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem>
-                                                    <Link href={pagePaths.reportPage(answer.id, ReportTypes.forumAnswer)} className="flex items-center w-full">
-                                                        Report
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        {(sessionContext?.sessionData?.userId) &&
+                                            <button disabled={!allowReply} className=" rounded flex items-center text-black gap-1" onClick={() => {
+                                                setGiveReply(prev => !prev)
+                                            }}>
+                                                {mutableAnswer.numberOfReplies}
+                                                <MessageCircle size={20} className="text-gray-700" />
+                                            </button>
+                                        }
+                                        {(sessionContext?.sessionData?.userId) &&
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger disabled={giveReply} asChild>
+                                                    <button className="">
+                                                        <Ellipsis size={24} className="text-gray-700" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    {(sessionContext?.sessionData?.userId === mutableAnswer.authorId) &&
+                                                        <>
+                                                            <DropdownMenuItem>
+                                                                <button className="flex items-center w-full" onClick={() => { setEditable(true) }}>
+                                                                    Edit
+                                                                </button>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem>
+                                                                <button className="flex items-center w-full" onClick={() => {
+                                                                    toast.loading("Deleting Answer")
+                                                                    axiosInstance.delete(forumAnswersById(answer.id)).then((response) => {
+                                                                        toast.dismiss()
+                                                                        setParentFetchRepliesAgain(true)
+                                                                        toast.success("Answer Deleted")
+                                                                    }).catch((error) => {
+                                                                        toast.dismiss()
+                                                                        toast.error("Error deleting answer")
+                                                                        console.log("error deleting answer", error)
+                                                                    })
+                                                                }}>
+                                                                    Delete
+                                                                </button>
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    }
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem>
+                                                        <Link href={pagePaths.reportPage(answer.id, ReportTypes.forumAnswer)} className="flex items-center w-full">
+                                                            Report
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        }
                                     </div>
                                 </div>
                             </>
                         ) : (
                             <>
-                                {sessionContext.sessionData?.userId === mutableAnswer.authorId &&
+                                {sessionContext?.sessionData?.userId === mutableAnswer.authorId &&
                                     <>
                                         <textarea
                                             className="flex-1 min-h-20 p-3 bg-gray-100 rounded-3xl shadow-inner overflow-hidden resize-none"
@@ -602,6 +670,7 @@ const Answer = React.memo(
                                         />
                                         <div className="flex flex-row items-center gap-2">
                                             <button className="bg-gray-700 text-white rounded px-2 py-1 shadow-inner border border-gray-600" onClick={() => {
+                                                if (!editTextRef.current || editTextRef.current?.value === "") return;
                                                 axiosInstance.put(forumAnswersById(mutableAnswer.id), {
                                                     body: editTextRef.current?.value
                                                 }).then((response) => {
@@ -635,6 +704,11 @@ const Answer = React.memo(
                             />
 
                             <button className="text-gray-700 rounded right-4 top-4" onClick={() => {
+                                if (!textareaRef.current || textareaRef.current?.value === "") {
+                                    toast.dismiss()
+                                    setGiveReply(false)
+                                    return;
+                                }
                                 toast.loading("Giving Reply")
                                 axiosInstance.post(forumAnswers, {
                                     questionId: params.questionid,
@@ -654,7 +728,7 @@ const Answer = React.memo(
                             </button>
                         </div>
                     </div>
-                    {mutableAnswer.numberOfReplies > 0 &&
+                    {answer.numberOfReplies > 0 &&
                         <>
                             {showReplies ? (
                                 <div className="flex flex-col w-full gap-2 mt-4">
@@ -665,6 +739,7 @@ const Answer = React.memo(
                                                     answer={reply}
                                                     allowReply={true}
                                                     setParentFetchRepliesAgain={setFetchRepliesAgain}
+                                                    depth={depth + 1}
                                                 />
                                             ))}
                                         </> :
@@ -677,7 +752,8 @@ const Answer = React.memo(
                                 <button ref={repliesButtonRef} className="text-gray-700 rounded p-2 flex items-center gap-0 w-fit" onClick={() => {
                                     setShowReplies(prev => !prev)
                                     setLoadingReplies(true)
-                                    axiosInstance.get(forumAnswers, {
+                                    const url = sessionContext?.sessionData?.userId ? forumAnswers : forumAnswersAnonymous
+                                    axiosInstance.get(url, {
                                         params: {
                                             questionId: params.questionid,
                                             parentId: answer.id
@@ -728,13 +804,13 @@ function Vault() {
                         if (!file) return;
                         const type = file.type
                         console.log(type)
-                        const filePath = `questionVault/${new Date().toString()}/${file.name}`;
+                        const filePath = `questionVault/${new Date().toString()}/${file?.name}`;
                         const storageRef = ref(storage, filePath);
                         const uploadTask = uploadBytesResumable(storageRef, file);
                         uploadTask.on(
                             'state_changed',
                             (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                const progress = (snapshot?.bytesTransferred / snapshot?.totalBytes) * 100;
                             },
                             (error) => {
                                 toast.error("Error uploading image", {
@@ -759,13 +835,13 @@ function Vault() {
                     />
                 </div>
                 <ScrollableContainer className="overflow-x-auto h-[500px] mt-5 mb-3 overflow-y-auto">
-                    {vaultData.map((data, index) => {
+                    {vaultData?.map((data, index) => {
                         return (
                             <div key={index} className="flex flex-col w-full gap-3 p-2 bg-gray-100 rounded-lg">
                                 <div className="flex flex-row items-center gap-3 p-1 justify-between w-full">
                                     <div className="flex flex-col gap-1 w-full">
                                         <div className="text-lg font-semibold flex items-center gap-2 relative w-full">
-                                            {data.type}
+                                            {data?.type}
                                             <div className="flex flex-row flex-1 gap-2 justify-between">
                                                 <button id="copy-button" className="rounded-full p-2 text-black bg-pink-300 scale-75" onClick={() => {
                                                     navigator.clipboard.writeText(data.url)
@@ -789,9 +865,9 @@ function Vault() {
                                                 </button>
                                                 <span id="copy-response-message" className="p-1 absolute w-28 text-center left-40 bg-green-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
                                                 <button className="hover:scale-90 scale-95 bg-red-500 text-white p-1 rounded-full px-2 w-fit" onClick={() => {
-                                                    const fileRef = ref(storage, data.url);
+                                                    const fileRef = ref(storage, data?.url);
                                                     deleteObject(fileRef).then((res) => {
-                                                        const newData = vaultData.filter((_, i) => i !== index)
+                                                        const newData = vaultData?.filter((_, i) => i !== index)
                                                         setVaultData(newData)
                                                     }).catch((err) => {
                                                         console.log(err)
@@ -803,7 +879,7 @@ function Vault() {
                                         </div>
                                     </div>
                                 </div>
-                                {data.type.includes("image") && <Image sizes="100vw" width={0} height={0} style={{ width: '100%', height: 'auto' }} src={data.url} alt="Vault Image" />}
+                                {data?.type?.includes("image") && <Image sizes="100vw" width={0} height={0} style={{ width: '100%', height: 'auto' }} src={data?.url} alt="Vault Image" />}
                             </div>
                         )
                     })}

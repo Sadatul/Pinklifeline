@@ -31,7 +31,7 @@ import { red } from "@mui/material/colors"
 import ScrollableContainer from '@/app/components/StyledScrollbar';
 import { motion, AnimatePresence } from "framer-motion"
 import firebase_app from "@/utils/firebaseConfig";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { Progress } from "@/components/ui/progress"
 import {
     AlertDialog,
@@ -57,6 +57,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     const fileTypes = ["JPEG", "PNG", "JPG"];
     const [imageFile, setImageFile] = useState(null)
     const [imageUploaded, setImageUploaded] = useState(false)
+    const [imageuploading, setImageUploading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(null);
     const stompContext = useStompContext();
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
@@ -89,6 +90,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
     }
     const handleUpload = async () => {
         if (!imageFile) return;
+        setImageUploading(true)
         const uploadingToast = toast.loading("Uploading image", {
             duration: Infinity
         })
@@ -105,13 +107,16 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                 toast.error("Error uploading image", {
                     description: "Please try again later",
                 });
+                console.log(error)
                 setImageUploaded(false)
+                setImageUploading(false)
             },
             async () => {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 userDataRef.current = { ...userDataRef.current, profilePictureUrl: downloadURL }
                 toast.dismiss(uploadingToast)
                 toast.success("Image uploaded successfully")
+                setImageUploading(false)
             }
         );
     }
@@ -245,7 +250,24 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="m-2">
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel onClick={async () => {
+                                    console.log("cancel")
+                                    try {
+                                        if (imageUploaded && !imageuploading) {
+                                            const httpRef = ref(storage, userDataRef.current.profilePictureUrl);
+                                            await deleteObject(httpRef);
+                                            setImageUploaded(false)
+                                            setImageFile(null)
+                                            toast.success("Image removed successfully")
+                                            userDataRef.current = { ...userDataRef.current, profilePictureUrl: null, profilePicturePreview: null }
+                                        }
+                                    }
+                                    catch (e) {
+                                        console.log(e)
+                                    }
+                                }}>
+                                    {(imageUploaded && !imageuploading) ? "Remove" : "Cancel"}
+                                </AlertDialogCancel>
                                 <AlertDialogAction onClick={handleUpload} disabled={imageUploaded}>
                                     Upload
                                 </AlertDialogAction>
@@ -275,7 +297,8 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
+                                    You can&apos;t change date of birth once you save the form.
+                                    To ensure routine self test notifications, please allow browser notifications.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -297,6 +320,7 @@ export function DoctorChamberLocationSection({ }) {
     const sessionContext = useSessionContext()
     const { register, handleSubmit, formState: { errors }, setValue, trigger, getValues } = useForm()
     const userDataRef = useRef({})
+    const locationInputRef = useRef(null)
     const [isOnline, setIsOnline] = useState(false)
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const router = useRouter()
@@ -310,6 +334,7 @@ export function DoctorChamberLocationSection({ }) {
         { day: "fri", on: false }])
 
     const daySequence = ["sat", "sun", "mon", "tue", "wed", "thu", "fri"]
+    const [workdaysChecked, setWorkdaysChecked] = useState([false, false, false, false, false, false, false])
 
     const workdaysToBinaryString = (workdays) => {
         let binaryString = ""
@@ -350,7 +375,7 @@ export function DoctorChamberLocationSection({ }) {
             toast.error("Start time should be less than end time")
             return
         }
-        axiosInstance.post(addConsultationLocationUrl(sessionContext.sessionData.userId), loacationForm).then((response) => {
+        axiosInstance.post(addConsultationLocationUrl(sessionContext?.sessionData.userId), loacationForm).then((response) => {
             console.log(response.data)
             toast.dismiss()
             toast.success("Location added successfully")
@@ -387,12 +412,18 @@ export function DoctorChamberLocationSection({ }) {
                         <div className="flex flex-row justify-evenly items-center w-11/12">
                             <div className="text-md font-semibold mx-2">Location
                                 <div className="w-full flex flex-col mt-2 relative">
-                                    <input disabled={isOnline} defaultValue={userDataRef.current?.location} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("location", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                    <input ref={locationInputRef} id="location-input" disabled={isOnline} defaultValue={userDataRef.current?.location} type="text" className={cn("border-2 rounded-md px-2", isOnline ? "border-gray-500 bg-gray-200" : "border-blue-500")} {...register("location", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                     {errors.location && <span className="text-red-500 mt-7 absolute">{errors.location?.message}</span>}
                                 </div>
                             </div>
                             <div className="text-md font-semibold mt-8 relative">isOnline
-                                <Checkbox checked={isOnline} onCheckedChange={() => setIsOnline(!isOnline)} className="border-2 ml-2 absolute top-1" />
+                                <Checkbox checked={isOnline} onCheckedChange={(checked) => {
+                                    setIsOnline(checked)
+                                    if (checked && document.getElementById("location-input") && document.getElementById("location-input").value.trim() === '') {
+                                        document.getElementById("location-input").value = locationOnline
+                                        setValue("location", locationOnline)
+                                    }
+                                }} className="border-2 ml-2 absolute top-1" />
                             </div>
                             <div className="text-md font-semibold mx-2">Fees
                                 <div className="w-full flex flex-col mt-2 relative">
@@ -440,9 +471,12 @@ export function DoctorChamberLocationSection({ }) {
                                         <input value={day.on} type="checkbox" className="hidden peer" />
                                         <div onClick={() => {
                                             workdays.current[index].on = !workdays.current[index].on
+                                            const workdaysCheckedCopy = [...workdaysChecked]
+                                            workdaysCheckedCopy[index] = !workdaysCheckedCopy[index]
+                                            setWorkdaysChecked([...workdaysCheckedCopy])
                                             setValue("workdays", workdays.current)
                                             trigger("workdays")
-                                        }} className="peer-checked:bg-green-600 bg-red-600 text-white font-semibold peer-checked:text-white px-2 rounded-md transition-colors border border-gray-400 shadow-inner capitalize">
+                                        }} className={cn(" text-white font-semibold peer-checked:text-white px-2 rounded-md transition-colors border border-gray-400 shadow-inner capitalize", workdaysChecked[index] ? "bg-pink-500" : "bg-gray-500")} >
                                             {day.day}
                                         </div>
                                     </div>
@@ -669,7 +703,8 @@ export function DoctorInfoSection({ userDataRef, currentSection, setCurrentSecti
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                You can&apos;t change your full name and date of birth once you save the form.
+                                                You can&apos;t change date of birth once you save the form.
+                                                To ensure routine self test notifications, please allow browser notifications.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
@@ -753,7 +788,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         {cancerHistory === 'Y' && (
                             <div className="flex items-end">
                                 <div className="text-md font-semibold m-2 text-center">Cancer Relatives:
-                                    <input className="border border-blue-500 rounded-md px-2" id="cancerRelatives" />
+                                    <input className="border border-blue-500 rounded-md px-2 w-52" id="cancerRelatives" />
                                 </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -823,10 +858,9 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                         <Button
                                             variant={"outline"}
                                             className={cn(
-                                                "min-w-[160px] ml-3 justify-start text-left font-normal border border-gray-600",
+                                                "min-w-56 ml-2 justify-start text-left font-normal border border-gray-600",
                                                 !date && "text-muted-foreground"
-                                            )}
-                                        >
+                                            )}>
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date ? format(date, "PPP") : <span>Pick a date</span>}
                                         </Button>
@@ -851,12 +885,38 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                             </div>
                             {errors.lastPeriodDate && <span className="text-red-500 text-sm">{errors.lastPeriodDate?.message}</span>}
                         </div>
-
-                        <div className=" w-1/3">
-                            <div className="text-md font-semibold m-2 text-center">Average Cycle Length (days):
-                                <input defaultValue={userDataRef.current?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} />
+                        <div className="flex-1 flex-row justify-end">
+                            <div className="text-md font-semibold text-center flex flex-col w-full items-end ">Menstrual Cycle Length(days):
+                                <input defaultValue={userDataRef.current?.avgCycleLength} className=" number-input border border-blue-500 rounded-md px-2 w-32" type="number" id="avgCycleLength" min={0} {...register('avgCycleLength', { required: "This field is required", min: { value: 0, message: "Avg Cycle can not be negative" } })} onChange={(e) => {
+                                    console.log(e.target.value)
+                                    if (e.target.value < 16) {
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('hidden')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.add('flex')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.add('flex-col')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.add('items-end')
+                                    } else {
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('flex')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('flex-col')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('items-end')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.add('hidden')
+                                    }
+                                    if (e.target.value == "") {
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('flex')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('flex-col')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.remove('items-end')
+                                        document.getElementById('avgCycleLength-below-fifteen-msg').classList.add('hidden')
+                                    }
+                                }} />
                             </div>
                             {errors.avgCycleLength && <span className="text-red-500 text-sm">{errors.avgCycleLength?.message}</span>}
+                            <div id="avgCycleLength-below-fifteen-msg" className="text-xs text-red-500 hidden">
+                                <span>
+                                    Menstrual cycle length is less than 15 days.
+                                </span>
+                                <span>
+                                    You won`&apos;t get any notifications.
+                                </span>
+                            </div>
                         </div>
                     </div>
                     {role === "ROLE_PATIENT" &&
@@ -869,7 +929,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "min-w-[160px] ml-3 justify-start text-left font-normal border border-gray-600",
+                                                    "min-w-56 ml-2 justify-start text-left font-normal border border-gray-600",
                                                     !diagnosisDate && "text-muted-foreground"
                                                 )}
                                             >
@@ -922,7 +982,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                             <div className="flex items-center flex-1 justify-between">
                                 <div className="text-md font-semibold m-2 w-full flex items-center">
                                     <span className="w-40">Period Irregularities</span>
-                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="periodIrregularities" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2 w-56" id="periodIrregularities" />
                                 </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -997,7 +1057,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                     <span className="w-40">
                                         Allergies
                                     </span>
-                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="allergies" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2 w-56" id="allergies" />
                                 </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -1061,9 +1121,9 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                             <div className="flex items-center flex-1 justify-between">
                                 <div className="text-md m-2 font-semibold flex items-center">
                                     <span className="w-40">
-                                        Chronic Diseases
+                                        Critical Organs
                                     </span>
-                                    <input className="border border-blue-500 rounded-md px-2 m-2" id="organsWithChronicCondition" />
+                                    <input className="border border-blue-500 rounded-md px-2 m-2 w-56" id="organsWithChronicCondition" />
                                 </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -1126,10 +1186,10 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center">
                                 <div className="text-md font-semibold m-1 text-center" >Medicine Name
-                                    <input className="border border-blue-500 rounded-md px-2" id="medicineName" />
+                                    <input className="border border-blue-500 rounded-md px-2 w-56" id="medicineName" />
                                 </div>
                                 <div className="text-md font-semibold m-1 text-center" >Dose description
-                                    <input className="border border-blue-500 rounded-md px-2" id="doseDescription" />
+                                    <input className="border border-blue-500 rounded-md px-2 w-56" id="doseDescription" />
                                 </div>
                                 <TooltipProvider delayDuration={400}>
                                     <Tooltip>
@@ -1192,7 +1252,7 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                                                 </Button>
                                             </div>
                                         ))}
-                                    </ScrollArea >
+                                    </ScrollArea>
                                 </PopoverContent>
                             </Popover>
                         </div>
@@ -1220,7 +1280,8 @@ export function MedicalInfoSection({ userDataRef, currentSection, setCurrentSect
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
+                                    You can&apos;t change your date of birth once you save the form.
+                                    To ensure routine self test notifications, please allow browser notifications.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1261,6 +1322,10 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
         }
     }
 
+    useEffect(() => {
+        console.log("Position", position)
+    }, [position])
+
     return (
         <>
             <AnimatePresence>
@@ -1271,7 +1336,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
                     transition={{ duration: 0.3 }}
                 >
                     <h1 className="text-2xl font-bold m-2 text-pink-500">Location</h1>
-                    <MapView position={position} setPosition={setPosition} />
+                    <MapView position={position} setPosition={setPosition} registration={true} />
                 </motion.div>
             </AnimatePresence>
             <div className="flex flex-row justify-between items-center w-full m-2 px-8 mt-5">
@@ -1295,7 +1360,8 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You can&apos;t change your full name and date of birth once you save the form.
+                                    You can&apos;t change date of birth once you save the form.
+                                    To ensure routine self test notifications, please allow browser notifications.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1377,7 +1443,7 @@ export function LocationSection({ userDataRef, currentSection, setCurrentSection
 //                         <AlertDialogHeader>
 //                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
 //                             <AlertDialogDescription>
-//                                 You can't change your full name and date of birth once you save the form.
+//                                 You can't change date of birth once you save the form.
 //                             </AlertDialogDescription>
 //                         </AlertDialogHeader>
 //                         <AlertDialogFooter>

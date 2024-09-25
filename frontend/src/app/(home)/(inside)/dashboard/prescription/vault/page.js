@@ -2,7 +2,6 @@
 
 import { CalendarIcon } from "@radix-ui/react-icons"
 import { addDays, format } from "date-fns"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -45,17 +44,20 @@ export default function PrescriptionVaultPage() {
 
     useEffect(() => {
         console.log("fetching documents")
-        axiosInstance.get(addReportUrl).then((response) => {
-            console.log("Response from filter", response)
-            setData(response.data)
-            setLoading(false)
-            setIsMounted(true)
-        }).catch((error) => {
-            setIsMounted(true)
-            setLoading(false)
-            console.log("Error from filter", error)
-        })
-    }, [])
+        if (sessionContext?.sessionData && sessionContext?.sessionData.role !== roles.doctor) {
+            axiosInstance.get(addReportUrl).then((response) => {
+                console.log("Response from filter", response)
+                setData(response.data)
+                setLoading(false)
+                setIsMounted(true)
+            }).catch((error) => {
+                setIsMounted(true)
+                setLoading(false)
+                console.log("Error from filter", error)
+            })
+        }
+    }, [sessionContext?.sessionData])
+
 
     useEffect(() => {
         const handleFilter = () => {
@@ -64,15 +66,16 @@ export default function PrescriptionVaultPage() {
             const sort = document.getElementById("search-sort")?.value
             const startDate = generateFormattedDate(dateRange.from)
             const endDate = generateFormattedDate(dateRange.to)
+            console.log("Filtering", doctorName, hospitalName, selectedKeywords.current, startDate, endDate, sort, currentPage)
             axiosInstance.get(addReportUrl, {
                 params: {
                     doctorName: doctorName === "" ? null : doctorName,
-                    hospitalName: hospitalName  === "" ? null : hospitalName,
+                    hospitalName: hospitalName === "" ? null : hospitalName,
                     keywords: selectedKeywords.current.length > 0 ? selectedKeywords.current.map((keyword) => keyword.value).join(",") : null,
                     startDate: startDate,
                     endDate: endDate,
                     sort: sort,
-                    page: currentPage - 1
+                    pageNo: currentPage - 1
                 }
             }).then((response) => {
                 console.log("Response from filter", response)
@@ -86,24 +89,30 @@ export default function PrescriptionVaultPage() {
         if (loading && data) {
             handleFilter()
         }
-    }, [currentPage, loading])
+    }, [loading])
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            if (sessionContext.sessionData.role === roles.doctor) {
+        if (data) {
+            setLoading(true)
+        }
+    }, [currentPage])
+
+    useEffect(() => {
+        if (sessionContext?.sessionData) {
+            if (sessionContext?.sessionData.role === roles.doctor) {
                 router.push(pagePaths.dashboardPages.sharedPrescriptionPage)
             }
             else {
                 setVerified(true)
             }
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData])
 
     if (!verified) return null
 
     return (
-        <div className={cn("flex flex-col w-full h-full px-3 py-5 gap-3", !(sessionContext.sessionData?.subscribed > 0) && "relative")}>
-            {sessionContext.sessionData && Number(sessionContext.sessionData.subscribed > 0) ? <></> :
+        <div className={cn("flex flex-col w-full h-full px-3 py-5 gap-3", !(sessionContext?.sessionData?.subscribed > 0) && "relative")}>
+            {sessionContext?.sessionData && Number(sessionContext?.sessionData?.subscribed > 0) ? <></> :
                 <div className="w-full h-full flex flex-row justify-between items-center absolute bg-gray-400 bg-opacity-10 rounded-lg z-30">
                     <div className="size-72 flex flex-col items-center gap-3 bg-transparent m-auto bg-opacity-50">
                         <Lock size={72} className="text-purple-600" />
@@ -146,8 +155,8 @@ export default function PrescriptionVaultPage() {
                                                 selectedKeywords.current = newValue
                                             }}
                                             onCreateOption={(keyword) => {
-                                                setKeyWordsOption(prev => [...prev, { value: keyword, label: capitalizeFirstLetter(keyword) }])
-                                                selectedKeywords.current = [...selectedKeywords.current, { value: keyword, label: capitalizeFirstLetter(keyword) }]
+                                                setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
+                                                selectedKeywords.current = [...selectedKeywords.current, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }]
                                             }}
                                         />
                                     </label>
@@ -194,15 +203,28 @@ export default function PrescriptionVaultPage() {
                                 </label>
                                 <label className="flex flex-col justify-evenly">
                                     Sort
-                                    <select defaultValue={"ASC"} id="search-sort" className="border shadow-inner border-purple-500 text-gray-800 rounded p-2">
+                                    <select defaultValue={"DESC"} id="search-sort" className="border shadow-inner border-purple-500 text-gray-800 rounded p-2">
                                         <option value="ASC">Ascending</option>
-                                        <option value="DSC">Descending</option>
+                                        <option value="DESC">Descending</option>
                                     </select>
                                 </label>
                             </div>
-                            <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
-                                Search
-                            </button>
+                            <div className="flex flex-row justify-center items-center gap-4 m-3">
+                                <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { 
+                                    document.getElementById("search-doctorName").value = ""
+                                    document.getElementById("search-hospitalName").value = ""
+                                    document.getElementById("search-keywords").value = ""
+                                    setDateRange({ from: null, to: null })
+                                    document.getElementById("search-sort").value = "DESC"
+                                    setLoading(true)
+                                    setShowFilter(false)
+                                 }}>
+                                    Reset
+                                </button>
+                                <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
+                                    Search
+                                </button>
+                            </div>
                         </div>
                     }
                 </div>
@@ -211,7 +233,7 @@ export default function PrescriptionVaultPage() {
                         <h2 className="text-lg">
                             Documents
                         </h2>
-                        {sessionContext.sessionData && Number(sessionContext.sessionData.subscribed > 0) ?
+                        {sessionContext?.sessionData && Number(sessionContext?.sessionData.subscribed > 0) ?
                             <Link href={pagePaths.dashboardPages.addToVaultPage} className="hover:underline flex flex-row items-center gap-2">
                                 Add Document {<Plus size={20} />}
                             </Link> : <></>
@@ -230,7 +252,7 @@ export default function PrescriptionVaultPage() {
                                     </h2>
                                 }
                                 {data?.content?.map((doc, index) => (
-                                    <Link prefetch={true} href={pagePaths.dashboardPages.prescriptionVaultPageById(doc.id)} key={index} className="flex flex-col gap-2 w-64 p-2 bg-white rounded-md border border-gray-700 items-center">
+                                    <Link prefetch={true} href={pagePaths.dashboardPages.prescriptionVaultPageById(doc.id)} key={index} className="flex flex-col gap-2 w-64 h-80 p-2 bg-white rounded-md border border-gray-700 items-center">
                                         <div className="w-full h-40 rounded-l-md overflow-hidden flex justify-center relative">
                                             <Image
                                                 src={doc.fileLink}
@@ -257,7 +279,6 @@ export default function PrescriptionVaultPage() {
                                         </div>
                                         <div className="flex flex-row justify-between">
                                             <span className="text-sm text-gray-800 flex gap-1 items-center line-clamp-2">
-                                                <Key size={20} />
                                                 {doc.keywords.join(", ")}
                                             </span>
                                         </div>

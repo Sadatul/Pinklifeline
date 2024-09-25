@@ -50,9 +50,9 @@ import { useRouter } from "next/navigation"
 import { addConsultationLocationUrl, isSubset, locationOnline, pagePaths, roles, userInfoRegUrlReq } from "@/utils/constants"
 import axiosInstance from "@/utils/axiosInstance"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useSessionContext } from "@/app/context/sessionContext"
 import Loading from "./loading"
 import { ChambersPage } from "./ChambersPage"
+import { useSessionContext } from "../context/sessionContext"
 
 export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
 
@@ -62,13 +62,13 @@ export function EditDoctorDetailsPage({ userData, setUserData, userId }) {
     return (
         <div className="flex flex-col w-full h-full gap-5 p-5">
             <h1 className="text-2xl font-bold">Doctor Details</h1>
-            <DoctorPersonalInfo userData={userData} />
+            <DoctorPersonalInfo userData={userData} setUserData={setUserData} userId={userId} />
             <ChambersPage />
         </div>
     )
 }
 
-function DoctorPersonalInfo({ userData }) {
+function DoctorPersonalInfo({ userData, setUserData, userId }) {
     const { register, handleSubmit, watch, formState: { errors } } = useForm()
     const [editable, setEditable] = useState(false)
     const onSubmitData = (data) => {

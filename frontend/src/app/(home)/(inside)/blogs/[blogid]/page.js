@@ -5,9 +5,9 @@ import Loading from "@/app/components/loading"
 import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { Separator } from "@/components/ui/separator"
 import axiosInstance from "@/utils/axiosInstance"
-import { avatarAang, blogByIdUrl, blogVoteUrl, pagePaths, ReportTypes } from "@/utils/constants"
+import { avatarAang, blogByIdAnonymousUrl, blogByIdUrl, blogsAnonymousUrl, blogVoteUrl, pagePaths, ReportTypes } from "@/utils/constants"
 import { format } from "date-fns"
-import { CalendarClock, CalendarDays, Clock, ThumbsUpIcon, LinkIcon, Check, Ellipsis } from "lucide-react"
+import { CalendarClock, CalendarDays, Clock, ThumbsUpIcon, LinkIcon, Check, Ellipsis, ArrowLeft, MoveLeft } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -29,24 +29,35 @@ export default function BlogPage() {
     const [disableVote, setDisableVote] = useState(false)
 
     useEffect(() => {
-        axiosInstance.get(blogByIdUrl(params.blogid)).then((res) => {
-            console.log(res.data)
-            setBlog(res.data)
-            const cover = res.data.content.match(/<covertext>(.*?)<\/covertext>/s);
-            const image = res.data.content.match(/<coverimage>(.*?)<\/coverimage>/s);
-            const content = res.data.content.match(/<content>(.*?)<\/content>/s);
-            setCoverText(cover ? cover[1] : null)
-            setCoverImage(image ? image[1] : null)
-            setBlogContent(content ? content[1] : null)
-        }).catch((err) => {
-            console.log(err)
-            if (err?.response?.status === 404) {
-                setBlog(404)
-            }
-        }).finally(() => {
-            setLoading(false)
-        })
-    }, [params.blogid])
+        const loadBlog = (apiUrl) => {
+            setLoading(true)
+            axiosInstance.get(apiUrl).then((res) => {
+                console.log(res.data)
+                setBlog(res.data)
+                const cover = res.data.content.match(/<covertext>(.*?)<\/covertext>/s);
+                const image = res.data.content.match(/<coverimage>(.*?)<\/coverimage>/s);
+                const content = res.data.content.match(/<content>(.*?)<\/content>/s);
+                setCoverText(cover ? cover[1] : null)
+                setCoverImage(image ? image[1] : null)
+                setBlogContent(content ? content[1] : null)
+            }).catch((err) => {
+                console.log(err)
+                if (err?.response?.status === 404) {
+                    setBlog(404)
+                }
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
+        if (sessionContext?.sessionData?.userId) {
+            loadBlog(blogByIdUrl(params.blogid))
+        }
+        else if (!sessionContext?.sessionData?.userId) {
+            console.log("loading blog anonymously")
+            loadBlog(blogByIdAnonymousUrl(params.blogid))
+        }
+        console.log("sessionData:", sessionContext?.sessionData)
+    }, [params.blogid, sessionContext?.sessionData])
 
     if (loading || !blog) return <Loading chose="hand" />
     if (blog === 404) return <h1 className="text-4xl text-center font-bold text-gray-800 m-auto">Blog Not Found</h1>
@@ -55,7 +66,12 @@ export default function BlogPage() {
         <ScrollableContainer className="flex flex-col w-full h-full overflow-x-hidden items-center">
             <div className="flex flex-col gap-7 p-5 w-9/12">
                 <div className="flex flex-col w-full gap-4">
-                    <div className="flex flex-col gap-1 w-full">
+                    <div className="flex flex-col gap-1 w-full relative">
+                        <button className="w-fit bg-transparent absolute -left-20 top-0 text-gray-700" onClick={() => {
+                            window.location.href = pagePaths.blogsPage
+                        }}>
+                            <MoveLeft size={40} />
+                        </button>
                         <h1 className="text-3xl font-bold">{blog.title}</h1>
                         {(coverText && coverText !== "") && <p className="text-xl text-gray-600 font-semibold">{coverText}</p>}
                     </div>
@@ -117,47 +133,49 @@ export default function BlogPage() {
                                     <span id="copy-response-message" className="p-1 absolute w-28 text-center top-10 -left-10 bg-gray-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
                                 </div>
                             </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="w-fit">
-                                        <Ellipsis size={34} className="text-gray-700" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {(sessionContext.sessionData?.userId === blog.authorId) &&
-                                        <>
-                                            <DropdownMenuItem>
-                                                <Link href={pagePaths.updateBlogById(blog.id)} className="flex items-center w-full">
-                                                    Edit
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem>
-                                                <button className="flex items-center w-full" onClick={() => {
-                                                    toast.loading("Deleting Blog")
-                                                    axiosInstance.delete(blogByIdUrl(blog.id)).then((response) => {
-                                                        toast.dismiss()
-                                                        toast.success("Blog Deleted")
-                                                        window.location.href = pagePaths.blogsPage
-                                                    }).catch((error) => {
-                                                        toast.dismiss()
-                                                        toast.error("Error deleting blog")
-                                                        console.log("error deleting blog", error)
-                                                    })
-                                                }}>
-                                                    Delete
-                                                </button>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                        </>
-                                    }
-                                    <DropdownMenuItem>
-                                        <Link href={pagePaths.reportPage(blog.id, ReportTypes.blog)} className="flex items-center w-full">
-                                            Report
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {sessionContext?.sessionData?.userId &&
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="w-fit">
+                                            <Ellipsis size={34} className="text-gray-700" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        {(sessionContext?.sessionData?.userId === blog.authorId) &&
+                                            <>
+                                                <DropdownMenuItem>
+                                                    <Link href={pagePaths.updateBlogById(blog.id)} className="flex items-center w-full">
+                                                        Edit
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem>
+                                                    <button className="flex items-center w-full" onClick={() => {
+                                                        toast.loading("Deleting Blog")
+                                                        axiosInstance.delete(blogByIdUrl(blog.id)).then((response) => {
+                                                            toast.dismiss()
+                                                            toast.success("Blog Deleted")
+                                                            window.location.href = pagePaths.blogsPage
+                                                        }).catch((error) => {
+                                                            toast.dismiss()
+                                                            toast.error("Error deleting blog")
+                                                            console.log("error deleting blog", error)
+                                                        })
+                                                    }}>
+                                                        Delete
+                                                    </button>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                            </>
+                                        }
+                                        <DropdownMenuItem>
+                                            <Link href={pagePaths.reportPage(blog.id, ReportTypes.blog)} className="flex items-center w-full">
+                                                Report
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            }
                         </div>
                     </div>
                     {(coverImage && coverImage !== "") &&

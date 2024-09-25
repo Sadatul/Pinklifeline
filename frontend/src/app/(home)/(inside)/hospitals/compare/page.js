@@ -63,17 +63,19 @@ function ComparePageComponent() {
         setIsMounted(true)
     }, [])
 
-    const getTestOptions = useCallback(
-        debounce(async (searchText, callback) => {
-            try {
-                const response = await axiosInstance.get(getMedicalTestAnonymousUrl, { params: { name: searchText.trim() } });
-                const options = response.data?.map((test) => ({ value: test.id, label: test.name }));
-                callback(options);
-            } catch (error) {
-                console.log(error);
-                callback([]);
-            }
-        }, 500), []);
+    const getTestOptions = (inputValue)=>{
+        return new Promise((resolve)=>{
+            setTimeout(()=>{
+                axiosInstance.get(getMedicalTestAnonymousUrl, { params: { name: inputValue.trim() } }).then((response) => {
+                    const options = response.data?.map((test) => ({ value: test.id, label: test.name }));
+                    resolve(options);
+                }).catch((error) => {
+                    console.log(error);
+                    resolve([]);
+                });
+            }, 500);
+        })
+    }
 
     const getHospitalOneOptions = useCallback(debounce((searchText) => {
         setLoadingOptionsOne(true)
@@ -194,9 +196,7 @@ function ComparePageComponent() {
                             closeMenuOnSelect={false}
                             value={selectedTests}
                             onChange={(selected) => setSelectedTests(selected)}
-                            loadOptions={(inputValue, callback) => {
-                                getTestOptions(inputValue, callback);
-                            }}
+                            loadOptions={getTestOptions}
                             className="min-w-80"
                         />
                     </div>

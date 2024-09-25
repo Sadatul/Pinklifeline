@@ -47,7 +47,7 @@ export function AppointmentsPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (sessionContext.sessionData && fetchAgain) {
+        if (sessionContext?.sessionData && fetchAgain) {
             axiosInstance.get(getAppointmentsUrl).then((res) => {
                 setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
                 setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
@@ -60,13 +60,13 @@ export function AppointmentsPage() {
                 setFetchAgain(false)
             })
         }
-    }, [sessionContext.sessionData, fetchAgain])
+    }, [sessionContext?.sessionData, fetchAgain])
 
-    if (!sessionContext.sessionData) return <Loading />
+    if (!sessionContext?.sessionData) return <Loading />
 
     return (
         <div className="flex flex-col items-center h-full bg-white relative gap-5">
-            {(sessionContext.sessionData.role === roles.doctor) &&
+            {(sessionContext?.sessionData.role === roles.doctor) &&
                 <div className="absolute top-7 right-10" >
                     <div className="flex flex-row min-w-40 shadow-inner bg-gray-200  items-center justify-center p-1 ">
                         {(balance !== null) ?
@@ -179,7 +179,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
             if (newWindow) {
                 newWindow.focus();
             }
-            if (sessionContext.sessionData.role === roles.doctor) {
+            if (sessionContext?.sessionData.role === roles.doctor) {
                 router.push(pagePaths.dashboardPages.doctorLivePrescription)
             }
             else {
@@ -203,7 +203,7 @@ function CurrentAppointmentCard({ appointment, disableCard, setDisableCard, setF
         })
     }
 
-    if (!sessionContext.sessionData) return <Loading />
+    if (!sessionContext?.sessionData) return <Loading />
     return (
         <div className="flex flex-row justify-between items-center flex-wrap bg-white p-2 rounded w-full">
             <div className="flex w-1/3 flex-row items-center">
@@ -415,6 +415,8 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     const [patientInfo, setPatientInfo] = useState(null)
     const router = useRouter()
     const stompContext = useStompContext()
+    // const feedbackMsg = useRef(null)
+    const [feedbackMsg, setFeedbackMsg] = useState("")
 
     const clocks = [
         <Clock12 key={0} size={20} />,
@@ -450,7 +452,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
 
     const cancelAppointment = () => {
         setDisableCard(true)
-        const deleteAppointmentUrl = sessionContext.sessionData.role === roles.doctor ? declineAppointmentUrl(appointment.id) : cancelAppointmentUrl(appointment.id)
+        const deleteAppointmentUrl = sessionContext?.sessionData.role === roles.doctor ? declineAppointmentUrl(appointment.id) : cancelAppointmentUrl(appointment.id)
         axiosInstance.delete(deleteAppointmentUrl).then((res) => {
             toast.success("Appointment deleted")
             deleteAppointmentById(appointment.id)
@@ -481,10 +483,10 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                 console.log("Call created");
                 console.log(response);
                 const message = {
-                    sender: sessionContext.sessionData?.userId,
+                    sender: sessionContext?.sessionData?.userId,
                     receiverId: appointment?.patientID,
                     message: appointmentStartMsg(`${frontEndUrl}/videocall/${response.call.id}`),
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                     type: "TEXT",
                 }
                 stompContext.stompClientRef.current.publish({
@@ -505,8 +507,24 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         })
     }
 
+    const sendFeedback = () => {
+        const messageObject = {
+            sender: sessionContext?.sessionData?.userId,
+            receiverId: appointment?.patientID,
+            message: `Your appointment is cancelled.Feedback from doctor: ${feedbackMsg}`,
+            timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
+            type: "TEXT",
+        }
+        console.log(messageObject)
+        stompContext?.stompClientRef.current?.publish({
+            destination: messageSendUrl,
+            body: JSON.stringify(messageObject),
+        });
+        setFeedbackMsg("")
+    }
+
     const makePayment = () => {
-        if (sessionContext.sessionData.role === roles.doctor) return
+        if (sessionContext?.sessionData.role === roles.doctor) return
         const name = document.getElementById("payment-name-input").value
         const email = document.getElementById("payment-email-input").value
         const number = document.getElementById("payment-number-input").value
@@ -549,11 +567,11 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
         }
     }
 
-    if (!sessionContext.sessionData) return <Loading />
+    if (!sessionContext?.sessionData) return <Loading />
 
     return (
         <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100">
-            {sessionContext.sessionData.role === roles.doctor ?
+            {sessionContext?.sessionData.role === roles.doctor ?
                 <Dialog onOpenChange={(e) => {
                     if (e) {
                         axiosInstance.get(patientInfoUrl(appointment.id)).then((res) => {
@@ -680,7 +698,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                 </div>
             </div>
             <div className="flex flex-row w-full items-center justify-between rounded-t-full h-12 scale-x-105 shadow-md">
-                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.requested) &&
+                {(sessionContext?.sessionData.role === roles.doctor && appointment.status === appointmentStatus.requested) &&
                     <Dialog open={opendialog} onOpenChange={setOpendialog}>
                         <DialogTrigger disabled={disableCard} className="text-green-700 border bg-[#ecfce5]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full">
                             <CircleCheck size={32} /> Accept
@@ -711,7 +729,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                         </DialogContent>
                     </Dialog>
                 }
-                {((sessionContext.sessionData.role === roles.patient && appointment.status === appointmentStatus.accepted)) &&
+                {((sessionContext?.sessionData.role !== roles.doctor && appointment.status === appointmentStatus.accepted)) &&
                     <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
                         <DialogTrigger disabled={disableCard || appointment.isPaymentComplete} className={cn("text-gray-700 border bg-[#fcf5ef]  transition gap-2 flex-1 ease-in shadow flex flex-row items-center justify-center flex-nowrap  h-full")}>
                             <Banknote size={32} /> {appointment.isPaymentComplete ? "PAID" : "PAY"}
@@ -744,7 +762,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                         </DialogContent>
                     </Dialog>
                 }
-                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && appointment.isOnline) &&
+                {(sessionContext?.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && appointment.isOnline) &&
                     <>
                         {!appointment.isPaymentComplete ? (
                             <TooltipProvider delayDuration={400}>
@@ -784,7 +802,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                         )}
                     </>
                 }
-                {(sessionContext.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && !appointment.isOnline) &&
+                {(sessionContext?.sessionData.role === roles.doctor && appointment.status === appointmentStatus.accepted && !appointment.isOnline) &&
                     <AlertDialog>
                         <AlertDialogTrigger disabled={disableCard} className={cn("bg-blue-50 border transition ease-in text-green-500 shadow flex flex-row items-center justify-center flex-nowrap gap-1 flex-1 h-full ")}>
                             Mark Finished
@@ -817,7 +835,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                     <AlertDialog>
                         <AlertDialogTrigger disabled={disableCard} className={cn("bg-blue-200 border transition ease-in text-red-600 shadow flex flex-row items-center justify-center flex-nowrap gap-1 flex-1 h-full ")}>
                             <CircleX size={32} />
-                            {sessionContext.sessionData.role === roles.doctor ? "Decline" : "Cancel"}
+                            {sessionContext?.sessionData.role === roles.doctor ? "Decline" : "Cancel"}
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -827,10 +845,21 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
                                     appointment request.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
+                            {sessionContext?.sessionData.role === roles.doctor &&
+                                <div className="flex flex-row items-center gap-2 w-full">
+                                    <span className="text-base font-semibold">FeedBack</span>
+                                    <input type="text" id="feedback" className="bg-gray-50 border-2 px-2 py-1 border-purple-500 text-gray-900 text-base rounded-lg flex-1" value={feedbackMsg} onChange={(e) => {
+                                        setFeedbackMsg(e.target.value)
+                                    }} />
+                                </div>
+                            }
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={() => {
+                                        if (sessionContext?.sessionData?.role === roles.doctor) {
+                                            sendFeedback()
+                                        }
                                         cancelAppointment()
                                     }}
                                 >Continue</AlertDialogAction>

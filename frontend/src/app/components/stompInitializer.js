@@ -19,9 +19,9 @@ export function SocketInitializer() {
     const sessionContext = useSessionContext()
 
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            stompContext.setUserId(sessionContext.sessionData.userId)
-            if (!sessionContext.sessionData.userId) {
+        if (sessionContext?.sessionData?.userId) {
+            stompContext.setUserId(sessionContext?.sessionData?.userId)
+            if (!sessionContext?.sessionData?.userId) {
                 return
             }
             if (!strompInitializedRef.current) {
@@ -30,35 +30,35 @@ export function SocketInitializer() {
                     debug: function (str) {
                         console.log(str)
                     },
-                    reconnectDelay: 0,
-                    heartbeatIncoming: 4000,
-                    heartbeatOutgoing: 4000
+                    reconnectDelay: 5000,
+                    heartbeatIncoming: 10000,
+                    heartbeatOutgoing: 10000
                 })
                 stompContext.stompClientRef.current.onConnect = (frame) => {
-                    stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionContext.sessionData.userId), (response) => {
+                    stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionContext?.sessionData?.userId), (response) => {
                         console.log(response)
                         const message = JSON.parse(response.body)
                         console.log('Received message')
                         console.log(message)
                         const text = message?.message
-                        if(appointmentStartMsgPattern.test(text)){
-                            toast.message("You have an online appointment",{
+                        if (appointmentStartMsgPattern.test(text)) {
+                            toast.message("You have an online appointment", {
                                 duration: Infinity,
                                 closeButton: true,
                                 position: "bottom-right",
-                                action : {
-                                    label : "Join",
-                                    onClick : ()=>{
+                                action: {
+                                    label: "Join",
+                                    onClick: () => {
                                         window.open(extractLink(text), "_blank")
                                         window.location.href = pagePaths.dashboardPages.patientLivePrescription
                                     }
                                 },
                             })
                         }
-                        setMessageQueue([...messageQueue, message])
+                        setMessageQueue(messages => [...messages, message])
 
                     })
-                    stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(sessionContext.sessionData.userId), (error) => {
+                    stompContext.stompClientRef.current.subscribe(subscribeErrorUrl(sessionContext?.sessionData?.userId), (error) => {
                         console.log(error)
                         console.log(JSON.parse(error.body))
                     })
@@ -78,14 +78,14 @@ export function SocketInitializer() {
             // strompInitializedRef.current = false
             // console.log('Disconnected')
         }
-    }, [stompContext.stompClientRef, router, sessionContext.sessionData])
+    }, [stompContext.stompClientRef, router, sessionContext?.sessionData])
 
     useEffect(() => {
         stompContext.setMessages([])
     }, [pathname])
 
     useEffect(() => {
-        if (messageQueue.length > 0 && sessionContext.sessionData) {
+        if (messageQueue.length > 0 && sessionContext?.sessionData) {
             for (const message of messageQueue) {
                 if (pathname.startsWith('/inbox')) {
                     if (stompContext.openedChat?.userId === message.sender) {
@@ -101,7 +101,7 @@ export function SocketInitializer() {
                     }
                     else {
                         stompContext.chatManager.current.removeAllChats()
-                        axiosInstance.get(getChatsUrl(sessionContext.sessionData.userId)).then((response) => {
+                        axiosInstance.get(getChatsUrl(sessionContext?.sessionData.userId)).then((response) => {
                             console.log("in stompInitializer/subscriber/elseroute")
                             console.log(response)
                             stompContext.chatManager.current.addChats(response.data)
@@ -116,25 +116,11 @@ export function SocketInitializer() {
             }
             setMessageQueue([])
         }
-    }, [messageQueue, sessionContext.sessionData])
+    }, [messageQueue, sessionContext?.sessionData])
 
-    const seeContext = () => {
-        console.log(stompContext.messages)
-        console.log("chats from context")
-        console.log(stompContext.chats)
-        console.log("Chat manager from context")
-        console.log(stompContext.chatManager.current)
-        console.log("Chat manager list from context")
-        console.log(stompContext.chatManager.current.getChatsInOrder())
-        console.log("Opened chat from context")
-        console.log(stompContext.openedChat)
-        console.log("User id from context")
-        console.log(stompContext.userId)
-    }
 
     return (
         <>
-            {/* <button onClick={seeContext} className="border-2 p-3">See contexts values</button> */}
         </>
     )
 }

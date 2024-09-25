@@ -25,7 +25,7 @@ function AddTest() {
     const [addedTests, setAddedTests] = useState([])
     const [pageInfo, setPageInfo] = useState(null)
     const [loadingAddedTests, setLoadingAddedTests] = useState(true)
-    const currentPage = useRef(1)
+    const [currentPage, setCurrentPage] = useState(1)
 
 
     useEffect(() => {
@@ -49,7 +49,7 @@ function AddTest() {
             axiosInstance.get(medicalTestHospitalAnonymousUrl, {
                 params: {
                     hospitalId: hospitalId,
-                    pageNo: currentPage.current - 1,
+                    pageNo: currentPage - 1,
                 }
             }).then((response) => {
                 console.log("added tests", response.data)
@@ -79,6 +79,10 @@ function AddTest() {
             setLoadingTest(false)
         })
     }, 500), [])
+
+    useEffect(()=>{
+        setLoadingAddedTests(true)
+    },[currentPage])
 
     useEffect(() => {
         if (searchTest !== "" && selectedTest?.name !== searchTest) {
@@ -207,10 +211,9 @@ function AddTest() {
                             <Separator className="w-full h-[1.5px] bg-gray-400" />
                             <Pagination
                                 count={pageInfo?.totalPages}
-                                page={currentPage.current}
+                                page={currentPage}
                                 onChange={(event, value) => {
-                                    currentPage.current = value
-                                    setLoadingAddedTests(true)
+                                    setCurrentPage(value)
                                 }}
                                 className=" m-auto"
                                 showFirstButton
@@ -228,7 +231,8 @@ function AddTest() {
 }
 
 function AddedTest({ test, setLoadingAddedTests }) {
-    const [mutableTest, setMutableTest] = useState(test)
+    // const [mutableTest, setMutableTest] = useState(test)
+    const mutableTest = test
     const [editabled, setEditabled] = useState(false)
     const testFeeRef = useRef(null)
     console.log("mutabletest", mutableTest)
@@ -270,10 +274,11 @@ function AddedTest({ test, setLoadingAddedTests }) {
                                 axiosInstance.put(medicalTestHospitalByIdAdminUrl(mutableTest.id), {
                                     fee: testFeeRef.current.value
                                 }).then((response) => {
-                                    setMutableTest({
-                                        ...mutableTest,
-                                        fee: testFeeRef.current.value
-                                    })
+                                    // setMutableTest({
+                                    //     ...mutableTest,
+                                    //     fee: testFeeRef.current.value
+                                    // })
+                                    setLoadingAddedTests(true)
                                     setEditabled(false)
                                     toast.success("Test updated successfully")
                                 }).catch((error) => {

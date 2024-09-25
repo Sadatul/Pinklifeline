@@ -15,15 +15,15 @@ export default function Layout({ children }) {
     const [isVerified, setIsverified] = useState(false)
     const sessionContext = useSessionContext()
     useEffect(() => {
-        if (sessionContext.sessionData) {
-            if (sessionContext.sessionData.role === roles.admin) {
+        if (sessionContext?.sessionData) {
+            if (sessionContext?.sessionData.role === roles.admin) {
                 setIsverified(true)
             }
             else {
                 window.location.href = pagePaths.login
             }
         }
-    }, [sessionContext.sessionData])
+    }, [sessionContext?.sessionData])
 
     if (!isVerified) return null
     return (

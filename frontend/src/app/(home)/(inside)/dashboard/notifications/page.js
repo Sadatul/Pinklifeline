@@ -33,6 +33,7 @@ export default function NotificationPage() {
                     allow: bitValue[index] === 1
                 }
             }))
+            console.log("Notification response: ", response.data)
             setNotificationInfo(response.data)
 
         }).catch((error) => {
@@ -42,7 +43,7 @@ export default function NotificationPage() {
     }, [])
 
     return (
-        <div className="flex flex-col w-full flex-1 p-6 gap-5">
+        <div className="flex flex-col w-full flex-1 p-6 gap-8">
             <h1 className="text-2xl font-bold">Notifications</h1>
             <div className="flex flex-col gap-4">
                 {notifications.map((notification, index) => {
@@ -71,6 +72,17 @@ export default function NotificationPage() {
                         </div>
                     )
                 })}
+            </div>
+            < div className="flex flex-col gap-2 w-full">
+                {/* Disclaimer about what this notification settings will do */}
+                <p className="text-lg font-semibold">By enabling these notifications, you agree to receive notifications for the selected options</p>
+                <p className="text-lg font-semibold">These notifications are for reminder purposes only</p>
+                {/* This notifications help user for self test of breast cancer */}
+                <p className="text-lg font-semibold">Self Test Notification: This notification will remind you to take the self test for breast cancer</p>
+                {/* This notifications help user for period tracking */}
+                <p className="text-lg font-semibold">Period Notification: This notification will remind you to track your period</p>
+                <p className="text-lg font-semibold">Period Notification will help up to set an appropriate self test notifications</p>
+
             </div>
         </div>
     )

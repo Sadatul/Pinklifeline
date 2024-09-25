@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
 import { displayDate, finishWorkUrl, messageSendUrl, pagePaths, radicalGradient, reserveWorkUrl, worksByIdUrl, workStatus } from "@/utils/constants"
-import { CalendarIcon, Loader, Mail, Phone } from "lucide-react"
+import { CalendarIcon, Loader, Mail, Pencil, Phone } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -24,7 +24,7 @@ export default function WorkPage() {
         if (loading) {
             axiosInstance.get(worksByIdUrl(params.workid)).then((response) => {
                 setWorkInfo(response.data)
-                setIsOwnerOrProvider(sessionContext.sessionData.userId === response.data.userId || sessionContext.sessionData.userId === response.data.providerId)
+                setIsOwnerOrProvider(sessionContext?.sessionData.userId === response.data.userId || sessionContext?.sessionData.userId === response.data.providerId)
             }).catch((error) => {
                 console.log(error)
                 if (error.response.status === 404) {
@@ -53,6 +53,7 @@ export default function WorkPage() {
         })
     }
     const sendMesssage = (messageObject) => {
+        console.log("Sending message", messageObject)
         stompContext.stompClientRef.current.publish({
             destination: messageSendUrl,
             body: JSON.stringify(messageObject),
@@ -61,10 +62,10 @@ export default function WorkPage() {
     const handleMessage = (messageText) => {
         if (messageText !== '') {
             const messageObject = {
-                sender: sessionContext.sessionData.userId,
-                receiverId: stompContext.openedChat?.userId,
+                sender: sessionContext?.sessionData.userId,
+                receiverId: workInfo.userId,
                 message: messageText,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000).toISOString(),
                 type: "TEXT",
             }
             sendMesssage(messageObject);
@@ -88,7 +89,7 @@ export default function WorkPage() {
         })
     }
 
-    if (!sessionContext.sessionData) return null
+    if (!sessionContext?.sessionData) return null
     if (loading) return <Loader size={44} className="animate-spin m-auto" />
     if (workInfo === undefined) return <h1 className="text-2xl text-center m-auto text-red-500 font-semibold">Work not found</h1>
 
@@ -128,7 +129,7 @@ export default function WorkPage() {
                 </div>
                 <p className="text-base text-gray-800 break-all px-3">{workInfo.description}</p>
                 <div className="flex flex-row items-center w-full justify-end pt-2 pb-2 px-3 flex-wrap">
-                    {sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED &&
+                    {sessionContext?.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED &&
                         <div className="flex flex-row gap-3 items-center flex-1 justify-start">
                             <textarea className="w-48 h-10 border border-gray-300 rounded-md p-1" placeholder="Enter your message" ref={sendMessageRef} onChange={(e) => {
                                 sendMessageRef.current.style.height = "auto"
@@ -140,24 +141,29 @@ export default function WorkPage() {
                         </div>
                     }
                     <div className="flex flex-row gap-3 items-center">
-                        {(sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.POSTED &&
-                            <button className={cn("bg-red-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => { deleteWork() }}>
-                                Delete Work
-                            </button>
+                        {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.POSTED &&
+                            <div className="flex flex-row gap-3 items-center">
+                                <button className={cn("bg-red-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => { deleteWork() }}>
+                                    Delete Work
+                                </button>
+                                <Link href={pagePaths.dashboardPages.updateWorkPage(params.workid)} className=" text-black border border-gray-300 py-1 px-2 bg-gray-300 text-center align-middle rounded-md hover:scale-95 hover:bg-opacity-90 flex items-center">
+                                    Update Work <Pencil size={20} />
+                                </Link>
+                            </div>
                         }
-                        {(sessionContext.sessionData.userId !== workInfo.userId && workInfo.status === workStatus.POSTED) &&
+                        {(sessionContext?.sessionData.userId !== workInfo.userId && workInfo.status === workStatus.POSTED && sessionContext?.sessionData?.subscribed !== 0) &&
                             <button className={cn("bg-green-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => {
                                 reserveWork()
                             }}>
                                 Accept Work
                             </button>
                         }
-                        {(sessionContext.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
+                        {(sessionContext?.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
                             <button className="bg-red-600 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { rejectWork() }}>
                                 Reject Work
                             </button>
                         }
-                        {(sessionContext.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
+                        {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
                             <button className="bg-gray-800 text-white w-28 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { finishWork() }}>
                                 Finish Work
                             </button>
@@ -165,7 +171,7 @@ export default function WorkPage() {
                     </div>
                 </div>
             </div>
-            {(sessionContext.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
+            {(sessionContext?.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
                 <div className="flex flex-col gap-5 w-9/12 p-4 rounded bg-white">
                     <div className="flex flex-row gap-2 items-center justify-between">
                         <h1 className="text-lg font-bold">Provider details</h1>

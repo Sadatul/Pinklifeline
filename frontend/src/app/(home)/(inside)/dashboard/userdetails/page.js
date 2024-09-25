@@ -13,17 +13,16 @@ export default function Page() {
   const sessionContext = useSessionContext()
 
   useEffect(() => {
-    if (sessionContext.sessionData) {
-      axiosInstance.get(userInfoRegUrlReq(sessionContext.sessionData.userId, sessionContext.sessionData.role)).then((res) => {
+    if (sessionContext?.sessionData) {
+      axiosInstance.get(userInfoRegUrlReq(sessionContext?.sessionData.userId, sessionContext?.sessionData.role)).then((res) => {
         setUserData(res.data)
       }).catch((err) => {
         console.log(err)
       })
     }
-  }, [sessionContext.sessionData])
+  }, [sessionContext?.sessionData])
 
-  if (!sessionContext.sessionData || !userData) return <Loading chose="hand" />
-  if (sessionContext.sessionData.role === roles.patient) return <EditUserDetailsPage isPatient={sessionContext.sessionData.role === roles.patient} userData={userData} setUserData={setUserData} />
-  if (sessionContext.sessionData.role === roles.doctor) return <EditDoctorDetailsPage userData={userData} setUserData={setUserData} userId={sessionContext.sessionData.userId} />
-
+  if (!sessionContext?.sessionData || !userData) return <Loading chose="hand" />
+  if (sessionContext?.sessionData.role === roles.doctor) return <EditDoctorDetailsPage userData={userData} setUserData={setUserData} userId={sessionContext?.sessionData.userId} />
+  else return <EditUserDetailsPage isPatient={sessionContext?.sessionData?.role === roles.patient} userData={userData} setUserData={setUserData} />
 }

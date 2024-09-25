@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react"
-import { getConsultationLocations, locationOnline, pagePaths, updateConsultationLocationUrl } from "@/utils/constants"
+import { convertToAmPm, getConsultationLocations, locationOnline, pagePaths, updateConsultationLocationUrl } from "@/utils/constants"
 import { cn } from "@/lib/utils"
 import { Banknote, Binary, Delete, ExternalLink, HardDriveUploadIcon, MapPinIcon, Pencil, Recycle, RecycleIcon } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
@@ -18,8 +18,8 @@ export function ChambersPage({ className }) {
     const [fetching, setFetching] = useState(true)
 
     useEffect(() => {
-        if (sessionContext.sessionData && fetching) {
-            axiosInstance.get(getConsultationLocations(sessionContext.sessionData.userId)).then((res) => {
+        if (sessionContext?.sessionData && fetching) {
+            axiosInstance.get(getConsultationLocations(sessionContext?.sessionData.userId)).then((res) => {
                 console.log(res)
                 setConsulations(res.data)
             }).catch((error) => {
@@ -29,11 +29,11 @@ export function ChambersPage({ className }) {
             })
         }
 
-    }, [sessionContext.sessionData, fetching])
+    }, [sessionContext?.sessionData, fetching])
 
     function deleteLocation(id) {
         //code for delete is incomplete due to that bitch shuting down my internet
-        axiosInstance.delete(updateConsultationLocationUrl(sessionContext.sessionData.userId, id)).then((res) => {
+        axiosInstance.delete(updateConsultationLocationUrl(sessionContext?.sessionData.userId, id)).then((res) => {
             toast.success("Location deleted")
             setFetching(true)
         }).catch((error) => {
@@ -143,9 +143,9 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                 fees: newFees
             }
             const headers = {
-                "Authorization": `Bearer ${sessionContext.sessionData.token}`
+                "Authorization": `Bearer ${sessionContext?.sessionData.token}`
             }
-            axiosInstance.put(updateConsultationLocationUrl(sessionContext.sessionData.userId, id), updateData).then((res) => {
+            axiosInstance.put(updateConsultationLocationUrl(sessionContext?.sessionData.userId, id), updateData).then((res) => {
                 setData({
                     location: data.isOnline ? locationOnline : newLocation,
                     startTime: newStartTime,
@@ -165,8 +165,8 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
     }
 
     return (
-        <div className="flex flex-row w-full m-1 bg-white rounded-md shadow h-auto justify-between px-6 flex-shrink ">
-            <div className="flex flex-col  px-4 py-2 h-full justify-evenly">
+        <div className="flex flex-row w-full m-1 bg-white rounded-md shadow h-auto justify-between pl-5 pr-2 flex-shrink ">
+            <div className="flex flex-col py-2 h-full justify-evenly">
                 {editable ?
                     (
                         <>
@@ -180,84 +180,83 @@ function ChamberCard({ location, startTime, endTime, workdayString, fees, id, de
                         </>
                     )}
             </div>
-            <div className="flex flex-col  px-4 py-2">
-                {
-                    !editable ?
-                        (<div className="flex flex-row items-center">
-                            <p className="text-lg font-semibold ml-2">{"" + data.startTime}</p>
-                            <p className="text-lg font-semibold ml-2">{"To " + data.endTime}</p>
-                        </div>
+            <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-col  px-4 py-2">
+                    {
+                        !editable ?
+                            (<div className="flex flex-row items-center">
+                                <p className="text-lg font-semibold ml-2">{"" + convertToAmPm(data.startTime)}</p>
+                                <p className="text-lg font-semibold ml-2">{"To " + convertToAmPm(data.endTime)}</p>
+                            </div>
+                            ) : (
+                                <div className="flex flex-row justify-evenly gap-3">
+                                    <div className="flex flex-col">
+                                        <label htmlFor="starttime" className="block text-sm font-medium text-gray-900 dark:text-white">Start time:</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <input type="time" id="startTime-input" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={data.startTime} />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label htmlFor="time" className="block text-sm font-medium text-gray-900 dark:text-white">End time:</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <input type="time" id="endTime-input" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={data.endTime} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                    }
+                    <div className="flex flex-row items-center w-[450px] text-nowrap">
+                        {editable ? (
+                            <div className="flex flex-row items-center mt- flex-wrap">
+                                {availableDays.map((day, index) => (
+                                    <button type="button" key={index} className={cn("flex flex-row items-center border text-black mx-1 px-1 ", day.on ? "bg-gray-100" : "bg-red-400")}
+                                        onClick={() => {
+                                            let newDays = [...availableDays]
+                                            newDays[index].on = !newDays[index].on
+                                            setAvailableDays(newDays)
+                                        }}
+                                    >
+                                        <span className="text-lg font-semibold">{day.day}</span>
+                                    </button>
+                                ))}
+                            </div>
                         ) : (
-                            <div className="flex flex-row justify-evenly gap-3">
-                                <div className="flex flex-col">
-                                    <label htmlFor="starttime" className="block text-sm font-medium text-gray-900 dark:text-white">Start time:</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-                                            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <input type="time" id="startTime-input" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={data.startTime} />
+                            <div className="flex flex-row items-center mt-2 flex-wrap">
+                                {availableDays.map((day, index) => (
+                                    <div key={index} className={cn("flex flex-row items-center border text-black mx-1 my-1 bg-gray-100 rounded-md shadow-inner", day.on ? "" : "hidden")}>
+                                        <span className="text-lg font-semibold mx-2">{day.day}</span>
                                     </div>
-                                </div>
-                                <div className="flex flex-col">
-                                    <label htmlFor="time" className="block text-sm font-medium text-gray-900 dark:text-white">End time:</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-                                            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fillRule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <input type="time" id="endTime-input" className="bg-gray-50 border-2 leading-none border-purple-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" min="00:00" max="23:59" defaultValue={data.endTime} />
-                                    </div>
-                                </div>
+                                ))}
                             </div>
-                        )
-                }
-                {editable ? (
-                    <div className="flex flex-row items-center mt-4 flex-wrap">
-                        {availableDays.map((day, index) => (
-                            <button type="button" key={index} className={cn("flex flex-row items-center border text-black mx-1 px-2 ", day.on ? "bg-gray-100" : "bg-red-400")}
-                                onClick={() => {
-                                    let newDays = [...availableDays]
-                                    newDays[index].on = !newDays[index].on
-                                    setAvailableDays(newDays)
-                                }}
-                            >
-                                <span className="text-lg font-semibold">{day.day}</span>
-                            </button>
-                        ))}
+                        )}
                     </div>
-                ) : (
-                    <div className="flex flex-row items-center mt-4">
-                        {availableDays.map((day, index) => (
-                            <div key={index} className={cn("flex flex-row items-center border text-black mx-2 bg-gray-100 rounded-md shadow-inner", day.on ? "" : "hidden")}>
-                                <span className="text-lg font-semibold mx-2">{day.day}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-            <div className="flex flex-row gap-5 py-2 items-center justify-center h-full">
-                {!editable ? (
-                    <button className="text-white bg-blue-800 px-4 py-1 rounded-md flex items-center gap-2 hover:scale-95" onClick={() => { setEditable(true) }}>
-                        <Pencil size={16} />
-                        Edit</button>
-                ) : (
-                    <button className="text-white bg-green-800 px-4 py-1 rounded-md flex items-center gap-2 hover:scale-95" onClick={() => {
-                        setEditable(false)
-                        update()
-                    }}>
-                        <HardDriveUploadIcon size={16} />
-                        Save</button>
-                )}
-                <button className="border-2 border-red-500 bg-red-50 px-3 py-1 rounded-md hover:scale-95 gap-2" onClick={() => {
-                    deleteLocation(id)
-                }}>
-                    Delete
-                </button>
+                </div>
+                <div className="flex flex-row py-2 items-center justify-center h-full">
+                    {!editable ? (
+                        <button className="text-white bg-blue-800 px-2 py-1 rounded-md flex items-center gap-2 hover:scale-95" onClick={() => { setEditable(true) }}>
+                            <Pencil size={16} />
+                            Edit</button>
+                    ) : (
+                        <button className="text-white bg-green-800 px-2 py-1 rounded-md flex items-center gap-2 hover:scale-95" onClick={() => {
+                            setEditable(false)
+                            update()
+                        }}>
+                            <HardDriveUploadIcon size={16} />
+                            Save
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     )
-
 }

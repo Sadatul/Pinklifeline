@@ -3,8 +3,9 @@
 import StreamVideoProvider from '@/app/providers/StreamVideoProvider';
 import { SessionContextProvider } from "@/app/context/sessionContext"
 import axiosInstance from "@/utils/axiosInstance";
-import { notificationData, subscribeNotficationsUrl } from "@/utils/constants";
+import { getProfilePicUrl, notificationData, pagePaths, roles, sessionDataItem, subscribeNotficationsUrl } from "@/utils/constants";
 import { useEffect, useState } from "react";
+import { usePathname } from 'next/navigation';
 
 const subscribeUser = async () => {
   if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -64,16 +65,54 @@ const subscribeUser = async () => {
 };
 
 const HomeLayout = ({ children }) => {
+  const [sessionData, setSessionData] = useState(undefined)
+  const [isMounted, setIsMounted] = useState(false)
+  const pathname = usePathname()
+
   useEffect(() => {
-    subscribeUser()
+    if (!pathname.startsWith("/blogs") && !pathname.startsWith("/forum") && !pathname.startsWith("/hospitals") && !pathname.startsWith("/search")) {
+      axiosInstance.get(getProfilePicUrl).then((response) => {
+      }).catch((error) => {
+        console.log("error getting profilepic for checking authorization", error)
+        if (error?.response?.status === 401) {
+          localStorage.removeItem(sessionDataItem)
+          // window.location.href = pagePaths.login
+        }
+      }).finally(() => {
+        setIsMounted(true)
+      })
+    }
+    else {
+      setIsMounted(true)
+    }
   }, [])
+
+  useEffect(() => {
+    setSessionData(JSON.parse(localStorage.getItem(sessionDataItem)))
+  }, [])
+
+  useEffect(() => {
+    if (sessionData?.role === roles.patient || sessionData?.role === roles.basicUser) {
+      subscribeUser()
+    }
+  }, [sessionData])
+
+  if (!isMounted) return null
+
+  if (!sessionData) {
+    return (
+      <SessionContextProvider>
+        {children}
+      </SessionContextProvider>
+    )
+  }
 
   return (
     <>
       <SessionContextProvider>
-        {/* <StreamVideoProvider> */}
+        <StreamVideoProvider>
           {children}
-        {/* </StreamVideoProvider> */}
+        </StreamVideoProvider>
       </SessionContextProvider>
     </>
   );

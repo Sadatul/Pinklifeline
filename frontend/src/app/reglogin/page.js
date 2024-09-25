@@ -129,7 +129,7 @@ export default function LoginRegister() {
                     handleSubmit(submitForm)()
                 }}>
                     <label className="text-xl font-bold m-2">Email</label>
-                    <input id="email-input" type="text" placeholder="Email" className="border-2 border-pink-700 rounded-md p-2"
+                    <input id="email-input" type="text" placeholder="Email" className="border-2 border-pink-700 w-64 rounded-md p-2"
                         {...register("email", {
                             required: "Email is required", maxLength: { value: 64, message: "Maximum length allowed is 64" }
                         })} />
@@ -166,12 +166,12 @@ export default function LoginRegister() {
                             </HoverCard>
                         }
                     </div>
-                    <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} />
+                    <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2 w-64" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} />
                     {errors.password?.type === "required" && <span className="text-red-500">{errors.password?.message}</span>}
                     {currentSection === "Register" && (
                         <>
                             <label className="text-xl font-bold mt-5">Confirm Password</label>
-                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2" {...register("confirm_password", { required: true, maxLength: 64 })} />
+                            <input id="confirm_password" type="password" placeholder="Password" className="border-2 border-pink-700 rounded-md p-2 mt-2 w-64" {...register("confirm_password", { required: true, maxLength: 64 })} />
                             <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
                         </>
                     )
