@@ -39,6 +39,7 @@ To verify -> you can use this command ```env | grep TF_VAR_```
 4. This is bring up your structure except for ingress and the ssl certificate.
 5. first take the static ip and add it your domain record in namecheap.
 6. Now first apply managed-cert and then immidiatly apply ingress.yaml. It will take almost 1 hour to provision the certificate. After the certificate is active you can use your domain name with https to connect your backend. ```kubectl get managedcertificate``` use this command to see whether your certificate is active or not
+7. There might be some issues while applying in the ops.tf. commentiong out documentation in google_monitoring_alert_policy". "high_traffic_alert_policy" will work. Later you can uncomment it and the give apply the documentation will be applied. Don't know why but this works
 ## Latest update -> Bring down everything
 1. To eliminate everything, you can run ```terraform destroy```, will bring down the entire infrastructure
 2. To delete the environment varibles you can use, ```unset "${!TF_VAR_@}"```
