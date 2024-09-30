@@ -46,8 +46,9 @@ public class LivePrescriptionHandlerV1 {
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Sorry unable to process Request");
         }
-        messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
-                "/queue/live-prescription", req);
+//        messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
+//                "/queue/live-prescription", req);
+        messagingTemplate.convertAndSend("/topic/live.prescription." + req.getReceiverId(), req);
         log.debug("Message sent to {}", req.getReceiverId());
     }
 
@@ -62,11 +63,17 @@ public class LivePrescriptionHandlerV1 {
     }
 
     public void sendErrorMessage(Long userId, String msg, String details){
-        messagingTemplate.convertAndSendToUser(userId.toString(),
-                "/queue/live-prescription/errors", new ErrorDetails(
-                        LocalDate.now(),
-                        msg,
-                        details
-                ));
+        messagingTemplate.convertAndSend("/topic/live.prescription.errors." + userId, new ErrorDetails(
+                LocalDate.now(),
+                msg,
+                details
+        ));
+
+//        messagingTemplate.convertAndSendToUser(userId.toString(),
+//                "/queue/live-prescription/errors", new ErrorDetails(
+//                        LocalDate.now(),
+//                        msg,
+//                        details
+//                ));
     }
 }
