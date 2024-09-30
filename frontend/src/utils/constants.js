@@ -1,7 +1,9 @@
 import { differenceInDays, format, formatDistanceToNow, sub } from "date-fns";
+import { BellDot, BookCheck, BriefcaseIcon, List, NavigationIcon, Podcast, Share2Icon, UserRound, VaultIcon } from "lucide-react";
+import { Profiler } from "react";
 // import Image from "next/image";
 
-export const baseUrl = 'https://api.pinklifeline.xyz';
+export const baseUrl = 'http://localhost:8080';
 export const frontEndUrl = 'https://www.pinklifeline.xyz';
 export const stompBrokerUrl = `wss://api.pinklifeline.xyz/ws`
 export const loginUrlReq = `${baseUrl}/v1/auth`;
@@ -186,8 +188,8 @@ export function generateFormattedDate(date) {
 
 export const pagePaths = {
     baseUrl: frontEndUrl,
-    login: "/reglogin",
-    register: "/reglogin",
+    login: "/login",
+    register: "/login",
     verifyotp: (email) => {
         if (email) {
             return `/verifyotp?email=${email}`
@@ -551,99 +553,112 @@ export const DashBoardPageLinks = {
     "ROLE_PATIENT": [
         {
             name: "Profile",
-            link: pagePaths.dashboardPages.userdetailsPage
+            link: pagePaths.dashboardPages.userdetailsPage,
+            icon : <UserRound size={24} key={1} /> 
         },
         {
             name: "Appointments",
-            link: pagePaths.dashboardPages.appointmentsPage
+            link: pagePaths.dashboardPages.appointmentsPage, 
+            icon : <List size={24} key={2} />
         },
         {
-            name: "Prescription Vault",
-            link: pagePaths.dashboardPages.prescriptionVaultPage
+            name: "Vault",
+            link: pagePaths.dashboardPages.prescriptionVaultPage, 
+            icon:  <VaultIcon size={24} key={3} />
         },
         {
             name: "Works",
-            link: pagePaths.dashboardPages.worksPage
+            link: pagePaths.dashboardPages.worksPage, 
+            icon : <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Self Test",
-            link: pagePaths.dashboardPages.selfTestPage
-        },
-        {
-            name: "Chatbot",
-            link: pagePaths.dashboardPages.chatbotpage
+            link: pagePaths.dashboardPages.selfTestPage,
+            icon : <BookCheck size={24} key={5} />
         },
         {
             name: "Seek Help",
-            link: pagePaths.dashboardPages.lookaroundPage
+            link: pagePaths.dashboardPages.lookaroundPage,
+            icon : <NavigationIcon size={24} key={6} />
         },
         {
             name: "Notifications",
-            link: pagePaths.dashboardPages.notificationPage
+            link: pagePaths.dashboardPages.notificationPage,
+            icon : <BellDot size={24} key={7} />
         },
         {
             name: "Subscription",
-            link: pagePaths.dashboardPages.subscriptionPage
+            link: pagePaths.dashboardPages.subscriptionPage, 
+            icon : <Podcast size={24} key={8} />
         }
     ],
     "ROLE_BASICUSER": [
         {
             name: "Profile",
-            link: pagePaths.dashboardPages.userdetailsPage
+            link: pagePaths.dashboardPages.userdetailsPage,
+            icon : <UserRound size={24} key={1} /> 
         },
         {
             name: "Appointments",
-            link: pagePaths.dashboardPages.appointmentsPage
+            link: pagePaths.dashboardPages.appointmentsPage,
+            icon : <List size={24} key={2} />
         },
         {
-            name: "Prescription Vault",
-            link: pagePaths.dashboardPages.prescriptionVaultPage
+            name: "Vault",
+            link: pagePaths.dashboardPages.prescriptionVaultPage,
+            icon : <VaultIcon size={24} key={3} />
         },
         {
             name: "Works",
-            link: pagePaths.dashboardPages.worksPage
+            link: pagePaths.dashboardPages.worksPage,
+            icon : <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Self Test",
-            link: pagePaths.dashboardPages.selfTestPage
-        },
-        {
-            name: "Chatbot",
-            link: pagePaths.dashboardPages.chatbotpage
+            link: pagePaths.dashboardPages.selfTestPage,
+            icon : <BookCheck size={24} key={5} />
         },
         {
             name: "Seek Help",
-            link: pagePaths.dashboardPages.lookaroundPage
+            link: pagePaths.dashboardPages.lookaroundPage,
+            icon : <NavigationIcon size={24} key={6} />
         },
         {
             name: "Notifications",
-            link: pagePaths.dashboardPages.notificationPage
+            link: pagePaths.dashboardPages.notificationPage,
+            icon : <BellDot size={24} key={7} />
         },
         {
             name: "Subscription",
-            link: pagePaths.dashboardPages.subscriptionPage
+            link: pagePaths.dashboardPages.subscriptionPage,
+            icon : <Podcast size={24} key={8} />
         }
     ],
     "ROLE_DOCTOR": [
         {
             name: "Profile",
-            link: pagePaths.dashboardPages.userdetailsPage
+            link: pagePaths.dashboardPages.userdetailsPage,
+            icon : <UserRound size={24} key={1} />
         },
         {
             name: "Appointments",
-            link: pagePaths.dashboardPages.appointmentsPage
+            link: pagePaths.dashboardPages.appointmentsPage,
+            icon : <List size={24} key={2} />
         },
         {
-            name: "Shared Prescriptions",
-            link: pagePaths.dashboardPages.sharedPrescriptionPage
+            name: "Shared Reports",
+            link: pagePaths.dashboardPages.sharedPrescriptionPage,
+            icon : <Share2Icon size={24} key={3} />
         },
         {
             name: "Works",
-            link: pagePaths.dashboardPages.worksPage
+            link: pagePaths.dashboardPages.worksPage,
+            icon : <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Subscription",
-            link: pagePaths.dashboardPages.subscriptionPage
+            link: pagePaths.dashboardPages.subscriptionPage,
+            icon : <Podcast size={24} key={5} />
         }
     ],
 }

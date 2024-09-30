@@ -4,17 +4,19 @@ import ScrollableContainer from "@/app/components/StyledScrollbar"
 import { useSessionContext } from "@/app/context/sessionContext"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { DashBoardPageLinks, DashboardPagesInfos, radicalGradient, roles, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
+import { DashBoardPageLinks, DashboardPagesInfos, pagePaths, radicalGradient, roles, sessionDataItem, userInfoRegUrlReq } from "@/utils/constants"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { BotMessageSquare, EllipsisIcon, Send, SendHorizonal, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
+// import { AnimatePresence, motion } from "framer-motion"
 
 export default function Layout({ children }) {
     const [sessionData, setSessionData] = useState(null)
+    const pathname = usePathname()
     useEffect(() => {
         if (!localStorage.getItem(sessionDataItem)) {
             window.location.href = pagePaths.login
@@ -23,11 +25,12 @@ export default function Layout({ children }) {
     }, [])
     if (!sessionData) return null
     return (
-        <div className="flex flex-1 overflow-hidden text-black break-all">
+        <div className="flex flex-1 overflow-hidden text-black break-all bg-gray-100">
             {/* Sidebar */}
             <SideBar />
             {/* Main Content */}
-            <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden">
+
+            <ScrollableContainer className="flex flex-col flex-1 overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden bg-white">
                 {children}
             </ScrollableContainer>
         </div>
@@ -40,25 +43,32 @@ function SideBar() {
     const [openChatBot, setOpenChatBot] = useState(false)
 
     return (
-        <div className={cn(radicalGradient, "from-purple-100 to-pink-50", "w-64 h-full items-center flex flex-col p-4 mr-[2px] rounded-r-lg")}>
-            <h1 className="text-black text-2xl font-bold">Dashboard</h1>
-            <div className="flex flex-col gap-6 flex-1 justify-center mb-10">
+        <div className={cn("w-64 h-full items-center flex flex-col p-4 mr-[2px] bg-gray-100")}>
+            <div className="flex flex-col gap-2 flex-1 justify-center mb-10 drop-shadow-xl px-1">
                 {DashBoardPageLinks[sessionContext?.sessionData.role].map((page, index) => (
-                    <Link key={index} href={page.link} className={cn("text-black text-xl text-center w-52", pathname === page.link ? "bg-purple-300 rounded bg-opacity-70" : "text-opacity-75")} onClick={() => {
+                    <Link key={index} href={page.link} className={cn("flex items-center w-full drop-shadow-md py-1 px-4 rounded-xl", pathname === page.link ? "bg-purple-900 bg-opacity-70 text-gray-50 text-xl pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-lg hover:bg-white hover:text-gray-800 hover:translate-x-4 transition-all ease-linear ")} onClick={() => {
                         if (sessionContext?.sessionData?.subscribed === 0) {
                             toast.message("Please subscribe to access this feature", {
                                 duration: 5000,
                             })
                             return
                         }
-                        if (page.link === "#" && sessionContext?.sessionData?.subscribed !== 0) {
-                            setOpenChatBot(true)
-                        }
                     }} >
-                        {page.name}
+                        <span className="flex flex-row items-center gap-3">
+                            {/* {React.createElement(page.icon, { size: 24, className: "" })} */}
+                            {page.icon}
+                            {page.name}
+                        </span>
                     </Link>
                 ))}
             </div>
+            {(sessionContext?.sessionData.role !== roles.doctor && sessionContext?.sessionData.subscribed !== 0 && !openChatBot) && (
+                <button className="flex flex-row items-center justify-center w-14 h-14 rounded-full bg-pink-500 text-white drop-shadow-xl fixed right-5 bottom-5 hover:scale-95" onClick={() => {
+                    setOpenChatBot(true)
+                }}>
+                    <BotMessageSquare size={32} />
+                </button>
+            )}
             <ChatBox openChatBot={openChatBot} setOpenChatBot={setOpenChatBot} />
         </div>
     )
@@ -136,7 +146,7 @@ function ChatBox({ openChatBot, setOpenChatBot }) {
     return (
         <AnimatePresence>
             {openChatBot && (
-                <motion.div className="w-96 h-[500px] fixed rounded-md bg-white border border-gray-600 left-[265px] bottom-2 z-50 flex flex-col justify-between"
+                <motion.div className="w-96 h-[500px] fixed rounded-md bg-white border border-gray-600 right-5 bottom-5 z-50 flex flex-col justify-between"
                     initial={{ opacity: 0, y: '100%' }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: '100%' }}
@@ -184,7 +194,7 @@ function ChatBox({ openChatBot, setOpenChatBot }) {
                             </div>
                         }
                     </ScrollableContainer>
-                    <div className="w-full max-h-[100px] flex flex-row justify-between bg-purple-500 bg-opacity-90 text-white p-1 relative">
+                    <div className="w-full max-h-[100px] flex flex-row justify-between bg-purple-200 bg-opacity-90 text-white p-1 relative">
                         <textarea disabled={chat === null} type="text" className="flex-1 bg-transparent outline-none max-h-[90px] text-gray-800 bg-white shadow-inner rounded-md p-1 text-sm pr-9" id="chatbot-input" onChange={(e) => {
                             if (e.target.scrollHeight < 90) {
                                 document.getElementById("chatbot-input").style.height = "auto";

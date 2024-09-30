@@ -50,7 +50,7 @@ export function AppointmentsPage() {
         if (sessionContext?.sessionData && fetchAgain) {
             axiosInstance.get(getAppointmentsUrl).then((res) => {
                 setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
-                setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
+                setRequestedAppointments(res?.data.filter(appointment => true))
                 setAppointments(res?.data.filter(appointment => (appointment.status !== appointmentStatus.running && appointment.status !== appointmentStatus.requested)))
                 setFetchAgain(false)
             }).catch((error) => {
@@ -68,7 +68,7 @@ export function AppointmentsPage() {
         <div className="flex flex-col items-center h-full bg-white relative gap-5">
             {(sessionContext?.sessionData.role === roles.doctor) &&
                 <div className="absolute top-7 right-10" >
-                    <div className="flex flex-row min-w-40 shadow-inner bg-gray-200  items-center justify-center p-1 ">
+                    <div className="flex flex-row min-w-40 shadow-inner bg-gray-200 rounded-xl items-center justify-center p-1 ">
                         {(balance !== null) ?
                             <div className="flex items-center w-full justify-between px-3 gap-2">
                                 <span className="text-sm font-semibold">Balance: {balance}</span>
@@ -105,7 +105,7 @@ export function AppointmentsPage() {
                     <span className=" absolute inline-flex rounded-full size-3 bg-purple-500"></span>
                 </span>
                 <h1 className="text-lg font-semibold">You have currently running Appointments</h1>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 drop-shadow-lg">
                     {currentAppointments?.map((appointment, index) => (
                         <CurrentAppointmentCard key={index}
                             appointment={appointment}
@@ -115,11 +115,11 @@ export function AppointmentsPage() {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col gap-4 mt-4 bg-blue-100 p-4 rounded-md mx-2 w-11/12">
+            <div className="flex flex-col gap-4 mt-4 bg-blue-50 p-4 rounded-xl mx-2 w-11/12">
                 <h1 className="text-lg font-semibold">Requested Appointments</h1>
                 <Separator className="w-full bg-pink-400 h-[1.5px]" />
                 {requestedAppointments?.length > 0 ? (
-                    <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full bg-white p-3 rounded-md flex-wrap items-center justify-start">
+                    <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full p-3 rounded-md flex-wrap items-center justify-start">
                         {requestedAppointments?.map((appointment, index) => (
                             <AppointmentCard key={index}
                                 appointment={appointment}
@@ -136,7 +136,7 @@ export function AppointmentsPage() {
                 )}
             </div>
             {/* UpComing Appointments */}
-            <div className="flex flex-col gap-4 mt-4 bg-gray-100 p-4 rounded-md mx-2 w-11/12">
+            <div className="flex flex-col gap-4 mt-4 bg-zinc-100 p-4 rounded-md mx-2 w-11/12">
                 <AppointmentSection
                     appointments={appointments}
                     setAppointments={setAppointments}
@@ -348,7 +348,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
                 </h1>
                 <div className="flex flex-row gap-8">
                     <Popover>
-                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
+                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-300 border min-w-24">
                             {secondarySelectionCriteria?.name}
                         </PopoverTrigger>
                         <PopoverContent className="w-auto">
@@ -367,7 +367,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
                         </PopoverContent>
                     </Popover>
                     <Popover>
-                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-500 border min-w-24">
+                        <PopoverTrigger className="bg-white px-3 py-1 rounded-md border-gray-300 border min-w-24">
                             {selectionCriteria?.name}
                         </PopoverTrigger>
                         <PopoverContent className="w-auto">
@@ -389,7 +389,7 @@ function AppointmentSection({ appointments, setAppointments, disableCard, setDis
                 </div>
             </div>
             <Separator className="w-full bg-pink-400 h-[1.5px]" />
-            <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full bg-white p-3 rounded-md flex-wrap items-center justify-start">
+            <ScrollableContainer className="flex flex-row gap-8 max-h-96 overflow-y-auto overflow-x-hidden w-full p-3 rounded-md flex-wrap items-center justify-start ">
                 {selectedAppointments?.map((selectedAppointment, index) => (
                     <AppointmentCard key={index}
                         appointment={selectedAppointment}
@@ -570,7 +570,7 @@ function AppointmentCard({ appointment, disableCard, setDisableCard, deleteAppoi
     if (!sessionContext?.sessionData) return <Loading />
 
     return (
-        <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100">
+        <div disabled className="flex flex-col justify-between items-center w-[250px] my-2  gap-3 scale-x-90 h-72 border-x bg-pink-100 drop-shadow-xl">
             {sessionContext?.sessionData.role === roles.doctor ?
                 <Dialog onOpenChange={(e) => {
                     if (e) {

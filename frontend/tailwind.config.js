@@ -84,6 +84,9 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
       },
+      boxShadow: {
+        reflection: '0 1px 5px rgba(0, 0, 0, 0.1)', // Shadow for reflection
+      },
     },
   },
   plugins: [
@@ -109,6 +112,15 @@ module.exports = {
         },
         '.text-shadow-lg': {
           textShadow: '3px 3px 6px rgba(0, 0, 0, 0.5)',
+        },
+      });
+    },
+    function ({ addUtilities }) {
+      addUtilities({
+        '.text-reflection': {
+          transform: 'scaleY(-1)', // Flips the text vertically
+          opacity: '0.5', // Controls the transparency of the reflection
+          filter: 'blur(2px)', // Optional: Add a slight blur to the reflection
         },
       });
     },

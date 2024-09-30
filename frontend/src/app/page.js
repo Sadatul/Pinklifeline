@@ -95,17 +95,17 @@ export default function Home() {
         id="navbar" className="bg-white h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink"
       >
         <Link href={"/"} className="w-fit h-full flex flex-row justify-center items-center flex-wrap ml-16">
-          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={logoIcon.src} alt="logo" width={200} height={60} />
+          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={logoIcon.src} alt="logo" width={128} height={60} />
           {/* <Image loading='lazy' className="shrink" src={logoText.src} alt="logo-text" width={250} height={100} /> */}
         </Link >
         <div className="w-6/12 text-xl text-center h-full flex flex-row justify-center items-center space-x-6 flex-wrap">
-          <Link href="#features" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Features</Link>
-          <Link href="#aboutus" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>About Us</Link>
-          <Link href="#blog" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
-          <Link href="#forum" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
-          <Link href="#hospital" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Hospitals</Link>
-          <Link href="#team" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Team</Link>
-          <Link href="#contact" className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Contact Us</Link>
+          <Link href="#features" className={navBarLinksCSS}>Features</Link>
+          <Link href="#aboutus" className={navBarLinksCSS}>About Us</Link>
+          <Link href="#blog" className={navBarLinksCSS}>Blog</Link>
+          <Link href="#forum" className={navBarLinksCSS}>Forum</Link>
+          <Link href="#hospital" className={navBarLinksCSS}>Hospitals</Link>
+          <Link href="#team" className={navBarLinksCSS}>Team</Link>
+          <Link href="#contact" className={navBarLinksCSS}>Contact Us</Link>
         </div>
         <div className="flex flex-shrink flex-row justify-end items-center w-2/12 mr-10">
           <Link href={pagePaths.register} prefetch={true} id="reglogin" className="scale-90 rounded-2xl border-4 py-1 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</Link>
@@ -273,7 +273,7 @@ export default function Home() {
               Hospital Info
             </span>
             <span className="text-2xl font-semibold text-blue-700 text-center">
-              Treatment, Information, Reccommendations.
+              Treatment, Tests, Reccommendations.
             </span>
           </div>
           <Link href={pagePaths.allHospitalsPage} className="mt-5 items-center gap-3 w-56 flex flex-row text-lg hover:underline hover:scale-110 transition ease-in-out duration-300" >

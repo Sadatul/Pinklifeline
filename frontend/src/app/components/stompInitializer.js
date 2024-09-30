@@ -45,7 +45,7 @@ export function SocketInitializer() {
                             toast.message("You have an online appointment", {
                                 duration: Infinity,
                                 closeButton: true,
-                                position: "bottom-right",
+                                position: 'top-right',
                                 action: {
                                     label: "Join",
                                     onClick: () => {

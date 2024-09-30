@@ -1,10 +1,10 @@
-import { Inter } from "next/font/google";
+import { Inter, Lato, Montserrat, Nunito, Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import NextTopLoader from 'nextjs-toploader';
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Montserrat({ subsets: ["latin"], weight :"400" });
 
 export const metadata = {
   title: "Pink Life Line",
