@@ -120,10 +120,10 @@ export default function BlogsPage() {
     }, [filter])
 
     return (
-        <ScrollableContainer className="flex flex-col w-full gap-3 p-5 overflow-x-hidden h-full">
-            <div className="flex flex-col w-full bg-gradient-to-r from-purple-100 to-transparent p-3 rounded gap-3">
+        <ScrollableContainer className="flex flex-col w-full gap-4 px-5 py-2 overflow-x-hidden h-full">
+            <div className="flex flex-col w-full p-3 rounded gap-5">
                 <div className="flex flex-row gap-3 items-center">
-                    <button className="w-fit bg-transparent" onClick={() => {
+                    <button className="rounded-full p-1 bg-gray-300 " onClick={() => {
                         if (sessionContext?.sessionData?.userId) {
                             window.history.back()
                         } else {
@@ -134,42 +134,40 @@ export default function BlogsPage() {
                     </button>
                     <h1 className="text-3xl font-bold">Blogs</h1>
                 </div>
-                <div className="flex flex-row w-full justify-between gap-5">
+                <div className="flex flex-row w-full justify-between gap-5 px-5">
                     <div className="relative flex items-center gap-5">
-                        <input type="text" placeholder="Search titles..." className="pl-8 pr-4 py-1 border rounded border-purple-500 shadow-inner min-w-96 text-black" id="search-title-field" defaultValue={filter.title} />
+                        <input type="text" placeholder="Search titles..." className="pl-8 pr-4 py-1 border border-gray-300 focus:outline-zinc-400 shadow-inner min-w-96 text-black rounded-2xl" id="search-title-field" defaultValue={filter.title} />
                         <SearchIcon size={20} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-700" />
-                        <button className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1" onClick={() => {
+                        <button className="bg-pink-800 text-white hover:scale-95 px-3 py-1 rounded-2xl" onClick={() => {
                             setFilter({ ...filter, title: document.getElementById('search-title-field') ? document.getElementById('search-title-field').value.trim() === "" ? null : document.getElementById('search-title-field').value.trim() : null });
                         }}>
                             Search
                         </button>
                         <Sheet>
                             <SheetTrigger asChild>
-                                <button className="bg-gray-600 border-b-gray-900 hover:scale-95 px-3 py-1 rounded text-white">
+                                <button className="bg-gray-600 border-b-gray-900 hover:scale-95 px-3 py-1 rounded-2xl text-white">
                                     Add Filter
                                 </button>
                             </SheetTrigger>
-                            <SheetContent>
+                            <SheetContent className="flex flex-col justify-between h-full">
                                 <SheetHeader>
                                     <SheetTitle>Filter</SheetTitle>
                                     <SheetDescription>
                                         Add other filters to your search
                                     </SheetDescription>
                                 </SheetHeader>
-                                <div className="flex flex-col gap-5 p-5 text-lg flex-1">
-                                    <div className="flex flex-col gap-2">
-                                        Doctor Name
-                                        <input defaultValue={filter.doctorName || ""} autoComplete="off" id="doctorName" className="border shadow-inner border-purple-500 min-w-72 rounded px-2" />
+                                <div className="flex flex-col gap-10 p-5 text-lg flex-1">
+                                    <div className="flex flex-col gap-2 text-base">
+                                        <input defaultValue={filter.doctorName || ""} placeholder="Doctor name" autoComplete="off" id="doctorName" className="border shadow-inner border-gray-300 focus:outline-gray-400 w-full px-3 py-1 rounded-xl" />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        Start Date - End Date
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     id="date"
                                                     variant={"outline"}
                                                     className={cn(
-                                                        "w-64 justify-start text-left font-normal border border-purple-500",
+                                                        "w-full rounded-xl  justify-start text-left font-normal border border-gray-300 focus:outline-gray-400 shadow-inner",
                                                         !dateRange && "text-muted-foreground"
                                                     )}
                                                 >
@@ -200,25 +198,22 @@ export default function BlogsPage() {
                                             </PopoverContent>
                                         </Popover>
                                     </div>
-                                    <div className="flex flex-row gap-2 items-center text-black text-lg">
-                                        Sort Type
-                                        <select id="sortType" defaultValue={filter.sortType} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                    <div className="flex flex-row gap-5 items-center text-black text-lg">
+                                        <select id="sortType" defaultValue={filter.sortType} className=" px-3 py-1 shadow-inner border border-gray-300 focus:outline-gray-400 w-fit rounded-xl text-base">
                                             <option value="TIME">Time</option>
                                             <option value="VOTES">Vote</option>
                                         </select>
-                                    </div>
-                                    <div className="flex flex-row gap-2 items-center text-black text-lg">
-                                        Sort
-                                        <select id="sortDirection" defaultValue={filter.sortDirection} className="border p-2 shadow-inner border-purple-500 w-36 rounded text-base">
+                                        <select id="sortDirection" defaultValue={filter.sortDirection} className=" px-3 py-1 shadow-inner border border-gray-300 focus:outline-gray-400 w-fit rounded-xl text-base">
                                             <option value="ASC">Ascending</option>
                                             <option value="DESC">Descending</option>
                                         </select>
                                     </div>
-                                    <Separator className="h-[2px] bg-purple-800" />
+                                    <div className="flex flex-row gap-2 items-center text-black text-lg">
+                                    </div>
                                 </div>
                                 <SheetFooter>
                                     <div className="flex flex-row justify-between items-center w-full">
-                                        <Button className="bg-red-500 text-white hover:text-red-500 hover:scale-95 hover:border hover:border-red-500" size="lg" variant={"outline"} onClick={() => {
+                                        <Button className="bg-red-500 text-white rounded-2xl hover:text-red-500 hover:scale-95 hover:border hover:border-red-500" size="lg" variant={"outline"} onClick={() => {
                                             document.getElementById('doctorName').value = '';
                                             document.getElementById('sortDirection').value = 'DESC';
                                             document.getElementById('sortType').value = 'TIME';
@@ -237,21 +232,21 @@ export default function BlogsPage() {
                                                 startDate: generateFormattedDate(dateRange.from),
                                                 endDate: generateFormattedDate(dateRange.to),
                                             });
-                                        }} className="hover:scale-95 hover:border hover:bg-white shadow-inner hover:text-black">
+                                        }} className="hover:scale-95 hover:border hover:bg-white shadow-inner hover:text-black rounded-2xl">
                                             Apply
                                         </Button>
                                     </div>
                                 </SheetFooter>
                             </SheetContent>
                         </Sheet>
-                        <Link href={pagePaths.addBlogPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 px-3 py-1  text-white ml-10 border rounded">
-                            <PencilLine size={28} className="text-black" />
+                        <Link href={pagePaths.addBlogPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 p-1  text-white ml-10 border rounded-full">
+                            <PencilLine size={24} className="text-black" />
                         </Link>
                     </div>
                 </div>
             </div>
             <Separator className="h-[2.5px] bg-gradient-to-b from-purple-200 to-purple-700" />
-            <div className="flex flex-col w-full gap-5 flex-grow">
+            <div className="flex flex-col w-full gap-5 flex-grow drop-shadow-xl">
                 <div className="flex flex-row gap-5 w-full flex-1 py-3">
                     <div className="flex flex-col gap-2 flex-1 justify-between">
                         <div className="flex flex-col flex-1">
@@ -260,25 +255,24 @@ export default function BlogsPage() {
                                     {
                                         blogs.map((blog, index) => (
                                             <React.Fragment key={index}>
-                                                <div className={cn("flex flex-row justify-between gap-2 p-5 rounded bg-gradient-to-r from-indigo-100 to-transparent to-75%")}>
+                                                <div className={cn("flex flex-row justify-between gap-2 p-5 rounded-2xl shadow-lg")}>
                                                     <div className="flex flex-col gap-2 flex-1 p-1">
                                                         <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
-                                                        <div className="flex flex-row items-center gap-3">
-                                                            <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-base hover:underline mr-5 gap-1 flex items-center">
+                                                        <div className="flex flex-row items-center gap-2">
+                                                            <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-lg hover:underline mr-1 gap-1 flex items-center">
                                                                 <Avatar avatarImgSrc={blog.authorProfilePicture} size={32} />
                                                                 {blog.author}
                                                             </Link>
-                                                            <p className="text-sm">{displayDate(blog.createdAt)}</p>
-                                                            <span className="flex items-center gap-1">
-                                                                <ThumbsUp size={20} className="text-pink-700" />
-                                                                <span className="text-sm">{blog.upvoteCount}</span>
-                                                            </span>
+                                                            <p className="text-sm text-gray-600">{displayDate(blog.createdAt)}</p>
                                                         </div>
-                                                        {blog.content && <p className="text-lg line-clamp-3 break-all">{blog.content}</p>}
+                                                        {blog.content && <p className="text-lg line-clamp-3 break-normal">{blog.content}</p>}
+                                                        <span className="flex items-center gap-1">
+                                                            <ThumbsUp size={20} className="text-pink-700" />
+                                                            <span className="text-sm">{blog.upvoteCount}</span>
+                                                        </span>
                                                     </div>
                                                     {blog.coverImage && <Image src={blog.coverImage} alt="babyImage" width={200} height={200} />}
                                                 </div>
-                                                <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
                                             </React.Fragment>
                                         ))
                                     }
@@ -286,12 +280,13 @@ export default function BlogsPage() {
                             }
                         </div>
                         <div className="w-full h-fit flex flex-col justify-center items-center">
-                            {(pageInfo?.totalPages > 0) &&
+                            {(pageInfo?.totalPages > 1) &&
                                 <Pagination
                                     count={pageInfo?.totalPages}
                                     shape="rounded"
                                     className="m-auto"
                                     showLastButton
+                                    showFirstButton
                                     page={filter.pageNo + 1}
                                     onChange={(event, value) => {
                                         setFilter(prev => ({ ...prev, pageNo: value - 1 }))
@@ -301,11 +296,11 @@ export default function BlogsPage() {
                         </div>
                     </div>
                     <Separator orientation="vertical" className="bg-gray-500 w-[1.5px] h-full" />
-                    <div className="flex flex-col gap-4 w-3/12 bg-gradient-to-b from-zinc-100 to-transparent rounded p-3">
+                    <div className="flex flex-col gap-4 w-3/12 bg-zinc-50  rounded-2xl shadow-lg p-3">
                         <div className="flex flex-col w-full gap-2">
                             <h2 className="text-2xl font-bold text-amber-600">Trending Topics</h2>
                             <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
-                            <div className="flex flex-row max-w-72 gap-2 flex-wrap p-3 justify-center">
+                            <div className="flex flex-row w-full gap-2 flex-wrap justify-center items-center">
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Cancer</Badge>
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Breast Cancer</Badge>
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Health</Badge>

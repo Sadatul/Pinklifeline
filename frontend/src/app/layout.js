@@ -4,7 +4,7 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import NextTopLoader from 'nextjs-toploader';
 import "./globals.css";
 
-const inter = Montserrat({ subsets: ["latin"], weight :"400" });
+const inter = Montserrat({ subsets: ["latin"], weight :"500" });
 
 export const metadata = {
   title: "Pink Life Line",

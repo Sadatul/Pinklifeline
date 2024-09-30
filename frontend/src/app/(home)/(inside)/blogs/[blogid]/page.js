@@ -63,121 +63,123 @@ export default function BlogPage() {
     if (blog === 404) return <h1 className="text-4xl text-center font-bold text-gray-800 m-auto">Blog Not Found</h1>
 
     return (
-        <ScrollableContainer className="flex flex-col w-full h-full overflow-x-hidden items-center">
-            <div className="flex flex-col gap-7 p-5 w-9/12">
+        <ScrollableContainer className="flex flex-col w-full h-full overflow-x-hidden items-center relative">
+            <button className="absolute left-5 top-3 text-gray-900 rounded-full bg-gray-200 p-1 hover:scale-95" onClick={() => {
+                window.location.href = pagePaths.blogsPage
+            }}>
+                <ArrowLeft size={32} />
+            </button>
+            <div className="flex flex-col gap-6 p-5 w-9/12 relative">
                 <div className="flex flex-col w-full gap-4">
-                    <div className="flex flex-col gap-1 w-full relative">
-                        <button className="w-fit bg-transparent absolute -left-20 top-0 text-gray-700" onClick={() => {
-                            window.location.href = pagePaths.blogsPage
-                        }}>
-                            <MoveLeft size={40} />
-                        </button>
-                        <h1 className="text-3xl font-bold">{blog.title}</h1>
-                        {(coverText && coverText !== "") && <p className="text-xl text-gray-600 font-semibold">{coverText}</p>}
-                    </div>
-                    <div className="flex items-center text-base gap-3">
-                        <Avatar avatarImgSrc={blog.authorProfilePicture} size={64} />
-                        < div className="flex flex-col gap-0">
-                            <Link href={pagePaths.doctorProfile(blog.authorId)} target='_blank' className="flex items-center hover:underline font-semibold">
-                                <span className="text-lg">{blog.authorName}</span>
-                            </Link>
-                            <span className="text-sm">{blog.authorQualifications.join(", ")}</span>
-                            <span className="text-sm">
-                                {`${blog.authorDesignation}, ${blog.authorDepartment}, ${blog.authorWorkplace}`}
-                            </span>
+                    <div className="flex flex-col w-full gap-0">
+                        <div className="flex flex-col gap-1 w-full ">
+                            <h1 className="text-3xl font-bold">{blog.title}</h1>
                         </div>
-                    </div>
-                    <div className="flex flex-col gap-2 mb-5">
-                        <span className="text-base gap-5 flex items-center">
+                        <span className="text-sm gap-5 flex flex-col items-end">
                             <span className="flex gap-1 items-center">
                                 <CalendarClock size={20} />
-                                {format(new Date(blog.createdAt), "'Created at' eeee dd MMMM yyyy',' hh:mm a")}
+                                {format(new Date(blog.createdAt), "eeee dd MMMM yyyy',' hh:mm a")}
                             </span>
                         </span>
-                        <div className="flex gap-4 items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <button disabled={disableVote} className="flex gap-1 items-center text-xl font-semibold w-20" onClick={() => {
-                                    setDisableVote(true)
-                                    axiosInstance.put(blogVoteUrl(blog.id)).then((res) => {
-                                        setBlog({
-                                            ...blog,
-                                            voteId: blog.voteId ? null : true,
-                                            upvoteCount: Number(blog.upvoteCount) + Number(res.data?.voteChange)
-                                        })
-
-                                    }).catch((err) => {
-                                        console.log(err)
-                                    }).finally(() => {
-                                        setDisableVote(false)
-                                    })
-                                }} >
-                                    {!blog.voteId ? <ThumbsUpIcon size={26} /> : <ThumbsUpIcon fill="rgb(219 39 119)" size={26} className=" bg-pi" />} {blog.upvoteCount}
-                                </button>
-                                <div className="flex flex-col w-fit relative">
-                                    <button id="copy-button" className="rounded-full p-2 text-black bg-pink-300" onClick={() => {
-                                        navigator.clipboard.writeText(`${pagePaths.baseUrl}${pagePaths.blogPageById(blog.id)}`)
-                                        document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`
-                                        document.getElementById("copy-button").classList.remove("bg-pink-300")
-                                        document.getElementById("copy-button").classList.add("bg-gray-300")
-                                        document.getElementById("copy-response-message").classList.remove("hidden")
-                                        const timer = setTimeout(() => {
-                                            document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
-                                            document.getElementById("copy-button").classList.remove("bg-gray-300")
-                                            document.getElementById("copy-button").classList.add("bg-pink-300")
-                                            document.getElementById("copy-response-message").classList.add("hidden")
-                                        }, 5000)
-                                        return () => clearTimeout(timer)
-                                    }}>
-                                        <LinkIcon size={20} />
-                                    </button>
-                                    <span id="copy-response-message" className="p-1 absolute w-28 text-center top-10 -left-10 bg-gray-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
-                                </div>
+                        <div className="flex items-center text-base gap-3">
+                            <Avatar avatarImgSrc={blog.authorProfilePicture} size={64} />
+                            < div className="flex flex-col gap-0">
+                                <Link href={pagePaths.doctorProfile(blog.authorId)} target='_blank' className="flex items-center hover:underline font-semibold">
+                                    <span className="text-lg">{blog.authorName}</span>
+                                </Link>
+                                <span className="text-sm">{blog.authorQualifications.join(", ")}</span>
+                                <span className="text-sm">
+                                    {`${blog.authorDesignation}, ${blog.authorDepartment}, ${blog.authorWorkplace}`}
+                                </span>
                             </div>
-                            {sessionContext?.sessionData?.userId &&
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className="w-fit">
-                                            <Ellipsis size={34} className="text-gray-700" />
+                        </div>
+                        <div className="flex flex-col gap-2 mb-3 mt-3">
+                            <div className="flex gap-4 items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <button disabled={disableVote} className="flex gap-1 items-center text-xl font-semibold w-20" onClick={() => {
+                                        setDisableVote(true)
+                                        axiosInstance.put(blogVoteUrl(blog.id)).then((res) => {
+                                            setBlog({
+                                                ...blog,
+                                                voteId: blog.voteId ? null : true,
+                                                upvoteCount: Number(blog.upvoteCount) + Number(res.data?.voteChange)
+                                            })
+
+                                        }).catch((err) => {
+                                            console.log(err)
+                                        }).finally(() => {
+                                            setDisableVote(false)
+                                        })
+                                    }} >
+                                        {!blog.voteId ? <ThumbsUpIcon size={26} /> : <ThumbsUpIcon fill="rgb(219 39 119)" size={26} className=" bg-pi" />} {blog.upvoteCount}
+                                    </button>
+                                    <div className="flex flex-col w-fit relative">
+                                        <button id="copy-button" className="rounded-full p-2 text-black bg-pink-300" onClick={() => {
+                                            navigator.clipboard.writeText(`${pagePaths.baseUrl}${pagePaths.blogPageById(blog.id)}`)
+                                            document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`
+                                            document.getElementById("copy-button").classList.remove("bg-pink-300")
+                                            document.getElementById("copy-button").classList.add("bg-gray-300")
+                                            document.getElementById("copy-response-message").classList.remove("hidden")
+                                            const timer = setTimeout(() => {
+                                                document.getElementById("copy-button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+                                                document.getElementById("copy-button").classList.remove("bg-gray-300")
+                                                document.getElementById("copy-button").classList.add("bg-pink-300")
+                                                document.getElementById("copy-response-message").classList.add("hidden")
+                                            }, 5000)
+                                            return () => clearTimeout(timer)
+                                        }}>
+                                            <LinkIcon size={20} />
                                         </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        {(sessionContext?.sessionData?.userId === blog.authorId) &&
-                                            <>
-                                                <DropdownMenuItem>
-                                                    <Link href={pagePaths.updateBlogById(blog.id)} className="flex items-center w-full">
-                                                        Edit
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem>
-                                                    <button className="flex items-center w-full" onClick={() => {
-                                                        toast.loading("Deleting Blog")
-                                                        axiosInstance.delete(blogByIdUrl(blog.id)).then((response) => {
-                                                            toast.dismiss()
-                                                            toast.success("Blog Deleted")
-                                                            window.location.href = pagePaths.blogsPage
-                                                        }).catch((error) => {
-                                                            toast.dismiss()
-                                                            toast.error("Error deleting blog")
-                                                            console.log("error deleting blog", error)
-                                                        })
-                                                    }}>
-                                                        Delete
-                                                    </button>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                            </>
-                                        }
-                                        <DropdownMenuItem>
-                                            <Link href={pagePaths.reportPage(blog.id, ReportTypes.blog)} className="flex items-center w-full">
-                                                Report
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            }
+                                        <span id="copy-response-message" className="p-1 absolute w-28 text-center top-10 -left-10 bg-gray-200 text-gray-500 text-sm rounded-md hidden">Link Copied</span>
+                                    </div>
+                                </div>
+                                {sessionContext?.sessionData?.userId &&
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="w-fit">
+                                                <Ellipsis size={34} className="text-gray-700" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            {(sessionContext?.sessionData?.userId === blog.authorId) &&
+                                                <>
+                                                    <DropdownMenuItem>
+                                                        <Link href={pagePaths.updateBlogById(blog.id)} className="flex items-center w-full">
+                                                            Edit
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem>
+                                                        <button className="flex items-center w-full" onClick={() => {
+                                                            toast.loading("Deleting Blog")
+                                                            axiosInstance.delete(blogByIdUrl(blog.id)).then((response) => {
+                                                                toast.dismiss()
+                                                                toast.success("Blog Deleted")
+                                                                window.location.href = pagePaths.blogsPage
+                                                            }).catch((error) => {
+                                                                toast.dismiss()
+                                                                toast.error("Error deleting blog")
+                                                                console.log("error deleting blog", error)
+                                                            })
+                                                        }}>
+                                                            Delete
+                                                        </button>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                </>
+                                            }
+                                            <DropdownMenuItem>
+                                                <Link href={pagePaths.reportPage(blog.id, ReportTypes.blog)} className="flex items-center w-full">
+                                                    Report
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                }
+                            </div>
                         </div>
                     </div>
+                    {(coverText && coverText !== "") && <p className="text-xl text-gray-600 font-semibold">{coverText}</p>}
                     {(coverImage && coverImage !== "") &&
                         <Image
                             src={coverImage}

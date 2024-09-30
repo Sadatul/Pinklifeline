@@ -5,7 +5,7 @@ import { Profiler } from "react";
 
 export const baseUrl = 'http://localhost:8080';
 export const frontEndUrl = 'https://www.pinklifeline.xyz';
-export const stompBrokerUrl = `wss://api.pinklifeline.xyz/ws`
+export const stompBrokerUrl = `ws://localhost:8080/ws`
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const forgotPasswordUrlReq = (email) => { return `${baseUrl}/v1/auth/reset-password?email=${email}` }
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
@@ -139,6 +139,7 @@ export const messageImageUploaPath = (roomId, userId, fileName) => { return `mes
 
 export const radicalGradient = "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]"
 export const sessionDataItem = "sessionData"
+export const profilePicLink = "profilePicLink"
 export const reportAnalysisThreshold = 0.85
 export const notificationData = "notificationData"
 
@@ -200,7 +201,7 @@ export const pagePaths = {
     inbox: "/inbox",
     inboxChat: (chatId) => { return `/inbox/${chatId}` },
     redirectProfile: (profileId) => { return `/profile/redirect_profile/${profileId}` },
-    dashboard: "/dashboard/userdetails",
+    dashboard: "/dashboard/profile",
     dashboardPages: {
         appointmentsPage: "/dashboard/appointments",
         patientLivePrescription: `/dashboard/prescription/live/patient`,
@@ -208,8 +209,9 @@ export const pagePaths = {
         addToVaultPage: "/dashboard/prescription/vault/add",
         prescriptionVaultPage: "/dashboard/prescription/vault",
         prescriptionVaultPageById: (id) => { return `/dashboard/prescription/vault/${id}` },
-        userdetailsPage: "/dashboard/userdetails",
-        profilePicPage: "/dashboard/userdetails/profilepic",
+        userdetailsPage: "/dashboard/profile",
+        userdetailsUpdatePage: "/dashboard/profile/edit",
+        profilePicPage: "/dashboard/profile/profilepic",
         selfTestPage: "/dashboard/selftest",
         balanceHitoryPage: "/dashboard/balanceHistory",
         worksPage: "/dashboard/works",

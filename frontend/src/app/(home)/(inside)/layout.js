@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link"
-import logoIcon from '../../../../public/Pink__5_-removebg-preview.png';
+import logoIcon from '../../../../public/Pink-removebg.png';
 import logoText from '../../../../public/file.svg';
 import Image from 'next/image';
 import { useEffect, useState } from "react";
@@ -18,10 +18,13 @@ import { SocketInitializer } from "../../components/stompInitializer";
 import axiosInstance from "@/utils/axiosInstance";
 import { useSessionContext } from "@/app/context/sessionContext";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
-import { ExternalLink } from "lucide-react";
+import { BookOpenTextIcon, CircleHelp, ExternalLink, Hospital, MessageCircle, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { CircleGaugeIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 export default function Layout({ children }) {
     const [sessionData, setSessionData] = useState(null)
@@ -48,8 +51,26 @@ export default function Layout({ children }) {
     )
 }
 
+/**
+ * 
+ * <Link href={pagePaths.dashboard} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Dashboard</Link>
+                            <Link href={pagePaths.allHospitalsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Hospitals</Link>
+                            <Link href={pagePaths.inbox} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
+                            <Link href={pagePaths.blogsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
+                            <Link href={pagePaths.forumPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
+                            <Link href={pagePaths.searchPage("")} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Search</Link> 
+ */
 function NavBar() {
     const navBarLinksCSS = "h-full text-center items-center justify-center transition-transform ease-out duration-300 hover:scale-110 hover:underline-offset-8 hover:underline";
+
+    const NavBarPageLinks = [
+        { name: "Dashboard", link: pagePaths.dashboard, icon: <CircleGaugeIcon size={24} />, matchString: "dashboard" },
+        { name: "Hospitals", link: pagePaths.allHospitalsPage, icon: <Hospital size={24} />, matchString: "hospitals" },
+        { name: "Inbox", link: pagePaths.inbox, icon: <MessageCircle size={24} />, matchString: "inbox" },
+        { name: "Blog", link: pagePaths.blogsPage, icon: <BookOpenTextIcon size={24} />, matchString: "blogs" },
+        { name: "Forum", link: pagePaths.forumPage, icon: <CircleHelp size={24} />, matchString: "forum" },
+        { name: "Search", link: pagePaths.searchPage(""), icon: <Search size={24} />, matchString: "search" },
+    ]
 
     const [profilePic, setProfilePic] = useState(testingAvatar)
     const sessionContext = useSessionContext()
@@ -95,22 +116,26 @@ function NavBar() {
 
     return (
         <>
-            <nav id="navbar" className="bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink shadow" >
-                <Link href={"/"} className=" pt-2 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
-                    <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={200} height={60} />
+            <nav id="navbar" className="bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink ">
+                <Link href={pagePaths.dashboardPages.userdetailsPage} className=" pt-2 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
+                    {(!pathname.includes("dashboard")) &&
+                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={200} height={60} />
+                    }
+                    {(pathname.includes("dashboard")) &&
+                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-3 -translate-x-3 left-5" src={logoIcon.src} alt="logo" width={250} height={100} />
+                    }
                     {/* <Image loading='lazy' className="shrink hidden md:block mb-3" src={logoText.src} alt="logo-text" width={170} height={75} /> */}
                 </Link >
-                <div className="text-xl text-center flex flex-row justify-center items-center space-x-6 flex-wrap">
-                    {(!pathname.startsWith("/admin")) &&
-                        <>
-                            <Link href={pagePaths.dashboard} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Dashboard</Link>
-                            <Link href={pagePaths.allHospitalsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Hospitals</Link>
-                            <Link href={pagePaths.inbox} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Inbox</Link>
-                            <Link href={pagePaths.blogsPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Blog</Link>
-                            <Link href={pagePaths.forumPage} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Forum</Link>
-                            <Link href={pagePaths.searchPage("")} className={navBarLinksCSS} style={{ textDecorationColor: 'pink', textDecorationThickness: '2.5px' }}>Search</Link>
-                        </>
-                    }
+                <div className="text-xl text-center flex flex-row justify-center items-center gap-5 flex-wrap">
+                    {(!pathname.startsWith("/admin")) && NavBarPageLinks?.map((page, index) => (
+                        <Link key={index} href={page.link} className={cn("flex items-center drop-shadow-md py-1 px-2 rounded-xl", pathname.toLowerCase().includes(page.matchString) ? "bg-pink-600 bg-opacity-70 text-gray-50 text-lg pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-base hover:bg-white hover:text-gray-800 hover:translate-y-1 transition-all ease-linear ")} >
+                            <span className="flex flex-row items-center gap-2">
+                                {/* {React.createElement(page.icon, { size: 24, className: "" })} */}
+                                {page.icon}
+                                {page.name}
+                            </span>
+                        </Link>
+                    ))}
                 </div>
                 <div className="flex flex-shrink flex-row justify-center items-center mr-28 h-full">
                     <Popover>

@@ -37,6 +37,7 @@ export default function LoginRegister() {
         hidden: { y: 0 },
         visible: (i) => ({
             y: 10, // Reflection moves downward
+            
             transition: {
                 delay: i * 0.2, // Sync with the text above
                 duration: 0.5,
@@ -66,7 +67,7 @@ export default function LoginRegister() {
                                     initial="hidden"
                                     animate="visible"
                                     variants={letterAnimation}
-                                    className="text-pink-600"
+                                    className="text-pink-500"
                                 >
                                     {char}
                                 </motion.span>
@@ -79,12 +80,14 @@ export default function LoginRegister() {
                                 <motion.span
                                     key={index}
                                     custom={index}
-                                    initial="hidden"
+                                    initial={{rotateX : 180}}
                                     animate="visible"
                                     variants={reflectionAnimation}
-                                    className="text-pink-600 text-reflection"
+                                    className="text-pink-200 text-reflection"
                                 >
+                                    <span className="rotate-90">
                                     {char}
+                                    </span>
                                 </motion.span>
                             ))}
                         </div>
@@ -230,15 +233,20 @@ function SideComponent() {
                 animate={{ x: cards_two_positions[positionIndex].x, y: cards_two_positions[positionIndex].y }}
                 transition={{ duration: duration, ease: "easeInOut" }}
             >
-                <div className="flex flex-col items-start justify-between w-full h-full gap-4 p-5 py-8">
+                <div className="flex flex-col items-start justify-between w-full h-full gap-1 p-5 py-8">
                     <div className="flex flex-row items-center gap-2 flex-wrap w-full">
-                        {Array(36).fill(0).map((_, index) => (
+                        {Array(11).fill(0).map((_, index) => (
                             <LucideMessageCircleQuestion key={index} size={12} strokeWidth={1.5} className="text-gray-700" />
                         ))}
                     </div>
-                    <span className="text-lg font-semibold">
-                        Community Building
-                    </span>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-lg font-extrabold break-normal text-wrap">
+                            Support, moderation,
+                        </span>
+                        <span className="text-lg font-extrabold break-normal text-wrap">
+                            and diagnostic assistance.
+                        </span>
+                    </div>
                 </div>
             </motion.div>
             <motion.div
@@ -247,18 +255,20 @@ function SideComponent() {
                 animate={{ x: card_three_positions[positionIndex].x, y: card_three_positions[positionIndex].y }}
                 transition={{ duration: duration, ease: "easeInOut" }}
             >
-                <div className="flex flex-col items-start justify-between w-full h-full gap-4 p-5">
-                    <span className="text-lg font-semibold">
-                        Hospitals
-                    </span>
-                    <div className="flex flex-row items-center gap-2 flex-wrap w-full">
-                        {Array(35).fill(0).map((_, index) => (
+                <div className="flex flex-col items-start justify-between w-full h-full gap-4 p-6">
+                    <div className="flex flex-row items-center justify-between gap-2 flex-wrap w-full">
+                        {Array(11).fill(0).map((_, index) => (
                             <Plus key={index} size={12} strokeWidth={1.5} className="text-gray-700" />
                         ))}
                     </div>
-                    <span className="text-base">
-                        Reviews, Compare
-                    </span>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-xl font-extrabold text-gray-900">
+                            Hospital reviews
+                        </span>
+                        <span className="text-xl font-extrabold text-gray-900">
+                            and cost comparison.
+                        </span>
+                    </div>
                 </div>
             </motion.div>
             <motion.div
@@ -268,17 +278,22 @@ function SideComponent() {
                 transition={{ duration: duration, ease: "easeInOut" }}
             >
                 <div className="flex flex-col items-start justify-between w-full h-full gap-4 p-5">
-                    <span className="text-lg font-semibold">
-                        AI
-                    </span>
                     <div className="flex flex-row items-center gap-2 flex-wrap w-full">
-                        {Array(32).fill(0).map((_, index) => (
-                            <BotIcon key={index} size={12} strokeWidth={1.5} className="text-gray-700" />
+                        {Array(11).fill(0).map((_, index) => (
+                            <BotIcon key={index} size={14} strokeWidth={1} className="text-gray-700" />
                         ))}
                     </div>
-                    <span className="text-base">
-                        Report Management
-                    </span>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-lg font-extrabold text-gray-900">
+                            Smart report
+                        </span>
+                        <span className="text-lg font-extrabold text-gray-900">
+                            handling
+                        </span>
+                        <span className="text-xl font-extrabold text-gray-900">
+                            with AI.
+                        </span>
+                    </div>
                 </div>
             </motion.div>
 

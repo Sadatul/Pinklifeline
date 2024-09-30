@@ -12,7 +12,6 @@ import { usePathname } from "next/navigation"
 import React, { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-// import { AnimatePresence, motion } from "framer-motion"
 
 export default function Layout({ children }) {
     const [sessionData, setSessionData] = useState(null)
@@ -29,8 +28,7 @@ export default function Layout({ children }) {
             {/* Sidebar */}
             <SideBar />
             {/* Main Content */}
-
-            <ScrollableContainer className="flex flex-col flex-1 overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden bg-white">
+            <ScrollableContainer className="flex flex-col flex-1 overflow-y-auto ml-[2px] rounded-tl-xl overflow-x-hidden bg-white drop-shadow-lg">
                 {children}
             </ScrollableContainer>
         </div>
@@ -43,17 +41,10 @@ function SideBar() {
     const [openChatBot, setOpenChatBot] = useState(false)
 
     return (
-        <div className={cn("w-64 h-full items-center flex flex-col p-4 mr-[2px] bg-gray-100")}>
+        <div className={cn("w-64 h-full items-center flex flex-col p-4 mr-[2px] bg-zinc-100")}>
             <div className="flex flex-col gap-2 flex-1 justify-center mb-10 drop-shadow-xl px-1">
                 {DashBoardPageLinks[sessionContext?.sessionData.role].map((page, index) => (
-                    <Link key={index} href={page.link} className={cn("flex items-center w-full drop-shadow-md py-1 px-4 rounded-xl", pathname === page.link ? "bg-purple-900 bg-opacity-70 text-gray-50 text-xl pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-lg hover:bg-white hover:text-gray-800 hover:translate-x-4 transition-all ease-linear ")} onClick={() => {
-                        if (sessionContext?.sessionData?.subscribed === 0) {
-                            toast.message("Please subscribe to access this feature", {
-                                duration: 5000,
-                            })
-                            return
-                        }
-                    }} >
+                    <Link key={index} href={page.link} className={cn("flex items-center w-full drop-shadow-md py-1 px-4 rounded-xl", pathname === page.link ? "bg-pink-600 bg-opacity-70 text-gray-50 text-xl pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-lg hover:bg-white hover:text-gray-800 hover:translate-x-4 transition-all ease-linear ")} >
                         <span className="flex flex-row items-center gap-3">
                             {/* {React.createElement(page.icon, { size: 24, className: "" })} */}
                             {page.icon}
