@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowLeft, CalendarIcon, Filter, Flame, LoaderIcon, PencilLine, PenLine, SearchIcon, ThumbsUp, X } from "lucide-react";
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
     Sheet,
     SheetClose,
@@ -48,6 +48,7 @@ export default function ForumPage() {
     const [questions, setQuestions] = useState([]);
     const [hotQuestions, setHotQuestions] = useState([]);
     const sessionContext = useSessionContext()
+    const router = useRouter();
 
     const [showFilterOptions, setShowFilterOptions] = useState(false);
 
@@ -67,6 +68,16 @@ export default function ForumPage() {
     })
     const [tagOptions, setTagOptions] = useState([])
     const [selectedTags, setSelectedTags] = useState([])
+
+    useEffect(() => {
+        if (sessionContext?.sessionData) {
+            if (!sessionContext?.sessionData?.userId) {
+                router.push(pagePaths.loginPage)
+            }else {
+                setIsMounted(true);
+            }
+        }
+    }, [sessionContext?.sessionData])
 
     useEffect(() => {
         const loadQuestions = (url) => {
@@ -120,7 +131,6 @@ export default function ForumPage() {
                 setLoadingQuestions(false);
             })
         }
-        setIsMounted(true);
         setLoadingQuestions(true);
         console.log("Filter", filter);
         if (sessionContext?.sessionData?.userId) {
@@ -135,44 +145,35 @@ export default function ForumPage() {
 
     return (
         <ScrollableContainer className="flex flex-col w-full gap-3 p-5 overflow-x-hidden h-full">
-            <div className="flex flex-col w-full bg-gradient-to-r from-purple-100 to-transparent p-3 rounded gap-3">
-                <div className="flex flex-row gap-3 items-center">
-                    <button className="w-fit bg-transparent" onClick={() => {
-                        if (sessionContext?.sessionData?.userId) {
-                            window.history.back()
-                        } else {
-                            window.location.href = pagePaths.baseUrl
-                        }
+            <div className="flex flex-col w-full bg-slate-100 bg-opacity-60 shadow p-5 rounded-xl gap-3">
+                <div className="flex flex-row gap-1 items-center">
+                    <button className="bg-white rounded-full p-[6px] border border-gray-200 hover:scale-95" onClick={() => {
+                        router.push(pagePaths.forumPage)
                     }}>
                         <ArrowLeft size={24} />
                     </button>
                     <h1 className="text-3xl font-bold">Question Threads</h1>
                 </div>
-                <div className="flex flex-row w-full justify-between">
-                    <div className="relative flex items-center gap-5">
-                        <input
-                            type="text"
-                            id="question-searchBox"
-                            placeholder="Search titles..."
-                            className="pl-8 pr-4 py-1 border rounded border-purple-500 shadow-inner min-w-96 text-black"
-                            defaultValue={filter.title}
-                        />
-                        <SearchIcon size={20} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-700" />
-                        <button className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1" onClick={() => {
-                            setFilter(prev => ({ ...prev, title: document.getElementById('question-searchBox').value.trim() === "" ? null : document.getElementById('question-searchBox').value.trim(), pageNo: 0 }))
-                        }} >
-                            Search
-                        </button>
-
-
-                    </div>
-                    <Link href={pagePaths.askQuestionPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 px-3 py-1 text-white ml-10 border rounded">
-                        <PencilLine size={28} className="text-black" />
+                <div className="flex flex-row w-full gap-3 px-10 relative">
+                    <input
+                        type="text"
+                        id="question-searchBox"
+                        placeholder="Search titles..."
+                        className="pl-8 pr-4 py-1 border rounded-2xl border-gray-300 focus:outline-gray-400 shadow-inner min-w-96 text-black "
+                        defaultValue={filter.title}
+                    />
+                    <SearchIcon size={20} className="absolute top-1/2 left-12 transform -translate-y-1/2 text-gray-700" />
+                    <button className=" bg-pink-800 text-white hover:scale-95 px-3 py-1 rounded-2xl" onClick={() => {
+                        setFilter(prev => ({ ...prev, title: document.getElementById('question-searchBox').value.trim() === "" ? null : document.getElementById('question-searchBox').value.trim(), pageNo: 0 }))
+                    }} >
+                        Search
+                    </button>
+                    <Link href={pagePaths.askQuestionPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 px-3 py-1 text-white ml-10 border rounded-3xl">
+                        <PencilLine size={24} className="text-black" />
                     </Link>
                 </div>
-
             </div>
-            <Separator className="h-[2.5px] bg-gradient-to-b from-purple-200 to-purple-700" />
+            <Separator className="h-[1.5px] bg-gradient-to-b from-pink-200 to-pink-700" />
             <div className="flex flex-col w-full gap-5 h-full">
                 <div className="flex flex-row gap-5 w-full flex-1 py-3 relative">
                     <div className={cn(" flex flex-col items-center bg-gray-50 rounded transition-transform duration-500 ease-in-out", showFilterOptions ? "translate-x-0 w-1/5" : "-translate-x-full")}>
@@ -181,7 +182,7 @@ export default function ForumPage() {
                                 <h2 className="text-lg p-2">
                                     Filter Options
                                 </h2>
-                                <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400 w-10/12 mx-auto" />
+                                <Separator className="h-[1.5px] bg-gradient-to-b from-pink-200 to-gray-400 w-10/12 mx-auto" />
                                 <div className="flex flex-col gap-5 px-4 mt-5 w-full h-96 justify-between">
                                     <div className="flex flex-col gap-5">
                                         <CreatableSelect
@@ -207,7 +208,7 @@ export default function ForumPage() {
                                                     id="date"
                                                     variant={"outline"}
                                                     className={cn(
-                                                        "w-fit justify-start text-left font-normal border border-purple-500",
+                                                        "w-fit justify-start text-left font-normal border border-pink-500",
                                                         !dateRange && "text-muted-foreground"
                                                     )}>
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -269,7 +270,7 @@ export default function ForumPage() {
                                             }}>
                                                 Reset Filter
                                             </button>
-                                            <button className="rounded bg-purple-800 text-white hover:scale-95 px-3 py-1 flex items-center flex-row gap-2 text-sm w-fit" onClick={() => {
+                                            <button className="rounded bg-pink-800 text-white hover:scale-95 px-3 py-1 flex items-center flex-row gap-2 text-sm w-fit" onClick={() => {
                                                 setFilter(prev => ({
                                                     ...prev,
                                                     tags: selectedTags.map(tag => tag.value?.trim()).join(','),
@@ -294,57 +295,57 @@ export default function ForumPage() {
                         </button>
                     )}
                     <div className={cn("flex flex-col justify-between gap-2 flex-1", !showFilterOptions && "ml-10")}>
-                        <div className="flex flex-col w-full gap-4 h-full">
-                            <div className="flex flex-row gap-5 w-full justify-between items-center px-4 py-3 bg-gradient-to-r from-purple-100 to-transparent rounded">
-                                <h2 className="text-xl font-semibold">{filter.searchTerms ? `Result for '${filter.searchTerms}'` : "Question Threads"}</h2>
-                                <div className="flex flex-row gap-3 items-end text-base">
-                                    <div className="flex flex-col w-fit gap-1">
-                                        Sort type
-                                        <select id="sortType" defaultValue={"TIME"} className="border px-2 shadow-inner border-purple-500 w-36 rounded text-base" onChange={(e) => {
-                                            setFilter(prev => (
-                                                {
-                                                    ...prev,
-                                                    sortType: e.target.value,
-                                                    pageNo: 0
-                                                }
-                                            ))
-                                        }}>
-                                            <option value="TIME">Time</option>
-                                            <option value="VOTES">Vote</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex flex-col w-fit gap-1">
-                                        Sort direction
-                                        <select id="sortDirection" defaultValue={"DESC"} className="border px-2 shadow-inner border-purple-500 w-36 rounded text-base" onChange={(e) => {
-                                            setFilter(prev => (
-                                                {
-                                                    ...prev,
-                                                    sortDirection: e.target.value,
-                                                    pageNo: 0
-                                                }
-                                            ))
-                                        }}>
-                                            <option value="ASC">Ascending</option>
-                                            <option value="DESC">Descending</option>
-                                        </select>
+                        <div className="flex flex-col w-full gap-0 h-full">
+                            <div className="flex flex-col w-full gap-0">
+                                <div className="flex flex-row gap-5 w-full justify-between items-center px-4 py-3 rounded">
+                                    <h2 className="text-xl font-semibold">{filter.searchTerms ? `Result for '${filter.searchTerms}'` : ""}</h2>
+                                    <div className="flex flex-row gap-3 items-end text-base">
+                                        <div className="flex flex-col w-fit gap-1">
+                                            <select id="sortType" defaultValue={"TIME"} className="border h-8 shadow-inner border-gray-300 w-36 rounded-2xl text-center text-lg font-[500]" onChange={(e) => {
+                                                setFilter(prev => (
+                                                    {
+                                                        ...prev,
+                                                        sortType: e.target.value,
+                                                        pageNo: 0
+                                                    }
+                                                ))
+                                            }}>
+                                                <option value="TIME">Time</option>
+                                                <option value="VOTES">Vote</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex flex-col w-fit gap-1">
+                                            <select id="sortDirection" defaultValue={"DESC"} className="border h-8 shadow-inner border-gray-300 w-36 rounded-2xl text-center text-lg font-[500]" onChange={(e) => {
+                                                setFilter(prev => (
+                                                    {
+                                                        ...prev,
+                                                        sortDirection: e.target.value,
+                                                        pageNo: 0
+                                                    }
+                                                ))
+                                            }}>
+                                                <option value="ASC">Ascending</option>
+                                                <option value="DESC">Descending</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
+                                <Separator className="h-[1.5px] bg-gradient-to-b from-pink-200 to-gray-400" />
                             </div>
-                            <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
-                            {loadingQuestions ? <LoaderIcon size={64} className="text-purple-800 mx-auto animate-spin" /> :
-                                <div className="flex flex-col gap-5 rounded p-3">
+                            {loadingQuestions ? <LoaderIcon size={64} className="text-pink-800 mx-auto animate-spin" /> :
+                                <div className="flex flex-col gap-2 rounded p-3 ">
                                     {(questions.length === 0) && <h2 className="text-2xl font-semibold text-gray-500 text-center">No questions found</h2>}
                                     {questions.map((question, index) => (
                                         <React.Fragment key={index}>
-                                            <div className="flex flex-col gap-2 p-2 bg-transparent bg-gradient-to-r from-pink-100 to-transparent rounded px-4 py-2">
-                                                <Link href={pagePaths.questionPageById(question.id)} className="text-3xl font-semibold hover:underline">{question.title}</Link>
+                                            <div className="flex flex-col gap-2 p-2 bg-transparent bg-slate-100 px-4 py-5 drop-shadow-sm shadow-md rounded-lg">
+                                                <Link href={pagePaths.questionPageById(question.id)} className="text-3xl font-semibold hover:underline w-fit">{question.title}</Link>
                                                 <div className="flex flex-row gap-3 items-center">
                                                     <Avatar avatarImgSrc={question.authorProfilePicture} size={52} />
                                                     <div className="flex flex-col gap-[0px]">
                                                         <Link href={pagePaths.redirectProfile(question.authorId)} className="hover:underline">{question.author}</Link>
-                                                        <span className="text-sm text-gray-500">{displayDate(question.createdAt)}</span>
+                                                        <span className="text-sm text-gray-500">{displayDate(question.createdAt, "hh:mm a, dd MMM, yyyy")}</span>
                                                         <div className="flex flex-row gap-2 items-center">
-                                                            <ThumbsUp size={16} className="text-purple-800" />
+                                                            <ThumbsUp size={16} className="text-pink-800" />
                                                             <span className="text-sm text-gray-500">{question.voteCount}</span>
                                                         </div>
                                                     </div>
@@ -372,11 +373,11 @@ export default function ForumPage() {
                         </div>
                     </div>
                     <Separator orientation="vertical" className="bg-gray-300 w-[1.5px] h-10/12 mt-10" />
-                    <div className="flex flex-col gap-4 w-3/12 bg-gradient-to-b from-zinc-100 to-transparent rounded p-3">
-                        <div className="flex flex-col w-full gap-2">
+                    <div className="flex flex-col gap-4 w-3/12 bg-gradient-to-b from-zinc-100 to-transparent rounded-xl p-4 shadow-lg">
+                        <div className="flex flex-col w-full gap-2 ">
                             <h2 className="text-2xl font-bold text-amber-600">Trending Topics</h2>
-                            <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />
-                            <div className="flex flex-row max-w-72 gap-2 flex-wrap p-3 justify-center">
+                            <Separator className="h-[1.5px] bg-gradient-to-b from-pink-200 to-gray-400" />
+                            <div className="flex flex-row w-full gap-2 flex-wrap p-3 justify-center">
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Cancer</Badge>
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Breast Cancer</Badge>
                                 <Badge variant='outline' className="text-black text-base border border-gray-400 shadow-inner cursor-pointer">Health</Badge>
@@ -387,7 +388,7 @@ export default function ForumPage() {
                         <div className="flex flex-col w-full gap-5">
                             <div className="flex flex-col gap-2 items-center">
                                 <h2 className="text-2xl font-bold text-gray-700 flex items-center">New Hots <Flame size={24} fill="rgb(217 119 6)" className="text-red-600" /> </h2>
-                                <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400 w-10/12 mx-auto" />
+                                <Separator className="h-[1.5px] bg-gradient-to-b from-pink-200 to-gray-400 w-10/12 mx-auto" />
                             </div>
                             <div className="flex flex-col">
                                 {(hotQuestions.length === 0) && <h2 className="text-2xl font-semibold text-gray-500 text-center">No questions found</h2>}

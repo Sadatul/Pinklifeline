@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
 import { addAppointment, addReview, deleteDoctorReview, displayDate, forumQuestionsAnonymousUrl, getUserProfileDetails, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { BriefcaseBusiness, CalendarSearch, Check, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
+import { BriefcaseBusiness, CalendarSearch, Check, ExternalLink, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -107,7 +107,7 @@ export default function USerProfilePage() {
 
     return (
         <ScrollableContainer className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}>
-            <div className="flex flex-col w-11/12 items-center rounded-t-md bg-white flex-wrap">
+            <div className="flex flex-col w-11/12 items-center rounded-t-md bg-white flex-wrap shadow-md">
                 <div className="relative w-full h-28 rounded-t-md">
                     <Image
                         src={"https://img.freepik.com/free-vector/watercolor-hot-pink-background_23-2150815041.jpg?size=626&ext=jpg&uid=R109267787&ga=GA1.1.1367600061.1718446141&semt=sph"}
@@ -135,8 +135,8 @@ export default function USerProfilePage() {
                         <Popover>
                             <PopoverTrigger asChild>
                                 <button className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
-                                    <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
-                                    <span className="ml-1 font-semibold">Message</span>
+                                    <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={1.5} />
+                                    <span className="ml-1">Ask Something</span>
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent>
@@ -150,7 +150,7 @@ export default function USerProfilePage() {
                 </div>
                 <Separator className="w-11/12 mt-10 h-[2px]" />
             </div>
-            <div className="flex flex-col w-11/12 items-center mt-4">
+            <div className="flex flex-col w-11/12 items-center mt-1">
                 < PostSection userId={params.profileId} className={"bg-gradient-to-b from-indigo-50 to-white"} />
             </div>
         </ScrollableContainer>
@@ -175,25 +175,42 @@ function PostSection({ userId, className }) {
                 page: (page?.number || 1) - 1
             }
         }).then((res) => {
-            setForumQuestions(res.data?.content?.map((question) => ({
-                title: question.title,
-                likesCount: question.voteCount,
-                id: question.id,
-                date: displayDate(question.createdAt),
-            })))
+            setForumQuestions(res?.data?.content?.map(question => {
+                return {
+                    id: question?.id,
+                    title: question?.title,
+                    voteCount: question?.voteCount,
+                    createdAt: question?.createdAt,
+                    answerCount: null,
+                }
+            }))
             setPage(res.data.page)
+            console.log(res.data)
         }).catch((error) => {
             console.log(error)
         })
     }, [page?.number])
 
     return (
-        <div className={cn("flex flex-row w-full mt-4 p-4 rounded", className)}>
+        <div className={cn("flex flex-row w-full mt-4 p-4 rounded-b-xl shadow-md", className)}>
             <div className="flex flex-col rounded w-full gap-3">
                 <h1 className={"text-xl font-bold bg-white px-2 py-1 text-indigo-500 w-52 rounded"}>Forum Questions</h1>
-                <div className="flex flex-col items-center w-full">
+                <div className="flex flex-row flex-wrap items-center w-full gap-3">
                     {forumQuestions.map((question, index) => (
-                        <ForumCard key={index} title={question.title} content={question.content} date={question.date} likesCount={question.likesCount} id={question.id} />
+                        <div key={index} className="flex flex-col gap-2 border rounded-xl p-3 h-fit shadow-md line-clamp-2 w-96 relative">
+                            <span className="text-xs translate-y-[1.5px] text-gray-800 absolute top-3 right-3">{displayDate(question?.createdAt, "dd MMM, yy")}</span>
+                            <div className="flex flex-row items-center gap-2 mt-3">
+                                <span className="text-lg font-[500]">{question.title}</span>
+                            </div>
+                            <Link href={pagePaths.questionPageById(question.id)} className="text-sm text-blue-500 hover:underline flex items-center">
+                                View Question and Answers
+                                <ExternalLink size={14} className="ml-1" />
+                            </Link>
+                            <div className="flex flex-row items-center gap-2">
+                                <ThumbsUp size={20} />
+                                <span className="text-sm text-gray-800">{question.voteCount}</span>
+                            </div>
+                        </div>
                     ))}
                 </div>
                 <div className="w-full flex justify-center mt-4">

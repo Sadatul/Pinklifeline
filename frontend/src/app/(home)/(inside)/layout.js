@@ -66,9 +66,9 @@ function NavBar() {
     const NavBarPageLinks = [
         { name: "Dashboard", link: pagePaths.dashboard, icon: <CircleGaugeIcon size={24} />, matchString: "dashboard" },
         { name: "Hospitals", link: pagePaths.allHospitalsPage, icon: <Hospital size={24} />, matchString: "hospitals" },
-        { name: "Inbox", link: pagePaths.inbox, icon: <MessageCircle size={24} />, matchString: "inbox" },
-        { name: "Blog", link: pagePaths.blogsPage, icon: <BookOpenTextIcon size={24} />, matchString: "blogs" },
-        { name: "Forum", link: pagePaths.forumPage, icon: <CircleHelp size={24} />, matchString: "forum" },
+        { name: "Inbox", link: pagePaths.inbox, icon: <MessageCircle size={24} />, matchString: "inbox", className: "bg-zinc-100" },
+        { name: "Blog", link: pagePaths.blogsPage, icon: <BookOpenTextIcon size={24} />, matchString: "blogs", className: "bg-slate-100" },
+        { name: "Forum", link: pagePaths.forumPage, icon: <CircleHelp size={24} />, matchString: "forum", className: "bg-stone-100" },
         { name: "Search", link: pagePaths.searchPage(""), icon: <Search size={24} />, matchString: "search" },
     ]
 
@@ -116,7 +116,7 @@ function NavBar() {
 
     return (
         <>
-            <nav id="navbar" className="bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink ">
+            <nav id="navbar" className={cn("bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink", NavBarPageLinks.filter(page => pathname.toLowerCase().includes(page.matchString))[0]?.className)}>
                 <Link href={pagePaths.dashboardPages.userdetailsPage} className=" pt-2 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
                     {(!pathname.includes("dashboard")) &&
                         <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={200} height={60} />
@@ -142,7 +142,8 @@ function NavBar() {
                         <PopoverTrigger >
                             <Avatar avatarImgSrc={profilePic} size={50} />
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-transparent">
+                        <PopoverContent className="w-auto p-0">
+                            <div className=" absolute border-l[1px] border-r[1px] border-t[1px] border-b[1px] border-gray-200 rounded-md top-12 right-0 w-0 h-0"></div>
                             <div className="w-32 rounded-md py-2 flex flex-col justify-between items-center gap-2 bg-white bg-opacity-70">
                                 {(!pathname.startsWith("/admin")) &&
                                     <>

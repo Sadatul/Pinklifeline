@@ -13,7 +13,7 @@ const StreamVideoProvider = ({ children }) => {
 
   useEffect(() => {
     const sessionData = JSON.parse(localStorage.getItem(sessionDataItem))
-    if (!sessionData.userId) throw new Error('User ID is missing');
+    if (!sessionData?.userId) throw new Error('User ID is missing');
     console.log("User ID: ", sessionData.userId);
     if (!API_KEY) throw new Error('Stream API key is missing');
     const tokenProvider = async () => {

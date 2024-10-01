@@ -23,7 +23,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { avatarAang, blogsAnonymousUrl, blogsUrl, generateFormattedDate, pagePaths } from "@/utils/constants";
+import { avatarAang, blogsAnonymousUrl, blogsUrl, generateFormattedDate, pagePaths, roles } from "@/utils/constants";
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import babyImage from "../../../../../public/babyImage.jpg"
@@ -121,9 +121,9 @@ export default function BlogsPage() {
 
     return (
         <ScrollableContainer className="flex flex-col w-full gap-4 px-5 py-2 overflow-x-hidden h-full">
-            <div className="flex flex-col w-full p-3 rounded gap-5">
+            <div className="flex flex-col w-full p-4 rounded-xl gap-5 bg-gray-200 bg-opacity-50 shadow-md">
                 <div className="flex flex-row gap-3 items-center">
-                    <button className="rounded-full p-1 bg-gray-300 " onClick={() => {
+                    <button className="rounded-full p-1 bg-white " onClick={() => {
                         if (sessionContext?.sessionData?.userId) {
                             window.history.back()
                         } else {
@@ -156,7 +156,7 @@ export default function BlogsPage() {
                                         Add other filters to your search
                                     </SheetDescription>
                                 </SheetHeader>
-                                <div className="flex flex-col gap-10 p-5 text-lg flex-1">
+                                <div className="flex flex-col gap-6 p-5 text-lg flex-1">
                                     <div className="flex flex-col gap-2 text-base">
                                         <input defaultValue={filter.doctorName || ""} placeholder="Doctor name" autoComplete="off" id="doctorName" className="border shadow-inner border-gray-300 focus:outline-gray-400 w-full px-3 py-1 rounded-xl" />
                                     </div>
@@ -239,14 +239,16 @@ export default function BlogsPage() {
                                 </SheetFooter>
                             </SheetContent>
                         </Sheet>
-                        <Link href={pagePaths.addBlogPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 p-1  text-white ml-10 border rounded-full">
-                            <PencilLine size={24} className="text-black" />
-                        </Link>
+                        {(sessionContext?.sessionData?.role === roles.doctor) &&
+                            <Link href={pagePaths.addBlogPage} target='_self' className="bg-gray-100 border-gray-900 hover:scale-95 p-1  text-white ml-3 border rounded-full">
+                                <PencilLine size={24} className="text-black" />
+                            </Link>
+                        }
                     </div>
                 </div>
             </div>
-            <Separator className="h-[2.5px] bg-gradient-to-b from-purple-200 to-purple-700" />
-            <div className="flex flex-col w-full gap-5 flex-grow drop-shadow-xl">
+            <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-pink-500" />
+            <div className="flex flex-col w-full gap-5 flex-grow ">
                 <div className="flex flex-row gap-5 w-full flex-1 py-3">
                     <div className="flex flex-col gap-2 flex-1 justify-between">
                         <div className="flex flex-col flex-1">
@@ -255,15 +257,17 @@ export default function BlogsPage() {
                                     {
                                         blogs.map((blog, index) => (
                                             <React.Fragment key={index}>
-                                                <div className={cn("flex flex-row justify-between gap-2 p-5 rounded-2xl shadow-lg")}>
+                                                <div className={cn("flex flex-row justify-between gap-2 p-5 rounded-2xl bg-gray-100 bg-opacity-60 shadow-lg")}>
                                                     <div className="flex flex-col gap-2 flex-1 p-1">
-                                                        <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
+                                                        <div className="flex flex-row justify-between w-full">
+                                                            <Link href={pagePaths.blogPageById(blog.id)} className="text-2xl font-bold hover:underline w-fit">{blog.title}</Link>
+                                                            <p className="text-sm text-gray-600">{displayDate(blog.createdAt)}</p>
+                                                        </div>
                                                         <div className="flex flex-row items-center gap-2">
                                                             <Link href={pagePaths.doctorProfile(blog.authorId)} className="text-lg hover:underline mr-1 gap-1 flex items-center">
                                                                 <Avatar avatarImgSrc={blog.authorProfilePicture} size={32} />
                                                                 {blog.author}
                                                             </Link>
-                                                            <p className="text-sm text-gray-600">{displayDate(blog.createdAt)}</p>
                                                         </div>
                                                         {blog.content && <p className="text-lg line-clamp-3 break-normal">{blog.content}</p>}
                                                         <span className="flex items-center gap-1">
@@ -295,8 +299,8 @@ export default function BlogsPage() {
                             }
                         </div>
                     </div>
-                    <Separator orientation="vertical" className="bg-gray-500 w-[1.5px] h-full" />
-                    <div className="flex flex-col gap-4 w-3/12 bg-zinc-50  rounded-2xl shadow-lg p-3">
+                    <Separator orientation="vertical" className="bg-pink-500 w-[1.5px] h-full" />
+                    <div className="flex flex-col gap-4 w-3/12 bg-zinc-100  rounded-2xl shadow-md p-5 drop-shadow">
                         <div className="flex flex-col w-full gap-2">
                             <h2 className="text-2xl font-bold text-amber-600">Trending Topics</h2>
                             <Separator className="h-[1.5px] bg-gradient-to-b from-purple-200 to-gray-400" />

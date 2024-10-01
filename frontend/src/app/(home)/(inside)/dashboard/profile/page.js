@@ -9,11 +9,11 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import axiosInstance from "@/utils/axiosInstance"
-import { convertCmtoFeetInch, displayDate, forumQuestionsUrl, generateFormattedDate, getProfilePicUrl, pagePaths, roles, toggleLocationShare, userInfoRegUrlReq } from "@/utils/constants"
+import { convertCmtoFeetInch, displayDate, forumQuestionsUrl, generateFormattedDate, getProfilePicUrl, pagePaths, roles, testingAvatar, toggleLocationShare, userInfoRegUrlReq } from "@/utils/constants"
 import { Pagination } from "@mui/material"
 import { format } from "date-fns"
 import { cellToLatLng } from "h3-js"
-import { BadgeAlert, BeanOff, CalendarCheck, CalendarDays, CalendarX, ExternalLink, HeartCrack, Loader2, RefreshCwIcon, RulerIcon, ThumbsUp, UserRoundX, Weight } from "lucide-react"
+import { BadgeAlert, BeanOff, CalendarCheck, CalendarDays, CalendarX, ExternalLink, HeartCrack, Loader2, Pill, RefreshCwIcon, RulerIcon, ThumbsUp, UserRoundX, Weight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -50,30 +50,31 @@ export default function DashboardProfilePage() {
         "locationShare": true
     })
 
-    const [profilePicLink, setProfilePicLink] = useState("https://firebasestorage.googleapis.com/v0/b/javafest-87433.appspot.com/o/profileImages%2FMon%20Sep%2009%202024%2002%3A57%3A40%20GMT%2B0600%20(Bangladesh%20Standard%20Time)%2Fadil_profile%20(2).jpg?alt=media&token=204207a4-213e-4ef7-85cc-69dfc00ecd6a")
+    const [profilePicLink, setProfilePicLink] = useState(null)
 
     useEffect(() => {
-        if (!sessionContext?.sessionData) {
-            // axiosInstance.get(userInfoRegUrlReq(sessionContext?.sessionData.userId, sessionContext?.sessionData.role)).then((res) => {
-            //     setUserData(res.data)
-            // }).catch((err) => {
-            //     console.log(err)
-            // })
-            // const profilepic = sessionStorage.getItem(profilePicLink)
-            // if (!profilePicLink) {
-            //     axiosInstance.get(getProfilePicUrl).then((res) => {
-            //         setProfilePicLink(res.data?.profilePicture)
-            //         sessionStorage.setItem(profilePicLink, res.data?.profilePicture)
-            //     }).catch((err) => {
-            //         console.log(err)
-            //     })
-            // }
+        if (sessionContext?.sessionData) {
+            axiosInstance.get(userInfoRegUrlReq(sessionContext?.sessionData.userId, sessionContext?.sessionData.role)).then((res) => {
+                setUserData(res.data)
+                console.log(res.data)
+            }).catch((err) => {
+                console.log(err)
+            })
+            const profilepic = sessionStorage.getItem(profilePicLink)
+            if (!profilepic) {
+                axiosInstance.get(getProfilePicUrl).then((res) => {
+                    setProfilePicLink(res.data?.profilePicture || testingAvatar)
+                    sessionStorage.setItem(profilePicLink, res.data?.profilePicture || testingAvatar)
+                }).catch((err) => {
+                    console.log(err)
+                })
+            }
         }
 
     }, [sessionContext?.sessionData])
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 p-5 pl-20 break-normal">
+        <div className="w-full h-full flex flex-col gap-4 p-5 pl-20 break-normal drop-shadow">
             <div className="flex flex-row items-center mt-5 w-full justify-between">
                 <div className="flex flex-row items-center gap-4">
                     <Avatar avatarImgSrc={profilePicLink} size={75} />
@@ -89,81 +90,100 @@ export default function DashboardProfilePage() {
                 </div>
             </div>
             <Separator />
-            <div className="flex flex-row w-full justify-between pl-10">
-                <div className="flex flex-col gap-3 w-1/3">
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-44 items-end">
-                            <Weight size={20} className=" -translate-y-[2px]" />
+            <div className="flex flex-row w-full justify-between pl-10 py-2">
+                <div className="flex flex-col gap-1 w-1/2">
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <Weight size={20} className=" " />
                             <span className="text-base text-gray-950">Weight</span>
                         </div>
                         <div className="text-base text-gray-700">{userData?.weight} kg</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-44 items-end">
-                            <RulerIcon size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <RulerIcon size={20} className=" " />
                             <span className="text-base text-gray-950">Height</span>
                         </div>
                         <div className="text-base text-gray-700">{convertCmtoFeetInch(userData?.height)}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-44 items-end">
-                            <RefreshCwIcon size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <RefreshCwIcon size={20} className=" " />
                             <span className="text-base text-gray-950">Menstrual Cycle</span>
                         </div>
                         <div className="text-base text-gray-700">{userData?.avgCycleLength} days</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-44 items-end">
-                            <CalendarDays size={20} className=" -translate-y-[2px]" />
+                </div>
+                {/* <Separator orientation="vertical" /> */}
+                <div className="flex flex-col gap-1 w-1/2">
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <CalendarDays size={20} className=" " />
                             <span className="text-base text-gray-950">Date of Birth</span>
                         </div>
                         <div className="text-base text-gray-700">{userData?.dob}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-44 items-end">
-                            <CalendarCheck size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <CalendarCheck size={20} className=" " />
                             <span className="text-base text-gray-950">Last Period Date</span>
                         </div>
                         <div className="text-base text-gray-700">{userData?.diagnosisDate}</div>
                     </div>
-                </div>
-                <Separator orientation="vertical" />
-                <div className="flex flex-col gap-3 flex-1 ml-16">
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-52 items-end">
-                            <CalendarX size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-44 ">
+                            <CalendarX size={20} className=" " />
                             <span className="text-base text-gray-950">Diagnose Date</span>
                         </div>
                         <div className="text-base text-gray-700">{userData?.diagnosisDate}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-52 items-end">
-                            <UserRoundX size={20} className=" -translate-y-[2px]" />
+                </div>
+            </div>
+            <Separator />
+            <div className="flex flex-row w-full justify-between pl-10 py-2">
+                <div className="flex flex-col gap-1 flex-1">
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-52 ">
+                            <UserRoundX size={20} className=" " />
                             <span className="text-base text-gray-950">Cancer Relatives</span>
                         </div>
-                        <div className="text-base text-gray-700">{userData?.cancerRelatives.length > 0 ? userData?.cancerRelatives.map(i => i.trim()).join(", ") : "None"}</div>
+                        <div className="text-base text-gray-700">{userData?.cancerRelatives?.length > 0 ? userData?.cancerRelatives.map(i => i.trim()).join(", ") : "None"}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-52 items-end">
-                            <BeanOff size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-52 ">
+                            <BeanOff size={20} className=" " />
                             <span className="text-base text-gray-950">Allergies</span>
                         </div>
-                        <div className="text-base text-gray-700">{userData?.allergies.length > 0 ? userData?.allergies.map(i => i.trim()).join(", ") : "None"}</div>
+                        <div className="text-base text-gray-700">{userData?.allergies?.length > 0 ? userData?.allergies.map(i => i.trim()).join(", ") : "None"}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-52 items-end">
-                            <HeartCrack size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-52 ">
+                            <HeartCrack size={20} className=" " />
                             <span className="text-base text-gray-950">Chronic Organs</span>
                         </div>
-                        <div className="text-base text-gray-700">{userData?.organsWithChronicConditions.length > 0 ? userData?.organsWithChronicConditions.map(i => i.trim()).join(", ") : "None"}</div>
+                        <div className="text-base text-gray-700">{userData?.organsWithChronicConditions?.length > 0 ? userData?.organsWithChronicConditions.map(i => i.trim()).join(", ") : "None"}</div>
                     </div>
-                    <div className="flex flex-row w-full gap-5 items-end">
-                        <div className="flex flex-row gap-3 w-52 items-end">
-                            <BadgeAlert size={20} className=" -translate-y-[2px]" />
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-52 ">
+                            <BadgeAlert size={20} className=" " />
                             <span className="text-base text-gray-950">Period Irregularitied</span>
                         </div>
-                        <div className="text-base text-gray-700">{userData?.periodIrregularities.length > 0 ? userData?.periodIrregularities.map(i => i.trim()).join(", ") : "None"}</div>
+                        <div className="text-base text-gray-700">{userData?.periodIrregularities?.length > 0 ? userData?.periodIrregularities.map(i => i.trim()).join(", ") : "None"}</div>
                     </div>
+                    <div className="flex flex-row w-full gap-5 ">
+                        <div className="flex flex-row gap-3 w-52 ">
+                            <Pill size={20} className=" " />
+                            <span className="text-base text-gray-950">Medications</span>
+                        </div>
+                        <div className="text-base text-gray-700">
+                            {userData?.medications?.length > 0 ?
+                                userData?.medications.map((medication, index) => `${medication.name} - ${medication.doseDescription}`).join(", ")
+                                :
+                                "None"
+                            }
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <Separator />
@@ -219,7 +239,7 @@ function TabsComponent({ userData }) {
 
     return (
         <Tabs defaultValue={tabs.forumQuestions} className="w-full flex-1">
-            <TabsList className="grid w-8/12 grid-cols-2">
+            <TabsList className="grid w-8/12 grid-cols-2 m-auto">
                 <TabsTrigger value={tabs.forumQuestions}>Questions Asked</TabsTrigger>
                 <TabsTrigger value={tabs.location}>Location</TabsTrigger>
             </TabsList>

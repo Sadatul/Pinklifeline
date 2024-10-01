@@ -13,7 +13,7 @@ import { avatarAang, displayDate, forumAnswers, forumAnswersAnonymous, forumAnsw
 import firebase_app from "@/utils/firebaseConfig";
 import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { set } from "lodash";
-import { ArrowRight, CalendarClockIcon, CornerDownRight, CornerLeftUp, Ellipsis, Filter, LinkIcon, Loader, Loader2, LoaderIcon, MessageCircle, MoveLeft, SearchX, Send, SendHorizonal, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
+import { ArrowBigDownIcon, ArrowBigUpIcon, ArrowLeft, ArrowRight, CalendarClockIcon, CornerDownRight, CornerLeftUp, Ellipsis, Filter, LinkIcon, Loader, Loader2, LoaderIcon, MessageCircle, MoveLeft, SearchX, Send, SendHorizonal, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -57,7 +57,7 @@ export default function QuestionThreadPage() {
     }
 
     return (
-        <ScrollableContainer className={cn("flex flex-col w-full h-full p-5 overflow-x-hidden", radicalGradient, "from-gray-200 to-gray-100")}>
+        <ScrollableContainer className={cn("flex flex-col w-full h-full p-5 overflow-x-hidden bg-stone-100")}>
             <div className="flex flex-row w-full gap-2 h-full relative">
                 <div className="flex flex-col flex-1 items-end">
                     <div className="flex flex-col w-11/12 rounded p-1 gap-2 mt-2">
@@ -182,12 +182,12 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
 
     return (
         <div className="flex flex-col w-full rounded gap-2">
-            <div className="flex flex-col w-full bg-white rounded py-2 px-4 gap-1 relative">
-                <button className="w-fit bg-transparent absolute -left-12 top-1 text-gray-700" onClick={() => {
-                    window.location.href = pagePaths.forumPage
-                }}>
-                    <MoveLeft size={40} />
-                </button>
+            <button className="w-fit bg-white fixed z-30 left-4 top-24 text-gray-700 p-2 rounded-full border border-gray-300 hover:scale-95 transition-all ease-linear" onClick={() => {
+                router.push(pagePaths.forumPage)
+            }}>
+                <ArrowLeft size={24} />
+            </button>
+            <div className="flex flex-col w-full bg-white rounded-xl shadow-md py-2 px-4 gap-1 relative">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button className=" absolute top-2 right-3">
@@ -245,58 +245,56 @@ function QuestionInfoSection({ setQuestionTags, setNotFound, fetchRepliesAgain, 
                         {displayDate(questionInfo?.createdAt)}
                     </span>
                 </div>
-                <div className="flex flex-row gap-2 py-2">
+                <div className="flex flex-row gap-2 py-1">
                     {questionInfo?.tags.map((tag, index) => (
                         <div key={index} className="text-xs bg-gray-200 p-1 rounded font-semibold">
                             {tag}
                         </div>
                     ))}
                 </div>
-                <div className="text-lg text-gray-950 p-2 flex flex-wrap text-wrap break-all">
+                <div className="text-lg text-gray-950 flex flex-wrap text-wrap break-normal">
                     {questionInfo?.body}
                 </div>
-                <Separator className="w-full bg-gray-500 h-[1.5px] mx-auto" />
-                <div className="flex flex-row gap-7 items-center justify-between pr-20">
-                    <div className="flex flex-row gap-1 items-center">
-                        <div className="flex flex-row gap-0 items-center">
-                            <button className="text-blue-500 rounded p-1 flex items-center gap-0" onClick={() => {
-                                axiosInstance.put(forumQuestionvoteUrl(questionInfo?.id), {
-                                    voteType: questionInfo.voteByUser === voteStates.upvote ? voteTypes.unvote : voteTypes.upvote
-                                }).then((response) => {
-                                    setQuestionInfo({
-                                        ...questionInfo,
-                                        voteByUser: questionInfo?.voteByUser === voteStates.upvote ? null : voteStates.upvote,
-                                        voteCount: questionInfo?.voteCount + response.data?.voteChange
-                                    })
-                                }).catch((error) => {
-                                    console.log(error);
+                {/* <Separator className="w-full bg-gray-500 h-[1.5px] mx-auto" /> */}
+                <div className="flex flex-row items-center justify-between pr-20">
+                    <div className="flex flex-row gap-0 items-center">
+                        <button className="text-blue-500 rounded p-1 flex items-center w-fit" onClick={() => {
+                            axiosInstance.put(forumQuestionvoteUrl(questionInfo?.id), {
+                                voteType: questionInfo.voteByUser === voteStates.upvote ? voteTypes.unvote : voteTypes.upvote
+                            }).then((response) => {
+                                setQuestionInfo({
+                                    ...questionInfo,
+                                    voteByUser: questionInfo?.voteByUser === voteStates.upvote ? null : voteStates.upvote,
+                                    voteCount: questionInfo?.voteCount + response.data?.voteChange
                                 })
-                            }}>
-                                <ThumbsUp size={20} fill={questionInfo?.voteByUser === voteStates.upvote ? "rgb(59 130 246)" : "rgb(255,255,255)"} />
-                            </button>
-                            <button className="text-red-500 rounded p-1  flex items-center gap-1" onClick={() => {
-                                axiosInstance.put(forumQuestionvoteUrl(questionInfo?.id), {
-                                    voteType: questionInfo?.voteByUser === voteStates.downvote ? voteTypes.unvote : voteTypes.downvote
-                                }).then((response) => {
-                                    setQuestionInfo({
-                                        ...questionInfo,
-                                        voteByUser: questionInfo?.voteByUser === voteStates.downvote ? null : voteStates.downvote,
-                                        voteCount: questionInfo?.voteCount + response.data?.voteChange
-                                    })
-                                }).catch((error) => {
-                                    console.log(error);
-                                })
-                            }}>
-                                <ThumbsDown size={20} fill={questionInfo?.voteByUser === voteStates.downvote ? "rgb(239 68 68)" : "rgb(255,255,255)"} />
-                            </button>
-                        </div>
+                            }).catch((error) => {
+                                console.log(error);
+                            })
+                        }}>
+                            <ArrowBigUpIcon size={24} fill={questionInfo?.voteByUser === voteStates.upvote ? "rgb(59 130 246)" : "rgb(255,255,255)"} />
+                        </button>
                         <span className="text-lg">
                             {questionInfo?.voteCount}
                         </span>
+                        <button className="text-red-500 rounded p-1  flex items-center w-fit" onClick={() => {
+                            axiosInstance.put(forumQuestionvoteUrl(questionInfo?.id), {
+                                voteType: questionInfo?.voteByUser === voteStates.downvote ? voteTypes.unvote : voteTypes.downvote
+                            }).then((response) => {
+                                setQuestionInfo({
+                                    ...questionInfo,
+                                    voteByUser: questionInfo?.voteByUser === voteStates.downvote ? null : voteStates.downvote,
+                                    voteCount: questionInfo?.voteCount + response.data?.voteChange
+                                })
+                            }).catch((error) => {
+                                console.log(error);
+                            })
+                        }}>
+                            <ArrowBigDownIcon size={24} fill={questionInfo?.voteByUser === voteStates.downvote ? "rgb(239 68 68)" : "rgb(255,255,255)"} />
+                        </button>
                     </div>
                     {(sessionContext?.sessionData?.userId) &&
-                        <button className="text-green-500 rounded p-2" onClick={() => { setGiveAnswer(prev => !prev) }}>
-                            <MessageCircle size={26} />
+                        <button className="text-green-500 rounded size-fit" onClick={() => { setGiveAnswer(prev => !prev) }}>
+                            <MessageCircle size={24} />
                         </button>
                     }
                 </div>
@@ -575,7 +573,7 @@ const Answer = React.memo(
                     <Avatar avatarImgSrc={mutableAnswer.authorProfilePicture} size={36} />
                 </div>
                 <div className={cn("flex flex-col w-full gap-0")}>
-                    <div className="relative bg-white px-4 pt-1 rounded-b-lg rounded-r-lg shadow-lg flex flex-col w-full gap-3">
+                    <div className="relative bg-white px-4 pt-1 rounded-b-lg rounded-r-lg shadow-lg flex flex-col w-full gap-[1px]">
                         <div className="absolute top-0 -left-3 w-0 h-0 border-l-[15px] border-l-transparent border-t-[15px] border-t-white"></div>
                         <div className="flex flex-row justify-between items-center">
                             <Link href={pagePaths.redirectProfile(mutableAnswer.authorId)} className="hover:underline text-black text-base font-semibold">
@@ -591,17 +589,17 @@ const Answer = React.memo(
                                 <div className="text-gray-900 text-wrap break-all">{mutableAnswer.body}</div>
                                 <div className="flex flex-row gap-7 items-center justify-between">
                                     <div className="flex flex-row gap-1 items-center">
-                                        <div className="flex flex-row gap-2 items-center">
+                                        <div className="flex flex-row gap-1 items-center">
                                             <button className="text-gray-600 rounded  flex items-center gap-0"
                                                 onClick={() => handleUpvote()}>
-                                                <ThumbsUp size={16} fill={mutableAnswer.voteByUser === voteStates.upvote ? "rgb(59 130 246)" : "rgb(255,255,255)"} />
+                                                <ArrowBigUpIcon size={22} fill={mutableAnswer.voteByUser === voteStates.upvote ? "rgb(59 130 246)" : "rgb(255,255,255)"} />
                                             </button>
+                                            <span className="text-base text-gray-700 font-[500]">{mutableAnswer.voteCount}</span>
                                             <button className="text-gray-600 rounded  flex items-center gap-1"
                                                 onClick={() => handleDownvote()} >
-                                                <ThumbsDown size={16} fill={mutableAnswer.voteByUser === voteStates.downvote ? "rgb(239 68 68)" : "rgb(255,255,255)"} />
+                                                <ArrowBigDownIcon size={22} fill={mutableAnswer.voteByUser === voteStates.downvote ? "rgb(239 68 68)" : "rgb(255,255,255)"} />
                                             </button>
                                         </div>
-                                        <span className="text-lg">{mutableAnswer.voteCount}</span>
                                     </div>
                                     <div className="flex flex-row items-center gap-6">
                                         {(sessionContext?.sessionData?.userId) &&

@@ -30,11 +30,12 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Image from "next/image";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
-import { LinkIcon, Trash2 } from "lucide-react";
+import { LinkIcon, Loader, Trash2 } from "lucide-react";
 
 export function Vault({ side = "right", className = "" }) {
     const [vaultData, setVaultData] = useState([])
     const storage = getStorage(firebase_app)
+    const [uplaoding, setUploading] = useState(false)
     return (
         <Sheet >
             <SheetTrigger asChild>
@@ -57,6 +58,7 @@ export function Vault({ side = "right", className = "" }) {
                         const filePath = `questionVault/${new Date().toString()}/${file.name}`;
                         const storageRef = ref(storage, filePath);
                         const uploadTask = uploadBytesResumable(storageRef, file);
+                        setUploading(true)
                         uploadTask.on(
                             'state_changed',
                             (snapshot) => {
@@ -66,11 +68,13 @@ export function Vault({ side = "right", className = "" }) {
                                 toast.error("Error uploading image", {
                                     description: "Please try again later",
                                 });
+                                setUploading(false)
                             },
                             async () => {
                                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                                 setVaultData([...vaultData, { type: type, url: downloadURL }])
                                 toast.success("Image uploaded successfully")
+                                setUploading(false)
                             }
                         );
                     }}
@@ -84,7 +88,12 @@ export function Vault({ side = "right", className = "" }) {
                         }}
                     />
                 </div>
-                <ScrollableContainer className="overflow-x-auto h-[500px] mt-5 mb-3 overflow-y-auto">
+                <ScrollableContainer className="overflow-x-auto h-[500px] mt-5 mb-3 overflow-y-auto relative">
+                    {uplaoding &&
+                        <div className="absolute top-0 left-0 bottom-0 right-0 bg-gray-200 bg-opacity-30 z-50 rounded-xl ">
+                            <Loader size={80} className={cn("text-gray-700 animate-spin m-auto mt-20")} />
+                        </div>
+                    }
                     {vaultData.map((data, index) => {
                         return (
                             <div key={index} className="flex flex-col w-full gap-3 p-2 bg-gray-100 rounded-lg">
@@ -108,7 +117,7 @@ export function Vault({ side = "right", className = "" }) {
                                                         document.getElementById("copy-button").classList.add("bg-pink-300")
                                                         if (!document.getElementById("copy-response-message")) return
                                                         document.getElementById("copy-response-message").classList.add("hidden")
-                                                    }, 5000)
+                                                    }, 3000)
                                                     return () => clearTimeout(timer)
                                                 }}>
                                                     <LinkIcon size={20} />

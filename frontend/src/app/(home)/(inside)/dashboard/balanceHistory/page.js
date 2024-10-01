@@ -6,6 +6,7 @@ import { getDoctorBalance, getDoctorBalanceHistory } from "@/utils/constants";
 import { Pagination } from "@mui/material";
 import { Calendar, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
 
 export default function BalanceHistoryPage() {
     const [balanceHistory, setBalanceHistory] = useState([]);
@@ -49,22 +50,23 @@ export default function BalanceHistoryPage() {
                         Balance : {balance}
                     </div>
                 }
-                <div className="flex flex-col bg-gray-100 rounded border border-gray-500 gap-5 w-full items-center">
+                <div className="flex flex-col  gap-5 w-full items-center">
                     {balanceHistory?.length === 0 ?
                         <h2 className="text-lg text-black">
                             No balance history available
                         </h2>
                         :
                         <>
-                            <div className="w-full">
+                            <div className="flex flex-col gap-2 w-full bg-white">
                                 {balanceHistory?.map((history) => (
-                                    <div key={history.id}>
-                                        <div className="flex flex-col gap-2">
+                                    <div key={history.id} className="bg-slate-100 rounded-xl p-2 shadow-md">
+                                        <div className="flex flex-col">
                                             <div className="flex items-center justify-between p-2">
-                                                <span className="text-base text-black">
-                                                    Amount: {history.value}
+                                                <span className="text-base text-black flex flex-row items-center">
+                                                    <FaBangladeshiTakaSign />
+                                                     {history.value}
                                                 </span>
-                                                <div className="text-base text-black flex items-center gap-3">
+                                                <div className="text-sm text-black flex items-center gap-3">
                                                     <span className="flex items-center gap-1">
                                                         <Calendar size={16} />
                                                         {history.timestamp.split("T")[0]}
@@ -75,13 +77,13 @@ export default function BalanceHistoryPage() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between p-2">
-                                                <span className="text-base text-black">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-gray-600">
                                                     {history.description}
                                                 </span>
                                             </div>
                                         </div>
-                                        <Separator className="h-[1.5px] bg-gray-600" />
+                                        {/* <Separator className="h-[1.5px] bg-gray-600" /> */}
                                     </div>
                                 ))}
                             </div>

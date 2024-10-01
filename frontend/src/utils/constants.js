@@ -418,7 +418,7 @@ export function displayDate(date, customFormat = null) {
     }
     else {
         // Display the formatted date in "Friday, 12 August, 2023" format
-        return format(givenDate, "EEEE hh:mm a, dd MMMM, yyyy");
+        return format(givenDate, "hh:mm a, dd MMM, yyyy");
     }
 }
 

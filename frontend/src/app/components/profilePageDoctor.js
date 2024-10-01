@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
 import { addAppointment, addReview, avatarAang, blogByIdAnonymousUrl, blogsAnonymousUrl, convertToAmPm, deleteDoctorReview, displayDate, dummyAvatar, emptyAvatar, extractContent, extractCoverImage, extractCoverText, extractTextFromHtml, forumQuestionsAnonymousUrl, getDoctorProfileDetailsUrl, getDoctorProfileDetailsUrlLocations, getDoctorProfileDetailsUrlReviews, getDoctorsUrl, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, Hospital, Loader, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp, Trash2, X } from "lucide-react";
+import { Banknote, BriefcaseBusiness, CalendarSearch, Check, Clock, Cross, ExternalLink, Hospital, Loader, MapPinIcon, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, StarIcon, ThumbsUp, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import { Pagination, PaginationItem } from "@mui/material";
+import { Pagination, PaginationItem, Rating } from "@mui/material";
 import { Ripple } from "primereact/ripple";
 import { BsPersonVcardFill } from "react-icons/bs";
 import { PiCertificate } from "react-icons/pi";
@@ -55,6 +55,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import Loading from "./loading";
 import Link from "next/link";
+import ReactStars from "react-rating-stars-component";
 
 
 function round(number) {
@@ -172,7 +173,7 @@ export default function DoctorProfile({ profileId, section }) {
     // else if (userData === "EMPTY") return <h1 className="text-3xl font-semibold text-center m-4">Doctor not found</h1>
 
     return (
-        <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100" tabIndex={0} style={{ outline: 'none' }}
+        <ScrollableContainer ref={containerRef} className="flex w-screen overflow-x-hidden flex-col flex-grow p-4 items-center bg-gradient-to-r from-gray-100 via-zinc-100 to-slate-100 break-normal" tabIndex={0} style={{ outline: 'none' }}
             onScroll={(e) => {
                 if (containerRef.current?.scrollTop > 350 && !showProfileNavbar) {
                     setShowProfileNavbar(true)
@@ -193,7 +194,7 @@ export default function DoctorProfile({ profileId, section }) {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col w-11/12 items-center rounded-t-md bg-white flex-wrap">
+            <div className="flex flex-col w-11/12 items-center rounded-t-md bg-white flex-wrap shadow-md">
                 <div className="relative w-full h-28 rounded-t-md">
                     <Image
                         src={"https://img.freepik.com/free-vector/watercolor-hot-pink-background_23-2150815041.jpg?size=626&ext=jpg&uid=R109267787&ga=GA1.1.1367600061.1718446141&semt=sph"}
@@ -207,7 +208,7 @@ export default function DoctorProfile({ profileId, section }) {
                     <div className="absolute -top-20 flex flex-col items-center">
                         <Image src={userData?.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
                     </div>
-                    <div className="flex flex-col ml-56 gap-2">
+                    <div className="flex flex-col ml-56 gap-1">
                         <h1 className="text-3xl font-semibold flex items-center gap-2">
                             {userData?.fullName}
                             <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white text-xs scale-95 translate-y-[2px]")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
@@ -224,7 +225,7 @@ export default function DoctorProfile({ profileId, section }) {
                         <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
                         <Popover>
                             <PopoverTrigger className="w-fit">
-                                <div className="flex flex-row items-center mt-3">
+                                <div className="flex flex-row items-center mt-1">
                                     {ratingIcon}
                                     <span className="text-base font-semibold ml-2 break-normal w-10 text-left">{round(reviewInfo.averageRating)}</span>
                                 </div>
@@ -245,26 +246,26 @@ export default function DoctorProfile({ profileId, section }) {
                             </PopoverContent>
                         </Popover>
                     </div>
-                    <div className="flex flex-row items-center mr-3 mt-12">
-                        <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
-                            <PopoverTrigger asChild>
-                                <button disabled={!sessionContext?.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-base flex flex-row items-center">
-                                    <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
-                                    <span className="ml-1 font-semibold">Message</span>
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent asChild>
-                                <div className="flex flex-col">
-                                    <textarea id="message" className="w-full h-16 p-2 border border-gray-300 rounded-md" placeholder="Type your message here"></textarea>
-                                    <button onClick={sendMessage} className="bg-blue-500 text-white px-2 py-2 text-base rounded-md mt-2">Send</button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                        <button onClick={() => { setSelectedTab(sectionEnum.consultations) }} className="bg-purple-600 text-white px-2 py-2 text-base rounded-md ml-2 font-semibold">Request Appointment</button>
-                    </div>
                 </div>
-                <Separator className="w-11/12 mt-10 h-[2px]" />
-                <div className="flex flex-row w-11/12 mt-4 py-3">
+                <div className="flex flex-row items-center justify-end w-full px-14">
+                    <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
+                        <PopoverTrigger asChild>
+                            <button disabled={!sessionContext?.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-sm flex flex-row items-center font-thin">
+                                <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
+                                <span className="ml-1">Message</span>
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent asChild>
+                            <div className="flex flex-col">
+                                <textarea id="message" className="w-full h-16 p-2 border border-gray-300 rounded-md" placeholder="Type your message here "></textarea>
+                                <button onClick={sendMessage} className="bg-blue-500 text-white px-2 py-2 text-base rounded-md mt-2 font-normal">Send</button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <button onClick={() => { setSelectedTab(sectionEnum.consultations) }} className="bg-purple-600 text-white px-2 py-2 text-sm rounded-md ml-2">Request Appointment</button>
+                </div>
+                <Separator className="w-11/12 mt-1 h-[2px]" />
+                <div className="flex flex-row w-11/12 mt-1 py-3">
                     {tabs.map((tab, index) => (
                         <button key={index} onClick={() => setSelectedTab(index)} className={cn("text-base flex flex-col font-semibold px-2 mx-5 p-ripple rounded-t-md", selectedTab === index ? tab.textColor : "text-gray-800")}>
                             {tab.title}
@@ -277,7 +278,7 @@ export default function DoctorProfile({ profileId, section }) {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col w-11/12 items-center mt-4">
+            <div className="flex flex-col w-11/12 items-center mt-1">
                 {tabs[selectedTab].section}
                 <div
                     onKeyDown={(e) => {
@@ -368,12 +369,13 @@ function PostSection({ userId, className, userData }) {
                 pageNo: currentForumQuestionPage - 1,
             }
         }).then((res) => {
-            setForumQuestions(res.data?.content?.map((question) => {
+            setForumQuestions(res?.data?.content?.map(question => {
                 return {
-                    id: question.id,
-                    title: question.title,
-                    likesCount: question.voteCount,
-                    date: displayDate(question.createdAt),
+                    id: question?.id,
+                    title: question?.title,
+                    voteCount: question?.voteCount,
+                    createdAt: question?.createdAt,
+                    answerCount: null,
                 }
             }))
             setForumPageInfo(res.data?.page)
@@ -432,8 +434,8 @@ function PostSection({ userId, className, userData }) {
     }, [userData?.department, userData?.designation, userData?.workplace, userId]);
 
     return (
-        <div className={cn("flex flex-row w-full mt-4 p-4 rounded")}>
-            <div className={cn("flex flex-col rounded flex-1 p-3", className)}>
+        <div className={cn("flex flex-row w-full mt-2 p-1 rounded")}>
+            <div className={cn("flex flex-col rounded-b-xl flex-1 p-3 shadow-md", className)}>
                 <Tabs defaultValue={"blogPosts"} onValueChange={(value) => {
                     console.log(value)
                     setSelectedTab(value)
@@ -447,7 +449,7 @@ function PostSection({ userId, className, userData }) {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value={"blogPosts"}>
-                        <div className="flex flex-col pr-3">
+                        <div className="flex flex-col pr-3 break-all">
                             {posts?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No posts found</h1>}
                             {posts?.map((post, index) => (
                                 <BlogCard key={index} id={post.id} title={post.title} content={post.content} date={post.date} imageSrc={post.imageSrc} upvoteCount={post.upvoteCount} />
@@ -458,7 +460,20 @@ function PostSection({ userId, className, userData }) {
                         <div className="flex flex-col">
                             {forumQuestions?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No questions found</h1>}
                             {forumQuestions?.map((question, index) => (
-                                <ForumCard key={index} id={question.id} title={question.title} date={question.date} likesCount={question.likesCount} />
+                                <div key={index} className="flex flex-col gap-2 border rounded-xl p-3 h-fit shadow-md line-clamp-2 w-96 relative">
+                                    <span className="text-xs translate-y-[1.5px] text-gray-800 absolute top-3 right-3">{displayDate(question?.createdAt, "dd MMM, yy")}</span>
+                                    <div className="flex flex-row items-center gap-2 mt-3">
+                                        <span className="text-lg font-[500]">{question.title}</span>
+                                    </div>
+                                    <Link href={pagePaths.questionPageById(question.id)} className="text-sm text-blue-500 hover:underline flex items-center">
+                                        View Question and Answers
+                                        <ExternalLink size={14} className="ml-1" />
+                                    </Link>
+                                    <div className="flex flex-row items-center gap-2">
+                                        <ThumbsUp size={20} />
+                                        <span className="text-sm text-gray-800">{question.voteCount}</span>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </TabsContent>
@@ -485,7 +500,7 @@ function PostSection({ userId, className, userData }) {
                     }
                 </div>
             </div>
-            <div className="flex flex-col bg-white rounded-md items-center p-4 ml-7 w-3/12">
+            <div className="flex flex-col bg-white rounded-b-xl items-center p-3 ml-7 w-3/12 shadow-md">
                 <h1 className="text-xl ">Similar Persons</h1>
                 <Separator className="w-11/12 h-[1.5px] mt-2 bg-purple-100" />
                 <div className="flex flex-col w-full gap-3">
@@ -564,6 +579,22 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     const [userReview, setUserReview] = useState(null)
     const [loading, setLoading] = useState(true)
     const [addReviewDialog, setAddReviewDialog] = useState(false)
+    const [selectedRating, setSelectedRating] = useState(0)
+    const secondExample = {
+        size: 50,
+        count: 10,
+        color: "black",
+        activeColor: "red",
+        value: 7.5,
+        a11y: true,
+        isHalf: true,
+        emptyIcon: <i className="far fa-star" />,
+        halfIcon: <i className="fa fa-star-half-alt" />,
+        filledIcon: <i className="fa fa-star" />,
+        onChange: newValue => {
+            console.log(`Example 2: new value is ${newValue}`);
+        }
+    };
 
     useEffect(() => {
         if (sessionContext?.sessionData && fetchAgain) {
@@ -585,40 +616,48 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
     if (loading) return <Loading chose="hand" />
 
     return (
-        <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
+        <div className={cn("flex flex-col w-full mt-2 rounded-b-xl shadow-md", className)}>
             <div className="flex flex-col rounded p-4 w-full">
                 <div className="flex flex-col items-end w-full">
                     {!userReview ?
-                        <Dialog open={addReviewDialog} onOpenChange={setAddReviewDialog}>
+                        <Dialog open={addReviewDialog} onOpenChange={(e) => {
+                            setAddReviewDialog(e)
+                            setSelectedRating(0)
+                            if (!e) {
+                                document.getElementById("add-review-text").value = ""
+                                document.getElementById("error-message").classList.add("hidden")
+                            }
+                        }}>
                             <DialogTrigger asChild>
                                 <Button className="w-24">
                                     Add Review
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent >
+                            <DialogContent className="bg-gray-100" >
                                 <DialogHeader>
                                     <DialogTitle>
-                                        Write your message
+                                        Review
                                     </DialogTitle>
                                 </DialogHeader>
                                 <DialogDescription asChild>
                                     <div className="flex flex-col w-full items-end gap-3">
-                                        <div className="flex flex-row w-full gap-7 justify-between items-center h-full" >
-                                            <select id="add-review-rating" className="p-2 rounded-md bg-gray-100 border border-gray-500 text-black" defaultValue={0}>
-                                                <option value={0} disabled>Rating</option>
-                                                <option value={1}>1</option>
-                                                <option value={2}>2</option>
-                                                <option value={3}>3</option>
-                                                <option value={4}>4</option>
-                                                <option value={5}>5</option>
-                                            </select>
-                                            <textarea id="add-review-text" className="px-2 py-1 flex-1 bg-gray-100 shadow-inner border text-black border-blue-300" type="text" maxLength={255} />
+                                        <div className="flex flex-col w-full gap-3 items-center h-fit" >
+                                            <div className="flex flex-row items-center gap-3 w-full h-fit">
+                                                <Rating
+                                                    value={selectedRating}
+                                                    onChange={(_, e) => setSelectedRating(e)}
+                                                    size='large'
+                                                    emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                                    icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                                                />
+                                            </div>
+                                            <textarea id="add-review-text" className="p-3 flex-1 bg-white shadow-inner border text-black border-gray-300 focus:outline-gray-400 w-full rounded-lg " placeholder="Write message..." rows={6} type="text" maxLength={255} />
                                         </div>
                                         <span id="error-message" className="text-sm font-semibold text-end w-full text-red-500 hidden">Please provide a rating at least</span>
                                         <Button className="w-24"
                                             onClick={() => {
                                                 const comment = document.getElementById("add-review-text")?.value
-                                                const rating = document.getElementById("add-review-rating")?.value
+                                                const rating = selectedRating
                                                 if (Number(rating) !== 0) {
                                                     axiosInstance.post(addReview(sessionContext?.sessionData.userId), {
                                                         rating: rating,
@@ -643,8 +682,8 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                         </Button>
                                     </div>
                                 </DialogDescription>
-                                <DialogFooter>
-                                </DialogFooter>
+                                {/* <DialogFooter>
+                                </DialogFooter> */}
                             </DialogContent>
                         </Dialog> :
                         <></>
@@ -686,6 +725,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
     const [editable, setEditable] = useState(false)
     const textContentRef = useRef(null)
     const ratingRef = useRef(null)
+    const [selectedRating, setSelectedRating] = useState(data.rating)
 
     const deleteReview = () => {
         axiosInstance.delete(deleteDoctorReview(sessionContext?.sessionData.userId, id)).then((res) => {
@@ -699,40 +739,40 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
     }
 
     return (
-        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3 px-5">
+        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative py-2 px-5">
             <div className="flex flex-col justify-between w-full items-start  text-black rounded-md  py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
                     <Avatar avatarImgSrc={profilePicture || emptyAvatar} size={44} />
-                    <h1 className="text-lg font-semibold line-clamp-1">{data?.reviewerName?.split("@")[0]}</h1>
+                    <div className="flex flex-col">
+                        <h3 className="text-base font-semibold line-clamp-1">{data?.reviewerName?.split("@")[0]}</h3>
+                        <span className="flex items-center gap-1 text-xs">
+                            <Clock size={16} />
+                            {formatDistanceToNow(new Date(data.timestamp), { addSuffix: true })}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-col py-1 items-start justify-center">
                         {editable ? (
-                            <select ref={ratingRef} className="p-2 rounded-md bg-gray-200 border border-gray-600 text-black" defaultValue={Number(data.rating) || 0}>
-                                <option value={0} disabled>Rating</option>
-                                <option value={1}>1</option>
-                                <option value={2}>2</option>
-                                <option value={3}>3</option>
-                                <option value={4}>4</option>
-                                <option value={5}>5</option>
-                            </select>
+                            <Rating
+                                value={selectedRating}
+                                onChange={(_, e) => setSelectedRating(e)}
+                                size='large'
+                                emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                            />
                         ) : (
                             <div className="flex flex-row items-start">
-                                {[...Array(data.rating)].map((_, index) => (
-                                    <Star size={24} key={index} fill="#FFD700" className={cn("text-transparent")} />
-                                ))}
-                                {[...Array(5 - data.rating)].map((_, index) => (
-                                    <Star size={24} key={index} fill="#818181" className={cn("text-transparent")} />
-                                ))}
+                                <Rating
+                                    value={data.rating}
+                                    size='large'
+                                    emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                    icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                                    readOnly={true}
+                                />
 
                             </div>
                         )}
-                    </div>
-                    <div className="flex flex-row gap-2">
-                        <span className="flex items-center gap-1">
-                            <Clock size={16} />
-                            {formatDistanceToNow(new Date(data.timestamp), { addSuffix: true })}
-                        </span>
                     </div>
                     <div className="flex flex-row gap-3 absolute top-3 right-3">
                         {
@@ -741,7 +781,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                                     <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
                                         onClick={() => {
                                             const newContent = textContentRef.current?.value
-                                            const newRating = ratingRef.current?.value
+                                            const newRating = selectedRating
                                             if ((newRating !== data.rating && newRating) || newContent !== data.content) {
                                                 const headers = { 'Authorization': `Bearer ${sessionContext?.sessionData.token}` }
                                                 axiosInstance.put(updateDoctorReview(sessionContext?.sessionData.userId, id), {
@@ -765,6 +805,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                                     <button className="px-2 py-1 text-red-500"
                                         onClick={() => {
                                             setEditable(false)
+                                            setSelectedRating(data.rating)
                                         }}>
                                         <X size={32} />
                                     </button>
@@ -789,7 +830,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                     </div>
                 </div>
             </div>
-            {editable ? <textarea ref={textContentRef} className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.comment} /> : (<p className=" text-lg py-1 mb-1">{data.comment}</p>)}
+            {editable ? <textarea ref={textContentRef} className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.comment} /> : (<p className=" text-lg py-1">{data.comment}</p>)}
         </div>
     )
 }
@@ -806,12 +847,13 @@ function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePictur
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-col py-1 items-start justify-center">
                         <div className="flex flex-row items-start">
-                            {[...Array(rating)].map((_, index) => (
-                                <Star size={24} key={index} fill="#FFD700" className={cn("text-transparent")} />
-                            ))}
-                            {[...Array(5 - rating)].map((_, index) => (
-                                <Star size={24} key={index} fill="#818181" className={cn("text-transparent")} />
-                            ))}
+                            <Rating
+                                value={rating}
+                                size='large'
+                                emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                                readOnly={true}
+                            />
 
                         </div>
                     </div>
@@ -848,7 +890,7 @@ function ConsultationSection({ userId, className, profileId }) {
 
     if (!sessionContext?.sessionData) return <Loading />
     return (
-        <div className={cn("flex flex-col w-full mt-4 rounded", className)}>
+        <div className={cn("flex flex-col w-full mt-2 rounded-b-xl shadow-md", className)}>
             <div className="flex flex-col items-center rounded p-4 w-full">
                 {chambers?.length === 0 && <h1 className="text-3xl font-semibold text-center m-4">No chambers found</h1>}
                 <div className="flex flex-col items-center w-11/12">

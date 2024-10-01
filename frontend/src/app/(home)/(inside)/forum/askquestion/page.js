@@ -23,7 +23,7 @@ import Link from "next/link";
 import { capitalizeFirstLetter, forumQuestionsUrl, pagePaths } from "@/utils/constants";
 import axiosInstance from "@/utils/axiosInstance";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
-import { LinkIcon, Trash2 } from "lucide-react";
+import { ArrowLeft, LinkIcon, Trash2 } from "lucide-react";
 import CreatableSelect from 'react-select/creatable'
 import makeAnimated from 'react-select/animated';
 import Loading from "@/app/components/loading";
@@ -42,13 +42,17 @@ export default function AskQuestionPage() {
     if (!isMounted) return <Loading chose="hand" />
 
     return (
-        <div className="flex flex-col w-full h-full items-center gap-3 p-3 overflow-x-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  from-gray-200 via-gray-200 to-gray-300 relative">
-            <h1 className="text-2xl font-bold">Ask Question</h1>
-            <div className="flex flex-row w-10/12 gap-8 text-lg py-3 px-2 rounded bg-purple-100 flex-wrap">
-                <div className="flex flex-row gap-3 flex-1">
-                    <span className="">Question Title</span>
+        <div className="flex flex-col w-full h-full items-center gap-3 p-3 overflow-x-hidden bg-stone-100 relative">
+            <div className="flex flex-row items-center gap-2 w-full px-10">
+                <Link href={pagePaths.forumPage} className="hover:scale-95 rounded-full border border-gray-300 bg-white p-[6px]">
+                    <ArrowLeft size={24} />
+                </Link>
+                <h1 className="text-2xl font-bold">Ask Question</h1>
+            </div>
+            <div className="flex flex-row w-10/12 justify-center gap-8 text-lg py-3 px-2 rounded flex-wrap">
+                <div className="flex flex-row gap-3">
                     <div className="flex flex-col gap-1">
-                        <input id="question-title" type="text" autoComplete="off" className="border text-base border-gray-500 px-2 py-1 rounded shadow-inner w-96" onChange={(e) => {
+                        <input id="question-title" type="text" autoComplete="off" placeholder="Question Title" className="text-base border border-gray-300 focus:outline-gray-400 px-3 rounded-2xl shadow-inner w-96 h-[42px]" onChange={(e) => {
                             const title = e.target.value
                             document.getElementById("title-characters").textContent = `Max characters 255(${title.length}/255)`
                         }} />
@@ -56,8 +60,7 @@ export default function AskQuestionPage() {
                         <span id="error-msg-title" className="text-sm text-red-500 hidden">Thsi field is required</span>
                     </div>
                 </div>
-                <div className="flex flex-row gap-3 flex-1">
-                    <span className="">Add Tags</span>
+                <div className="flex flex-row gap-3">
                     <div>
                         <CreatableSelect
                             isMulti={true}
@@ -69,11 +72,12 @@ export default function AskQuestionPage() {
                             closeMenuOnSelect={false}
                             onCreateOption={(keyword) => {
                                 if (options.find((option) => option.value === keyword)) return
-                                setOptions([...options, { value: keyword.trim(), label: keyword.trim() }])
-                                setSelectedTags([...selectedTags, { value: keyword.trim(), label: keyword.trim() }])
+                                setOptions([...options, { value: capitalizeFirstLetter(keyword.trim()), label: capitalizeFirstLetter(keyword.trim()) }])
+                                setSelectedTags([...selectedTags, { value: capitalizeFirstLetter(keyword.trim()), label: capitalizeFirstLetter(keyword.trim()) }])
                             }}
                             value={selectedTags}
-                            className="min-w-64 -translate-y-1"
+                            className="w-96 rounded-2xl"
+                            placeholder="Add Tags to your question"
                         />
                         <span id="error-msg-tags" className="text-sm text-red-500 hidden">Thsi field is required</span>
                     </div>
@@ -81,15 +85,12 @@ export default function AskQuestionPage() {
                 <Vault />
             </div>
             <div className="w-full flex flex-col justify-center items-center">
-                <textarea id="question-content" className="w-10/12 h-96 border border-gray-500 rounded-lg p-2 shadow-inner" />
+                <textarea id="question-content" placeholder="Description..." className="w-10/12 h-96 border border-gray-500 rounded-2xl p-3 shadow-inner" />
                 <span id="error-msg-content" className="text-sm text-red-500 hidden">Thsi field is required</span>
             </div>
             <span className="text-base text-gray-900">Use the vault to upload any file and refer in text with url.</span>
-            <div className="w-8/12 flex flex-row justify-between h-fit items-center gap-3">
-                <Link href={pagePaths.forumPage} target='_self' className="p-2 hover:scale-95 bg-orange-200 rounded-lg border border-black shadow-inner" >
-                    Cancel
-                </Link>
-                <Button className="hover:scale-95" onClick={() => {
+            <div className="w-10/12 flex flex-row justify-end h-fit items-center gap-3">
+                <Button className="hover:scale-95 rounded-3xl" onClick={() => {
                     const title = document.getElementById("question-title").value
                     const tags = selectedTags.map((tag) => tag.value)
                     const content = document.getElementById("question-content").value
