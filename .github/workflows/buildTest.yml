@@ -41,7 +41,7 @@ jobs:
           ls -l
           docker compose -f compose.yml pull
           mkdir -p /tmp/.docker-cache
-          docker save $(docker compose -f compose.yml config --services | xargs) -o /tmp/.docker-cache/testcontainers.tar
+          docker save $(bash get-images.sh | xargs) -o /tmp/.docker-cache/testcontainers.tar
     - name: Load cached images
       if: steps.cache.outputs.cache-hit == 'true'
       run: docker load -i /tmp/.docker-cache/testcontainers.tar
