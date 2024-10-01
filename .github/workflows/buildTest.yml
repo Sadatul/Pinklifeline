@@ -30,16 +30,16 @@ jobs:
     if: ${{ needs.check_files.outputs.backend_changes == 'true' }}
     steps:
     - uses: actions/checkout@v4
-    - name: Cache Docker images based on compose.yml
+    - name: Cache Docker images based on AbstractIntegratioTest.java
       uses: actions/cache@v3
       with:
         path: /tmp/.docker-cache
-        key: ${{ runner.os }}-docker-testcontainers-${{ hashFiles('compose.yml') }}
-    - name: Pre-pull Testcontainers images using docker compose
+        key: ${{ runner.os }}-docker-testcontainers-${{ hashFiles('backend/pinklifeline/src/test/java/com/sadi/pinklifeline/integrationtests/AbstractBaseIntegrationTest.java') }}
+    - name: Pre-pull Testcontainers images using AbstractIntegratioTest.java
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
           ls -l
-          docker compose -f compose.yml pull
+          bash pull-images.sh
           mkdir -p /tmp/.docker-cache
           docker save $(bash get-images.sh | xargs) -o /tmp/.docker-cache/testcontainers.tar
     - name: Load cached images
