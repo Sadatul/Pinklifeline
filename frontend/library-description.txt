@@ -1,0 +1,33 @@
+Libraries and Tools Organization
+
+Icon Libraries: @mui/icons-material, lucide-react, react-icons
+
+UI Components and Design: @mui/material, shadcn-components, primereact, react-select
+
+Animation and Motion Libraries: framer-motion, lottie-react
+
+Machine Learning and AI: @google/generative-ai, @tensorflow/tfjs, @tensorflow-models/toxicity
+
+Networking and HTTP Requests: axios, @stomp/stompjs, @stream-io/node-sdk
+
+Video and Multimedia: @stream-io/video-react-sdk
+
+Data Storage and Management: firebase, next-sitemap, nextjs-toploader
+
+Screenshot and PDF Management: html2canvas, jspdf (PDF generation)
+
+Geospatial and Mapping: leaflet, react-leaflet, h3-js
+
+Date and Time Management: date-fns, react-day-picker
+
+Form and Input Management: input-otp, react-hook-form, react-drag-drop-files
+
+Text Editing and Rich Media: jodit-react, @emoji-mart
+
+Notifications and Alerts: sonner, web-push
+
+Geolocation: react-geolocated
+
+Optical Character Recognition (OCR): tesseract.js
+
+Miscellaneous: lodash (debouncing), react-resizable-panels

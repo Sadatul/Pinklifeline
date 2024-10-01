@@ -35,11 +35,31 @@ services:
     networks:
       - pinklifeline_network
 
+  rabbitmq:
+    image: sadatul/pinklifeline-rabbitmq-stomp
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "61613:61613"
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pinklifeline_network
+
   backend:
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     # Either you can build your own image or get one from dockerhub
     # Comment one or the other
@@ -56,6 +76,8 @@ services:
       - DB_PASSWORD=pinklifeline
       - REDIS_HOST=redis-stack
       - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=61613
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=pinklifeline
       - GETSTREAM_API_KEY=${GETSTREAM_API_KEY}

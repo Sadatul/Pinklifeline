@@ -184,7 +184,7 @@ public class OnlineMeetingTest extends AbstractBaseIntegrationTest{
         final CountDownLatch latch2 = new CountDownLatch(1);
         final AtomicReference<LivePrescriptionReq> receivedMessage2 = new AtomicReference<>();
 
-        stompSession2.subscribe(String.format("/user/%d/queue/live-prescription", patientId), new StompFrameHandler() {
+        stompSession2.subscribe(String.format("/topic/live.prescription.%d", patientId), new StompFrameHandler() {
             @Override
             public @NotNull Type getPayloadType(@NotNull StompHeaders headers) {
                 return LivePrescriptionReq.class;

@@ -142,7 +142,7 @@ public class ChatTest extends AbstractBaseIntegrationTest{
         final AtomicReference<ChatMessageReq> receivedMessage1 = new AtomicReference<>();
         final AtomicReference<ChatMessageReq> receivedMessage2 = new AtomicReference<>();
 
-        stompSession1.subscribe("/user/2/queue/messages", new StompFrameHandler() {
+        stompSession1.subscribe("/topic/messages.2", new StompFrameHandler() {
             @Override
             public @NotNull Type getPayloadType(@NotNull StompHeaders headers) {
                 return ChatMessageReq.class;
@@ -157,7 +157,7 @@ public class ChatTest extends AbstractBaseIntegrationTest{
             }
         });
 
-        stompSession2.subscribe("/user/3/queue/messages", new StompFrameHandler() {
+        stompSession2.subscribe("/topic/messages.3", new StompFrameHandler() {
             @Override
             public @NotNull Type getPayloadType(@NotNull StompHeaders headers) {
                 return ChatMessageReq.class;

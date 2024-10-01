@@ -12,7 +12,11 @@ docker run -d -e MYSQL_ROOT_PASSWORD=sadi -e MYSQL_USER=pinklifeline -e MYSQL_PA
 
 ### Redis Startup
 ```bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 -v `pwd`/redis-stack.conf:/redis-stack.conf redis/redis-stack:latest
+docker run -d --name redis-stack-local -p 6379:6379 -p 8001:8001 -v `pwd`/redis-stack.conf:/redis-stack.conf redis/redis-stack:latest
+```
+### RabbitMq Startup
+```bash
+docker run -d --name rabbitmq-local -p 5672:5672 -p 15672:15672 -p 61613:61613 -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest sadatul/pinklifeline-rabbitmq-stomp
 ```
 
 ## Basic User Information Register
@@ -188,8 +192,8 @@ need to be passed, then pass an empty list like this:
 
 ## Chat
 ```Socket Endpoint: /ws``` <br>
-```Message Subscription Endpoint: /user/{id}/queue/messages``` <br>
-```Error Subscription Endpoint: /user/{id}/queue/errors``` <br>
+```Message Subscription Endpoint: /topic/messages.{id}``` <br>
+```Error Subscription Endpoint: /topic/errors.{id}``` <br>
 ```Chat Endpoint: /app/chat``` <br>
 ### Sample Message Request Object
 ```
@@ -566,8 +570,8 @@ status: create(201)
 ```Response status: noContent(204)```
 ## Live Prescription
 ```Socket Endpoint: /ws``` <br>
-```LivePrescription Subscription Endpoint: /user/{id}/queue/live-prescription``` <br>
-```Error Subscription Endpoint: /user/{id}/queue/live-prescription/errors``` <br>
+```LivePrescription Subscription Endpoint: /topic/live.prescription.{id}``` <br>
+```Error Subscription Endpoint: /topic/live.prescription.errors.{id}``` <br>
 ```Send Endpoint: /app/live-prescription``` <br>
 ### Sample LivePrescription Request Object
 ```

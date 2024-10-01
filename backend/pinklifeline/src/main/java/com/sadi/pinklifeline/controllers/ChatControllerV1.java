@@ -46,8 +46,9 @@ public class ChatControllerV1 {
         chatRoomService.saveMessage(req, userId, req.getReceiverId());
         log.debug("Message Saved");
         req.setSender(userId);
-        messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
-                "/queue/messages", req);
+//        messagingTemplate.convertAndSendToUser(req.getReceiverId().toString(),
+//                "/queue/messages", req);
+        messagingTemplate.convertAndSend("/topic/messages." + req.getReceiverId(), req);
         log.debug("Message sent to {}", req.getReceiverId());
     }
 
@@ -76,11 +77,16 @@ public class ChatControllerV1 {
     }
 
     public void sendErrorMessage(Long userId, String msg, String details){
-        messagingTemplate.convertAndSendToUser(userId.toString(),
-                "/queue/errors", new ErrorDetails(
-                        LocalDate.now(),
-                        msg,
-                        details
-                ));
+        messagingTemplate.convertAndSend("/topic/errors." + userId, new ErrorDetails(
+                LocalDate.now(),
+                msg,
+                details
+        ));
+//        messagingTemplate.convertAndSendToUser(userId.toString(),
+//                "/queue/errors", new ErrorDetails(
+//                        LocalDate.now(),
+//                        msg,
+//                        details
+//                ));
     }
 }
