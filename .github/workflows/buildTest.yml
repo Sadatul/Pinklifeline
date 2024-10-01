@@ -30,18 +30,18 @@ jobs:
     if: ${{ needs.check_files.outputs.backend_changes == 'true' }}
     steps:
     - uses: actions/checkout@v4
-    - name: Cache Docker images based on compose.yaml
+    - name: Cache Docker images based on compose.yml
       uses: actions/cache@v3
       with:
         path: /tmp/.docker-cache
-        key: ${{ runner.os }}-docker-testcontainers-${{ hashFiles('compose.yaml') }}
+        key: ${{ runner.os }}-docker-testcontainers-${{ hashFiles('compose.yml') }}
     - name: Pre-pull Testcontainers images using docker compose
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
           ls -l
-          docker compose -f compose.yaml pull
+          docker compose -f compose.yml pull
           mkdir -p /tmp/.docker-cache
-          docker save $(docker compose -f compose.yaml config --services | xargs) -o /tmp/.docker-cache/testcontainers.tar
+          docker save $(docker compose -f compose.yml config --services | xargs) -o /tmp/.docker-cache/testcontainers.tar
     - name: Load cached images
       if: steps.cache.outputs.cache-hit == 'true'
       run: docker load -i /tmp/.docker-cache/testcontainers.tar
