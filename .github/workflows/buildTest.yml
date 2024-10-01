@@ -38,6 +38,7 @@ jobs:
     - name: Pre-pull Testcontainers images using docker compose
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
+          ls -l
           docker compose -f compose.yaml pull
           mkdir -p /tmp/.docker-cache
           docker save $(docker compose -f compose.yaml config --services | xargs) -o /tmp/.docker-cache/testcontainers.tar
