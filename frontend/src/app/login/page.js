@@ -57,7 +57,7 @@ export default function LoginRegister() {
                 </div>
                 {/* <div className="w-20 absolute right-[36%] h-full bg-gradient-to-r from-transparent to-green-100"></div> */}
                 <div className="flex flex-col justify-start items-center h-full pt-20 flex-1 gap-5">
-                    <div className="flex flex-col items-center w-fit h-fit text-4xl font-extrabold relative mb-10">
+                    <div className="flex flex-col items-center w-fit h-fit text-4xl font-extrabold relative mb-6">
                         {/* Original text */}
                         <div className="flex">
                             {text.split("").map((char, index) => (
@@ -75,7 +75,7 @@ export default function LoginRegister() {
                         </div>
 
                         {/* Reflection text */}
-                        <div className="flex absolute top-full mt-2">
+                        <div className="flex absolute top-full -mt-2">
                             {text.split("").map((char, index) => (
                                 <motion.span
                                     key={index}

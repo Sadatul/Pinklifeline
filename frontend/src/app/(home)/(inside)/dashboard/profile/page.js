@@ -80,7 +80,7 @@ export default function DashboardProfilePage() {
                     <Avatar avatarImgSrc={profilePicLink} size={75} />
                     <div className="flex flex-col gap-2">
                         <div className="text-3xl font-semibold">{userData.fullName}</div>
-                        <div className="text-sm text-gray-800">{sessionContext?.sessionData?.role === roles.basicUser ? "Basic User" : userData?.cancerStage}</div>
+                        <div className="text-xs text-gray-100 py-1 px-3 rounded-2xl bg-gray-700 w-fit font-[500]">{sessionContext?.sessionData?.role === roles.basicUser ? "Basic User" : userData?.cancerStage}</div>
                     </div>
                 </div>
                 <div className="flex flex-row items-center gap-3">

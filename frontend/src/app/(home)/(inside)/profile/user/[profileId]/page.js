@@ -192,23 +192,27 @@ function PostSection({ userId, className }) {
     }, [page?.number])
 
     return (
-        <div className={cn("flex flex-row w-full mt-4 p-4 rounded-b-xl shadow-md", className)}>
-            <div className="flex flex-col rounded w-full gap-3">
+        <div className={cn("flex flex-row w-full mt-4 p-4 rounded-b-xl shadow-md flex-1", className)}>
+            <div className="flex flex-col rounded w-full gap-3 h-full">
                 <h1 className={"text-xl font-bold bg-white px-2 py-1 text-indigo-500 w-52 rounded"}>Forum Questions</h1>
-                <div className="flex flex-row flex-wrap items-center w-full gap-3">
+                <div className="flex flex-row flex-wrap items-center w-full gap-3 flex-1">
                     {forumQuestions.map((question, index) => (
-                        <div key={index} className="flex flex-col gap-2 border rounded-xl p-3 h-fit shadow-md line-clamp-2 w-96 relative">
-                            <span className="text-xs translate-y-[1.5px] text-gray-800 absolute top-3 right-3">{displayDate(question?.createdAt, "dd MMM, yy")}</span>
-                            <div className="flex flex-row items-center gap-2 mt-3">
-                                <span className="text-lg font-[500]">{question.title}</span>
+                        <div key={index} className="flex flex-col justify-between gap-2 border rounded-xl p-3 shadow-md line-clamp-2 w-[450px] relative bg-zinc-50">
+                            <div className="flex flex-col gap-0 w-full">
+                                <span className="text-xs translate-y-[1.5px] text-gray-800 absolute top-3 right-3">{displayDate(question?.createdAt, "dd MMM, yy")}</span>
+                                <div className="flex flex-row items-center gap-2 mt-3">
+                                    <span className="text-lg font-[500] line-clamp-3">{question.title}</span>
+                                </div>
                             </div>
-                            <Link href={pagePaths.questionPageById(question.id)} className="text-sm text-blue-500 hover:underline flex items-center">
-                                View Question and Answers
-                                <ExternalLink size={14} className="ml-1" />
-                            </Link>
-                            <div className="flex flex-row items-center gap-2">
-                                <ThumbsUp size={20} />
-                                <span className="text-sm text-gray-800">{question.voteCount}</span>
+                            <div className="flex flex-row items-center justify-between gap-1 w-full">
+                                <Link href={pagePaths.questionPageById(question.id)} className="text-sm text-blue-500 hover:underline flex items-center">
+                                    View Question and Answers
+                                    <ExternalLink size={14} className="ml-1" />
+                                </Link>
+                                <div className="flex flex-row items-center gap-1">
+                                    <ThumbsUp size={16} />
+                                    <span className="text-sm text-gray-800">{question.voteCount}</span>
+                                </div>
                             </div>
                         </div>
                     ))}

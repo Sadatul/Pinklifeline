@@ -18,6 +18,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs"
 import { Pagination, PaginationItem, Rating } from "@mui/material";
+import { Rating as Rating_Prime } from "primereact/rating";
 import { Ripple } from "primereact/ripple";
 import { BsPersonVcardFill } from "react-icons/bs";
 import { PiCertificate } from "react-icons/pi";
@@ -194,8 +195,8 @@ export default function DoctorProfile({ profileId, section }) {
                     ))}
                 </div>
             </div>
-            <div className="flex flex-col w-11/12 items-center rounded-t-md bg-white flex-wrap shadow-md">
-                <div className="relative w-full h-28 rounded-t-md">
+            <div className="flex flex-col w-11/12 items-center rounded-t-xl bg-white flex-wrap shadow-md">
+                {/* <div className="relative w-full h-28 rounded-t-md">
                     <Image
                         src={"https://img.freepik.com/free-vector/watercolor-hot-pink-background_23-2150815041.jpg?size=626&ext=jpg&uid=R109267787&ga=GA1.1.1367600061.1718446141&semt=sph"}
                         alt="Background"
@@ -203,66 +204,70 @@ export default function DoctorProfile({ profileId, section }) {
                         className="absolute inset-0 w-full h-full object-cover rounded-t-md"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-white from-10% via-50% via-transparent to-transparent rounded-t-md"></div>
-                </div>
-                <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
-                    <div className="absolute -top-20 flex flex-col items-center">
-                        <Image src={userData?.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
-                    </div>
-                    <div className="flex flex-col ml-56 gap-1">
-                        <h1 className="text-3xl font-semibold flex items-center gap-2">
-                            {userData?.fullName}
-                            <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white text-xs scale-95 translate-y-[2px]")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
-                            <Badge className={cn("text-xs scale-90 translate-y-[2px]", userData?.isNurse && "bg-purple-900 ")}>
-                                {userData?.isNurse ? "Nurse" : "Doctor"}
-                            </Badge>
-                        </h1>
-                        <div className="text-base font-semibold flex flex-row items-center gap-2">
-                            {userData?.qualifications?.map((qualification, index) => (
-                                <Badge key={index} variant={"outlined"} className={"bg-gray-200"} >{qualification}</Badge>
-                            ))}
+                </div> */}
+                <div className="flex flex-row w-full bg-white rounded-xl p-4 relative gap-4 px-7 flex-wrap justify-between">
+                    <div className="flex flex-row gap-4">
+                        <div className="flex flex-col items-center">
+                            <Image src={userData?.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
                         </div>
-                        <div className="text-base font-semibold">{userData?.designation}{", "}{userData?.department}{" Department, "}{userData?.workplace}</div>
-                        <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
-                        <Popover>
-                            <PopoverTrigger className="w-fit">
-                                <div className="flex flex-row items-center mt-1">
-                                    {ratingIcon}
-                                    <span className="text-base font-semibold ml-2 break-normal w-10 text-left">{round(reviewInfo.averageRating)}</span>
-                                </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto " side="right" asChild>
-                                <div className="bg-white p-1 rounded-md">
-                                    {reviewInfo.ratingCount.map((rating, index) => (
-                                        <div key={index} className="flex flex-row items-center p-2">
-                                            <div className="flex flex-row flex-1">
-                                                {reviewInfo.ratingCount.slice(index).map((rating2, index2) => (
-                                                    <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
-                                                ))}
-                                            </div>
-                                            <span className="text-sm ml-2 text-right">{rating}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </div>
-                <div className="flex flex-row items-center justify-end w-full px-14">
-                    <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
-                        <PopoverTrigger asChild>
-                            <button disabled={!sessionContext?.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-sm flex flex-row items-center font-thin">
-                                <MessageCirclePlus size={24} strokeOpacity={1} strokeWidth={2} />
-                                <span className="ml-1">Message</span>
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent asChild>
-                            <div className="flex flex-col">
-                                <textarea id="message" className="w-full h-16 p-2 border border-gray-300 rounded-md" placeholder="Type your message here "></textarea>
-                                <button onClick={sendMessage} className="bg-blue-500 text-white px-2 py-2 text-base rounded-md mt-2 font-normal">Send</button>
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-3xl font-semibold flex items-center gap-2">
+                                {userData?.fullName}
+                                <Badge className={cn(userData?.isVerified === "Y" ? "bg-blue-800" : "bg-red-800", "text-white text-xs font-normal scale-95 translate-y-[2px]")}>{userData?.isVerified === "Y" ? "Verified" : "Unverified"}</Badge>
+                                <Badge className={cn("text-xs scale-90 translate-y-[2px]", userData?.isNurse && "bg-purple-900 ")}>
+                                    {userData?.isNurse ? "Nurse" : "Doctor"}
+                                </Badge>
+                            </h1>
+                            <div className="text-base font-semibold flex flex-row items-center gap-2">
+                                {userData?.qualifications?.map((qualification, index) => (
+                                    <Badge key={index} variant={"outlined"} className={"bg-gray-200"} >{qualification}</Badge>
+                                ))}
                             </div>
-                        </PopoverContent>
-                    </Popover>
-                    <button onClick={() => { setSelectedTab(sectionEnum.consultations) }} className="bg-purple-600 text-white px-2 py-2 text-sm rounded-md ml-2">Request Appointment</button>
+                            <div className="text-base font-[500]">{userData?.designation}{", "}{userData?.department}{", "}{userData?.workplace}</div>
+                            <p className="text-sm flex gap-2"><Phone size={20} />{userData?.contactNumber}</p>
+                            <Popover>
+                                <PopoverTrigger className="w-fit">
+                                    <div className="flex flex-row items-center mt-1">
+                                        {ratingIcon}
+                                        <span className="text-base font-semibold ml-2 break-normal w-10 text-left">{round(reviewInfo.averageRating)}</span>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto " side="right" asChild>
+                                    <div className="bg-white p-1 rounded-md">
+                                        {reviewInfo.ratingCount.map((rating, index) => (
+                                            <div key={index} className="flex flex-row items-center p-2">
+                                                <div className="flex flex-row flex-1">
+                                                    {reviewInfo.ratingCount.slice(index).map((rating2, index2) => (
+                                                        <Star key={index + "" + index2} fill="#FFD700" className={cn("w-4 h-4 text-transparent")} />
+                                                    ))}
+                                                </div>
+                                                <span className="text-sm ml-2 text-right">{rating}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-center justify-end pr-5">
+                        <div className="flex flex-row gap-2">
+                            <Popover open={openMessageBox} onOpenChange={(e) => { setOpenMessageBox(e) }} >
+                                <PopoverTrigger asChild>
+                                    <button disabled={!sessionContext?.sessionData} className="bg-blue-700 text-white px-2 py-2 rounded-md text-sm flex flex-row items-center font-thin">
+                                        <MessageCirclePlus size={18} strokeOpacity={1} strokeWidth={2} />
+                                        <span className="ml-1">Message</span>
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent asChild>
+                                    <div className="flex flex-col">
+                                        <textarea id="message" className="w-full h-16 p-2 border border-gray-300 rounded-md" placeholder="Type your message here "></textarea>
+                                        <button onClick={sendMessage} className="bg-blue-500 text-white px-2 py-2 text-base rounded-md mt-2 font-normal">Send</button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            <button onClick={() => { setSelectedTab(sectionEnum.consultations) }} className="bg-purple-600 text-white px-2 py-2 text-sm rounded-md ml-2">Request Appointment</button>
+                        </div>
+                    </div>
                 </div>
                 <Separator className="w-11/12 mt-1 h-[2px]" />
                 <div className="flex flex-row w-11/12 mt-1 py-3">
@@ -523,7 +528,7 @@ function PostSection({ userId, className, userData }) {
 function BlogCard({ title, content, date, imageSrc, id, upvoteCount }) {
     console.log("Date: ", date)
     return (
-        <div className="flex flex-row w-full mx-2 h-40 my-3 bg-gradient-to-r from-zinc-50 to-zinc-200 rounded-md shadow">
+        <div className="flex flex-row w-full mx-2 h-40 my-3 bg-gradient-to-r from-zinc-50 to-zinc-100 rounded-md shadow-md">
             <div className="relative flex-1 h-full rounded-l-md overflow-hidden flex flex-row items-center">
                 {imageSrc &&
                     <Image
@@ -541,7 +546,7 @@ function BlogCard({ title, content, date, imageSrc, id, upvoteCount }) {
                     <p className="line-clamp-3">{content}</p>
                 </div>
                 <div className="flex flex-row gap-3 items-end">
-                    <span className="mt-2 text-sm font-semibold">{displayDate(date, "dd MMMM, yyyy")}</span>
+                    <span className="mt-2 text-sm font-[500]">{displayDate(date, "dd MMMM, yyyy")}</span>
                     <div className="flex flex-row items-end gap-1 -translate-y-[3px]">
                         <ThumbsUp size={18} fill="white" className="text-blue-400" />
                         <span className="text-sm translate-y-[2px]">{upvoteCount}</span>
@@ -642,13 +647,12 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                 <DialogDescription asChild>
                                     <div className="flex flex-col w-full items-end gap-3">
                                         <div className="flex flex-col w-full gap-3 items-center h-fit" >
-                                            <div className="flex flex-row items-center gap-3 w-full h-fit">
-                                                <Rating
+                                            <div className="flex flex-row items-center justify-center p-2 gap-3 w-full h-fit">
+                                                <Rating_Prime
                                                     value={selectedRating}
-                                                    onChange={(_, e) => setSelectedRating(e)}
-                                                    size='large'
-                                                    emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
-                                                    icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                                                    onChange={( e) => setSelectedRating(e.value)}
+                                                    offIcon={<Star fill="#ffffff" size={26} strokeWidth={1.5} className=" text-gray-700" />}
+                                                    onIcon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
                                                 />
                                             </div>
                                             <textarea id="add-review-text" className="p-3 flex-1 bg-white shadow-inner border text-black border-gray-300 focus:outline-gray-400 w-full rounded-lg " placeholder="Write message..." rows={6} type="text" maxLength={255} />
@@ -658,6 +662,7 @@ function ReviewSection({ profileId, className, reviewInfo, setReviewInfo }) {
                                             onClick={() => {
                                                 const comment = document.getElementById("add-review-text")?.value
                                                 const rating = selectedRating
+                                                console.log("rating", rating)
                                                 if (Number(rating) !== 0) {
                                                     axiosInstance.post(addReview(sessionContext?.sessionData.userId), {
                                                         rating: rating,
@@ -739,7 +744,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
     }
 
     return (
-        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative py-2 px-5">
+        <div className="flex flex-col w-10/12 items-start bg-zinc-50 gap-2 rounded-md relative py-2 px-5 shadow-md">
             <div className="flex flex-col justify-between w-full items-start  text-black rounded-md  py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
                     <Avatar avatarImgSrc={profilePicture || emptyAvatar} size={44} />
@@ -754,19 +759,19 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-col py-1 items-start justify-center">
                         {editable ? (
-                            <Rating
+                            <Rating_Prime
                                 value={selectedRating}
-                                onChange={(_, e) => setSelectedRating(e)}
-                                size='large'
-                                emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
-                                icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
+                                onChange={(e) => setSelectedRating(e.value)}
+                                size='24'
+                                offIcon={<Star fill="#ffffff" size={26} strokeWidth={1.5} className=" text-gray-700" />}
+                                onIcon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
                             />
                         ) : (
                             <div className="flex flex-row items-start">
                                 <Rating
                                     value={data.rating}
                                     size='large'
-                                    emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                    emptyIcon={<Star fill="#ffffff" size={26} strokeWidth={1.5} className=" text-gray-700" />}
                                     icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
                                     readOnly={true}
                                 />
@@ -778,7 +783,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                         {
                             editable ? (
                                 <>
-                                    <button className="bg-gray-100 text-black px-2 h-10 text-base rounded-md font-semibold"
+                                    <button className="bg-transparent text-black px-2 h-10 text-base rounded-md font-semibold"
                                         onClick={() => {
                                             const newContent = textContentRef.current?.value
                                             const newRating = selectedRating
@@ -830,7 +835,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
                     </div>
                 </div>
             </div>
-            {editable ? <textarea ref={textContentRef} className="border w-full border-blue-500 bg-gray-100 p-2" defaultValue={data.comment} /> : (<p className=" text-lg py-1">{data.comment}</p>)}
+            {editable ? <textarea ref={textContentRef} className="border w-full border-blue-500 bg-white rounded-xl p-3" defaultValue={data.comment} /> : (<p className=" text-lg py-1">{data.comment}</p>)}
         </div>
     )
 }
@@ -838,7 +843,7 @@ function UserReviewCard({ data, setReviewInfo, id, reviewerId, setUserReview, se
 function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePicture }) {
 
     return (
-        <div className="flex flex-col w-10/12 items-start bg-zinc-100 gap-2 rounded-md relative p-3">
+        <div className="flex flex-col w-10/12 items-start bg-zinc-50 gap-2 rounded-md relative p-3">
             <div className="flex flex-col justify-between w-full items-start  text-black rounded-md px-5 py-1">
                 <div className="flex flex-row py-1 items-center gap-3">
                     <Avatar avatarImgSrc={profilePicture || emptyAvatar} size={44} />
@@ -850,7 +855,7 @@ function ReviewCard({ content, date, rating, reviewer, reviewerId, profilePictur
                             <Rating
                                 value={rating}
                                 size='large'
-                                emptyIcon={<Star fill="#ffffff" size={26} className=" text-gray-700" />}
+                                emptyIcon={<Star fill="#ffffff" size={26} strokeWidth={1.5} className=" text-gray-700" />}
                                 icon={<Star fill="#ffe234" size={28} className="text-[#ffe234]" />}
                                 readOnly={true}
                             />

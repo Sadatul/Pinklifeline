@@ -65,7 +65,7 @@ function NavBar() {
 
     const NavBarPageLinks = [
         { name: "Dashboard", link: pagePaths.dashboard, icon: <CircleGaugeIcon size={24} />, matchString: "dashboard" },
-        { name: "Hospitals", link: pagePaths.allHospitalsPage, icon: <Hospital size={24} />, matchString: "hospitals" },
+        { name: "Hospitals", link: pagePaths.allHospitalsPage, icon: <Hospital size={24} />, matchString: "hospitals", className: "bg-gray-100" },
         { name: "Inbox", link: pagePaths.inbox, icon: <MessageCircle size={24} />, matchString: "inbox", className: "bg-zinc-100" },
         { name: "Blog", link: pagePaths.blogsPage, icon: <BookOpenTextIcon size={24} />, matchString: "blogs", className: "bg-slate-100" },
         { name: "Forum", link: pagePaths.forumPage, icon: <CircleHelp size={24} />, matchString: "forum", className: "bg-stone-100" },
