@@ -62,9 +62,9 @@ export default function OTPVerify() {
                     <button id="loginsection" className="text-2xl font-bold text-center m-2 text-purple-500">Verify OTP</button>
                 </div>
                 <Separator className="bg-purple-400 m-2 w-80" />
-                <form className="flex w-96 p-5 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
-                    <label className="text-xl font-bold m-2">Email</label>
-                    <input type="email" placeholder="Email" className="border-2 border-black rounded-md p-2" defaultValue={params.get('email')} {...register("email", { required: true, maxLength: 64 })} />
+                <form className="flex w-96 p-10 rounded-2xl flex-col items-center justify-between flex-wrap flex-shrink bg-purple-100 m-5" onSubmit={handleSubmit(submitForm)}>
+                    <label className="text-xl font-bold m-2 w-full ">Email</label>
+                    <input type="email" placeholder="Email" className="border-2 border-black rounded-md p-2 w-full" defaultValue={params.get('email')} {...register("email", { required: true, maxLength: 64 })} />
                     {errors.email?.type === "required" && <span className="text-red-500">This field is required</span>}
                     {errors.email?.type === "maxLength" && <span className="text-red-500">Max length is 64</span>}
                     <label className="text-xl font-bold mt-5">OTP</label>

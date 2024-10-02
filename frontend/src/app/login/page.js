@@ -479,7 +479,7 @@ function InputComponent() {
                     description: err?.response?.data?.message
                 })
                 document.getElementById("submit-button-text").hidden = false
-                document.getElementById("submit-button-loading-state").hidden = true
+                // document.getElementById("submit-button-loading-state").hidden = true
             }).finally(() => {
                 setSubmitLoading(false)
             })
@@ -513,7 +513,7 @@ function InputComponent() {
                             description: "An error occured. Please try again later"
                         })
                         document.getElementById("submit-button-text").hidden = false
-                        document.getElementById("submit-button-loading-state").hidden = true
+                        // document.getElementById("submit-button-loading-state").hidden = true
                     }
                 }).catch((err) => {
                     console.log(err)
@@ -521,7 +521,7 @@ function InputComponent() {
                         description: "A user with this email already exists. Please login or use another email"
                     })
                     document.getElementById("submit-button-text").hidden = false
-                    document.getElementById("submit-button-loading-state").hidden = true
+                    // document.getElementById("submit-button-loading-state").hidden = true
                 }).finally(() => {
                     setSubmitLoading(false)
                 })

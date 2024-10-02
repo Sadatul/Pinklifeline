@@ -144,25 +144,28 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                     transition={{ duration: 0.3 }}>
                     <h1 className="text-2xl font-bold m-2 text-pink-500">User Details</h1>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <div className="text-md font-semibold m-2">Full Name
+                        <div className="text-md font-semibold m-2">
                             <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.fullName} type="text" className="border-2 rounded-md p-1 mt-2 border-blue-500" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
+                                <input defaultValue={userDataRef.current?.fullName} placeholder="Full Name" type="text" className="border p-1 px-3 rounded-2xl border-gray-300 focus:outline-gray-400" {...register("fullName", { required: "This field is required", maxLength: { value: 32, message: "Max length 32" } })} />
                                 {errors.fullName && <span className="text-red-500">{errors.fullName?.message}</span>}
                             </div>
                         </div>
-                        <div className="text-md font-semibold m-2 ">Weight(kg)
-                            <div className="w-full flex flex-col">
-                                <input defaultValue={userDataRef.current?.weight} type="number" className="number-input border-2 rounded-md p-1 mt-2 border-blue-500" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
+                        <div className="text-md font-semibold m-2 ">
+                            <div className="w-full flex flex-col relative">
+                                <input defaultValue={userDataRef.current?.weight} type="number" className="number-input border p-1 px-3 pr-6 rounded-2xl border-gray-300 focus:outline-gray-400" min={10} {...register("weight", { required: "Weigh is required", max: { value: 1000, message: "Maximum weight 1000kg" }, min: { value: 10, message: "Minimum weight 10" } })} />
                                 {errors.weight && <span className="text-red-500  text-sm">{errors.weight?.message}</span>}
+                                <span className=" absolute right-3 top-1">
+                                    Kg
+                                </span>
                             </div>
                         </div>
                     </div>
                     <div className="flex flex-row justify-between items-center w-full m-2">
                         <div className="text-md font-semibold m-2 text-center">
                             Date of Birth
-                            <div className="flex gap-4 mt-2">
+                            <div className="flex gap-4">
                                 <div>
-                                    <select defaultValue={userDataRef.current?.dobDay || "day"} {...register("dobDay", { required: 'Day is required', validate: value => value != "day" || 'Please select a day' })} className="p-2 border rounded-lg w-24 bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobDay || "day"} {...register("dobDay", { required: 'Day is required', validate: value => value != "day" || 'Please select a day' })} className="p-2 border rounded-2xl w-24 bg-white border-gray-300">
                                         <option value="day" disabled >
                                             Day
                                         </option>
@@ -171,7 +174,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                     {errors.dobDay && <p className="text-red-500 text-sm">{errors.dobDay?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={userDataRef.current?.dobMonth || "month"} {...register("dobMonth", { required: 'Month is required', validate: value => value != "month" || 'Please select a month' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobMonth || "month"} {...register("dobMonth", { required: 'Month is required', validate: value => value != "month" || 'Please select a month' })} className="p-2 w-24 border rounded-2xl bg-white border-gray-300">
                                         <option value="month" disabled  >
                                             Month
                                         </option>
@@ -180,7 +183,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                     {errors.dobMonth && <p className="text-red-500 text-sm">{errors.dobMonth?.message}</p>}
                                 </div>
                                 <div>
-                                    <select defaultValue={userDataRef.current?.dobYear || "year"} {...register("dobYear", { required: 'Year is required', validate: value => value != "year" || 'Please select a year' })} className="p-2 w-24 border rounded-lg bg-white border-blue-500">
+                                    <select defaultValue={userDataRef.current?.dobYear || "year"} {...register("dobYear", { required: 'Year is required', validate: value => value != "year" || 'Please select a year' })} className="p-2 w-24 border rounded-2xl bg-white border-gray-300">
                                         <option value="year" disabled >
                                             Year
                                         </option>
@@ -195,7 +198,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                 Height
                                 <div className="flex gap-4 mt-2">
                                     <div>
-                                        <select defaultValue={userDataRef.current?.heightFeet || "feet"} {...register("heightFeet", { required: 'Day is required', validate: value => value != "feet" || 'Please select a feet' })} className="p-2 border rounded-lg w-20 bg-white border-blue-500">
+                                        <select defaultValue={userDataRef.current?.heightFeet || "feet"} {...register("heightFeet", { required: 'Day is required', validate: value => value != "feet" || 'Please select a feet' })} className="p-2 border rounded-2xl w-20 bg-white border-gray-300">
                                             <option value="feet" disabled >
                                                 Feet
                                             </option>
@@ -204,7 +207,7 @@ export function UserInfoSection({ userDataRef, currentSection, setCurrentSection
                                         {errors.heightFeet && <p className="text-red-500 text-sm">{errors.heightFeet?.message}</p>}
                                     </div>
                                     <div>
-                                        <select defaultValue={userDataRef.current?.heightInch || "inch"} {...register("heightInch", { required: 'Month is required', validate: value => value != "inch" || 'Please select a inch' })} className="p-2 w-20 border rounded-lg bg-white border-blue-500">
+                                        <select defaultValue={userDataRef.current?.heightInch || "inch"} {...register("heightInch", { required: 'Month is required', validate: value => value != "inch" || 'Please select a inch' })} className="p-2 w-20 border rounded-2xl bg-white border-gray-300">
                                             <option value="inch" disabled  >
                                                 Inch
                                             </option>

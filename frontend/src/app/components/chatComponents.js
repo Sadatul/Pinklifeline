@@ -169,7 +169,7 @@ export function ChatSideBar({ isCollapsed = false, stompContext, router }) {
                 {chats?.map((chat, index) => (
                     <React.Fragment key={index}>
                         <div
-                            className="flex flex-row items-center justify-between rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group cursor-pointer break-normal"
+                            className="flex flex-row items-center gap-2 rounded-md px-5 py-2 w-full p-ripple relative overflow-hidden group cursor-pointer break-normal"
                             onClick={() => {
                                 console.log("Chat clicked")
                                 console.log(JSON.stringify(chat))
@@ -403,7 +403,7 @@ export function ChatWindow({ stompContext }) {
                 </ScrollableContainer>
 
                 {/* Chat Input Section */}
-                <div className="flex-none p-3 border rounded-md bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100">
+                <div className="flex-none p-3 border rounded-b-md bg-stone-200 bg-opacity-40">
                     <form onSubmit={handleMessageInput} className="flex flex-row items-center space-x-2" >
                         <TooltipProvider delayDuration={200}>
                             <Tooltip>
@@ -422,7 +422,7 @@ export function ChatWindow({ stompContext }) {
                         <div className="relative flex-1">
                             <input
                                 placeholder="Type your message..."
-                                className="p-2 rounded-md border border-gray-300 w-full pr-10"
+                                className="p-2 border border-gray-300 w-full pr-10 rounded-2xl pl-4 shadow-inner focus:outline-gray-400"
                                 id="message-input"
                                 autoComplete="off"
                                 maxLength={255}
