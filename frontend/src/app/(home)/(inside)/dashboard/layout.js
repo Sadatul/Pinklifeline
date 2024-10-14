@@ -24,7 +24,7 @@ export default function Layout({ children }) {
     }, [])
     if (!sessionData) return null
     return (
-        <div className="flex flex-1 overflow-hidden text-black break-all bg-gray-100">
+        <div className="flex flex-1 overflow-hidden text-black break-normal bg-gray-100 transition-all ease-in-out duration-500">
             {/* Sidebar */}
             <SideBar />
             {/* Main Content */}
@@ -41,8 +41,8 @@ function SideBar() {
     const [openChatBot, setOpenChatBot] = useState(false)
 
     return (
-        <div className={cn("w-64 h-full items-center flex flex-col p-4 mr-[2px] bg-zinc-100")}>
-            <div className="flex flex-col gap-2 flex-1 justify-center mb-10 drop-shadow-xl px-1">
+        <div className={cn(" min-w-64 h-full items-center flex flex-col p-4 mr-[2px] bg-zinc-100")}>
+            <div className="flex flex-col gap-4 flex-1 justify-center mb-10 drop-shadow-xl px-1">
                 {DashBoardPageLinks[sessionContext?.sessionData.role].map((page, index) => (
                     <Link key={index} href={page.link} className={cn("flex items-center w-full drop-shadow-md py-1 px-4 rounded-xl", pathname === page.link ? "bg-pink-600 bg-opacity-70 text-gray-50 text-xl pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-lg hover:bg-white hover:text-gray-800 hover:translate-x-4 transition-all ease-linear ")} >
                         <span className="flex flex-row items-center gap-3">

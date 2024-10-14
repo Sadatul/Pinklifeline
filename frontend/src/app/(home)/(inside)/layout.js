@@ -39,7 +39,7 @@ export default function Layout({ children }) {
     return (
         <PrimeReactProvider value={{ ripple: true }}>
             <StompContextProvider>
-                <div className="w-screen h-screen flex flex-col text-black break-all">
+                <div className="w-screen h-screen flex flex-col text-black break-normal">
                     {sessionData && <NavBar />}
                     {sessionData && <SocketInitializer />}
                     <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto rounded-l-lg overflow-x-hidden">
@@ -116,7 +116,7 @@ function NavBar() {
 
     return (
         <>
-            <nav id="navbar" className={cn("bg-zinc-100 h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink", NavBarPageLinks.filter(page => pathname.toLowerCase().includes(page.matchString))[0]?.className)}>
+            <nav id="navbar" className={cn("bg-zinc-100 h-[65px] flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink", NavBarPageLinks.filter(page => pathname.toLowerCase().includes(page.matchString))[0]?.className)}>
                 <Link href={pagePaths.dashboardPages.userdetailsPage} className=" pt-2 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
                     {(!pathname.includes("dashboard")) &&
                         <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={200} height={60} />
@@ -128,7 +128,7 @@ function NavBar() {
                 </Link >
                 <div className="text-xl text-center flex flex-row justify-center items-center gap-5 flex-wrap">
                     {(!pathname.startsWith("/admin")) && NavBarPageLinks?.map((page, index) => (
-                        <Link key={index} href={page.link} className={cn("flex items-center drop-shadow-md py-1 px-2 rounded-xl", pathname.toLowerCase().includes(page.matchString) ? "bg-pink-600 bg-opacity-70 text-gray-50 text-lg pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-base hover:bg-white hover:text-gray-800 hover:translate-y-1 transition-all ease-linear ")} >
+                        <Link key={index} href={page.link} className={cn("flex items-center drop-shadow-md py-2 px-3 rounded-xl", pathname.toLowerCase().includes(page.matchString) ? "bg-pink-600 bg-opacity-70 text-gray-50 text-lg pointer-events-none shadow-xl" : "text-opacity-75 text-gray-600 text-base hover:bg-white hover:text-gray-800 hover:translate-y-[6px] transition-all ease-linear ")} >
                             <span className="flex flex-row items-center gap-2">
                                 {/* {React.createElement(page.icon, { size: 24, className: "" })} */}
                                 {page.icon}

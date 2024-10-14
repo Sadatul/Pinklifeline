@@ -133,7 +133,7 @@ function AddTest() {
                         <h2 className="text-lg font-bold text-slate-900">Add Test</h2>
                         <Separator className="w-1/4 h-[1.5px] bg-gray-400" />
                         <div className="flex flex-row gap-10 w-full flex-wrap items-start">
-                            <div className="flex flex-col gap-0  rounded-md w-72 border border-gray-600 break-all text-base relative">
+                            <div className="flex flex-col gap-0  rounded-md w-72 border border-gray-600 break-normal text-base relative">
                                 <input autoComplete="off" id="search-box-test" type="text" placeholder="Search Test" className="w-full border border-gray-600 px-2 py-1 rounded-md h-8" onChange={(e) => {
                                     setSearchTest(e.target.value)
                                     document.getElementById("test-error").innerText = ""

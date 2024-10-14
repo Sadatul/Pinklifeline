@@ -187,10 +187,10 @@ export function HospitalsComponent({ isAdmin }) {
                     </div>
                     <Separator className="bg-pink-400 h-[1.3px]" />
                 </div>
-                <div className="flex flex-col gap-3 w-full px-3 py-2 rounded drop-shadow-md flex-1 justify-between">
+                <div className="flex flex-col gap-3 w-full px-3 py-2 rounded drop-shadow-md flex-1 justify-between drop-shadow-none">
                     <div className="flex flex-col w-full gap-3">
                         {loading && <div className="flex flex-row justify-center items-center w-full"><Loader2 size={44} className="animate-spin" /></div>}
-                        {!loading && hospitals.length === 0 && <div className="flex flex-row justify-center items-center w-full h-32">No hospitals found</div>}
+                        {!loading && hospitals.length === 0 && <div className="flex flex-row justify-center items-center w-full h-32 text-xl font-semibold">No hospitals found</div>}
                         {!loading && hospitals.length > 0 && hospitals.map((hospital, index) => (
                             <HospitalCard key={index} hospital={hospital} isAdmin={isAdmin} setFetchLoading={setLoading} fetching={loading} />
                         ))}

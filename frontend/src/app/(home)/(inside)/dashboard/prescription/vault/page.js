@@ -24,6 +24,7 @@ import Link from "next/link"
 import CreatableSelect from 'react-select/creatable'
 import { useSessionContext } from "@/app/context/sessionContext"
 import { useRouter } from "next/navigation"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 export default function PrescriptionVaultPage() {
     const animatedComponents = makeAnimated();
@@ -67,6 +68,7 @@ export default function PrescriptionVaultPage() {
             const startDate = generateFormattedDate(dateRange.from)
             const endDate = generateFormattedDate(dateRange.to)
             console.log("Filtering", doctorName, hospitalName, selectedKeywords.current, startDate, endDate, sort, currentPage)
+            setShowFilter(false)
             axiosInstance.get(addReportUrl, {
                 params: {
                     doctorName: doctorName === "" ? null : doctorName,
@@ -111,9 +113,9 @@ export default function PrescriptionVaultPage() {
     if (!verified) return null
 
     return (
-        <div className={cn("flex flex-col w-full h-full px-3 py-5 gap-3", !(sessionContext?.sessionData?.subscribed > 0) && "relative")}>
+        <div className={cn("flex flex-col w-full h-full px-3 py-5 gap-3 ", !(sessionContext?.sessionData?.subscribed > 0) && "relative p-0")}>
             {sessionContext?.sessionData && Number(sessionContext?.sessionData?.subscribed > 0) ? <></> :
-                <div className="w-full h-full flex flex-row justify-between items-center absolute bg-gray-400 bg-opacity-10 rounded-lg z-30">
+                <div className="w-full h-full flex flex-row justify-between items-center absolute bg-gray-400 bg-opacity-50 rounded-lg z-30">
                     <div className="size-72 flex flex-col items-center gap-3 bg-transparent m-auto bg-opacity-50">
                         <Lock size={72} className="text-purple-600" />
                         <span className="text-2xl text-gray-800 text-nowrap">
@@ -122,132 +124,130 @@ export default function PrescriptionVaultPage() {
                     </div>
                 </div>
             }
-            <h1 className="text-xl w-full text-center">
-                Prescription/Reports Vault Page
+            <h1 className="text-xl w-full text-center font-semibold">
+                Reports Vault Page
             </h1>
-            <div className="flex flex-col gap-7 w-full flex-1">
-                <div className="flex flex-col w-full gap-2 bg-blue-50 px-3 py-1 rounded-md">
-                    <button className="text-lg w-fit px-2 flex flex-row items-center gap-2" onClick={() => { setShowFilter(prev => !prev) }}>
-                        Filter {!showFilter ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                    </button>
-                    {(showFilter) &&
-                        <div className="flex flex-col gap-3 w-full ">
-                            <div className="flex flex-row gap-2 flex-wrap w-full justify-evenly">
-                                <label className="flex flex-col justify-evenly">
-                                    Doctor Name
-                                    <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
-                                </label>
-                                <label className="flex flex-col justify-evenly">
-                                    Hospital Name
-                                    <input autoComplete="off" id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
-                                </label>
-                                {isMounted ?
-                                    <label className="flex flex-col gap-1">
-                                        Select Keywords
-                                        <CreatableSelect className="w-64 border-purple-500 border rounded"
-                                            id="search-keywords"
-                                            options={keyWordsOption}
-                                            isMulti={true}
-                                            closeMenuOnSelect={false}
-                                            components={animatedComponents}
-                                            onChange={(newValue, actionMeta) => {
-                                                console.log(newValue, actionMeta)
-                                                selectedKeywords.current = newValue
-                                            }}
-                                            onCreateOption={(keyword) => {
-                                                setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
-                                                selectedKeywords.current = [...selectedKeywords.current, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }]
-                                            }}
-                                        />
-                                    </label>
-                                    : <></>
-                                }
-                                <label className="flex flex-col gap-1">
-                                    Start Date - End Date
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                id="date"
-                                                variant={"outline"}
-                                                className={cn(
-                                                    "w-64 justify-start text-left font-normal border border-purple-500",
-                                                    !dateRange && "text-muted-foreground"
-                                                )}
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {dateRange?.from ? (
-                                                    dateRange.to ? (
-                                                        <>
-                                                            {format(dateRange.from, "LLL dd, y")} -{" "}
-                                                            {format(dateRange.to, "LLL dd, y")}
-                                                        </>
-                                                    ) : (
-                                                        format(dateRange.from, "LLL dd, y")
-                                                    )
-                                                ) : (
-                                                    <span>Pick a date range</span>
-                                                )}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                initialFocus
-                                                mode="range"
-                                                defaultMonth={dateRange?.from}
-                                                selected={dateRange}
-                                                onSelect={setDateRange}
-                                                numberOfMonths={2}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </label>
-                                <label className="flex flex-col justify-evenly">
-                                    Sort
-                                    <select defaultValue={"DESC"} id="search-sort" className="border shadow-inner border-purple-500 text-gray-800 rounded p-2">
-                                        <option value="ASC">Ascending</option>
-                                        <option value="DESC">Descending</option>
-                                    </select>
-                                </label>
-                            </div>
-                            <div className="flex flex-row justify-center items-center gap-4 m-3">
-                                <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { 
-                                    document.getElementById("search-doctorName").value = ""
-                                    document.getElementById("search-hospitalName").value = ""
-                                    document.getElementById("search-keywords").value = ""
-                                    setDateRange({ from: null, to: null })
-                                    document.getElementById("search-sort").value = "DESC"
-                                    setLoading(true)
-                                    setShowFilter(false)
-                                 }}>
-                                    Reset
-                                </button>
-                                <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-                    }
-                </div>
+            <div className={cn("flex flex-col gap-7 w-full flex-1", sessionContext?.sessionData && Number(sessionContext?.sessionData?.subscribed == 0) && " blur-md")}>
                 <div className="flex flex-col gap-2 w-full flex-1">
                     <div className="flex flex-row justify-between items-center w-full">
-                        <h2 className="text-lg">
+                        <h2 className="text-xl">
                             Documents
                         </h2>
-                        {sessionContext?.sessionData && Number(sessionContext?.sessionData.subscribed > 0) ?
-                            <Link href={pagePaths.dashboardPages.addToVaultPage} className="hover:underline flex flex-row items-center gap-2">
-                                Add Document {<Plus size={20} />}
-                            </Link> : <></>
-                        }
+                        <div className="flex flex-row gap-4">
+                            {sessionContext?.sessionData && Number(sessionContext?.sessionData.subscribed > 0) ?
+                                <Link href={pagePaths.dashboardPages.addToVaultPage} className="hover:underline flex flex-row items-center gap-2 w-fit px-3 py-2 rounded-2xl bg-slate-200">
+                                    Add Document {<Plus size={20} />}
+                                </Link> : <></>
+                            }
+                            <Sheet open={showFilter} onOpenChange={(e) => {
+                                setShowFilter(e)
+                            }}>
+                                <SheetTrigger asChild>
+                                    <button className="bg-pink-500 text-white rounded-2xl p-1 w-20  hover:scale-95 active:scale-75 transition-all ease-in-out duration-300" onClick={() => {
+                                        setShowFilter(true)
+                                    }}>
+                                        Filter
+                                    </button>
+                                </SheetTrigger>
+                                <SheetContent>
+                                    <SheetHeader>
+                                        <SheetTitle>
+                                            Filter Documents
+                                        </SheetTitle>
+                                    </SheetHeader>
+                                    <div className="flex flex-col gap-3 w-full justify-between h-full pt-10">
+                                        <div className="flex flex-col gap-8 flex-wrap w-full justify-evenly">
+                                            <input autoComplete="off" id="search-doctorName" placeholder="Doctor Name" type="text" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit" />
+                                            <input autoComplete="off" id="search-hospitalName" type="text" placeholder="Hospital Name" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit" />
+                                            {isMounted ?
+                                                    <CreatableSelect className="w-full border-gray-500 border rounded"
+                                                        id="search-keywords"
+                                                        options={keyWordsOption}
+                                                        isMulti={true}
+                                                        closeMenuOnSelect={false}
+                                                        components={animatedComponents}
+                                                        onChange={(newValue, actionMeta) => {
+                                                            console.log(newValue, actionMeta)
+                                                            selectedKeywords.current = newValue
+                                                        }}
+                                                        onCreateOption={(keyword) => {
+                                                            setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
+                                                            selectedKeywords.current = [...selectedKeywords.current, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }]
+                                                        }}
+                                                    />
+                                                : <></>
+                                            }
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        id="date"
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            "w-full justify-start text-left font-normal border border-gray-500",
+                                                            !dateRange && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {dateRange?.from ? (
+                                                            dateRange.to ? (
+                                                                <>
+                                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                                                    {format(dateRange.to, "LLL dd, y")}
+                                                                </>
+                                                            ) : (
+                                                                format(dateRange.from, "LLL dd, y")
+                                                            )
+                                                        ) : (
+                                                            <span>Pick a date range</span>
+                                                        )}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        initialFocus
+                                                        mode="range"
+                                                        defaultMonth={dateRange?.from}
+                                                        selected={dateRange}
+                                                        onSelect={setDateRange}
+                                                        numberOfMonths={2}
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                            <select defaultValue={"DESC"} id="search-sort" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit">
+                                                <option value="ASC">Ascending</option>
+                                                <option value="DESC">Descending</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex flex-row justify-between items-center gap-4 m-3">
+                                            <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => {
+                                                document.getElementById("search-doctorName").value = ""
+                                                document.getElementById("search-hospitalName").value = ""
+                                                document.getElementById("search-keywords").value = ""
+                                                setDateRange({ from: null, to: null })
+                                                document.getElementById("search-sort").value = "DESC"
+                                                setLoading(true)
+                                                setShowFilter(false)
+                                            }}>
+                                                Reset
+                                            </button>
+                                            <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
+                                                Search
+                                            </button>
+                                        </div>
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        </div>
                     </div>
-                    <div className="flex flex-row gap-5 w-full justify-start items-center flex-wrap bg-blue-100 rounded-md border-gray-700 min-h-48 p-4 flex-1">
+                    <div className="flex flex-row gap-5 w-full justify-start items-center flex-wrap bg-slate-100 rounded-md border-gray-700 min-h-48 p-4 flex-1">
                         {loading ?
                             <div className="flex flex-col justify-center items-center w-full h-full">
                                 <Loader2 className=" size-44 p-8 text-purple-600 animate-spin" />
                             </div>
                             :
                             <>
-                                {data?.empty === true &&
-                                    <h2 className="text-lg w-full text-center">
+                                {(data?.content?.length === 0) &&
+                                    <h2 className="text-xl w-full text-center font-semibold">
                                         No Documents Found
                                     </h2>
                                 }

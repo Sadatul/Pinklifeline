@@ -50,7 +50,7 @@ export default function Layout({ children }) {
                     </button>
                 </div>
             </div>
-            <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden break-all">
+            <ScrollableContainer className="flex flex-col flex-grow overflow-y-auto ml-[2px] rounded-l-lg overflow-x-hidden break-normal">
                 {children}
             </ScrollableContainer>
         </div>

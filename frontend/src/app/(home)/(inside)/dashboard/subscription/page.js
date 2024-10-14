@@ -58,8 +58,8 @@ export default function SubsriptionPage() {
     }, [subscriptionPlans])
 
     return (
-        <div className={cn(radicalGradient, "from-neutral-200 to-neutral-100 w-full flex flex-col items-center p-2 gap-4 flex-1")}>
-            <div className="w-full flex flex-col bg-white items-center p-5 rounded flex-1">
+        <div className={cn(radicalGradient, "w-full flex flex-col items-center p-2 gap-4 flex-1 bg-white")}>
+            <div className="w-full flex flex-col  items-center p-5 rounded flex-1">
                 <h1 className="text-2xl font-bold">Subscriptions</h1>
                 <div className="flex flex-col items-start gap-2 w-full text-left text-lg font-semibold">
                     <div className="flex items-center gap-2 text-nowrap text-base">

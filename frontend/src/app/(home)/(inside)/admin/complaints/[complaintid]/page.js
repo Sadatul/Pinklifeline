@@ -97,7 +97,7 @@ function ComplaintsDetails() {
     }
 
     return (
-        <div className={cn("flex flex-col w-full flex-1 items-center p-5 break-all", radicalGradient, "from-slate-200 to-slate-100")}>
+        <div className={cn("flex flex-col w-full flex-1 items-center p-5 break-normal", radicalGradient, "from-slate-200 to-slate-100")}>
             <div className="flex flex-col w-11/12 p-4 bg-white rounded-lg shadow-lg gap-2">
                 <div className="flex flex-col gap-2">
                     <h1 className="text-2xl font-bold text-center">Complained Content</h1>

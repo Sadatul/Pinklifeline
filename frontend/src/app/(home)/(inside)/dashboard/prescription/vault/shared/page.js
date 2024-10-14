@@ -5,7 +5,7 @@ import { addDays, format } from "date-fns"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {  Clock, Infinity } from "lucide-react"
+import { Clock, Infinity } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import {
     Popover,
@@ -28,6 +28,7 @@ import { Separator } from "@radix-ui/react-dropdown-menu"
 import Loading from "@/app/components/loading"
 import { useSearchParams } from "next/navigation"
 import CreatableSelect from 'react-select/creatable'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 function SharedReportsComponent() {
     const animatedComponents = makeAnimated();
@@ -44,6 +45,7 @@ function SharedReportsComponent() {
         from: null,
         to: null,
     })
+    const [showfiler, setShowFilter] = useState(false)
 
     useEffect(() => {
         const handleFilter = () => {
@@ -53,6 +55,8 @@ function SharedReportsComponent() {
             const type = document.getElementById("search-type")?.value
             const startDate = generateFormattedDate(dateRange.from)
             const endDate = generateFormattedDate(dateRange.to)
+            console.log("Filter params:", doctorName, hospitalName, patientUsername, type, startDate, endDate, selectedKeywords)
+            setShowFilter(false)
             axiosInstance.get(shareReportUrl, {
                 params: {
                     doctorName: doctorName === "" ? null : doctorName,
@@ -109,118 +113,123 @@ function SharedReportsComponent() {
                 Prescription/Reports Vault Page
             </h1>
             <div className="flex flex-col gap-2 w-full">
-                <div className="flex flex-col w-full gap-2 bg-blue-50 p-3 rounded-md">
-                    <h2 className="text-lg">
-                        Filter
-                    </h2>
-                    <div className="flex flex-row gap-2 flex-wrap w-full justify-start">
-                        <label className="flex flex-col justify-evenly">
-                            Doctor Name
-                            <input autoComplete="off" id="search-doctorName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
-                        </label>
-                        <label className="flex flex-col justify-evenly">
-                            Patient Username
-                            <input autoComplete="off" id="search-patientUsername" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
-                        </label>
-                        <label className="flex flex-col justify-evenly">
-                            Hospital Name
-                            <input autoComplete="off" id="search-hospitalName" type="text" className="border shadow-inner border-purple-500 text-gray-800 rounded" />
-                        </label>
-                        {isMounted ?
-                            <label className="flex flex-col gap-1">
-                                Select Keywords
-                                <CreatableSelect className="w-64 border-purple-500 border rounded"
-                                    id="search-keywords"
-                                    options={keyWordsOption}
-                                    isMulti={true}
-                                    closeMenuOnSelect={false}
-                                    value={selectedKeywords}
-                                    components={animatedComponents}
-                                    onChange={(newValue, actionMeta) => {
-                                        console.log(newValue, actionMeta)
-                                        setSelectedKeywords(newValue)
-                                    }}
-                                    onCreateOption={(keyword) => {
-                                        setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
-                                        setSelectedKeywords([...selectedKeywords, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
-                                    }}
-                                />
-                            </label>
-                            : <></>
-                        }
-                        <label className="flex flex-col gap-1">
-                            Start Date - End Date
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        id="date"
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-64 justify-start text-left font-normal border border-purple-500",
-                                            !dateRange && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateRange?.from ? (
-                                            dateRange.to ? (
-                                                <>
-                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
-                                                    {format(dateRange.to, "LLL dd, y")}
-                                                </>
-                                            ) : (
-                                                format(dateRange.from, "LLL dd, y")
-                                            )
-                                        ) : (
-                                            <span>Pick a date range</span>
-                                        )}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        initialFocus
-                                        mode="range"
-                                        defaultMonth={dateRange?.from}
-                                        selected={dateRange}
-                                        onSelect={setDateRange}
-                                        numberOfMonths={2}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </label>
-                        <label className="flex flex-col justify-evenly">
-                            Type
-                            <select defaultValue={"ALL"} id="search-type" className="border shadow-inner border-purple-500 text-gray-800 rounded p-2">
-                                <option value="ALL">ALL Reports</option>
-                                <option value="UNLIMITED">Unlimited time</option>
-                                <option value="LIMITED">Limited time</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div className="flex flex-row justify-center items-center gap-4 m-3">
-                        <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => {
-                            document.getElementById("search-doctorName").value = ""
-                            document.getElementById("search-patientUsername").value = ""
-                            document.getElementById("search-hospitalName").value = ""
-                            document.getElementById("search-type").value = "ALL"
-                            setSelectedReport(null)
-                            setDateRange({
-                                from: null,
-                                to: null,
-                            })
-                            setSelectedKeywords([])
-                            setKeyWordsOption([])
-                        }}>
-                            Reset
-                        </button>
-                        <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
-                            Search
-                        </button>
-                    </div>
-                </div>
+
                 <div className="flex flex-col gap-2 w-full">
-                    <h2 className="text-lg">
-                        Documents
-                    </h2>
+                    <div className="flex flex-row justify-between items-center w-full">
+                        <h2 className="text-lg">
+                            Documents
+                        </h2>
+                        <Sheet open={showfiler} onOpenChange={(e) => {
+                            setShowFilter(e)
+                        }}>
+                            <SheetTrigger asChild>
+                                <button className="bg-pink-500 text-white rounded-2xl p-1 w-20  hover:scale-95 active:scale-50 transition-all ease-in-out duration-300" onClick={() => {
+                                    setShowFilter(true)
+                                }}>
+                                    Filter
+                                </button>
+                            </SheetTrigger>
+                            <SheetContent>
+                                <SheetHeader>
+                                    <SheetTitle>
+                                        Filter Documents
+                                    </SheetTitle>
+                                </SheetHeader>
+                                <div className="flex flex-col w-full gap-5 h-full p-3 rounded-md">
+                                    <div className="flex flex-col gap-8 flex-wrap w-full justify-start flex-1">
+                                        <input autoComplete="off" id="search-doctorName" placeholder="Doctor Name" type="text" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit" />
+                                        <input autoComplete="off" id="search-patientUsername" placeholder="Patient Username" type="text" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit" />
+                                        <input autoComplete="off" id="search-hospitalName" placeholder="Hospital Name" type="text" className="border shadow-inner border-gray-300 focus:outline-gray-400 text-gray-900 rounded-xl px-3 py-2 w-full h-fit" />
+                                        {isMounted &&
+                                            <CreatableSelect className="w-full border-gray-300 focus:outline-gray-400 border h-fit"
+                                                id="search-keywords"
+                                                options={keyWordsOption}
+                                                isMulti={true}
+                                                closeMenuOnSelect={false}
+                                                value={selectedKeywords}
+                                                components={animatedComponents}
+                                                onChange={(newValue, actionMeta) => {
+                                                    console.log(newValue, actionMeta)
+                                                    setSelectedKeywords(newValue)
+                                                }}
+                                                onCreateOption={(keyword) => {
+                                                    setKeyWordsOption(prev => [...prev, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
+                                                    setSelectedKeywords([...selectedKeywords, { value: keyword.trim(), label: capitalizeFirstLetter(keyword.trim()) }])
+                                                }}
+                                                placeholder="Select Keywords..."
+                                            />
+                                        }
+                                        <label className="flex flex-col gap-1">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        id="date"
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            "w-64 justify-start text-left font-normal border border-purple-500",
+                                                            !dateRange && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {dateRange?.from ? (
+                                                            dateRange.to ? (
+                                                                <>
+                                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                                                    {format(dateRange.to, "LLL dd, y")}
+                                                                </>
+                                                            ) : (
+                                                                format(dateRange.from, "LLL dd, y")
+                                                            )
+                                                        ) : (
+                                                            <span>Pick a date range</span>
+                                                        )}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        initialFocus
+                                                        mode="range"
+                                                        defaultMonth={dateRange?.from}
+                                                        selected={dateRange}
+                                                        onSelect={setDateRange}
+                                                        numberOfMonths={2}
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </label>
+                                        <label className="flex flex-col justify-evenly">
+                                            <select defaultValue={"ALL"} id="search-type" className="shadow-inner border-gray-300 focus:outline-gray-400 border text-gray-800 rounded-xl p-2">
+                                                <option value="ALL">ALL Reports</option>
+                                                <option value="UNLIMITED">Unlimited time</option>
+                                                <option value="LIMITED">Limited time</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div className="flex flex-row justify-center items-center gap-4 m-3">
+                                        <button className="bg-gray-600 text-white rounded p-2 w-20 hover:scale-95" onClick={() => {
+                                            document.getElementById("search-doctorName").value = ""
+                                            document.getElementById("search-patientUsername").value = ""
+                                            document.getElementById("search-hospitalName").value = ""
+                                            document.getElementById("search-type").value = "ALL"
+                                            setSelectedReport(null)
+                                            setDateRange({
+                                                from: null,
+                                                to: null,
+                                            })
+                                            setSelectedKeywords([])
+                                            setKeyWordsOption([])
+                                            setShowFilter(false)
+                                        }}>
+                                            Reset
+                                        </button>
+                                        <button className="bg-purple-500 text-white rounded p-2 w-20 hover:scale-95" onClick={() => { setLoading(true) }}>
+                                            Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                     <div className="flex flex-row gap-5 w-full justify-start items-center flex-wrap bg-blue-100 rounded-md border-gray-700 min-h-48 p-4">
                         {loading ?
                             <div className="flex flex-col justify-center items-center w-full h-full">
