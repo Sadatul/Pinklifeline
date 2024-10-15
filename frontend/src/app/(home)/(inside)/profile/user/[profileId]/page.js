@@ -4,66 +4,24 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import { addAppointment, addReview, deleteDoctorReview, displayDate, forumQuestionsAnonymousUrl, getUserProfileDetails, locationOnline, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import {  displayDate, forumQuestionsAnonymousUrl, getUserProfileDetails, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
-import { BriefcaseBusiness, CalendarSearch, Check, ExternalLink, Hospital, MessageCirclePlus, MessageCircleReply, Pencil, Phone, Send, Star, StarHalf, ThumbsUp } from "lucide-react";
+import {  ExternalLink,  MessageCirclePlus, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs"
-import { Pagination, PaginationItem } from "@mui/material";
-import { Ripple } from "primereact/ripple";
-import { BsPersonVcardFill } from "react-icons/bs";
-import { PiCertificate } from "react-icons/pi";
-import { FaChair } from "react-icons/fa";
-import AddAppointAnimation from "../../../../../../../public/profile/AddAppointment.json"
-import EmptyAppointment from "../../../../../../../public/profile/emptyAppointment.json"
-import Lottie from "lottie-react";
-import Avatar from "@/app/components/avatar";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from "@/components/ui/alert-dialog";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Pagination } from "@mui/material";
 import { useSessionContext } from "@/app/context/sessionContext";
 import axiosInstance from "@/utils/axiosInstance"
-import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import Loading from "@/app/components/loading";
-import { role } from "@stream-io/video-react-sdk";
 import Link from "next/link";
 
 export default function USerProfilePage() {
     const sessionContext = useSessionContext()
     const [userData, setUserData] = useState(null)
     const params = useParams()
-    const profileName = "The Last Airbender Aang"
-    const profilePic = "https://sm.ign.com/t/ign_nordic/cover/a/avatar-gen/avatar-generations_prsz.300.jpg"
     const stompContext = useStompContext();
 
     useEffect(() => {

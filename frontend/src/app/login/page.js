@@ -6,14 +6,10 @@ import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import axiosInstance from "@/utils/axiosInstance"
 import { useRouter } from "next/navigation"
-import { Checkbox } from "@/components/ui/checkbox"
 import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem, forgotPasswordUrlReq } from "@/utils/constants"
-import Link from "next/link"
 import { ActivityIcon, BotIcon, CircleHelp, EyeIcon, EyeOff, Loader, Loader2Icon, LucideMessageCircleQuestion, Pencil, Plus } from "lucide-react"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import loginBg from "../../../public/loginbg.jpeg"
-import Image from "next/image";
-import { random, repeat } from "lodash";
+import { random  } from "lodash";
 
 export default function LoginRegister() {
 

@@ -1,28 +1,17 @@
 'use client'
 import Image from "next/image";
 import Link from "next/link";
-import bg from "../../public/background_home.jpg"
-import about_us from "../../public/about-us.png"
 import ForumIcon from '@mui/icons-material/Forum';  //forumicon
 import BorderColorSharpIcon from '@mui/icons-material/BorderColorSharp';  //blogicon
 import DomainAddSharpIcon from '@mui/icons-material/DomainAddSharp';  //hospitalicon
 import VaccinesSharpIcon from '@mui/icons-material/VaccinesSharp';  //doctoricon
-import DescriptionIcon from '@mui/icons-material/Description';   //noteicon
 import { useState, useEffect } from "react";
 import BlogCard from '@/app/components/blogCard';
 import ForumPostCard from "./components/forumCard";
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';    //view forum icon
-import facebookLogo from "../../public/Facebook_Logo_Primary.png";    //facebook logo
-import sadiProfile from '../../public/sadi_profile.jpg';
-import adilProfile from '../../public/adil_profile.jpg';
-import logoText from '../../public/file.svg';
-import logoIcon from '../../public/Pink__5_-removebg-preview.png';
 import { useForm } from 'react-hook-form';
 // import SlideAnimate from "./components/slideAnimate";
 import { motion } from "framer-motion";
-import blogDemoImage from '../../public/blog_demo.jpg';
-import forumPostDemoImage from '../../public/forumPostDemo.jpg';
-import hospitalImages from '../../public/hospital.png';
 import { pagePaths } from "@/utils/constants";
 import { SearchX } from "lucide-react";
 
@@ -34,7 +23,7 @@ export default function Home() {
   const [blogPost, setBlogPosts] = useState({
     blogId: 3,
     title: "Noteworthy technology",
-    imageUrl: blogDemoImage.src,
+    imageUrl: "/blog_demo.jpg",
     description: "Here are the biggest enterprise technology acquisitions of 2021 so far...",
     blogUrl: "/"
   });
@@ -44,7 +33,7 @@ export default function Home() {
       postId: 1,
       postHeading: "How to deal with anxiety during treatment?",
       postContent: "I have been feeling very anxious lately and it's making it hard for me to focus on my treatment. Does anyone have any tips on how to deal with anxiety?",
-      avaterUrl: forumPostDemoImage.src,
+      avaterUrl: "/forumPostDemo.jpg",
       commentsCount: 5,
       postedBy: "Namita",
       postType: "Question"
@@ -53,7 +42,7 @@ export default function Home() {
       postId: 2,
       postHeading: "My experience with chemotherapy",
       postContent: "I recently finished my chemotherapy treatment and wanted to share my experience with others who are going through the same thing. It was a difficult journey, but I'm grateful for the support I received from my family and friends.",
-      avaterUrl: forumPostDemoImage.src,
+      avaterUrl: "/forumPostDemo.jpg",
       commentsCount: 15,
       postedBy: "Bonny",
       postType: "Experience sharing"
@@ -62,7 +51,7 @@ export default function Home() {
       postId: 3,
       postHeading: "Looking for a support group",
       postContent: "I'm looking for a support group for people who have gone through cancer treatment. I think it would be helpful to connect with others who have had similar experiences.",
-      avaterUrl: forumPostDemoImage.src,
+      avaterUrl: "/forumPostDemo.jpg",
       commentsCount: 10,
       postedBy: "Nico Robin",
       postType: "Discussion"
@@ -95,7 +84,7 @@ export default function Home() {
         id="navbar" className="bg-white h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink"
       >
         <Link href={"/"} className="w-fit h-full flex flex-row justify-center items-center flex-wrap ml-16">
-          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={logoIcon.src} alt="logo" width={128} height={60} />
+          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={"/Pink__5_-removebg-preview.png"} alt="logo" width={128} height={60} />
           {/* <Image loading='lazy' className="shrink" src={logoText.src} alt="logo-text" width={250} height={100} /> */}
         </Link >
         <div className="w-6/12 text-xl text-center h-full flex flex-row justify-center items-center space-x-6 flex-wrap">
@@ -111,7 +100,7 @@ export default function Home() {
           <Link href={pagePaths.register} prefetch={true} id="reglogin" className="scale-90 rounded-2xl border-4 py-1 px-2 bg-pink-300 hover:scale-95 hover:bg-white text-xl hover:text-pink-800 hover:border-pink-800 hover:shadow-lg border-double transition ease-out duration-500">Register/Login</Link>
         </div>
       </nav>
-      <motion.div className="relative w-full h-[800px] flex flex-col justify-center items-center bg-cover bg-center" style={{ backgroundImage: `url(${bg.src})` }}
+      <motion.div className="relative w-full h-[800px] flex flex-col justify-center items-center bg-cover bg-center" style={{ backgroundImage: `url(${"/background_home.jpg"})` }}
         variants={{
           hidden: { opacity: 0, scale: 0.5 },
           visible: { opacity: 1, scale: 1 }
@@ -173,7 +162,7 @@ export default function Home() {
       {/* </SlideAnimate> */}
       {/* <SlideAnimate direction="leftToRight"> */}
       <div id="aboutus" className="flex flex-row flex-wrap divide-x-8 flex-shrink justify-between items-center w-full bg-purple-800 bg-opacity-65 p-10">
-        <div className="w-1/2 bg-cover bg-center min-h-80" style={{ backgroundImage: `url(${about_us.src})` }}>
+        <div className="w-1/2 bg-cover bg-center min-h-80" style={{ backgroundImage: `url(${"/about-us.png"})` }}>
         </div>
         <div className="w-1/2 flex p-5 flex-col min-h-80">
           <div className="relative text-center">
@@ -261,7 +250,7 @@ export default function Home() {
       {/* <SlideAnimate direction="bottomToTop" hidden={true}> */}
       <div id="hospital" className="flex flex-row items-center flex-wrap flex-shrink w-full p-5 gap-7 bg-blue-50 bg-opacity-70 min-h-[500px] divide-x-4">
         <div className="flex flex-row items-center justify-center flex-1 gap-10">
-          <Image src={hospitalImages.src} width={300} height={300} alt="hospital-image" />
+          <Image src={"/hospital.png"} width={300} height={300} alt="hospital-image" />
           <div className="relative size-fit">
             <Image src={"https://img.freepik.com/premium-vector/personal-data-sheet-icon-outline-personal-data-sheet-vector-icon-color-flat-isolated_96318-114028.jpg"} width={300} height={300} alt="hospital-image" />
             <SearchX size={65} className="absolute bottom-20 right-24 text-blue-800 animate-pulse" />
@@ -292,17 +281,17 @@ export default function Home() {
         <div className="flex flex-row mt-12 flex-wrap divide-x-2 flex-shrink w-full">
 
           <div className="flex flex-col flex-wrap flex-shrink w-1/2 justify-evenly items-center">
-            <Image src={sadiProfile.src} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
+            <Image src={"/sadi_profile.jpg"} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
             <h1 className="text-2xl font-serif font-semibold mt-5">Sadatul Islam Sadi</h1>
             <Link prefetch={true} href="https://www.facebook.com/profile.php?id=100075469924262" className="m-5">
-              <Image src={facebookLogo.src} width={30} height={30} alt="facebooklink" />
+              <Image src={"/Facebook_Logo_Primary.png"} width={30} height={30} alt="facebooklink" />
             </Link>
           </div>
           <div className="flex flex-col flex-wrap flex-shrink w-1/2 justify-evenly items-center">
-            <Image src={adilProfile.src} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
+            <Image src={"/adil_profile.jpg"} alt="sadi" width={200} height={200} className="rounded-full" loading='lazy' />
             <h1 className="text-2xl font-serif font-semibold mt-5">MD. Hasnaen Adil</h1>
             <Link prefetch={true} href="https://www.facebook.com/hasnainadil.13" className="m-5">
-              <Image src={facebookLogo.src} width={30} height={30} alt="facebooklink" />
+              <Image src={"/Facebook_Logo_Primary.png"} width={30} height={30} alt="facebooklink" />
             </Link>
           </div>
         </div>

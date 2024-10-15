@@ -1,7 +1,5 @@
 'use client'
 import Link from "next/link"
-import logoIcon from '../../../../public/Pink-removebg.png';
-import logoText from '../../../../public/file.svg';
 import Image from 'next/image';
 import { useEffect, useState } from "react";
 import Avatar from "../../components/avatar";
@@ -119,10 +117,10 @@ function NavBar() {
             <nav id="navbar" className={cn("bg-zinc-100 h-[65px] flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink", NavBarPageLinks.filter(page => pathname.toLowerCase().includes(page.matchString))[0]?.className)}>
                 <Link href={pagePaths.dashboardPages.userdetailsPage} className=" pt-2 ml-6 h-full flex flex-row justify-center items-center flex-wrap">
                     {(!pathname.includes("dashboard")) &&
-                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={logoIcon.src} alt="logo" width={200} height={60} />
+                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-2" src={"/Pink-removebg.png"} alt="logo" width={200} height={60} />
                     }
                     {(pathname.includes("dashboard")) &&
-                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-3 -translate-x-3 left-5" src={logoIcon.src} alt="logo" width={250} height={100} />
+                        <Image loading="lazy" className="hidden md:block mr-2 shrink delay-700 -translate-y-3 -translate-x-3 left-5" src={"/Pink-removebg.png"} alt="logo" width={250} height={100} />
                     }
                     {/* <Image loading='lazy' className="shrink hidden md:block mb-3" src={logoText.src} alt="logo-text" width={170} height={75} /> */}
                 </Link >

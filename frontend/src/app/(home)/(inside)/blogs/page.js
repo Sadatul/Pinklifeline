@@ -26,7 +26,6 @@ import Link from "next/link";
 import { avatarAang, blogsAnonymousUrl, blogsUrl, generateFormattedDate, pagePaths, roles } from "@/utils/constants";
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
-import babyImage from "../../../../../public/babyImage.jpg"
 import Image from "next/image";
 import ScrollableContainer from "@/app/components/StyledScrollbar";
 import { Pagination } from "@mui/material";

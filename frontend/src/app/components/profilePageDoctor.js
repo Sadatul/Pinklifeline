@@ -20,12 +20,6 @@ import {
 import { Pagination, PaginationItem, Rating } from "@mui/material";
 import { Rating as Rating_Prime } from "primereact/rating";
 import { Ripple } from "primereact/ripple";
-import { BsPersonVcardFill } from "react-icons/bs";
-import { PiCertificate } from "react-icons/pi";
-import { FaChair } from "react-icons/fa";
-import AddAppointAnimation from "../../../public/profile/AddAppointment.json"
-import EmptyAppointment from "../../../public/profile/emptyAppointment.json"
-import Lottie from "lottie-react";
 import Avatar from "@/app/components/avatar";
 import {
     AlertDialog,

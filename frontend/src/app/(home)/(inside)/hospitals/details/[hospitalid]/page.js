@@ -81,7 +81,7 @@ function AddTest() {
                     name: document.getElementById("searchTest")?.value
                 }
             }).then((response) => {
-                setAddedTests([...response.data?.content, ...response.data?.content, ...response.data?.content, ...response.data?.content, ...response.data?.content])
+                setAddedTests([...response.data?.content])
                 setPageInfo(response.data?.page)
             }).catch((error) => {
                 console.log(error)
