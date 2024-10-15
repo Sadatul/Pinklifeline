@@ -113,44 +113,15 @@ export default function WorkPage() {
         <div className={cn("flex flex-row w-full flex-1 p-6 gap-6")}>
             <div className="flex-1 flex flex-col bg-white gap-3 p-4 mt-5">
                 <div className="flex flex-col gap-1 w-full">
-                    <div className="flex flex-row items-center gap-3 px-3 justify-between">
+                    <div className="flex flex-row gap-3 justify-between">
                         <div className="flex flex-row gap-2">
                             <h1 className="text-2xl font-bold">{workInfo.title}</h1>
-                            <Badge className={cn(workInfo.status === workStatus.FINISHED && "bg-blue-700", workInfo.status === workStatus.ACCEPTED && "bg-red-700", workInfo.status === workStatus.POSTED && "bg-green-700", "text-white text-xs size-fit")}>
+                            <Badge className={cn(workInfo.status === workStatus.FINISHED && "bg-blue-700", workInfo.status === workStatus.ACCEPTED && "bg-red-700", workInfo.status === workStatus.POSTED && "bg-green-700", "text-white text-xs size-fit translate-y-1 ml-1 scale-90")}>
                                 {workInfo.status}
                             </Badge>
                         </div>
-                        <div className="flex flex-row gap-3 text-sm">
-                            {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.POSTED &&
-                                <div className="flex flex-row gap-3 items-center">
-                                    <button className={cn("bg-red-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => { deleteWork() }}>
-                                        Delete Work
-                                    </button>
-                                    <Link href={pagePaths.dashboardPages.updateWorkPage(params.workid)} className=" text-black border border-gray-300 py-1 px-2 bg-gray-300 text-center align-middle rounded-xl hover:scale-95 hover:bg-opacity-90 flex items-center">
-                                        Update Work
-                                    </Link>
-                                </div>
-                            }
-                            {(sessionContext?.sessionData.userId !== workInfo.userId && workInfo.status === workStatus.POSTED && sessionContext?.sessionData?.subscribed !== 0) &&
-                                <button className={cn("bg-green-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => {
-                                    reserveWork()
-                                }}>
-                                    Accept Work
-                                </button>
-                            }
-                            {/* {(sessionContext?.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED) && */}
-                            <button className="bg-red-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { rejectWork() }}>
-                                Reject Work
-                            </button>
-                            {/* } */}
-                            {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
-                                <button className="bg-gray-800 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { finishWork() }}>
-                                    Finish Work
-                                </button>
-                            }
-                        </div>
                     </div>
-                    <div className="flex flex-col gap-1 w-full px-3">
+                    <div className="flex flex-col gap-1 w-full ">
                         <div className="flex flex-row gap-2 items-center">
                             {workInfo.tags.map((tag, index) => (
                                 <Badge key={index} className="bg-gray-200 text-gray-700 hover:bg-gray-200 hover:text-gray-700">{tag}</Badge>
@@ -174,51 +145,88 @@ export default function WorkPage() {
                         {workInfo.address && <p className="text-base text-gray-800">{workInfo.address}</p>}
                     </div>
                 </div>
-                <p className="text-xl text-gray-900 break-normal px-3">{workInfo.description}</p>
-                <div className="flex flex-row items-center w-full justify-end pt-2 pb-2 px-3 flex-wrap">
+                <p className="text-xl text-gray-900 break-normal ">{workInfo.description}</p>
+                <Separator />
+                <div className="flex flex-col w-full justify-end pt-2 pb-2 flex-wrap gap-8">
                     {sessionContext?.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED &&
                         <div className="flex flex-row gap-3 flex-1 justify-start">
                             <textarea className="flex-1 border border-gray-300 rounded-xl p-2 focus:outline-gray-500" placeholder="Enter your message" ref={sendMessageRef} rows={5} onChange={(e) => {
                                 sendMessageRef.current.style.height = "auto"
                                 sendMessageRef.current.style.height = (sendMessageRef.current.scrollHeight + 1) + "px"
                             }} />
-                            <button className="bg-blue-600 text-white w-32 rounded-md h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => {
+                            <button className="bg-indigo-700 text-white w-32 rounded-3xl h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => {
                                 handleMessage(sendMessageRef.current.value.trim())
-                            }}>Send Message</button>
+                            }}>Send</button>
                         </div>
                     }
+                    <div className="flex flex-row gap-3 text-sm justify-end">
+                        {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.POSTED &&
+                            <div className="flex flex-row gap-3 items-center">
+                                <Link href={pagePaths.dashboardPages.updateWorkPage(params.workid)} className=" text-black border border-gray-300 h-8 px-2 bg-gray-300 text-center align-middle rounded-xl hover:scale-95 hover:bg-opacity-90 flex items-center">
+                                    Update Work
+                                </Link>
+                                <button className={cn("bg-red-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => { deleteWork() }}>
+                                    Delete Work
+                                </button>
+                            </div>
+                        }
+                        {(sessionContext?.sessionData.userId !== workInfo.userId && workInfo.status === workStatus.POSTED && sessionContext?.sessionData?.subscribed !== 0) &&
+                            <button className={cn("bg-green-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90")} onClick={() => {
+                                reserveWork()
+                            }}>
+                                Accept Work
+                            </button>
+                        }
+                        {(sessionContext?.sessionData.userId === workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
+                            <button className="bg-red-600 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { rejectWork() }}>
+                                Reject Work
+                            </button>
+                        }
+                        {(sessionContext?.sessionData.userId === workInfo.userId) && workInfo.status === workStatus.ACCEPTED &&
+                            <button className="bg-gray-800 text-white w-28 rounded-xl h-8 hover:scale-95 hover:bg-opacity-90" onClick={() => { finishWork() }}>
+                                Finish Work
+                            </button>
+                        }
+                    </div>
                 </div>
             </div>
             <Separator orientation="vertical" />
-            {/* {(sessionContext?.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) && */}
             <div className="flex flex-col gap-5 p-4 rounded bg-white w-4/12">
-                <div className="flex flex-row gap-2 items-center justify-between">
-                    <h1 className="text-lg font-bold">Provider details</h1>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-row gap-2 items-center">
-                        <p className="text-sm text-gray-800">{workInfo.providerName}</p>
+                {(sessionContext?.sessionData.userId === workInfo.userId && workInfo.providerId && workInfo.status === workStatus.ACCEPTED) &&
+                    <div className="flex flex-col gap-5 w-full">
+                        <div className="flex flex-row gap-2 items-center justify-between">
+                            <h1 className="text-lg font-bold">Provider details</h1>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-row gap-2 items-center">
+                                <p className="text-sm text-gray-800">{workInfo.providerName}</p>
+                            </div>
+                            <div className="flex flex-row gap-2 items-center">
+                                <p className="text-sm text-gray-800">
+                                    <Mail size={20} />
+                                </p>
+                                <Link href={`mailto:${workInfo.providerMail}`} className="text-sm text-gray-800">{workInfo.providerMail}</Link>
+                            </div>
+                            <div className="flex flex-row gap-2 items-center">
+                                <p className="text-sm text-gray-800">
+                                    <Phone size={20} />
+                                </p>
+                                <p className="text-sm text-gray-800">{workInfo.providerContactNumber}</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-row gap-3 items-center justify-end">
+                            <button className="h-8 w-40 text-white rounded-2xl bg-red-700 hover:bg-opacity-90 hover:scale-95" onClick={() => { rejectWork() }}>
+                                Remove Provider
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex flex-row gap-2 items-center">
-                        <p className="text-sm text-gray-800">
-                            <Mail size={20} />
-                        </p>
-                        <Link href={`mailto:${workInfo.providerMail}`} className="text-sm text-gray-800">{workInfo.providerMail}</Link>
+                }
+                {sessionContext?.sessionData.userId === workInfo.userId && workInfo.status === workStatus.POSTED &&
+                    <div className="flex flex-col gap-5 w-full text-xl font-semibold">
+                        No provider assigned
                     </div>
-                    <div className="flex flex-row gap-2 items-center">
-                        <p className="text-sm text-gray-800">
-                            <Phone size={20} />
-                        </p>
-                        <p className="text-sm text-gray-800">{workInfo.providerContactNumber}</p>
-                    </div>
-                </div>
-                <div className="flex flex-row gap-3 items-center justify-end">
-                    <button className="h-8 w-40 text-white rounded bg-red-700 hover:bg-opacity-90 hover:scale-95" onClick={() => { rejectWork() }}>
-                        Remove Provider
-                    </button>
-                </div>
+                }
             </div>
-            {/* } */}
         </div >
     )
 }
