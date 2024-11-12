@@ -24,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("update User u set u.profilePicture = ?2 where u.id = ?1")
     void updateProfilePictureById(Long id, String path);
 
-    @Query("select new com.sadi.pinklifeline.models.responses.NearbyUserRes(u.id, u.basicUser.fullName, u.patientSpecificDetails.location) " +
+    @Query("select new com.sadi.pinklifeline.models.responses.NearbyUserRes(u.id, u.basicUser.fullName, u.patientSpecificDetails.location, u.profilePicture) " +
             "from User u where u.patientSpecificDetails.location in :locations and u.id <> :id and u.patientSpecificDetails.locationShare = true")
     List<NearbyUserRes> findNearbyUsers(List<String> locations, Long id);
 
