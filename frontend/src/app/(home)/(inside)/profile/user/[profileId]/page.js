@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner";
 import { useStompContext } from "@/app/context/stompContext";
-import {  displayDate, forumQuestionsAnonymousUrl, getUserProfileDetails, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
+import {  displayDate, emptyAvatar, forumQuestionsAnonymousUrl, getUserProfileDetails, messageSendUrl, pagePaths, roles, testingAvatar, updateDoctorReview } from "@/utils/constants";
 import Image from "next/image";
 import {  ExternalLink,  MessageCirclePlus, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,7 +77,7 @@ export default function USerProfilePage() {
                 </div>
                 <div className="flex flex-row w-full bg-white rounded-b-md p-4 relative justify-between px-7 flex-wrap">
                     <div className="absolute -top-20 flex flex-col items-center">
-                        {userData.profilePicture && <Image src={userData.profilePicture} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />}
+                         <Image src={userData.profilePicture || emptyAvatar} width={200} height={200} className="rounded  shadow-md" alt="profile-picture" />
                         {userData.role === roles.patient &&
                             <Badge className={"mt-2 text-sm"}>{userData.cancerStage}</Badge>
                         }

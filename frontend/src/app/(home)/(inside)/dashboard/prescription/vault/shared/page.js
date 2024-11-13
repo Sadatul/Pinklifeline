@@ -319,7 +319,7 @@ function SharedReportsComponent() {
                                         <span className="text-lg flex gap-1 items-center font-semibold">Shared By: {selectedReport.fullName}</span>
                                         <span className="text-lg flex gap-1 items-center">Doctor Name: {selectedReport.doctorName}</span>
                                         <span className="text-lg flex gap-1 items-center">Hospital Name: {selectedReport.hospitalName}</span>
-                                        <span className="text-lg flex gap-1 items-center"> <Calendar size={24} /> {selectedReport.date}</span>
+                                        <span className="text-lg flex gap-1 items-center"> <CalendarIcon size={24} /> {selectedReport.date}</span>
                                         <span className="text-lg flex gap-1 items-center"> <Clock size={24} /> {selectedReport.expirationTime ? `${selectedReport.expirationTime} hrs` : <Infinity size={24} />}</span>
                                         <span className="text-xl font-semibold mt-2" >Summary</span>
                                         <Separator className="w-1/3 h-[1.5px] bg-gray-400" />

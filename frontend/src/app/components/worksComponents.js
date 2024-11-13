@@ -17,35 +17,23 @@ export default function AddWork({ workInfo = null, isUpdate = false }) {
     const router = useRouter()
 
     return (
-        <div className={cn("flex flex-col w-full h-full p-4 items-center", radicalGradient, "from-zinc-200 to-zinc-100")}>
+        <div className={cn("flex flex-col w-full h-full p-4 items-center")}>
             <div className="flex flex-col w-10/12 h-full p-4 bg-white gap-8">
                 <h1 className="text-2xl font-semibold">Add Work</h1>
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                        <span className="text-base font-semibold w-32">
-                            Title
-                        </span>
-                        <input autoComplete="off" defaultValue={workInfo?.title} type="text" id="work-title" className="w-80 p-2 border border-gray-500 shadow-inner rounded-md" />
+                        <input autoComplete="off" defaultValue={workInfo?.title} placeholder="Title" type="text" id="work-title" className="w-80 p-2 border border-gray-500 shadow-inner rounded-2xl" />
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-base font-semibold w-32">
-                            Description
-                        </span>
-                        <textarea defaultValue={workInfo?.description} id="work-description" className="w-80 p-2 border border-gray-500 shadow-inner rounded-md" />
+                        <textarea defaultValue={workInfo?.description} placeholder="Description..." rows={5} id="work-description" className="w-80 p-2 border border-gray-500 shadow-inner rounded-2xl" />
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-base font-semibold w-32">
-                            Address
-                        </span>
                         <div className=" flex flex-col gap-1 translate-y-2">
-                            <input autoComplete="off" defaultValue={workInfo?.address} type="text" id="work-address" className="w-80 p-2 border border-gray-500 shadow-inner rounded-md" />
-                            <span className="text-sm text-gray-700">Please provide only City and Road</span>
+                            <input autoComplete="off" placeholder="Address" defaultValue={workInfo?.address} type="text" id="work-address" className="w-80 p-2 border border-gray-500 shadow-inner rounded-md" />
+                            <span className="text-sm text-gray-700 mb-3">Please provide only City and Road</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-base font-semibold w-32">
-                            Tags
-                        </span>
                         <ReactSelect
                             options={tagsOptions}
                             isMulti
@@ -55,6 +43,7 @@ export default function AddWork({ workInfo = null, isUpdate = false }) {
                             closeMenuOnSelect={false}
                             hideSelectedOptions
                             defaultValue={selectedTags}
+                            placeholder="Tags"
                         />
                     </div>
                     <span id="error-message" className="text-red-500"></span>

@@ -34,8 +34,10 @@ export function SocketInitializer() {
                     heartbeatIncoming: 10000,
                     heartbeatOutgoing: 10000
                 })
+                console.log('Connecting to broker')
                 stompContext.stompClientRef.current.onConnect = (frame) => {
                     stompContext.stompClientRef.current.subscribe(subscribeMessageUrl(sessionContext?.sessionData?.userId), (response) => {
+                        console.log('Received message')
                         console.log(response)
                         const message = JSON.parse(response.body)
                         console.log('Received message')

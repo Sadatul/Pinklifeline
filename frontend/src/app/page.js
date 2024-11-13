@@ -84,7 +84,7 @@ export default function Home() {
         id="navbar" className="bg-white h-16 flex sticky top-0 z-50 flex-row justify-between items-center flex-wrap flex-shrink"
       >
         <Link href={"/"} className="w-fit h-full flex flex-row justify-center items-center flex-wrap ml-16">
-          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={"/Pink__5_-removebg-preview.png"} alt="logo" width={128} height={60} />
+          <Image loading="lazy" className="hidden md:block mr-3 shrink delay-700" src={"/Pink-removebg.png"} alt="logo" width={250} height={100} />
           {/* <Image loading='lazy' className="shrink" src={logoText.src} alt="logo-text" width={250} height={100} /> */}
         </Link >
         <div className="w-6/12 text-xl text-center h-full flex flex-row justify-center items-center space-x-6 flex-wrap">

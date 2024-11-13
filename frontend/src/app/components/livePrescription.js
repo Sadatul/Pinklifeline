@@ -412,9 +412,11 @@ export function PatientLivePrescriptionPage() {
                 socketRef.current.subscribe(livePrescriptionSubscribe(sessionContext?.sessionData.userId), (response) => {
                     console.log(response)
                     const message = JSON.parse(response.body)
-                    console.log('Received message')
+                    console.log('live prescription')
                     console.log(message)
+                    console.log("user id: ", sessionContext?.sessionData.userId, " reciever id", message.receiverId, " callId user", callId.current, " call id message", message.callId)
                     if (sessionContext?.sessionData.userId === message.receiverId && callId.current === message.callId) {
+                        console.log("Prescription data updated")
                         setPrescriptionData(prev => ({
                             ...prev,
                             prescription: {

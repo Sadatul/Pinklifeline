@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation"
 import { loginUrlReq, registerUrlReq, roles, pagePaths, sessionDataItem, forgotPasswordUrlReq } from "@/utils/constants"
 import { ActivityIcon, BotIcon, CircleHelp, EyeIcon, EyeOff, Loader, Loader2Icon, LucideMessageCircleQuestion, Pencil, Plus } from "lucide-react"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { random  } from "lodash";
+import { random, set } from "lodash";
+import { cn } from "@/lib/utils";
 
 export default function LoginRegister() {
 
@@ -33,7 +34,7 @@ export default function LoginRegister() {
         hidden: { y: 0 },
         visible: (i) => ({
             y: 10, // Reflection moves downward
-            
+
             transition: {
                 delay: i * 0.2, // Sync with the text above
                 duration: 0.5,
@@ -76,13 +77,13 @@ export default function LoginRegister() {
                                 <motion.span
                                     key={index}
                                     custom={index}
-                                    initial={{rotateX : 180}}
+                                    initial={{ rotateX: 180 }}
                                     animate="visible"
                                     variants={reflectionAnimation}
                                     className="text-pink-200 text-reflection"
                                 >
                                     <span className="rotate-90">
-                                    {char}
+                                        {char}
                                     </span>
                                 </motion.span>
                             ))}
@@ -426,6 +427,9 @@ function InputComponent() {
     const [currentSection, setCurrentSection] = useState("Login")
     const [showPassword, setShowPassword] = useState(false)
     const [submitLoading, setSubmitLoading] = useState(false)
+    const [minLength, setMinLength] = useState(false)
+    const [containNumber, setContainNumber] = useState(false)
+    const [containSpecialCharacter, setContainSpecialCharacter] = useState(false)
     useEffect(() => {
         if (currentSection === "Login") {
             document.getElementById("loginsection").classList.add("text-purple-500")
@@ -439,8 +443,8 @@ function InputComponent() {
 
     const submitForm = async (data) => {
         console.log(data)
-        setSubmitLoading(true)
         if (currentSection === "Login") {
+            setSubmitLoading(true)
             const sentData = { username: data.email, password: data.password }
             axiosInstance.post(loginUrlReq, sentData).then((res) => {
                 if (res.status === 200) {
@@ -497,6 +501,7 @@ function InputComponent() {
                 document.getElementById("password_mismatch_label").hidden = true
                 console.log("Sent data")
                 console.log(sentData)
+                setSubmitLoading(true)
                 axiosInstance.post(registerUrlReq, sentData).then((res) => {
                     console.log("Response")
                     console.log(res)
@@ -513,8 +518,8 @@ function InputComponent() {
                     }
                 }).catch((err) => {
                     console.log(err)
-                    toast.error("An error occured. Registration failed", {
-                        description: "A user with this email already exists. Please login or use another email"
+                    toast.error("Registration failed", {
+                        description: err?.response?.data?.message
                     })
                     document.getElementById("submit-button-text").hidden = false
                     // document.getElementById("submit-button-loading-state").hidden = true
@@ -555,11 +560,29 @@ function InputComponent() {
                         </select>
                         {errors.role && <span className="text-red-500">Role is required</span>}
                     </div>
-                )
-                }
+                )}
                 <div className="text-base flex items-end relative">
                     <div className="flex flex-col gap-px w-fit items-center">
-                        <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border border-gray-300 rounded-md py-2 pl-2 pr-8 w-64 focus:outline-gray-500" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} />
+                        <input id="password" type={showPassword ? "text" : "password"} placeholder="Password" className="border border-gray-300 rounded-md py-2 pl-2 pr-8 w-64 focus:outline-gray-500" {...register("password", { required: "Password is required", maxLength: { value: 64, message: "Maximum length 64 characters" } })} onChange={(e) => {
+                            if (e.target.value.length < 6) {
+                                setMinLength(false)
+                            }
+                            else {
+                                setMinLength(true)
+                            }
+                            if (!/\d/.test(e.target.value)) {
+                                setContainNumber(false)
+                            }
+                            else {
+                                setContainNumber(true)
+                            }
+                            if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(e.target.value)) {
+                                setContainSpecialCharacter(false)
+                            }
+                            else {
+                                setContainSpecialCharacter(true)
+                            }
+                        }} />
                         {errors.password?.type === "required" && <span className="text-red-500">{errors.password?.message}</span>}
                     </div>
                     <button type='button' className=" size-fit bg-gray-50 bg-opacity-40 absolute right-1 top-3" onClick={() => {
@@ -568,19 +591,19 @@ function InputComponent() {
                         {showPassword ? <EyeOff size={22} strokeWidth={1.5} className="text-gray-700 ml-2 cursor-pointer " /> : <EyeIcon strokeWidth={1.5} size={22} className="text-gray-700 ml-2 cursor-pointer" />}
                     </button>
                     {currentSection === "Register" &&
-                        <HoverCard closeDelay={50}>
+                        <HoverCard closeDelay={50} >
                             <HoverCardTrigger asChild>
                                 <CircleHelp size={16} className="text-gray-700 ml-2 cursor-default absolute -right-8 bottom-2 " />
                             </HoverCardTrigger>
                             <HoverCardContent asChild side="right" >
                                 <div className="flex flex-col gap-2 text-xs bg-opacity-50">
-                                    <span>
+                                    <span className={cn(minLength ? "text-green-500" : "text-red-500")}>
                                         Minimum 6 characters
                                     </span>
-                                    <span>
+                                    <span className={cn(containNumber ? "text-green-500" : "text-red-500")}>
                                         Must contain a number
                                     </span>
-                                    <span>
+                                    <span className={cn(containSpecialCharacter ? "text-green-500" : "text-red-500")}>
                                         Must contain a special character
                                     </span>
                                 </div>
@@ -593,11 +616,21 @@ function InputComponent() {
                         <input id="confirm_password" type="password" placeholder="Confirm password" className="border border-gray-300 rounded-md p-2 w-64 focus:outline-gray-500" {...register("confirm_password", { required: true, maxLength: 64 })} />
                         <span id="password_mismatch_label" hidden className="text-red-500">Passwords should match</span>
                     </div>
-                )
-
+                )}
+                {currentSection === "Register" &&
+                    <div className="flex flex-col gap-2 text-xs bg-opacity-50">
+                        <span className={cn(minLength ? "text-green-500" : "text-red-500")}>
+                            Minimum 6 characters
+                        </span>
+                        <span className={cn(containNumber ? "text-green-500" : "text-red-500")}>
+                            Must contain a number
+                        </span>
+                        <span className={cn(containSpecialCharacter ? "text-green-500" : "text-red-500")}>
+                            Must contain a special character
+                        </span>
+                    </div>
                 }
-
-                <button id="submit-button-text" type="submit" className="bg-pink-500 text-white p-2 m-4 w-32 rounded-2xl hover:scale-95 flex items-center justify-center">
+                <button id="submit-button-text" type="submit" disabled={(!minLength | !containNumber | !containSpecialCharacter) && currentSection !== "Login"} className="bg-pink-500 text-white p-2 m-4 w-32 rounded-2xl hover:scale-95 flex items-center justify-center">
                     <span >
                         {submitLoading ? <Loader size={28} strokeWidth={2.5} className="text-white animate-spin" /> : currentSection}
                     </span>

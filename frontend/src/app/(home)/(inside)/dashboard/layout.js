@@ -54,7 +54,7 @@ function SideBar() {
                 ))}
             </div>
             {(sessionContext?.sessionData.role !== roles.doctor && sessionContext?.sessionData.subscribed !== 0 && !openChatBot) && (
-                <button className="flex flex-row items-center justify-center w-14 h-14 rounded-full bg-pink-500 text-white drop-shadow-xl fixed right-5 bottom-5 hover:scale-95" onClick={() => {
+                <button className="flex flex-row items-center justify-center w-14 h-14 rounded-full bg-pink-500 text-white drop-shadow-xl fixed right-5 bottom-5 hover:scale-95 z-40" onClick={() => {
                     setOpenChatBot(true)
                 }}>
                     <BotMessageSquare size={32} />
@@ -186,7 +186,7 @@ function ChatBox({ openChatBot, setOpenChatBot }) {
                         }
                     </ScrollableContainer>
                     <div className="w-full max-h-[100px] flex flex-row justify-between bg-purple-200 bg-opacity-90 text-white p-1 relative">
-                        <textarea disabled={chat === null} type="text" className="flex-1 bg-transparent outline-none max-h-[90px] text-gray-800 bg-white shadow-inner rounded-md p-1 text-sm pr-9" id="chatbot-input" onChange={(e) => {
+                        <textarea disabled={chat === null} type="text" className="flex-1 bg-transparent outline-none text-gray-800 bg-white shadow-inner rounded-2xl p-3 text-sm pr-9" id="chatbot-input" onChange={(e) => {
                             if (e.target.scrollHeight < 90) {
                                 document.getElementById("chatbot-input").style.height = "auto";
                                 document.getElementById("chatbot-input").style.height = (e.target.scrollHeight + 2) + "px";

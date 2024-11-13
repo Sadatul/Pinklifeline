@@ -50,7 +50,7 @@ export function AppointmentsPage() {
         if (sessionContext?.sessionData && fetchAgain) {
             axiosInstance.get(getAppointmentsUrl).then((res) => {
                 setCurrentAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.running))
-                setRequestedAppointments(res?.data.filter(appointment => true))
+                setRequestedAppointments(res?.data.filter(appointment => appointment.status === appointmentStatus.requested))
                 setAppointments(res?.data.filter(appointment => (appointment.status !== appointmentStatus.running && appointment.status !== appointmentStatus.requested)))
                 setFetchAgain(false)
             }).catch((error) => {

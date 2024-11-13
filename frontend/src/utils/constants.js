@@ -1,11 +1,13 @@
 import { differenceInDays, format, formatDistanceToNow, sub } from "date-fns";
 import { BellDot, BookCheck, BriefcaseIcon, List, NavigationIcon, Podcast, Share2Icon, UserRound, VaultIcon } from "lucide-react";
-import { Profiler } from "react";
 // import Image from "next/image";
 
-export const baseUrl = 'http://localhost:8080';
+export const baseUrl = "https://api.pinklifeline.xyz";
 export const frontEndUrl = 'https://www.pinklifeline.xyz';
-export const stompBrokerUrl = `ws://localhost:8080/ws`
+export const stompBrokerUrl = `wss://api.pinklifeline.xyz/ws`
+// export const baseUrl = "http://localhost:8080";
+// export const frontEndUrl = 'http://localhost:3000';
+// export const stompBrokerUrl = `ws://localhost:8080/ws`
 export const loginUrlReq = `${baseUrl}/v1/auth`;
 export const forgotPasswordUrlReq = (email) => { return `${baseUrl}/v1/auth/reset-password?email=${email}` }
 export const logoutUrlReq = `${baseUrl}/v1/auth/logout`;
@@ -13,12 +15,12 @@ export const refreshTokenUrlReq = `${baseUrl}/v1/auth/refresh`;
 export const registerUrlReq = `${baseUrl}/v1/auth/register`;
 export const otpUrlReq = `${baseUrl}/v1/auth/verify`;
 export const userInfoRegUrlReq = (id, role) => { return `${baseUrl}/v1/infos/${role}/${id}` };
-export const subscribeMessageUrl = (id) => { return `/user/${id}/queue/messages` }
-export const livePrescriptionSubscribe = (id) => { return `/user/${id}/queue/live-prescription` }
-export const livePrescriptionSubscribeErrors = (id) => { return `/user/${id}/queue/live-prescription/errors` }
-export const livePrescriptionSendUrl = `/app/live-prescription`
-export const subscribeErrorUrl = (id) => { return `/user/${id}/queue/errors` }
+export const subscribeMessageUrl = (id) => { return `/topic/messages.${id}` }
+export const subscribeErrorUrl = (id) => { return `/topic/messages.${id}` }
 export const messageSendUrl = `/app/chat`
+export const livePrescriptionSubscribe = (id) => { return `/topic/live.prescription.${id}` }
+export const livePrescriptionSubscribeErrors = (id) => { return `/topic/live.prescription.errors.${id}` }
+export const livePrescriptionSendUrl = `/app/live-prescription`
 export const getChatsUrl = (id) => { return `${baseUrl}/v1/chat/${id}` }
 export const getMessagesUrl = (room_id) => { return `${baseUrl}/v1/chat/messages/${room_id}` }
 export const updateProfilePictureUrl = (id) => { return `${baseUrl}/v1/infos/profile_picture/${id}` }
@@ -556,111 +558,111 @@ export const DashBoardPageLinks = {
         {
             name: "Profile",
             link: pagePaths.dashboardPages.userdetailsPage,
-            icon : <UserRound size={24} key={1} /> 
+            icon: <UserRound size={24} key={1} />
         },
         {
             name: "Appointments",
-            link: pagePaths.dashboardPages.appointmentsPage, 
-            icon : <List size={24} key={2} />
+            link: pagePaths.dashboardPages.appointmentsPage,
+            icon: <List size={24} key={2} />
         },
         {
             name: "Vault",
-            link: pagePaths.dashboardPages.prescriptionVaultPage, 
-            icon:  <VaultIcon size={24} key={3} />
+            link: pagePaths.dashboardPages.prescriptionVaultPage,
+            icon: <VaultIcon size={24} key={3} />
         },
         {
             name: "Works",
-            link: pagePaths.dashboardPages.worksPage, 
-            icon : <BriefcaseIcon size={24} key={4} />
+            link: pagePaths.dashboardPages.worksPage,
+            icon: <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Self Test",
             link: pagePaths.dashboardPages.selfTestPage,
-            icon : <BookCheck size={24} key={5} />
+            icon: <BookCheck size={24} key={5} />
         },
         {
             name: "Seek Help",
             link: pagePaths.dashboardPages.lookaroundPage,
-            icon : <NavigationIcon size={24} key={6} />
+            icon: <NavigationIcon size={24} key={6} />
         },
         {
             name: "Notifications",
             link: pagePaths.dashboardPages.notificationPage,
-            icon : <BellDot size={24} key={7} />
+            icon: <BellDot size={24} key={7} />
         },
         {
             name: "Subscription",
-            link: pagePaths.dashboardPages.subscriptionPage, 
-            icon : <Podcast size={24} key={8} />
+            link: pagePaths.dashboardPages.subscriptionPage,
+            icon: <Podcast size={24} key={8} />
         }
     ],
     "ROLE_BASICUSER": [
         {
             name: "Profile",
             link: pagePaths.dashboardPages.userdetailsPage,
-            icon : <UserRound size={24} key={1} /> 
+            icon: <UserRound size={24} key={1} />
         },
         {
             name: "Appointments",
             link: pagePaths.dashboardPages.appointmentsPage,
-            icon : <List size={24} key={2} />
+            icon: <List size={24} key={2} />
         },
         {
             name: "Vault",
             link: pagePaths.dashboardPages.prescriptionVaultPage,
-            icon : <VaultIcon size={24} key={3} />
+            icon: <VaultIcon size={24} key={3} />
         },
         {
             name: "Works",
             link: pagePaths.dashboardPages.worksPage,
-            icon : <BriefcaseIcon size={24} key={4} />
+            icon: <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Self Test",
             link: pagePaths.dashboardPages.selfTestPage,
-            icon : <BookCheck size={24} key={5} />
+            icon: <BookCheck size={24} key={5} />
         },
         {
             name: "Seek Help",
             link: pagePaths.dashboardPages.lookaroundPage,
-            icon : <NavigationIcon size={24} key={6} />
+            icon: <NavigationIcon size={24} key={6} />
         },
         {
             name: "Notifications",
             link: pagePaths.dashboardPages.notificationPage,
-            icon : <BellDot size={24} key={7} />
+            icon: <BellDot size={24} key={7} />
         },
         {
             name: "Subscription",
             link: pagePaths.dashboardPages.subscriptionPage,
-            icon : <Podcast size={24} key={8} />
+            icon: <Podcast size={24} key={8} />
         }
     ],
     "ROLE_DOCTOR": [
         {
             name: "Profile",
             link: pagePaths.dashboardPages.userdetailsPage,
-            icon : <UserRound size={24} key={1} />
+            icon: <UserRound size={24} key={1} />
         },
         {
             name: "Appointments",
             link: pagePaths.dashboardPages.appointmentsPage,
-            icon : <List size={24} key={2} />
+            icon: <List size={24} key={2} />
         },
         {
             name: "Shared Reports",
             link: pagePaths.dashboardPages.sharedPrescriptionPage,
-            icon : <Share2Icon size={24} key={3} />
+            icon: <Share2Icon size={24} key={3} />
         },
         {
             name: "Works",
             link: pagePaths.dashboardPages.worksPage,
-            icon : <BriefcaseIcon size={24} key={4} />
+            icon: <BriefcaseIcon size={24} key={4} />
         },
         {
             name: "Subscription",
             link: pagePaths.dashboardPages.subscriptionPage,
-            icon : <Podcast size={24} key={5} />
+            icon: <Podcast size={24} key={5} />
         }
     ],
 }
