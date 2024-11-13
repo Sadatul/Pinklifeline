@@ -13,6 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractBaseIntegrationTest {
     protected static final MySQLContainer MYSQL_CONTAINER;
     protected static final GenericContainer<?> REDIS_CONTAINER;
+    protected static final GenericContainer<?> RABBITMQ_CONTAINER;
 
     @RegisterExtension
     protected static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP)
@@ -28,8 +29,14 @@ public abstract class AbstractBaseIntegrationTest {
         REDIS_CONTAINER = new GenericContainer<>(DockerImageName.parse("redis/redis-stack:latest"))
                 .withExposedPorts(6379, 8001);
 
+        RABBITMQ_CONTAINER = new GenericContainer<>(DockerImageName.parse("sadatul/pinklifeline-rabbitmq-stomp"))
+                .withEnv("RABBITMQ_DEFAULT_USER", "guest")
+                .withEnv("RABBITMQ_DEFAULT_PASS", "guest")
+                .withExposedPorts(61613, 5672, 15672);
+
         REDIS_CONTAINER.start();
         MYSQL_CONTAINER.start();
+        RABBITMQ_CONTAINER.start();
     }
 
     @DynamicPropertySource
@@ -39,6 +46,8 @@ public abstract class AbstractBaseIntegrationTest {
         registry.add("spring.datasource.username", MYSQL_CONTAINER::getUsername);
         registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
         registry.add("spring.data.redis.port", REDIS_CONTAINER::getFirstMappedPort);
+        registry.add("RABBITMQ_HOST", RABBITMQ_CONTAINER::getHost);
+        registry.add("RABBITMQ_PORT", RABBITMQ_CONTAINER::getFirstMappedPort);
     }
 
 }

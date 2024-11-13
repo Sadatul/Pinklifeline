@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: pinklifeline
-        image: sadatul/pinklifeline_prod:1.0.6-RELEASE
+        image: sadatul/pinklifeline_prod:1.0.8-RELEASE
         imagePullPolicy: Always
         ports:
         - name: liveness-port
@@ -38,6 +38,10 @@ spec:
               name: pinklifeline-config
         - name: REDIS_PORT
           value: '6379'
+        - name: RABBITMQ_HOST
+          value: 'pinklifeline-rabbitmq'
+        - name: RABBITMQ_PORT
+          value: '61613'
         - name: FRONTEND_HOST
           valueFrom: 
             configMapKeyRef:
@@ -89,8 +93,8 @@ spec:
             readOnly: true
         resources:
           requests:
-            memory: "512Mi"
-            cpu:    "100m"
+            memory: "256Mi"
+            cpu:    "50m"
       volumes:
         - name: cloud-sql-secret-volume
           secret:

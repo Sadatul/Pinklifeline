@@ -1,5 +1,5 @@
 provider "google" {
-  project = "pinklifeline"
+  project = "pinklifeline-441512"
   region  = "asia-south1"
   zone    = "asia-south1-c"
 }
