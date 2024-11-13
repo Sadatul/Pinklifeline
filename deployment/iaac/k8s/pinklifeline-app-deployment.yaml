@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: pinklifeline
-        image: sadatul/pinklifeline_prod:1.0.8-RELEASE
+        image: sadatul/pinklifeline_prod:1.0.9-RELEASE
         imagePullPolicy: Always
         ports:
         - name: liveness-port
@@ -83,7 +83,7 @@ spec:
         args:
           - "--structured-logs"
           - "--port=3306"
-          - "pinklifeline:asia-south1:pinklifeline-database-instance"
+          - "pinklifeline-441512:asia-south1:pinklifeline-database-instance"
           - "--credentials-file=/secrets/service_account.json"
         securityContext:
           runAsNonRoot: true
