@@ -1,7 +1,13 @@
-provider "google" {
+locals {
   project = "pinklifeline-441512"
   region  = "asia-south1"
   zone    = "asia-south1-c"
+}
+
+provider "google" {
+  project = local.project
+  region  = local.region
+  zone    = local.zone
 }
 
 resource "google_sql_database_instance" "pinklifeline_database_instance" {
@@ -35,6 +41,26 @@ resource "google_project_service" "sqladmin-api" {
   }
 }
 
+# resource "google_project_service" "compute_engine_api" {
+#   service = "compute.googleapis.com"
+
+#   timeouts {
+#     create = "30m"
+#     update = "40m"
+#   }
+# }
+
+resource "google_project_service" "kubernetes_api" {
+  service = "container.googleapis.com"
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+
+  # depends_on = [ google_project_service.compute_engine_api ]
+}
+
 resource "google_service_account" "cloudsql_proxy_sa" {
   account_id   = "cloud-sql-auth-proxy"
   display_name = "Cloud SQL Auth Proxy service account"
@@ -42,7 +68,7 @@ resource "google_service_account" "cloudsql_proxy_sa" {
 }
 
 resource "google_project_iam_member" "cloudsql_client_for_proxy" {
-  project = "pinklifeline"
+  project = local.project
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.cloudsql_proxy_sa.email}"
 }
@@ -74,7 +100,7 @@ resource "google_service_account" "kubernetes_sa" {
 }
 
 resource "google_project_iam_member" "secret_accessor_for_k8s_sa" {
-  project = "pinklifeline"
+  project = local.project
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.kubernetes_sa.email}"
 }
@@ -101,7 +127,7 @@ resource "google_project_service" "secret_manager_api" {
 
 resource "google_container_cluster" "pinklifeline_cluster" {
   name               = "pinklifeline-kubernetese-cluster"
-  location           = var.cluster_location
+  location           = local.zone
   initial_node_count = 2
   node_config {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
@@ -113,7 +139,7 @@ resource "google_container_cluster" "pinklifeline_cluster" {
   }
 
   workload_identity_config {
-    workload_pool = "pinklifeline.svc.id.goog"
+    workload_pool = "${local.project}.svc.id.goog"
   }
   timeouts {
     create = "30m"
@@ -121,6 +147,8 @@ resource "google_container_cluster" "pinklifeline_cluster" {
   }
 
   deletion_protection = false
+
+  depends_on = [ google_project_service.kubernetes_api ]
 }
 
 # STEP 1:
@@ -176,7 +204,7 @@ resource "google_redis_instance" "pinklifeline_redis_instance" {
   tier           = "STANDARD_HA"
   memory_size_gb = 1
 
-  location_id = "asia-south1-c"
+  location_id = local.zone
 
   authorized_network = "default"
   connect_mode       = "PRIVATE_SERVICE_ACCESS"
